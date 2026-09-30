@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b2237">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-48.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MUSEDUC">
+<title>MUSEDUC, par Philippe Boussetta</title>
+<!-- Firebase (mode classe en temps réel). Se charge uniquement en ligne ; si absent, le jeu retombe sur le Google Sheet. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<!-- async : ne bloque plus la lecture de la page. Tous ses usages passent par
+     fbPret()/rtdb*, qui vérifient qu'elle est arrivée. -->
+<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Phosphor Icons : deux graisses seulement (normale et pleine), servies par
+     jsDelivr, plus fiable qu'unpkg. La graisse « bold » ne servait qu'à 2 icônes. -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
+
+<link rel="stylesheet" href="museduc7.css?v=2026-09-28b">
+</head>
+<body>
+<div class="app-controls" id="appControls">
+  <div class="compte-wrap">
+    <button class="app-btn" id="btnCompte" onclick="basculerMenuCompte(event)" title="Mon compte" aria-label="Mon compte"><i class="ph ph-user-circle"></i><span class="compte-pastille" id="comptePastille"></span></button>
+    <div class="compte-menu" id="compteMenu"></div>
+  </div>
+  <button class="app-btn" id="btnProj" onclick="basculerProjection()" title="Mode projection (classe)" aria-label="Mode projection" hidden><i class="ph ph-projector-screen-chart"></i></button>
+  <button class="app-btn" id="btnFull" onclick="basculerPleinEcran()" title="Plein écran" aria-label="Plein écran"><i class="ph ph-corners-out"></i></button>
+</div>
+<button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu"><i class="ph ph-list"></i></button>
+<div class="overlay" id="overlay" onclick="fermerMenu()"></div>
+<aside id="menu"></aside>
+<div class="haut-mobile" id="hautMobile"><button type="button" class="hm-logo" onclick="fermerMenu();accueil();remonter()" aria-label="Accueil MUSEDUC"><span class="logo-mot"><span class="mus">MUS</span><span class="educ">EDUC</span></span></button></div>
+<nav class="nav-bas" id="navBas" aria-label="Navigation principale"></nav>
+<main>
+  <div class="entete-controle">
+    <b>ÉDUCATION MUSICALE : Évaluation</b><br><br>
+    Nom : <span class="lg"></span> &nbsp;&nbsp; Classe : <span class="lg" style="min-width:90px"></span> &nbsp;&nbsp; Note : ____ / 20
+  </div>
+
+  <div class="score-bandeau" id="scoreBandeau"></div>
+  <div class="barre">
+    <div>
+      <button id="btnRetour" class="btn-retour" style="display:none" onclick="retourArriere()">‹ Retour</button>
+      <h1 id="titre">MUSEDUC</h1>
+      <p id="intro">Choisis une catégorie à gauche. Les exercices sont générés au hasard : entraîne-toi autant que tu veux.</p>
+    </div>
+    <div class="actions" id="actions" style="display:none;"></div>
+  </div>
+  <!-- Réglages placés SOUS le titre : c'est là que les élèves regardent, et la
+       progression par paliers doit être la première chose qu'ils voient. -->
+  <div class="reglages" id="reglages" style="display:none;">
+    <div class="grp"><label>Niveau de difficulté</label>
+      <span class="seg" id="segDiff">
+        <button data-d="1">Facile</button><button data-d="2" class="on">Intermédiaire</button><button data-d="3">Difficile</button>
+      </span>
+      <div id="progNiv" class="prog-niv"></div>
+    </div>
+    <div class="grp"><label>Questions</label>
+      <select id="selNb"><option>5</option><option>8</option><option selected>10</option><option>15</option><option>20</option></select>
+    </div>
+    <div class="grp"><label class="chk"><input type="checkbox" id="chkImmediat"> Correction immédiate</label></div>
+    <div class="grp" id="grpImprimer"><button class="action btn-nouv" onclick="imprimerExercicesCat()"><i class="ph ph-printer"></i> Imprimer ces exercices</button></div>
+  </div>
+
+  <div id="zone"></div>
+</main>
+
+<script src="museduc7.js?v=2026-09-28b"></script>
+</body>
+</html>

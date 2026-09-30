@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUSEDUC : le logiciel des profs de musique</title>
+<meta name="description" content="MUSEDUC aide les professeurs de musique de collège à faire travailler leurs élèves (leçons, chant, vocabulaire, quiz de classe) et à suivre chacun, sans jamais exposer un nom d'élève. Gratuit pour commencer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --encre:#16233a; --doux:#5c6b80; --bandeau:#2374b0; --marine:#1e3a63; --marine-2:#16233a;
+    --or:#F2C94C; --or-clair:#F6DC8A; --or-texte:#8a690a;
+    --juste:#1a9c6b; --ligne:rgba(30,58,99,.14);
+    --surface:#ffffff; --fond:#eef5fc; --teinte:rgba(242,201,76,.14);
+    --ombre:0 18px 44px rgba(30,58,99,.13); --ombre-d:0 4px 16px rgba(30,58,99,.08);
+    --police:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+    --titre:"Baloo 2","Inter",system-ui,sans-serif;
+    --degrade:linear-gradient(135deg,#2b86c8,#1e3a63);
+    --brocart:radial-gradient(circle at 20% 30%, rgba(242,201,76,.16) 0 3px, transparent 4px) 0 0/26px 26px,
+              radial-gradient(circle at 70% 70%, rgba(242,201,76,.12) 0 3px, transparent 4px) 0 0/26px 26px;
+    --wm-mus:#2374b0; --wm-educ:#F2C94C;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --encre:#eaf1f8; --doux:#9fb0c4; --marine:#0f1b2e; --marine-2:#0b1524;
+      --or-texte:#F2C94C; --ligne:rgba(255,255,255,.12);
+      --surface:#152338; --fond:#0f1b2e; --teinte:rgba(242,201,76,.12);
+      --ombre:0 18px 44px rgba(0,0,0,.4); --ombre-d:0 4px 16px rgba(0,0,0,.3);
+      --wm-mus:#5aa6e0; --wm-educ:#F2C94C;
+    }
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:var(--police);color:var(--encre);background:var(--fond);line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--bandeau);text-decoration:none;} a:hover{color:var(--marine);}
+  svg{display:block;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px;}
+  h1,h2,h3{font-family:var(--titre);line-height:1.12;}
+  .ttl-sec{font-size:clamp(1.6rem,3.4vw,2.25rem);font-weight:800;color:var(--marine);text-align:center;margin:0 0 10px;}
+  .sous-sec{text-align:center;color:var(--doux);max-width:46ch;margin:0 auto 40px;font-size:1.02rem;}
+
+  /* boutons */
+  .btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--titre);font-weight:700;border-radius:14px;
+    padding:13px 22px;cursor:pointer;border:none;font-size:1rem;transition:transform .12s ease,filter .12s ease,background .15s ease;}
+  .btn:active{transform:scale(.97);}
+  .btn-or{background:var(--or);color:#16233a;box-shadow:0 8px 22px rgba(242,201,76,.4);}
+  .btn-or:hover{filter:brightness(1.05);color:#16233a;}
+  .btn-ligne{background:transparent;border:1.5px solid var(--ligne);color:var(--encre);}
+  .btn-ligne:hover{border-color:var(--bandeau);color:var(--bandeau);}
+  .btn-clair{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3);}
+  .btn-clair:hover{background:rgba(255,255,255,.22);color:#fff;}
+
+  /* en-tête */
+  header{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--fond) 86%, transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--ligne);}
+  .nav{display:flex;align-items:center;gap:18px;height:66px;}
+  .wm{font-family:var(--titre);font-weight:800;font-size:1.5rem;letter-spacing:-.01em;}
+  .wm .mus{color:var(--wm-mus);} .wm .educ{color:var(--wm-educ);text-shadow:0 1px 1px rgba(30,58,99,.30);}
+  .nav-liens{display:flex;gap:24px;margin-left:auto;}
+  .nav-liens a{color:var(--encre);font-weight:600;font-size:.95rem;}
+  .nav-liens a:hover{color:var(--bandeau);}
+  .nav .btn{padding:10px 16px;font-size:.92rem;}
+  @media(max-width:760px){ .nav-liens{display:none;} }
+
+  /* hero */
+  .hero{padding:60px 0 40px;}
+  .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;}
+  @media(max-width:860px){ .hero-grid{grid-template-columns:1fr;gap:34px;} }
+  .kicker{display:inline-flex;align-items:center;gap:8px;background:var(--teinte);color:var(--or-texte);
+    font-weight:700;font-size:.82rem;padding:6px 14px;border-radius:999px;margin-bottom:18px;}
+  .hero h1{font-size:clamp(2.1rem,5vw,3.3rem);font-weight:800;color:var(--marine);margin:0 0 16px;}
+  .hero h1 .surligne{color:var(--bandeau);}
+  .hero p.lead{font-size:1.12rem;color:var(--doux);max-width:52ch;margin:0 0 26px;}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap;}
+  .hero-note{margin-top:16px;font-size:.86rem;color:var(--doux);display:flex;align-items:center;gap:7px;}
+
+  /* visuel hero : panneau bleu + fausse carte */
+  .visuel{background:var(--brocart),var(--degrade);border-radius:26px;padding:26px;box-shadow:var(--ombre);
+    position:relative;overflow:hidden;}
+  .v-carte{background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 10px 30px rgba(0,0,0,.22);color:#16233a;}
+  .v-tete{display:flex;align-items:center;gap:13px;}
+  .v-eq{width:50px;height:50px;flex:none;border-radius:14px;background:var(--degrade);display:flex;align-items:flex-end;
+    justify-content:center;gap:3px;padding:12px 0 11px;}
+  .v-eq span{width:5px;border-radius:3px;background:linear-gradient(#F6DC8A,#F2C94C);transform-origin:bottom;
+    animation:eq 1.1s ease-in-out infinite;}
+  .v-eq span:nth-child(1){height:12px;animation-delay:0s;}
+  .v-eq span:nth-child(2){height:24px;animation-delay:-.35s;}
+  .v-eq span:nth-child(3){height:16px;animation-delay:-.7s;}
+  .v-eq span:nth-child(4){height:26px;animation-delay:-.15s;}
+  @keyframes eq{0%,100%{transform:scaleY(.3);}50%{transform:scaleY(1);}}
+  .v-nom{font-family:var(--titre);font-weight:800;font-size:1.1rem;color:var(--marine);}
+  .v-art{font-size:.85rem;color:#5c6b80;}
+  .v-pistes{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
+  .v-pill{display:inline-flex;align-items:center;gap:6px;background:var(--teinte);color:var(--or-texte);
+    font-size:.76rem;font-weight:700;padding:5px 11px;border-radius:999px;}
+  .v-note{margin-left:auto;background:rgba(26,156,107,.12);color:#1a9c6b;font-weight:800;font-size:.85rem;
+    padding:4px 12px;border-radius:999px;}
+  .v-mini{display:flex;gap:10px;margin-top:14px;}
+  .v-mini .m{flex:1;background:rgba(255,255,255,.14);border:1px solid rgba(242,201,76,.35);border-radius:13px;
+    padding:11px 13px;color:#fff;}
+  .v-mini .m b{font-family:var(--titre);font-size:1.3rem;display:block;color:var(--or-clair);}
+  .v-mini .m span{font-size:.72rem;opacity:.9;}
+
+  /* bandeau confiance */
+  .trust{margin-top:44px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 26px;}
+  .trust span{display:inline-flex;align-items:center;gap:8px;color:var(--doux);font-size:.9rem;font-weight:600;}
+  .trust i-dot{width:7px;height:7px;border-radius:50%;background:var(--juste);display:inline-block;}
+
+  /* sections */
+  section{padding:64px 0;}
+  .grid{display:grid;gap:18px;}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:820px){ .g3{grid-template-columns:1fr 1fr;} }
+  @media(max-width:560px){ .g3,.g2{grid-template-columns:1fr;} }
+  .carte{background:var(--surface);border:1px solid var(--ligne);border-radius:18px;padding:22px;box-shadow:var(--ombre-d);}
+  .carte h3{font-size:1.12rem;margin:14px 0 6px;color:var(--marine);font-weight:700;}
+  .carte p{margin:0;color:var(--doux);font-size:.95rem;}
+  .ic{width:46px;height:46px;border-radius:13px;background:var(--teinte);color:var(--or-texte);
+    display:flex;align-items:center;justify-content:center;}
+  .ic.bleu{background:var(--degrade);color:var(--or);}
+
+  .band{background:var(--brocart),var(--degrade);color:#fff;border-radius:26px;padding:40px;}
+  .band .ttl-sec,.band h2{color:#fff;}
+  .band .sous-sec{color:rgba(255,255,255,.85);}
+  .rgpd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px;}
+  @media(max-width:700px){ .rgpd-grid{grid-template-columns:1fr;} }
+  .rgpd-item{background:rgba(255,255,255,.08);border:1px solid rgba(242,201,76,.28);border-radius:16px;padding:18px;}
+  .rgpd-item h3{color:#fff;font-size:1.02rem;margin:10px 0 5px;}
+  .rgpd-item p{color:rgba(255,255,255,.82);font-size:.9rem;margin:0;}
+  .rgpd-item .ic{background:rgba(255,255,255,.14);color:var(--or);}
+
+  /* étapes */
+  .etapes{counter-reset:e;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media(max-width:700px){ .etapes{grid-template-columns:1fr;} }
+  .etape{position:relative;background:var(--surface);border:1px solid var(--ligne);border-radius:18px;padding:26px 22px 22px;box-shadow:var(--ombre-d);}
+  .etape::before{counter-increment:e;content:counter(e);position:absolute;top:-16px;left:22px;width:38px;height:38px;
+    border-radius:11px;background:var(--or);color:#16233a;font-family:var(--titre);font-weight:800;font-size:1.2rem;
+    display:flex;align-items:center;justify-content:center;box-shadow:var(--ombre-d);}
+  .etape h3{margin:8px 0 6px;color:var(--marine);}
+  .etape p{margin:0;color:var(--doux);font-size:.95rem;}
+
+  /* tarif */
+  .tarif{max-width:440px;margin:0 auto;text-align:center;background:var(--surface);border:2px solid var(--or);
+    border-radius:24px;padding:34px 28px;box-shadow:var(--ombre);}
+  .tarif .prix{font-family:var(--titre);font-weight:800;font-size:2.6rem;color:var(--marine);}
+  .tarif .prix small{font-size:1rem;color:var(--doux);font-weight:600;}
+  .tarif ul{list-style:none;padding:0;margin:18px 0 24px;text-align:left;display:inline-block;}
+  .tarif li{display:flex;gap:10px;align-items:flex-start;margin:9px 0;color:var(--encre);font-size:.96rem;}
+  .tarif li svg{flex:none;margin-top:2px;}
+
+  /* faq */
+  .faq details{background:var(--surface);border:1px solid var(--ligne);border-radius:14px;padding:4px 18px;margin-bottom:11px;}
+  .faq summary{cursor:pointer;font-weight:700;color:var(--marine);padding:14px 0;list-style:none;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary .plus{color:var(--bandeau);font-size:1.3rem;transition:transform .2s;}
+  .faq details[open] summary .plus{transform:rotate(45deg);}
+  .faq p{margin:0 0 16px;color:var(--doux);font-size:.95rem;}
+
+  /* cta final */
+  .cta-final{text-align:center;background:var(--brocart),var(--degrade);border-radius:26px;padding:52px 26px;color:#fff;}
+  .cta-final h2{color:#fff;font-size:clamp(1.7rem,3.6vw,2.4rem);margin:0 0 12px;}
+  .cta-final p{color:rgba(255,255,255,.88);max-width:44ch;margin:0 auto 24px;}
+
+  footer{padding:40px 0;border-top:1px solid var(--ligne);color:var(--doux);font-size:.9rem;}
+  .foot{display:flex;flex-wrap:wrap;gap:16px 30px;align-items:center;justify-content:space-between;}
+  .foot a{color:var(--doux);font-weight:600;} .foot a:hover{color:var(--bandeau);}
+
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease;}
+  .reveal.vu{opacity:1;transform:none;}
+  @media(prefers-reduced-motion:reduce){ .reveal{opacity:1;transform:none;} .v-eq span{animation:none;} html{scroll-behavior:auto;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <span class="wm"><span class="mus">MUS</span><span class="educ">EDUC</span></span>
+    <nav class="nav-liens">
+      <a href="#eleves">Pour les élèves</a>
+      <a href="#profs">Pour les profs</a>
+      <a href="#etapes">Comment ça marche</a>
+      <a href="#tarif">Tarif</a>
+    </nav>
+    <a class="btn btn-or" href="museduc7.html?prof=inscription">Créer mon espace</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="kicker"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Éducation musicale au collège</span>
+      <h1>La musique, enfin un logiciel qui <span class="surligne">donne envie</span>.</h1>
+      <p class="lead">MUSEDUC fait travailler vos élèves : leçons interactives, chant, vocabulaire, quiz de classe. Vous suivez chacun, notez, donnez des devoirs, et vous gardez le tout à l'abri, sans jamais exposer un seul nom d'élève.</p>
+      <div class="hero-cta">
+        <a class="btn btn-or" href="museduc7.html?prof=inscription">Créer mon espace enseignant</a>
+        <a class="btn btn-ligne" href="museduc7.html">Découvrir l'application</a>
+      </div>
+      <div class="hero-note"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Gratuit pour commencer · rien à installer · prêt en 5 minutes</div>
+    </div>
+
+    <div class="visuel" aria-hidden="true">
+      <div class="v-carte">
+        <div class="v-tete">
+          <div class="v-eq"><span></span><span></span><span></span><span></span></div>
+          <div style="min-width:0"><div class="v-nom">Car Radio</div><div class="v-art">21 Pilots</div></div>
+          <span class="v-note">15 / 20</span>
+        </div>
+        <div class="v-pistes">
+          <span class="v-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Musique</span>
+          <span class="v-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Karaoké</span>
+          <span class="v-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M4 19v-1a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v1"/></svg> 6ᵉ · 5ᵉ</span>
+        </div>
+      </div>
+      <div class="v-mini">
+        <div class="m"><b>142</b><span>points cette semaine</span></div>
+        <div class="m"><b>3</b><span>travaux à corriger</span></div>
+        <div class="m"><b>0</b><span>nom sur le serveur</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="trust">
+      <span><i-dot></i-dot> Conforme RGPD</span>
+      <span><i-dot></i-dot> Aucun nom d'élève sur nos serveurs</span>
+      <span><i-dot></i-dot> Élèves anonymes par code</span>
+      <span><i-dot></i-dot> Fonctionne dans le navigateur</span>
+    </div>
+  </div>
+</section>
+
+<!-- POUR LES ÉLÈVES -->
+<section id="eleves">
+  <div class="wrap">
+    <h2 class="ttl-sec reveal">Ce que vos élèves y font</h2>
+    <p class="sous-sec reveal">Des activités variées, pensées pour accrocher, avec correction immédiate et une progression qui les motive.</p>
+    <div class="grid g3">
+      <div class="carte reveal"><span class="ic bleu"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h11a3 3 0 0 1 3 3v11a2.5 2.5 0 0 0-2.5-2.5H4Z"/><path d="M20 5h-1a3 3 0 0 0-3 3v11"/></svg></span>
+        <h3>Leçons &amp; cours interactifs</h3><p>Vos cours de classe transformés en étapes jouables : écoute, questions, jeux, correction en deux temps.</p></div>
+      <div class="carte reveal"><span class="ic bleu"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg></span>
+        <h3>Chant &amp; enregistrement</h3><p>Vous déposez un morceau et son karaoké ; l'élève chante dessus, vous écoutez et notez, seul ou en groupe.</p></div>
+      <div class="carte reveal"><span class="ic bleu"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v12H4z"/><path d="M8 21h8M8 9h8M8 13h5"/></svg></span>
+        <h3>Vocabulaire</h3><p>Cartes à retourner et révisions espacées (Leitner) pour ancrer le vocabulaire musical dans la durée.</p></div>
+      <div class="carte reveal"><span class="ic bleu"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01M8.5 15a4 4 0 0 0 7 0"/></svg></span>
+        <h3>Le Calmar Musical</h3><p>Un quiz de classe à élimination, projeté au tableau, avec repêchage : de quoi réveiller toute la salle.</p></div>
+      <div class="carte reveal"><span class="ic bleu"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.3 4.7 5.2.8-3.8 3.6.9 5.1L12 15l-4.6 2.4.9-5.1L4.5 8.5l5.2-.8Z"/></svg></span>
+        <h3>Les aventures de Nova</h3><p>Une aventure dont l'élève est le héros : voyage dans le temps à la rencontre des grands compositeurs.</p></div>
+      <div class="carte reveal"><span class="ic bleu"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span>
+        <h3>Éphéméride musicale</h3><p>Chaque jour, une anecdote : naissance d'un compositeur, sortie d'un album culte, fête de la musique.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- POUR LES PROFS -->
+<section id="profs">
+  <div class="wrap">
+    <h2 class="ttl-sec reveal">Pour vous, professeur</h2>
+    <p class="sous-sec reveal">Moins de temps sur la logistique, plus de temps pour votre classe. Et vos données restent les vôtres.</p>
+    <div class="grid g2" style="margin-bottom:22px">
+      <div class="carte reveal"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10"/><path d="M8 21v-6h8v6"/></svg></span>
+        <h3>Suivi des travaux &amp; notes</h3><p>Voyez qui a fait quoi, le temps passé, les essais. Toutes les notes (évaluations et chant) réunies, exportables.</p></div>
+      <div class="carte reveal"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16l-7-3-7 3z"/></svg></span>
+        <h3>Devoirs à la carte</h3><p>Assignez du travail à une classe entière ou à quelques élèves, avec validation automatique.</p></div>
+      <div class="carte reveal"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 3v9l6 3"/></svg></span>
+        <h3>Sauvegarde en un clic</h3><p>Exportez tout dans un fichier et restaurez-le sur un autre ordinateur. Vous ne perdez plus jamais rien.</p></div>
+      <div class="carte reveal"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg></span>
+        <h3>Classe prête en minutes</h3><p>Créez une classe, distribuez des codes anonymes : vos élèves se connectent sans compte ni donnée personnelle.</p></div>
+    </div>
+
+    <div class="band reveal">
+      <h2 class="ttl-sec" style="margin-bottom:6px">La confidentialité, par conception</h2>
+      <p class="sous-sec">Un vrai atout face à votre établissement : MUSEDUC a été pensé pour ne jamais mettre de donnée d'élève en danger.</p>
+      <div class="rgpd-grid">
+        <div class="rgpd-item"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+          <h3>Aucun nom sur le serveur</h3><p>Les noms de vos élèves restent sur votre appareil. Le serveur ne connaît que des codes anonymes.</p></div>
+        <div class="rgpd-item"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg></span>
+          <h3>Élèves sans compte</h3><p>Pas d'e-mail, pas d'inscription pour les élèves : un simple code suffit pour rejoindre la classe.</p></div>
+        <div class="rgpd-item"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>
+          <h3>Vos données, exportables</h3><p>Vous gardez la main : tout se sauvegarde et se récupère quand vous voulez, dans un simple fichier.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ÉTAPES -->
+<section id="etapes">
+  <div class="wrap">
+    <h2 class="ttl-sec reveal">Comment ça marche</h2>
+    <p class="sous-sec reveal">Trois étapes, et vos élèves sont au travail cette semaine.</p>
+    <div class="etapes">
+      <div class="etape reveal"><h3>Créez votre espace</h3><p>Un e-mail, un mot de passe, et votre espace enseignant est prêt. Gratuitement.</p></div>
+      <div class="etape reveal"><h3>Ouvrez une classe</h3><p>Distribuez les codes anonymes générés. Vos élèves se connectent en un instant, sans donnée personnelle.</p></div>
+      <div class="etape reveal"><h3>Jouez, suivez, notez</h3><p>Vos élèves apprennent en s'amusant, vous suivez les progrès et relevez les notes d'un coup d'œil.</p></div>
+    </div>
+    <div style="text-align:center;margin-top:34px" class="reveal">
+      <a class="btn btn-or" href="museduc7.html?prof=inscription">Créer mon espace enseignant</a>
+    </div>
+  </div>
+</section>
+
+<!-- TARIF -->
+<section id="tarif">
+  <div class="wrap">
+    <h2 class="ttl-sec reveal">Combien ça coûte</h2>
+    <p class="sous-sec reveal">MUSEDUC démarre gratuitement. L'objectif reste simple : un outil que les profs adorent, et que les élèves n'ont jamais à payer.</p>
+    <div class="tarif reveal">
+      <div class="prix">Gratuit <small>pour commencer</small></div>
+      <ul>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a9c6b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Tous les modules pour vos élèves</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a9c6b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Classes, codes anonymes et suivi</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a9c6b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Notes, devoirs et sauvegarde</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a9c6b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Aucune donnée d'élève exposée</li>
+      </ul>
+      <div><a class="btn btn-or" href="museduc7.html?prof=inscription">Commencer gratuitement</a></div>
+      <p style="margin:16px 0 0;font-size:.83rem;color:var(--doux)">Le projet vit aussi grâce à vos dons. <a href="museduc7.html">Soutenir MUSEDUC</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <div class="wrap" style="max-width:760px">
+    <h2 class="ttl-sec reveal">Questions fréquentes</h2>
+    <div class="reveal" style="margin-top:28px">
+      <details><summary>Mes élèves ont-ils besoin d'un compte ?<span class="plus">+</span></summary><p>Non. Vous générez des codes anonymes et vos élèves rejoignent la classe avec. Aucun e-mail ni donnée personnelle n'est demandé.</p></details>
+      <details><summary>Où sont enregistrés les noms de mes élèves ?<span class="plus">+</span></summary><p>Uniquement sur votre appareil. Le serveur ne stocke que des codes. C'est pour cela que la sauvegarde est importante : elle met ces noms à l'abri dans un fichier que vous conservez.</p></details>
+      <details><summary>Faut-il installer quelque chose ?<span class="plus">+</span></summary><p>Non, tout fonctionne dans le navigateur, sur ordinateur comme sur tablette. Vous ouvrez un lien, c'est tout.</p></details>
+      <details><summary>Est-ce vraiment gratuit ?<span class="plus">+</span></summary><p>Oui, pour commencer. Des options avancées pourront devenir payantes à l'avenir, mais l'usage par les élèves restera gratuit.</p></details>
+      <details><summary>Puis-je récupérer mes données ?<span class="plus">+</span></summary><p>Oui. Un bouton exporte l'ensemble de vos données dans un fichier, que vous pouvez restaurer sur un autre ordinateur quand vous voulez.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section>
+  <div class="wrap">
+    <div class="cta-final reveal">
+      <h2>Prêt à faire chanter votre classe ?</h2>
+      <p>Créez votre espace enseignant en quelques minutes et lancez votre première activité cette semaine.</p>
+      <a class="btn btn-or" href="museduc7.html?prof=inscription">Créer mon espace enseignant</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span class="wm" style="font-size:1.2rem"><span class="mus">MUS</span><span class="educ">EDUC</span></span>
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+      <a href="museduc7.html?prof=inscription">Espace enseignant</a>
+      <a href="museduc7.html">L'application</a>
+      <a href="museduc7.html">Soutenir le projet</a>
+      <a href="mailto:[votre adresse de contact]">Nous contacter</a>
+    </div>
+    <span>© <span id="annee"></span> MUSEDUC</span>
+  </div>
+</footer>
+
+<script>
+  document.getElementById("annee").textContent=new Date().getFullYear();
+  // révélation douce au défilement
+  try{
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("vu"); io.unobserve(e.target); } }); },{threshold:.12});
+    document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+  }catch(e){ document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("vu"); }); }
+</script>
+</body>
+</html>
