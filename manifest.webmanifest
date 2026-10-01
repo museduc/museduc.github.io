@@ -1,6 +1,6 @@
 {
-  "name": "MUSEDUC",
-  "short_name": "MUSEDUC",
+  "name": "MusEduc",
+  "short_name": "MusEduc",
   "description": "Apprends la musique avec Maestro : leçons, exercices, jeux et évaluations.",
   "lang": "fr",
   "start_url": "museduc7.html",

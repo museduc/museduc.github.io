@@ -1,4 +1,4 @@
-/* MUSEDUC : service worker (application installable).
+/* MusEduc : service worker (application installable).
 
    Règle d'or : ne JAMAIS servir une vieille version quand le réseau répond.
    - la page, la feuille de style et le programme : RÉSEAU D'ABORD ; la copie en
@@ -54,7 +54,7 @@ self.addEventListener("fetch", function (e) {
       .then(function (m) { return m || (r.mode === "navigate" ? caches.match("museduc7.html", { ignoreSearch: true })
         .then(function (m) { return m || caches.match("museduc7", { ignoreSearch: true }); }) : null); })
       .then(function (m) {
-        return m || new Response("MUSEDUC n'est pas joignable : vérifie ta connexion.",
+        return m || new Response("MusEduc n'est pas joignable : vérifie ta connexion.",
           { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } });
       });
   }));

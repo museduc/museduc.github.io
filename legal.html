@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusEduc : informations légales</title>
+<meta name="description" content="Mentions légales, politique de confidentialité et conditions d'utilisation de MusEduc.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --encre:#16233a; --doux:#5c6b80; --bandeau:#2374b0; --marine:#1e3a63;
+    --or:#F2C94C; --or-clair:#F6DC8A; --or-texte:#8a690a;
+    --ligne:rgba(30,58,99,.14); --surface:#ffffff; --fond:#eef5fc; --teinte:rgba(242,201,76,.14);
+    --ombre-d:0 4px 16px rgba(30,58,99,.08);
+    --police:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+    --titre:"Baloo 2","Inter",system-ui,sans-serif;
+    --wm-mus:#2374b0; --wm-educ:#F2C94C;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --encre:#eaf1f8; --doux:#9fb0c4; --marine:#cfe0f2; --or-texte:#F2C94C; --ligne:rgba(255,255,255,.12);
+      --surface:#152338; --fond:#0f1b2e; --teinte:rgba(242,201,76,.12); --ombre-d:0 4px 16px rgba(0,0,0,.3);
+      --wm-mus:#5aa6e0;
+    }
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:var(--police);color:var(--encre);background:var(--fond);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  a{color:var(--bandeau);} a:hover{color:var(--marine);}
+  .wrap{max-width:860px;margin:0 auto;padding:0 18px;}
+  header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--fond) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--ligne);}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:14px;height:62px;}
+  .wm{font-family:var(--titre);font-weight:800;font-size:1.45rem;text-decoration:none;}
+  .wm .mus{color:var(--wm-mus);} .wm .educ{color:var(--wm-educ);text-shadow:0 1px 1px rgba(30,58,99,.3);}
+  .retour{font-weight:600;font-size:.92rem;text-decoration:none;}
+  .ruban{margin:28px 0 8px;padding:20px 48px;text-align:center;color:#fff;background:var(--bandeau);
+    clip-path:polygon(0 0,100% 0,calc(100% - 22px) 50%,100% 100%,0 100%,22px 50%);}
+  .ruban h1{margin:0;font-family:var(--titre);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.15;}
+  .maj{text-align:center;color:var(--doux);font-size:.88rem;margin:0 0 20px;}
+  .sommaire{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 28px;}
+  .sommaire a{padding:8px 16px;border-radius:999px;border:1px solid var(--ligne);background:var(--surface);color:var(--encre);text-decoration:none;font-weight:600;font-size:.9rem;}
+  .sommaire a:hover{border-color:var(--bandeau);color:var(--bandeau);}
+  section{background:var(--surface);border:1px solid var(--ligne);border-radius:20px;box-shadow:var(--ombre-d);padding:26px 28px;margin:0 0 22px;scroll-margin-top:80px;}
+  section h2{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-family:var(--titre);font-size:1.55rem;color:var(--marine);line-height:1.2;}
+  .med{flex:none;width:40px;height:40px;border-radius:50%;box-sizing:border-box;border:3px double var(--bandeau);
+    background:linear-gradient(145deg,var(--or-clair),var(--or));color:var(--bandeau);display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:800;}
+  h3{font-family:var(--titre);font-size:1.12rem;margin:22px 0 6px;color:var(--encre);}
+  p,li{font-size:.97rem;}
+  ul{padding-left:22px;margin:6px 0;}
+  li{margin:3px 0;}
+  .a-remplir{background:var(--teinte);border:1px dashed var(--or);border-radius:6px;padding:0 5px;font-weight:600;}
+  .encadre{background:var(--teinte);border-radius:14px;padding:12px 16px;margin:12px 0;}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.92rem;}
+  th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--ligne);}
+  th{font-family:var(--titre);color:var(--marine);font-size:.95rem;}
+  footer{padding:26px 0 40px;text-align:center;color:var(--doux);font-size:.88rem;}
+  @media(max-width:600px){ section{padding:20px 18px;} .ruban{padding:16px 34px;} table{font-size:.85rem;} th,td{padding:6px;} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <a class="wm" href="vitrine.html"><span class="mus">Mus</span><span class="educ">Educ</span></a>
+    <a class="retour" href="museduc7.html">Ouvrir l'application</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="ruban"><h1>Informations légales</h1></div>
+  <p class="maj">Dernière mise à jour : 3 octobre 2026</p>
+  <nav class="sommaire" aria-label="Sommaire">
+    <a href="#mentions">Mentions légales</a>
+    <a href="#confidentialite">Confidentialité</a>
+    <a href="#cgu">Conditions d'utilisation</a>
+    <a href="#cgv">Vente et dons</a>
+  </nav>
+
+  <!-- ===================== MENTIONS LÉGALES ===================== -->
+  <section id="mentions">
+    <h2><span class="med">1</span> Mentions légales</h2>
+    <h3>Éditeur et directeur de la publication</h3>
+    <p>MusEduc est édité par <b>Philippe Boussetta</b>, professeur d'éducation musicale, à titre personnel et non professionnel.<br>
+    Contact : <span class="a-remplir">[votre adresse de contact]</span></p>
+    <p>Conformément à l'article 6, III, 2 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN), l'éditeur, personne physique agissant à titre non professionnel, a communiqué ses éléments d'identification à l'hébergeur.</p>
+    <h3>Hébergement du site</h3>
+    <p><b>GitHub, Inc.</b> (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis.</p>
+    <h3>Hébergement des données</h3>
+    <p><b>Google Firebase</b> (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irlande, et Google LLC, États-Unis). La base de données en temps réel est située en Europe (Belgique).</p>
+    <h3>Propriété intellectuelle</h3>
+    <p>Le code, les textes, les exercices, les leçons, les illustrations originales, les sons et le graphisme de MusEduc sont la propriété de Philippe Boussetta. Toute reproduction ou réutilisation, totale ou partielle, sans autorisation écrite préalable est interdite (Code de la propriété intellectuelle, articles L111-1 et L122-4).</p>
+    <p>Les images issues de Wikimedia Commons restent la propriété de leurs auteurs et sont utilisées selon leur licence (domaine public ou licence libre), indiquée sous chaque image. Les vidéos proposées à l'écoute sont hébergées par YouTube et appartiennent à leurs ayants droit.</p>
+  </section>
+
+  <!-- ===================== CONFIDENTIALITÉ ===================== -->
+  <section id="confidentialite">
+    <h2><span class="med">2</span> Politique de confidentialité</h2>
+    <div class="encadre"><b>En bref :</b> les élèves n'ont pas de compte nominatif. Ils sont reconnus par un <b>code</b> fourni par leur professeur ; leurs noms ne sont <b>jamais</b> envoyés sur nos serveurs et restent dans le navigateur du professeur. Aucune publicité, aucun traceur publicitaire, aucune revente de données.</div>
+
+    <h3>Qui est responsable ?</h3>
+    <p>Pour les comptes enseignants et le fonctionnement général du service, le responsable du traitement est l'éditeur (voir les mentions légales).</p>
+    <p>Pour les données des élèves, c'est le professeur, dans le cadre de son enseignement, qui décide d'utiliser MusEduc avec sa classe : il agit (avec son établissement) comme responsable de ce traitement, et MusEduc comme <b>sous-traitant</b> au sens de l'article 28 du RGPD. Il lui revient d'informer les élèves et leurs familles et, si son établissement le demande, de signaler l'outil au délégué à la protection des données (DPO) de l'académie.</p>
+
+    <h3>Quelles données ?</h3>
+    <table>
+      <tr><th>Qui</th><th>Données</th><th>Pourquoi</th></tr>
+      <tr><td><b>Professeur</b></td><td>adresse e-mail, nom affiché, mot de passe (géré et chiffré par Firebase Authentication), classes, réglages, leçons et questions créées</td><td>créer et gérer son compte et ses classes</td></tr>
+      <tr><td><b>Élève avec un code</b></td><td>code élève, mot secret (seule une empreinte est enregistrée, jamais le mot lui-même), progression, points, badges, réponses et notes des exercices et évaluations, travaux rendus (temps passé, nombre d'essais, sorties de page), votes en classe, défis, observations « travail en classe » saisies par le professeur, enregistrements de chant déposés par l'élève</td><td>faire travailler l'élève, permettre au professeur de suivre et d'évaluer son travail</td></tr>
+      <tr><td><b>Pendant une évaluation</b></td><td>journal de passation : absences de la page chronométrées, copier-coller, tentatives de capture ou de partage d'écran</td><td>aider le professeur à apprécier les conditions de passation ; ce journal n'entraîne aucune sanction automatique</td></tr>
+      <tr><td><b>Jeux en direct</b></td><td>présence en ligne (signal bref), prénom ou pseudonyme facultatif le temps d'une partie</td><td>faire fonctionner les jeux de classe ; ces données sont effacées à la fin de la partie</td></tr>
+      <tr><td><b>Élève sans code</b></td><td>progression enregistrée uniquement sur l'appareil</td><td>s'entraîner librement ; rien n'est envoyé sur nos serveurs</td></tr>
+    </table>
+    <p>Les <b>noms et prénoms des élèves</b> saisis par le professeur restent dans le stockage local de son navigateur (et dans les sauvegardes qu'il télécharge lui-même) : ils ne sont jamais envoyés sur nos serveurs.</p>
+
+    <h3>Sur quelle base ?</h3>
+    <ul>
+      <li>Compte enseignant : l'exécution des présentes conditions d'utilisation (article 6.1.b du RGPD).</li>
+      <li>Données des élèves : la mission d'enseignement du professeur et de son établissement (article 6.1.e du RGPD).</li>
+      <li>Sécurité et bon fonctionnement du service : l'intérêt légitime de l'éditeur (article 6.1.f du RGPD).</li>
+    </ul>
+
+    <h3>Qui y a accès ?</h3>
+    <p>Le professeur voit les données de ses propres classes, et seulement elles. L'élève voit ses propres résultats. L'éditeur n'accède aux données que pour assurer le fonctionnement et la sécurité du service. Les données ne sont ni vendues, ni louées, ni cédées.</p>
+    <p>Prestataires techniques : Google Firebase (stockage des données et authentification), Google Apps Script (solution de secours du jeu multijoueur, utilisée seulement si Firebase est indisponible) et GitHub (hébergement des pages). Firebase peut entraîner des transferts vers les États-Unis, encadrés par le cadre de protection des données UE-États-Unis (Data Privacy Framework) et les clauses contractuelles types de la Commission européenne.</p>
+
+    <h3>Combien de temps ?</h3>
+    <ul>
+      <li>Les données d'un compte enseignant et de ses classes sont conservées tant que le compte existe. Le bouton <b>« Supprimer mon compte professeur »</b> (Paramètres) efface définitivement le compte, les classes, les codes élèves, les progressions et les notes.</li>
+      <li>Le professeur peut à tout moment réinitialiser une classe ou un élève (progression, notes, travaux, enregistrements, journal de passation).</li>
+      <li>La présence en ligne et les données des parties en direct sont effacées à la fin de la session ou de la partie.</li>
+    </ul>
+
+    <h3>Cookies et stockage local</h3>
+    <p>MusEduc n'utilise <b>aucun cookie publicitaire ni outil de mesure d'audience</b>. Le stockage local du navigateur sert uniquement au fonctionnement de l'application (progression, réglages, noms des élèves chez le professeur) : il ne nécessite pas de consentement.</p>
+    <p>Certaines ressources sont chargées depuis des services tiers, qui reçoivent alors l'adresse IP de l'appareil : polices Google Fonts, icônes (jsDelivr), vidéos YouTube en mode de confidentialité renforcée (youtube-nocookie.com), images de Wikimedia Commons. Les boutons de don ouvrent les sites de PayPal et Buy Me a Coffee, qui appliquent leur propre politique.</p>
+
+    <h3>Sécurité</h3>
+    <p>Les échanges sont chiffrés (HTTPS). L'accès aux données est limité par des règles de sécurité appliquées par le serveur (Firebase), qui réservent les données de chaque classe à son professeur et à ses élèves.</p>
+
+    <h3>Vos droits</h3>
+    <p>Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de vos données. Pour un élève, la demande peut être faite par lui-même ou par ses représentants légaux, de préférence auprès de son professeur, qui gère ses données ; elle peut aussi être adressée à : <span class="a-remplir">[votre adresse de contact]</span>.</p>
+    <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la <b>CNIL</b> (www.cnil.fr).</p>
+  </section>
+
+  <!-- ===================== CGU ===================== -->
+  <section id="cgu">
+    <h2><span class="med">3</span> Conditions générales d'utilisation</h2>
+    <h3>1. Objet</h3>
+    <p>MusEduc est une application d'éducation musicale destinée aux collégiens et à leurs professeurs : leçons, exercices, jeux, cours interactifs, outils de suivi de classe. Les présentes conditions encadrent son utilisation. Utiliser l'application, ou créer un compte enseignant, vaut acceptation de ces conditions.</p>
+    <h3>2. Accès au service</h3>
+    <p>L'application est aujourd'hui gratuite et sans publicité. Ses fonctionnalités peuvent évoluer ; si des options payantes étaient proposées un jour, elles seraient clairement signalées et ne s'appliqueraient qu'après acceptation de conditions de vente dédiées. Le service est fourni sans garantie de disponibilité permanente : il peut être interrompu pour maintenance ou en cas de panne d'un prestataire.</p>
+    <h3>3. Compte enseignant</h3>
+    <p>Le professeur crée son compte avec une adresse e-mail valide et un mot de passe qu'il garde confidentiel. Il est responsable de l'utilisation de son compte. Il peut le supprimer à tout moment depuis les Paramètres.</p>
+    <h3>4. Utilisation avec des élèves</h3>
+    <ul>
+      <li>Le professeur informe ses élèves et leurs familles de l'usage de MusEduc, de la nature des données traitées (voir la politique de confidentialité) et, en évaluation, de l'existence du journal de passation.</li>
+      <li>Il distribue les codes élèves et veille à ce qu'ils restent personnels.</li>
+      <li>Il ne saisit dans les champs libres (noms de classe, commentaires, appréciations, leçons) aucune donnée sensible ni information inutile sur un élève.</li>
+      <li>Le journal de passation est une aide à l'appréciation du professeur : il ne constitue pas, à lui seul, la preuve d'une fraude.</li>
+    </ul>
+    <h3>5. Comportement des utilisateurs</h3>
+    <p>Il est interdit de détourner l'application de son usage pédagogique, de tenter d'accéder aux données d'autrui, de perturber le service, ou de publier (votes, leçons, questions, enregistrements) des contenus illicites, injurieux ou portant atteinte aux droits d'autrui.</p>
+    <h3>6. Contenus créés par les professeurs</h3>
+    <p>Le professeur reste propriétaire des leçons, questions et morceaux qu'il dépose. Il garantit disposer des droits nécessaires (notamment pour les morceaux et karaokés déposés pour le chant) et autorise MusEduc à les stocker et à les afficher à ses classes, pour les seuls besoins du service.</p>
+    <h3>7. Propriété intellectuelle</h3>
+    <p>Voir les mentions légales : le contenu de MusEduc est protégé ; son utilisation en ligne, à l'adresse officielle, est autorisée pour apprendre et enseigner, mais toute copie, reproduction ou réutilisation est interdite sans autorisation écrite.</p>
+    <h3>8. Responsabilité</h3>
+    <p>L'éditeur apporte le plus grand soin au contenu pédagogique et au fonctionnement de l'application, sans pouvoir garantir l'absence d'erreur. Les notes et indicateurs produits par MusEduc sont des aides pour le professeur, qui reste seul juge de l'évaluation de ses élèves. L'éditeur ne saurait être tenu responsable d'une perte de données due à l'appareil de l'utilisateur (stockage local effacé, par exemple) : le professeur est invité à utiliser la sauvegarde proposée dans les Paramètres.</p>
+    <h3>9. Modification des conditions</h3>
+    <p>Ces conditions peuvent être modifiées pour suivre l'évolution du service ou de la réglementation. La date de dernière mise à jour figure en haut de cette page.</p>
+    <h3>10. Droit applicable</h3>
+    <p>Les présentes conditions sont soumises au droit français. En cas de litige, une solution amiable sera recherchée avant toute action ; à défaut, les tribunaux français seront compétents.</p>
+  </section>
+
+  <!-- ===================== VENTE / DONS ===================== -->
+  <section id="cgv">
+    <h2><span class="med">4</span> Vente et dons</h2>
+    <p>MusEduc ne vend aujourd'hui <b>aucun produit ni service</b> : il n'existe donc pas de conditions générales de vente. Si des options payantes sont proposées un jour, des conditions générales de vente seront publiées ici avant leur mise en vente.</p>
+    <p>Les <b>dons</b> proposés sur la page « Soutenir MusEduc » sont volontaires et sans contrepartie : ils ne donnent accès à aucune fonctionnalité supplémentaire. Ils sont réalisés entièrement sur les sites de PayPal ou de Buy Me a Coffee, selon leurs propres conditions ; MusEduc ne voit ni ne conserve aucune donnée bancaire.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">© <span id="annee"></span> MusEduc · <a href="vitrine.html">Découvrir MusEduc</a> · <a href="museduc7.html">L'application</a></div>
+</footer>
+<script>document.getElementById("annee").textContent=new Date().getFullYear();</script>
+</body>
+</html>
