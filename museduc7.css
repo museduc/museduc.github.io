@@ -4929,8 +4929,8 @@
   /* pointe du bas : deux triangles à la couleur de la carte (pas de clip-path, qui
      sautait au survol sous Chrome une fois sur deux) */
   .lx-cov::after{content:"";position:absolute;z-index:4;left:0;right:0;bottom:-1px;height:17px;pointer-events:none;
-    background:linear-gradient(to bottom right,transparent 49%,var(--surface) 51%) left/50.2% 100% no-repeat,
-      linear-gradient(to bottom left,transparent 49%,var(--surface) 51%) right/50.2% 100% no-repeat}
+    background:linear-gradient(to bottom right,transparent 49%,var(--surface) 51%) left/51% 100% no-repeat,
+      linear-gradient(to bottom left,transparent 49%,var(--surface) 51%) right/51% 100% no-repeat}
   .lx-neuve .lx-cov::after{display:none}
   /* médaille or au brocart bleu, icône et double bordure à la couleur du domaine */
   .lx-med{width:70px;height:70px;border-radius:50%;box-sizing:border-box;border:4px double var(--d,var(--bandeau));
@@ -6078,3 +6078,104 @@
   .pc-txt small{font-size:.86rem;color:var(--encre-doux)}
   .pc-btn{flex:none}
   .don-legal{text-align:center;font-size:.84rem;margin:18px 0 12px}
+  /* ===== Classe de collègues (04/10/2026) ===== */
+  .mc-coll{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:2px 9px;border-radius:999px;background:var(--teinte-douce);color:var(--or-texte);font-size:.72rem;font-weight:800}
+  .mc-coll i{color:inherit!important;text-shadow:none!important}
+  .mc-mini.mc-coll-on{background:var(--or);color:#1e3a63;border-color:var(--or)}
+  .mc-mini.mc-coll-on i{color:#1e3a63!important}
+  /* ===== Accueil enseignant : vignettes à couverture colorée (04/10/2026) ===== */
+  .ap-tuiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:14px}
+  .ap-tuile{display:flex;flex-direction:column;width:100%;padding:0;text-align:left;cursor:pointer;background:var(--surface);border:1px solid var(--ligne);will-change:transform;
+    border-radius:var(--rayon);overflow:hidden;box-shadow:var(--ombre);font:inherit;color:var(--encre);transition:transform var(--t-rapide),box-shadow var(--t-rapide)}
+  .ap-tuile:hover{transform:translateY(-4px);box-shadow:0 0 0 3px var(--or),var(--ombre-forte)}
+  .ap-tuile:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+  .ap-cov{position:relative;height:92px;display:flex;align-items:center;justify-content:center;overflow:hidden;
+    background:radial-gradient(circle at 90% 0%,rgba(255,255,255,.16),transparent 62%),var(--d,var(--bandeau));
+    border-radius:calc(var(--rayon) - 1px) calc(var(--rayon) - 1px) 0 0}
+  .ap-cov::after{content:"";position:absolute;z-index:4;left:0;right:0;bottom:-1px;height:15px;pointer-events:none;
+    background:linear-gradient(to bottom right,transparent 49%,var(--surface) 51%) left/51% 100% no-repeat,
+      linear-gradient(to bottom left,transparent 49%,var(--surface) 51%) right/51% 100% no-repeat}
+  .ap-cov .lx-med{position:relative;z-index:2;width:58px;height:58px;font-size:1.7rem;margin-bottom:9px}
+  .ap-cov .lx-emb{font-size:104px;right:-12px;top:-14px}
+  .ap-tuile:hover .lx-med{transform:scale(1.06)}
+  .ap-tuile-b{display:flex;flex-direction:column;gap:4px;padding:9px 14px 14px}
+  .ap-tuile-b b{font-family:var(--police-titre);font-size:1.02rem;line-height:1.2;color:var(--encre)}
+  .ap-tuile-b small{font-size:.78rem;line-height:1.35;color:var(--encre-doux)}
+  @media(max-width:640px){
+    .ap-tuiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .ap-cov{height:70px}
+    .ap-cov .lx-med{width:48px;height:48px;font-size:1.4rem;margin-bottom:6px}
+    .ap-cov .lx-emb{font-size:88px}
+    .ap-tuile-b{padding:8px 11px 11px}
+    .ap-tuile-b b{font-size:.93rem}
+    .ap-tuile-b small{display:none}
+  }
+  /* ===== Pied du menu : signature sobre (04/10/2026) ===== */
+  .signature{display:flex;flex-direction:column;align-items:center;gap:7px;line-height:1.3}
+  .sig-auteur{font-weight:600}
+  .sig-liens{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 8px}
+  .sig-liens a{color:inherit;text-decoration:none;border-bottom:1px solid transparent;transition:color var(--t-rapide),border-color var(--t-rapide)}
+  .sig-liens a:hover{color:#fff;border-bottom-color:currentColor}
+  .sig-liens span{opacity:.5}
+  .signature .signature-v{margin-top:0;font-size:.66rem;letter-spacing:.3px;opacity:.6}
+  /* Accueil enseignant : chaque onglet porte la couleur de ses vignettes */
+  #apNav_suivi{--d:var(--dom-lire)} #apNav_contenus{--d:var(--dom-theorie)} #apNav_classe{--d:var(--dom-culture)}
+  #apPanel_suivi{--d:var(--dom-lire)} #apPanel_contenus{--d:var(--dom-theorie)} #apPanel_classe{--d:var(--dom-culture)}
+  .ap-tabs .ev-onglets button i{color:var(--d)!important}
+  .ap-tabs .ev-onglets button.on{background:var(--d);color:#fff}
+  .ap-tabs .ev-onglets button.on i{color:#fff!important}
+  .ap-panel .ap-panel-t,.ap-panel .ap-panel-t i{color:var(--d)}
+  /* ===== Comptes apprenant et administration (04/10/2026) ===== */
+  .ap-auth-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ap-auth-2 input{width:100%;box-sizing:border-box}
+  .ap-case{display:flex!important;align-items:flex-start;gap:8px;margin-top:10px;font-weight:500!important;font-size:.88rem;line-height:1.35;cursor:pointer}
+  .ap-case input{width:auto!important;margin:2px 0 0;flex:none;accent-color:var(--laiton)}
+  .ap-auth-note{margin:12px 0 0;font-size:.82rem;color:var(--encre-doux)}
+  .ac-admin{border-color:var(--or)!important}
+  .ac-admin i{color:var(--or-texte)!important}
+  .vue-admin{position:fixed;z-index:9000;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+    padding:8px 8px 8px 16px;border-radius:999px;background:#1e3a63;color:#fff;font-weight:700;font-size:.86rem;box-shadow:0 8px 24px rgba(16,40,70,.35)}
+  .vue-admin i{color:var(--or)!important}
+  .vue-admin button{border:none;border-radius:999px;padding:6px 12px;background:var(--or);color:#1e3a63;font:inherit;font-weight:800;cursor:pointer}
+  @media(max-width:900px){.vue-admin{bottom:84px}}
+  .adm{display:flex;flex-direction:column;gap:16px}
+  .adm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px}
+  .adm-kpi{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border-radius:var(--rayon);background:var(--surface);border:1px solid var(--ligne);box-shadow:var(--ombre-douce)}
+  .adm-kpi i{font-size:1.3rem;color:var(--laiton)}
+  .adm-kpi b{font-family:var(--police-titre);font-size:1.7rem;line-height:1.1;color:var(--encre)}
+  .adm-kpi span{font-size:.8rem;color:var(--encre-doux)}
+  .adm-duo{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+  .adm-carte{margin:0}
+  .adm-carte h3{margin:0 0 12px;display:flex;align-items:center;gap:8px;font-family:var(--police-titre);color:var(--laiton)}
+  .adm-aide{margin:0 0 10px;font-size:.84rem;color:var(--encre-doux)}
+  .adm-barres{display:flex;align-items:flex-end;gap:8px;height:150px}
+  .adm-barre{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px}
+  .adm-barre span{width:100%;min-height:3px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--or-clair),var(--or))}
+  .adm-barre b{font-size:.8rem;color:var(--encre)}
+  .adm-barre small{font-size:.66rem;color:var(--encre-doux);white-space:nowrap}
+  .adm-vues{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .adm-vue{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--ligne);background:var(--surface);font:inherit;font-weight:700;color:var(--encre);cursor:pointer;text-align:left}
+  .adm-vue:hover{border-color:var(--laiton)}
+  .adm-vue.on{background:var(--laiton);border-color:var(--laiton);color:#fff}
+  .adm-vue.on i{color:#fff!important}
+  .adm-outils{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .adm-table{display:flex;flex-direction:column}
+  .adm-ligne{display:grid;grid-template-columns:minmax(0,2.4fr) 130px 80px 80px minmax(0,1.3fr) 118px;gap:10px;align-items:center;padding:10px 6px;border-top:1px solid var(--ligne);font-size:.86rem}
+  .adm-tete{border-top:none;font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--encre-doux)}
+  .adm-qui{display:flex;flex-direction:column;min-width:0}
+  .adm-qui b,.adm-qui small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .adm-qui small{color:var(--encre-doux)}
+  .adm-badge{color:var(--or-texte)!important}
+  .adm-ligne select{width:100%;padding:5px 6px;border-radius:8px;border:1px solid var(--ligne);background:var(--surface);color:var(--encre);font:inherit}
+  .adm-ligne.susp{opacity:.55}
+  .adm-actions{display:flex;gap:6px;justify-content:flex-end}
+  .adm-actions .mc-mini.on{background:var(--or);border-color:var(--or)}
+  .adm-actions .mc-mini.sup:hover{color:var(--faux)}
+  @media(max-width:820px){
+    .adm-duo{grid-template-columns:1fr}
+    .adm-tete{display:none}
+    .adm-ligne{grid-template-columns:1fr 1fr;row-gap:6px}
+    .adm-qui{grid-column:1/-1}
+    .adm-actions{justify-content:flex-start}
+  }
+  .pf-code.pf-nom{letter-spacing:0;text-transform:none}

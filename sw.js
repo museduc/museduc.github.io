@@ -7,7 +7,7 @@
    - le reste (Firebase, polices, icônes Phosphor, musiques et sons en streaming)
      n'est pas intercepté : le navigateur s'en charge comme avant.
    Changer CACHE vide les anciennes copies à la prochaine visite. */
-const CACHE = "museduc-v3";
+const CACHE = "museduc-v4";   /* v4 : nouvelles icônes (le M en ruban), on vide les anciennes */
 
 self.addEventListener("install", function () { self.skipWaiting(); });
 self.addEventListener("activate", function (e) {

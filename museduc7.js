@@ -11,15 +11,17 @@ const LOGO_BADGE="images/img-001.webp";
 
 /* ---------- Données ---------- */
 const GAMME=["Do","Ré","Mi","Fa","Sol","La","Si"];
-/* Avatars du professeur (cartoon) : intégrés en base64 pour fonctionner hors-ligne */
-const IMG_EXERCICE="images/img-002.webp";
-const IMG_SAVAIS="images/img-003.gif";
-const IMG_PROF="images/img-004.webp";
-const IMG_AU_REVOIR="images/img-005.webp";
-const IMG_DEFI="images/img-003.gif";
-const IMG_MODE2J="images/img-006.webp";
-const IMG_ENCOURAGE="images/img-007.webp";
-const IMG_LECON="images/img-008.webp";const IMG_LOGO="images/img-009.webp";const IMG_SALUT="images/img-010.webp";const IMG_APPLAUDIT="images/img-011.webp";const IMG_PASMAL="images/img-012.webp";const IMG_DECU="images/img-013.webp";
+/* Maestro : uniquement les dessins « cartoon » actuels (les anciennes versions en pied
+   ont été retirées le 04/10/2026). Chaque réaction pointe vers l'un d'eux. */
+const IMG_LECON="images/img-008.webp";        /* Maestro lit la partition */
+const IMG_LOGO="images/img-009.webp";         /* médaillon */
+const IMG_FELICITE="images/maestro-felicitation.webp";
+const IMG_EXERCICE=IMG_LECON;                 /* en-tête des exercices */
+const IMG_ENCOURAGE=IMG_FELICITE;
+const IMG_APPLAUDIT=IMG_FELICITE;
+const IMG_PASMAL="images/img-014.webp";       /* bonjour, sourire */
+const IMG_DECU=IMG_LECON;                     /* on relit la leçon ensemble */
+const IMG_MODE2J="images/img-014.webp";       /* modes à deux joueurs */
 const IMG_BONJOUR="images/img-014.webp";
 const IMG_CALMAR="images/img-015.webp";
 const IMG_VN={
@@ -474,6 +476,8 @@ function chargerProfil(){
   return p;
 }
 function sauverProfil(p){
+  p.majLocale=Date.now();
+  try{ if(typeof apprenantPlanifierSync==="function")apprenantPlanifierSync(); }catch(e){}
   const s=JSON.stringify(p);
   try{localStorage.setItem(STORE_KEY,s);}catch(e){memoireSecours=s;}
 }
@@ -6375,7 +6379,7 @@ function construireMenu(){
     h+=`</div>`;
   });
   h+=`<button type="button" class="menu-partage" onclick="partagerMusEduc()"><i class="ph ph-share-network"></i> Partager MusEduc</button>`;
-  h+=`<div class="signature">Conçu par <b>Philippe Boussetta</b><br><a class="signature-legal" href="legal.html" target="_blank" rel="noopener">Informations légales</a><br><span class="signature-v" title="Version de l'application. Si elle ne change pas après une mise en ligne, la page vient du cache : rechargez avec Ctrl+Maj+R.">version ${VERSION_APP}</span></div>`;
+  h+=`<div class="signature"><div class="sig-auteur">© ${new Date().getFullYear()} MusEduc · Philippe Boussetta</div><nav class="sig-liens"><a href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a><span aria-hidden="true">·</span><a href="legal.html#confidentialite" target="_blank" rel="noopener">Confidentialité</a></nav><div class="signature-v" title="Version de l'application. Si elle ne change pas après une mise en ligne, la page vient du cache : rechargez avec Ctrl+Maj+R.">Version ${VERSION_APP}</div></div>`;
   document.getElementById("menu").innerHTML=h;
   menuActif(_menuActifId);
   majEnteteProfil();
@@ -6896,7 +6900,7 @@ function finSurvie(raison){
           <div class="sv-fin-n"><b>${sommet}</b><span>étage${sommet>1?"s":""}</span></div>
           <div class="sv-fin-titre">${titre}</div>
         </div>
-        <img class="perso" src="${record&&sommet>0?IMG_EXERCICE:IMG_DECU}" alt="">
+        <img class="perso" src="${record&&sommet>0?IMG_FELICITE:IMG_DECU}" alt="">
       </div>
       <div class="sv-fin-raison">${raisonTxt}</div>
       <div class="sv-histo">
@@ -7646,7 +7650,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-03n";
+const VERSION_APP="2026-10-04m";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -7753,7 +7757,9 @@ function ecranProgression(){
      l'application). Sans code : invitation à rejoindre sa classe. */
   const ident=profil.eleveCode
     ? `<div class="pf-code-l"><span class="pf-code" title="Mon code élève">${escapeHtml(profil.eleveCode)}</span>${profil.classeNom?`<span class="pf-classe">${escapeHtml(profil.classeNom)}</span>`:""}</div>`
-    : `<div class="pf-code-l"><span class="pf-code pf-sans">Sans code élève</span><button class="pf-rejoindre" onclick="ecranMaClasse()"><i class="ph ph-identification-card"></i> J'ai un code</button></div>`;
+    : (estApprenant()
+      ? `<div class="pf-code-l"><span class="pf-code pf-nom">${escapeHtml(nomCompte()||"Mon compte")}</span><span class="pf-classe">Apprenant</span></div>`
+      : `<div class="pf-code-l"><span class="pf-code pf-sans">Sans code élève</span><button class="pf-rejoindre" onclick="ecranMaClasse()"><i class="ph ph-identification-card"></i> J'ai un code</button></div>`);
   let h=`<div class="pf">
     <div class="pf-ruban">
       <div class="pf-id">
@@ -9025,8 +9031,8 @@ function jeuEtapeHTML(n,titre,contenu){
 }
 function ecranJeuHost(){
   fermerMenu();masquerInterfaceNormale();majRetour(accueil,"Accueil");
-  /* réservé au professeur : un élève ne doit pas pouvoir ouvrir une partie de classe */
-  if(typeof etatCompte==="function" && etatCompte().type!=="prof"){
+  /* réservé au professeur (ou à un collègue) : un élève ne doit pas pouvoir ouvrir une partie de classe */
+  if(typeof peutAnimer==="function" && !peutAnimer()){
     document.getElementById("titre").innerHTML='<i class="ph ph-lock"></i> Réservé au professeur';
     document.getElementById("intro").textContent="";
     document.getElementById("zone").innerHTML=`<div class="accueil" style="max-width:520px"><div class="ex">
@@ -10162,7 +10168,7 @@ function progNotesHTML(){
       +'</details>';
   };
   h+='<div class="pf-dets">'
-    +menu("dem",""," Évaluations demandées".trim(),"données par ton professeur · comptent dans la moyenne",comptees,"Aucune évaluation demandée pour l\'instant.")
+    +(estApprenant()&&!comptees.length?"":menu("dem",""," Évaluations demandées".trim(),"données par ton professeur · comptent dans la moyenne",comptees,"Aucune évaluation demandée pour l\'instant."))
     +menu("bon"," bonus","Évaluations bonus","passées librement · donnent une note bonus à part",libres,"Aucune évaluation bonus. Termine l\'entraînement d\'une leçon pour en passer une.")
     +'</div>';
   /* Bonus en réserve : un de niveau et un de badge, cumulables entre eux. */
@@ -10571,7 +10577,36 @@ function tenterPleinEcranAuPremierClic(){
    ===================================================================== */
 function fbStore(){ if(!fbPret()||typeof firebase.firestore!=="function")return null; try{return firebase.firestore();}catch(e){return null;} }
 function fbAuth(){ if(!fbPret()||typeof firebase.auth!=="function")return null; try{return firebase.auth();}catch(e){return null;} }
-function estProf(u){ return !!(u && !u.isAnonymous && u.email); }
+/* ===== Comptes : enseignant, apprenant, administrateur (04/10/2026) =====
+   Avant, toute adresse e-mail était un professeur. La fiche comptes/{uid} porte
+   désormais le rôle : "prof" (par défaut, y compris pour les anciens comptes
+   sans fiche) ou "apprenant" (compte personnel, sans professeur, avec prénom
+   et nom). L'administrateur est désigné par un document admins/{uid}, que seuls
+   l'administrateur et la console Firebase peuvent écrire. Le rôle est gardé en
+   local : le premier affichage est juste avant même la réponse du serveur. */
+const ROLE_CLE="museduc-role", VUE_CLE="museduc-vue";
+let _role=null; try{ _role=JSON.parse(localStorage.getItem(ROLE_CLE)||"null"); }catch(e){ _role=null; }
+let _vueAdmin=""; try{ _vueAdmin=sessionStorage.getItem(VUE_CLE)||""; }catch(e){}
+let _inscriptionEnCours=false, _apSyncT=null, _apActifEnvoye=0;
+function roleSauver(){ try{ localStorage.setItem(ROLE_CLE,JSON.stringify(_role)); }catch(e){} }
+/* rôle réel d'un compte e-mail ("" pour un élève anonyme ou personne) */
+function roleDe(u){
+  if(!u||u.isAnonymous||!u.email)return "";
+  return (_role&&_role.uid===u.uid&&_role.role)||"prof";
+}
+function estAdmin(){
+  try{ const a=fbAuth(), u=a&&a.currentUser; return !!(u&&!u.isAnonymous&&_role&&_role.uid===u.uid&&_role.admin); }catch(e){ return false; }
+}
+/* L'administrateur peut regarder l'application comme un apprenant ou un visiteur. */
+function roleEffectif(u){
+  const r=roleDe(u);
+  if(r&&estAdmin()&&(_vueAdmin==="apprenant"||_vueAdmin==="visiteur"))return _vueAdmin;
+  return r;
+}
+function estProf(u){ return roleEffectif(u)==="prof"; }
+function estApprenant(){ try{ const a=fbAuth(); return roleEffectif(a&&a.currentUser)==="apprenant"; }catch(e){ return false; } }
+/* compte autorisé à écrire la progression d'un code élève : anonyme ou apprenant */
+function eleveOK(u){ return !!(u&&(u.isAnonymous||roleDe(u)==="apprenant")); }
 function svcIndispo(msg){ return `<div class="ex"><p><i class="ph ph-warning"></i> ${msg||"Le service en ligne n'est pas disponible."} <br><span style="color:var(--encre-doux);font-size:.9rem">Vérifie ta connexion Internet. Le professeur doit avoir activé <b>Authentication</b> et <b>Firestore</b> dans la console Firebase.</span></p></div>`; }
 function echapH(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
@@ -10647,7 +10682,10 @@ function connecterProf(){
   const mdp=((document.getElementById("pcMdp")||{}).value||"");
   const er=document.getElementById("pcErr"); if(er)er.style.display="none";
   if(!mail||!mdp){ authErr("pcErr",{code:"invalid-email"}); return; }
-  a.signInWithEmailAndPassword(mail,mdp).then(()=>{ toast("Connecté !"); accueil(); }).catch(e=>authErr("pcErr",e));
+  a.signInWithEmailAndPassword(mail,mdp).then(function(cr){
+    return chargerRole(cr.user).then(function(){ return roleDe(cr.user)==="apprenant"?apprenantRestaurer(cr.user):""; });
+  }).then(()=>{ if(_role&&_role.suspendu)return; construireMenu(); majIndicateurCompte();
+    toast(nomCompte()&&roleDe(fbAuth().currentUser)==="apprenant"?"Bon retour, "+capNom(_role.prenom||"")+" !":"Connecté !"); accueil(); }).catch(e=>authErr("pcErr",e));
 }
 function inscrireProf(){
   const a=fbAuth(), s=fbStore(); if(!a||!s)return;
@@ -10657,11 +10695,15 @@ function inscrireProf(){
   const er=document.getElementById("piErr"); if(er)er.style.display="none";
   if(!nom){ authErr("piErr",{}); document.getElementById("piErr").textContent="Indique ton nom affiché."; document.getElementById("piErr").style.display="block"; return; }
   if(!mail||mdp.length<6){ authErr("piErr",{code:"weak-password"}); return; }
+  _inscriptionEnCours=true;
   a.createUserWithEmailAndPassword(mail,mdp).then(cr=>{
-    return s.collection("teachers").doc(cr.user.uid).set({email:mail,nom:nom,cree:Date.now()}).catch(()=>{});
-  }).then(()=>{ toast("Compte créé, bienvenue !"); accueil(); }).catch(e=>authErr("piErr",e));
+    _role={uid:cr.user.uid,role:"prof",admin:false,suspendu:false,prenom:"",nom:nom}; roleSauver();
+    return Promise.all([
+      s.collection("teachers").doc(cr.user.uid).set({email:mail,nom:nom,cree:Date.now()}).catch(()=>{}),
+      s.collection("comptes").doc(cr.user.uid).set({role:"prof",nom:nom,prenom:"",email:mail,cree:Date.now(),vu:Date.now()}).catch(()=>{})]);
+  }).then(()=>{ _inscriptionEnCours=false; toast("Compte créé, bienvenue !"); accueil(); }).catch(e=>{ _inscriptionEnCours=false; authErr("piErr",e); });
 }
-function deconnecterProf(){ const a=fbAuth(); if(a)a.signOut().then(()=>{ toast("Déconnecté."); ecranProf(); }); }
+function deconnecterProf(){ const a=fbAuth(); if(a)a.signOut().then(()=>{ _vueAdmin=""; try{ sessionStorage.removeItem(VUE_CLE); }catch(e){} majVueAdminBandeau(); construireMenu(); toast("Déconnecté."); ecranProf(); }); }
 
 /* ---------- Tableau de bord professeur ---------- */
 function fmtTemps(min){ min=Math.round(min||0); if(min<60)return min+" min"; const h=Math.floor(min/60); return h+" h "+(min%60)+" min"; }
@@ -10989,6 +11031,7 @@ async function supprimerCompteProf(){
   }).then(function(){ return s.collection("eleveCodes").where("ownerUid","==",u.uid).get(); })
     .then(function(snap){ return Promise.all(snap.docs.map(function(d){return d.ref.delete().catch(function(){});})); })
     .then(function(){ return s.collection("teachers").doc(u.uid).delete().catch(function(){}); })
+    .then(function(){ return s.collection("comptes").doc(u.uid).delete().catch(function(){}); })
     .then(function(){ return u.delete(); })
     .then(function(){ try{localStorage.removeItem(LABELS_KEY);}catch(e){} _labelsMem=null;
                       toast("Compte supprimé."); accueil(); })
@@ -11279,8 +11322,8 @@ function rattacherUidEleve(){
       .catch(function(){return false;});
   };
   const u=a.currentUser;
-  if(u&&u.isAnonymous)return ecrire(u);
-  if(estProf(u))return Promise.resolve(false);
+  if(eleveOK(u))return ecrire(u);
+  if(u&&u.email)return Promise.resolve(false);
   return a.signInAnonymously().then(function(cr){return ecrire(cr.user);}).catch(function(){return false;});
 }
 
@@ -11289,8 +11332,8 @@ function restaurerEleve(){
   if(!profil.eleveCode||!profil.classeId){_restaureFait=true;return Promise.resolve(false);}
   const a=fbAuth(), s=fbStore(); if(!a||!s)return Promise.resolve(false);
   const u=a.currentUser;
-  const pret=(u&&u.isAnonymous)?Promise.resolve(u)
-            :(estProf(u)?Promise.resolve(null):a.signInAnonymously().then(cr=>cr.user));
+  const pret=eleveOK(u)?Promise.resolve(u)
+            :((u&&u.email)?Promise.resolve(null):a.signInAnonymously().then(cr=>cr.user));
   return pret.then(function(usr){
     if(!usr){_restaureFait=true;return "stop";}          /* prof : pas de progression élève */
     /* rattachement avant toute lecture ; s'il échoue on tente quand même la suite,
@@ -11461,8 +11504,8 @@ function syncEleve(){
     }
     return ok; };
   const u=a.currentUser; let p;
-  if(u&&u.isAnonymous)p=ecrire(u.uid).then(ecrireInvites);
-  else if(u&&estProf(u))p=Promise.resolve(false);
+  if(eleveOK(u))p=ecrire(u.uid).then(ecrireInvites);
+  else if(u&&u.email)p=Promise.resolve(false);
   else p=a.signInAnonymously().then(cr=>ecrire(cr.user.uid)).then(ecrireInvites).catch(()=>{ syncNoter(false); return false; });
   return p.finally(()=>{_syncEnCours=false;});
 }
@@ -11525,7 +11568,7 @@ function rejoindreClasse(){
   if(!code){dire("Entre ton code.");return;}
   if(normSecret(secret).length<4){dire("Choisis un mot secret d'au moins 4 lettres (et retiens-le bien).");return;}
   const a=fbAuth(), s=fbStore(); if(!a||!s){dire("Service indisponible.");return;}
-  if(estProf(a.currentUser)){dire("Tu es connecté comme professeur sur cet appareil. Déconnecte-toi de l'espace professeur d'abord.");return;}
+  if(a.currentUser&&a.currentUser.email&&!eleveOK(a.currentUser)){dire("Tu es connecté comme professeur sur cet appareil. Déconnecte-toi de l'espace professeur d'abord.");return;}
   if(err)err.style.display="none";
   authElevePret().then(function(){
     return s.collection("eleveCodes").doc(code).get();
@@ -11583,6 +11626,11 @@ async function quitterClasse(){
     /* le battement de présence appartient au code quitté : on l'arrête, sinon
        l'élève resterait affiché « en ligne » chez le professeur. */
     try{ if(typeof presenceArreter==="function")presenceArreter(); }catch(e){}
+    if(estApprenant()){
+      profil.eleveCode=""; profil.classeId=""; profil.classeNom=""; profil.codeProprietaire=""; profil.elevePreuve="";
+      sauverProfil(profil); apprenantSync(); construireMenu(); majIndicateurCompte();
+      toast("Tu as quitté la classe. Ta progression reste dans ton compte."); ecranParametres(); return;
+    }
     reinitProgressionLocale();
     profil.eleveCode=""; profil.classeId=""; profil.classeNom=""; profil.codeProprietaire="";
     profil.elevePreuve="";
@@ -11623,7 +11671,10 @@ function bvOptionsHTML(){
       <span class="bv2-txt"><b>Je suis \u00e9l\u00e8ve</b><span>Rejoins ta classe ou explore</span></span></button>
     <button class="bv2-opt bv2-bleu" onclick="bvChoix('prof')">
       <span class="bv2-ic">${BV_SVG.board}</span>
-      <span class="bv2-txt"><b>Je suis enseignant</b><span>Cr\u00e9e ta classe et suis tes \u00e9l\u00e8ves</span></span></button>`;
+      <span class="bv2-txt"><b>Je suis enseignant</b><span>Cr\u00e9e ta classe et suis tes \u00e9l\u00e8ves</span></span></button>
+    <button class="bv2-opt bv2-ligne" onclick="bvChoix('solo')">
+      <span class="bv2-ic">${BV_SVG.play}</span>
+      <span class="bv2-txt"><b>J'apprends en solo</b><span>Un compte \u00e0 toi, sans professeur (15 ans et plus)</span></span></button>`;
 }
 function bvEleveHTML(){
   return `<button class="bv2-opt bv2-or" onclick="bvChoix('code')">
@@ -11654,7 +11705,360 @@ function ecranInscription(){
 }
 function bvChoix(q){ profil.inscrit=true; sauverProfil(profil);
   const ov=document.getElementById("inscriptionOverlay"); if(ov)ov.remove();
-  if(q==="code")ecranMaClasse(); else if(q==="prof")ecranProf(); }
+  if(q==="code")ecranMaClasse(); else if(q==="prof")ecranProf(); else if(q==="solo")ecranApprenant(); }
+
+
+/* ---------- Comptes : lecture du rôle à chaque connexion ---------- */
+/* Renvoie true si le rôle a changé (il faut alors redessiner). Un ancien
+   professeur sans fiche reçoit la sienne ici ; un compte suspendu est déconnecté. */
+function chargerRole(u){
+  const s=fbStore();
+  if(!s||!u||u.isAnonymous||!u.email)return Promise.resolve(false);
+  return Promise.all([
+    s.collection("comptes").doc(u.uid).get().catch(function(){ return null; }),
+    s.collection("admins").doc(u.uid).get().catch(function(){ return null; })
+  ]).then(function(r){
+    const c=r[0], ad=r[1], d=(c&&c.exists)?(c.data()||{}):null;
+    const avant=JSON.stringify(_role);
+    _role={uid:u.uid,role:(d&&d.role)||"prof",admin:!!(ad&&ad.exists),suspendu:!!(d&&d.suspendu),
+           prenom:(d&&d.prenom)||"",nom:(d&&d.nom)||""};
+    roleSauver();
+    const auj=new Date().toDateString();
+    if(!d&&c){
+      /* ancien compte professeur : sa fiche est créée à partir de teachers/{uid} */
+      s.collection("teachers").doc(u.uid).get().then(function(t){
+        if(!t.exists)return;
+        const td=t.data()||{};
+        return s.collection("comptes").doc(u.uid).set({role:"prof",nom:td.nom||"",prenom:"",email:u.email,cree:td.cree||Date.now(),vu:Date.now()});
+      }).catch(function(){});
+    }else if(d&&!d.suspendu&&(!d.vu||new Date(d.vu).toDateString()!==auj)){
+      s.collection("comptes").doc(u.uid).update({vu:Date.now()}).catch(function(){});
+    }
+    if(_role.suspendu){
+      const a=fbAuth();
+      a.signOut().then(function(){
+        dlgConfirmer("Ce compte est suspendu.\n\nPour en savoir plus, écris à contact@museduc.fr.").catch(function(){});
+        accueil();
+      });
+    }
+    return avant!==JSON.stringify(_role);
+  });
+}
+function nomCompte(){ return _role?((_role.prenom?capNom(_role.prenom)+" ":"")+(_role.nom?capNom(_role.nom):"")).trim():""; }
+
+/* ---------- Apprenant : progression sauvegardée dans son compte ---------- */
+/* La progression vit dans comptes/{uid}/donnees/profil (pas dans la fiche :
+   la liste des comptes de l'administrateur reste légère). */
+function apprenantPlanifierSync(){
+  try{
+    const a=fbAuth(), u=a&&a.currentUser;
+    if(roleDe(u)!=="apprenant"||_vueAdmin)return;
+    clearTimeout(_apSyncT); _apSyncT=setTimeout(apprenantSync,12000);
+  }catch(e){}
+}
+function apprenantSync(){
+  const a=fbAuth(), s=fbStore(), u=a&&a.currentUser;
+  if(!s||roleDe(u)!=="apprenant")return Promise.resolve(false);
+  clearTimeout(_apSyncT);
+  const ref=s.collection("comptes").doc(u.uid);
+  const p=ref.collection("donnees").doc("profil").set({p:JSON.stringify(profil),maj:profil.majLocale||Date.now()})
+    .then(function(){ return true; }).catch(function(){ return false; });
+  /* quelques chiffres sur la fiche, pour le tableau de l'administrateur (au plus toutes les 10 min) */
+  if(Date.now()-_apActifEnvoye>600000){
+    _apActifEnvoye=Date.now();
+    ref.update({actif:Date.now(),points:profil.points||0}).catch(function(){});
+  }
+  return p;
+}
+function profilVierge(){
+  const garde={son:profil.son,energie:profil.energie,chronoEntrain:profil.chronoEntrain};
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){ memoireSecours=null; }
+  profil=chargerProfil(); Object.assign(profil,garde);
+}
+/* À la connexion : la progression la plus récente gagne (cet appareil ou le serveur).
+   Sans sauvegarde sur le serveur, la progression faite sur cet appareil sans compte
+   est reprise, sauf si elle appartient à un autre compte. */
+function apprenantRestaurer(u){
+  const s=fbStore(); if(!s||!u)return Promise.resolve("rien");
+  return s.collection("comptes").doc(u.uid).collection("donnees").doc("profil").get().then(function(d){
+    const srv=d.exists?(d.data()||{}):null;
+    const aMoi=profil.compteUid===u.uid;
+    let issue;
+    if(srv&&srv.p){
+      if(aMoi&&(profil.majLocale||0)>(srv.maj||0)){ issue="local"; }
+      else{
+        try{ localStorage.setItem(STORE_KEY,srv.p); }catch(e){ memoireSecours=srv.p; }
+        profil=chargerProfil(); issue="serveur";
+      }
+    }else{
+      if(profil.compteUid&&!aMoi)profilVierge();
+      issue="repris";
+    }
+    profil.compteUid=u.uid; profil.inscrit=true;
+    if(_role&&_role.uid===u.uid){ if(_role.prenom)profil.prenom=_role.prenom; if(_role.nom)profil.nom=_role.nom; }
+    sauverProfil(profil);
+    if(issue!=="serveur")apprenantSync();
+    if(profil.eleveCode&&profil.classeId){ try{ _restaureFait=false; demarrerSyncEleve(); }catch(e){} }
+    return issue;
+  }).catch(function(){ return "erreur"; });
+}
+
+/* ---------- Apprenant : écran d'inscription et de connexion ---------- */
+function ecranApprenant(){
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  const t=document.getElementById("titre"), i=document.getElementById("intro");
+  t.style.display=""; i.style.display="";
+  t.innerHTML='<i class="ph ph-user-circle"></i> Mon compte apprenant';
+  const a=fbAuth(), s=fbStore();
+  if(!a||!s){ i.textContent=""; document.getElementById("zone").innerHTML=svcIndispo(); return; }
+  if(estApprenant()){ accueil(); return; }
+  i.textContent="Apprends la musique à ton rythme, sans professeur : ta progression est sauvegardée et te suit sur tous tes appareils.";
+  document.getElementById("zone").innerHTML=`
+    <div class="prof-auth ap-auth">
+      <div class="ex">
+        <h3 style="margin-top:0"><i class="ph ph-user-plus"></i> Créer mon compte</h3>
+        <div class="prog-prenom" style="max-width:none;box-shadow:none;border:none;padding:0">
+          <div class="ap-auth-2">
+            <div><label>Prénom</label><input id="aiPrenom" type="text" maxlength="40" autocomplete="given-name"></div>
+            <div><label>Nom</label><input id="aiNom" type="text" maxlength="40" autocomplete="family-name"></div>
+          </div>
+          <label>Adresse e-mail</label><input id="aiMail" type="email" autocomplete="username" placeholder="toi@exemple.fr">
+          <label>Mot de passe (6 caractères min.)</label><input id="aiMdp" type="password" autocomplete="new-password" placeholder="choisis un mot de passe">
+          <label class="ap-case"><input id="aiAge" type="checkbox"><span>J'ai <b>15 ans ou plus</b></span></label>
+          <label class="ap-case"><input id="aiCgu" type="checkbox"><span>J'accepte les <a href="legal.html#cgu" target="_blank" rel="noopener">conditions d'utilisation</a> et la <a href="legal.html#confidentialite" target="_blank" rel="noopener">politique de confidentialité</a></span></label>
+          <div id="aiErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
+          <button class="action btn-defi" style="margin-top:12px" onclick="inscrireApprenant()">Créer mon compte</button>
+        </div>
+        <p class="ap-auth-note"><i class="ph ph-info"></i> Moins de 15 ans&nbsp;? Entre plutôt le code donné par ton professeur, ou demande à un parent de créer le compte.</p>
+      </div>
+      <div class="ex">
+        <h3 style="margin-top:0"><i class="ph ph-sign-in"></i> J'ai déjà un compte</h3>
+        <div class="prog-prenom" style="max-width:none;box-shadow:none;border:none;padding:0">
+          <label>Adresse e-mail</label><input id="pcMail" type="email" autocomplete="username" placeholder="toi@exemple.fr">
+          <label>Mot de passe</label><input id="pcMdp" type="password" autocomplete="current-password" placeholder="••••••••">
+          <div id="pcErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
+          <button class="action btn-corr" style="margin-top:10px" onclick="connecterProf()">Se connecter</button>
+        </div>
+        <p class="ap-auth-note"><i class="ph ph-sparkle"></i> Ce que tu as déjà fait sur cet appareil sans compte est repris dans ton nouveau compte.</p>
+      </div>
+    </div>`;
+}
+function inscrireApprenant(){
+  const a=fbAuth(), s=fbStore(); if(!a||!s)return;
+  const val=function(id){ return ((document.getElementById(id)||{}).value||"").trim(); };
+  const prenom=val("aiPrenom"), nom=val("aiNom"), mail=val("aiMail");
+  const mdp=((document.getElementById("aiMdp")||{}).value||"");
+  const er=document.getElementById("aiErr");
+  const dire=function(m){ if(er){ er.textContent=m; er.style.display="block"; } };
+  if(er)er.style.display="none";
+  if(!prenom||!nom){ dire("Indique ton prénom et ton nom."); return; }
+  if(!mail||mdp.length<6){ authErr("aiErr",{code:mail?"weak-password":"invalid-email"}); return; }
+  if(!(document.getElementById("aiAge")||{}).checked){ dire("Le compte apprenant est réservé aux 15 ans et plus. Plus jeune, utilise le code de ta classe."); return; }
+  if(!(document.getElementById("aiCgu")||{}).checked){ dire("Coche la case des conditions d'utilisation pour continuer."); return; }
+  _inscriptionEnCours=true;
+  let uid="";
+  a.createUserWithEmailAndPassword(mail,mdp).then(function(cr){
+    uid=cr.user.uid;
+    return s.collection("comptes").doc(uid).set({role:"apprenant",prenom:prenom,nom:nom,email:mail,cree:Date.now(),vu:Date.now(),age15:true});
+  }).then(function(){
+    _role={uid:uid,role:"apprenant",admin:false,suspendu:false,prenom:prenom,nom:nom}; roleSauver();
+    return apprenantRestaurer(a.currentUser);
+  }).then(function(){
+    _inscriptionEnCours=false;
+    construireMenu(); majIndicateurCompte();
+    toast("Compte créé, bienvenue "+capNom(prenom)+" !"); accueil();
+  }).catch(function(e){ _inscriptionEnCours=false; authErr("aiErr",e); });
+}
+/* Déconnexion d'un apprenant : on envoie d'abord, puis on vide cet appareil
+   (il peut être partagé) ; tout est retrouvé à la prochaine connexion. */
+function deconnecterCompte(){
+  const a=fbAuth(); if(!a)return;
+  const u=a.currentUser;
+  if(roleDe(u)!=="apprenant"){ deconnecterProf(); return; }
+  apprenantSync().then(function(){ return a.signOut(); }).then(function(){
+    try{ if(typeof presenceArreter==="function")presenceArreter(); }catch(e){}
+    profilVierge(); profil.inscrit=true; sauverProfil(profil);
+    construireMenu(); majIndicateurCompte();
+    toast("Déconnecté. Ta progression est sauvegardée dans ton compte."); accueil();
+  });
+}
+async function supprimerCompteApprenant(){
+  const a=fbAuth(), s=fbStore(), u=a&&a.currentUser;
+  if(!s||roleDe(u)!=="apprenant")return;
+  if(!await dlgConfirmer("SUPPRIMER TON COMPTE ?\n\nTon prénom, ton nom, ton adresse e-mail et toute ta progression seront effacés définitivement.\n\nCette action est IRRÉVERSIBLE."))return;
+  const ref=s.collection("comptes").doc(u.uid);
+  ref.collection("donnees").doc("profil").delete().catch(function(){})
+    .then(function(){ return ref.delete(); })
+    .then(function(){ return u.delete(); })
+    .then(function(){ profilVierge(); profil.inscrit=true; sauverProfil(profil); _role=null; roleSauver();
+      construireMenu(); majIndicateurCompte(); toast("Compte supprimé."); accueil(); })
+    .catch(function(e){
+      const c=String((e&&e.code)||"");
+      if(c.indexOf("requires-recent-login")>=0)toast("Par sécurité : déconnecte-toi, reconnecte-toi, puis réessaie.");
+      else toast("La suppression a échoué. Réessaie.");
+    });
+}
+function compteApprenantHTML(){
+  const u=fbAuth()&&fbAuth().currentUser;
+  return `<p style="margin-top:0">Connecté(e) en tant que <b>${echapH(nomCompte()||"apprenant")}</b>${u&&u.email?` (<b>${echapH(u.email)}</b>)`:""}.</p>
+    <p style="color:var(--encre-doux);font-size:.88rem"><i class="ph ph-cloud-check"></i> Ta progression est sauvegardée dans ton compte : tu la retrouves sur tous tes appareils.</p>
+    <p style="color:var(--encre-doux);font-size:.88rem"><i class="ph ph-users-three"></i> Ton professeur t'a donné un <b>code élève</b>&nbsp;? Entre-le ci-dessous : tu rejoins sa classe en gardant tes points et tes badges.</p>
+    <div class="prog-prenom" style="max-width:320px;box-shadow:none;border:none;padding:0">
+      <input id="inCode" type="text" maxlength="8" placeholder="Ex : K7P2M" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;font-size:1.2rem;text-align:center">
+      <input id="inSecret" type="password" maxlength="40" placeholder="Mon mot secret" autocomplete="off" style="margin-top:8px;font-weight:700;font-size:1.05rem;text-align:center" onkeydown="if(event.key==='Enter')rejoindreClasse()">
+      <div id="inCErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
+      <button class="action btn-corr" style="margin-top:10px" onclick="rejoindreClasse()"><i class="ph ph-sign-in"></i> Rejoindre la classe</button>
+    </div>
+    <button class="action btn-nouv" style="margin-top:14px" onclick="deconnecterCompte()"><i class="ph ph-sign-out"></i> Me déconnecter</button>`;
+}
+
+/* ---------- Administrateur : changer de vue ---------- */
+function choisirVueAdmin(v){
+  if(!estAdmin())return;
+  _vueAdmin=(v==="apprenant"||v==="visiteur")?v:"";
+  try{ if(_vueAdmin)sessionStorage.setItem(VUE_CLE,_vueAdmin); else sessionStorage.removeItem(VUE_CLE); }catch(e){}
+  construireMenu(); majIndicateurCompte(); majVueAdminBandeau();
+  toast(_vueAdmin?("Vous voyez l'application comme "+(_vueAdmin==="apprenant"?"un apprenant":"un visiteur (élève sans code)")+"."):"Retour à votre vue.");
+  accueil();
+}
+function majVueAdminBandeau(){
+  let b=document.getElementById("vueAdminBandeau");
+  if(!(estAdmin()&&_vueAdmin)){ if(b)b.remove(); return; }
+  if(!b){ b=document.createElement("div"); b.id="vueAdminBandeau"; b.className="vue-admin"; document.body.appendChild(b); }
+  b.innerHTML='<i class="ph-fill ph-eye"></i> Vue '+(_vueAdmin==="apprenant"?"apprenant":"visiteur")
+    +'<button onclick="choisirVueAdmin(\'\')">Revenir à ma vue</button>';
+}
+
+/* ---------- Administrateur : tableau des comptes ---------- */
+let _admComptes=[], _admFiltre="tous", _admCherche="";
+const ADM_ROLES={prof:"Professeur",apprenant:"Apprenant"};
+function ecranAdmin(){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  titreProf('<i class="ph ph-shield-star"></i> Administration',"Les comptes de MusEduc, leur activité et les vues de test.");
+  const z=document.getElementById("zone");
+  if(!estAdmin()){ z.innerHTML='<p class="badge-vide">Réservé à l\'administrateur.</p>'; return; }
+  z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement des comptes…</p>';
+  admCharger().then(admDessiner).catch(function(){ z.innerHTML=svcIndispo("Lecture des comptes refusée. Les règles Firestore (admins, comptes) sont-elles publiées ?"); });
+}
+function admCharger(){
+  const s=fbStore();
+  const tout=function(col){ return s.collection(col).get().then(function(q){ const l=[]; q.forEach(function(d){ l.push(Object.assign({id:d.id},d.data()||{})); }); return l; }); };
+  return Promise.all([tout("comptes"),tout("teachers"),tout("admins"),
+    tout("classes").catch(function(){ return []; }),tout("eleveCodes").catch(function(){ return []; })]).then(function(r){
+    const comptes=r[0], profs=r[1], admins=r[2], classes=r[3], codes=r[4];
+    const parId={};
+    comptes.forEach(function(c){ parId[c.id]=c; });
+    /* anciens professeurs pas encore reconnectés : pas encore de fiche */
+    profs.forEach(function(t){ if(!parId[t.id])parId[t.id]={id:t.id,role:"prof",nom:t.nom||"",email:t.email||"",cree:t.cree||0,ancien:true}; });
+    const nbCl={}, nbCo={};
+    classes.forEach(function(c){ if(c.ownerUid)nbCl[c.ownerUid]=(nbCl[c.ownerUid]||0)+1; });
+    codes.forEach(function(c){ if(c.ownerUid)nbCo[c.ownerUid]=(nbCo[c.ownerUid]||0)+1; });
+    const adm={}; admins.forEach(function(x){ adm[x.id]=true; });
+    _admComptes=Object.keys(parId).map(function(k){ const c=parId[k];
+      c.admin=!!adm[k]; c.nbClasses=nbCl[k]||0; c.nbCodes=nbCo[k]||0; return c; });
+    _admComptes.totClasses=classes.length; _admComptes.totCodes=codes.length;
+  });
+}
+function admFiltrer(f){ _admFiltre=f; admDessiner(); }
+function admChercher(v){ _admCherche=v||""; admDessinerListe(); }
+function admDessiner(){
+  const l=_admComptes, sem=7*864e5, now=Date.now();
+  const nP=l.filter(function(c){return c.role!=="apprenant";}).length, nA=l.filter(function(c){return c.role==="apprenant";}).length;
+  const nouv=l.filter(function(c){return c.cree&&now-c.cree<sem;}).length;
+  const actifs=l.filter(function(c){ const v=Math.max(c.vu||0,c.actif||0); return v&&now-v<sem; }).length;
+  /* inscriptions des 8 dernières semaines */
+  const sems=[0,0,0,0,0,0,0,0];
+  l.forEach(function(c){ if(!c.cree)return; const k=Math.floor((now-c.cree)/sem); if(k>=0&&k<8)sems[7-k]++; });
+  const mx=Math.max(1,Math.max.apply(null,sems));
+  const kpi=function(v,lib,ic){ return '<div class="adm-kpi"><i class="ph-fill ph-'+ic+'"></i><b>'+v+'</b><span>'+lib+'</span></div>'; };
+  const vue=function(v,lib,ic){ return '<button class="adm-vue'+(_vueAdmin===v?' on':'')+'" onclick="choisirVueAdmin(\''+v+'\')"><i class="ph ph-'+ic+'"></i> '+lib+'</button>'; };
+  const f=function(k,lib){ return '<button class="'+(_admFiltre===k?'on':'')+'" onclick="admFiltrer(\''+k+'\')">'+lib+'</button>'; };
+  document.getElementById("zone").innerHTML=`<div class="accueil adm" style="max-width:1120px">
+    <div class="adm-kpis">${kpi(nP,"professeurs","chalkboard-teacher")}${kpi(nA,"apprenants","user-circle")}
+      ${kpi(l.totClasses||0,"classes","users-three")}${kpi(l.totCodes||0,"codes élèves","identification-card")}
+      ${kpi(nouv,"inscrits cette semaine","user-plus")}${kpi(actifs,"actifs cette semaine","pulse")}</div>
+    <div class="adm-duo">
+      <div class="ex adm-carte"><h3><i class="ph ph-chart-bar"></i> Inscriptions par semaine</h3>
+        <div class="adm-barres">${sems.map(function(n,i){ return '<div class="adm-barre"><span style="height:'+Math.round(n/mx*100)+'%"></span><b>'+n+'</b><small>'+(i===7?"cette sem.":"S-"+(7-i))+'</small></div>'; }).join("")}</div></div>
+      <div class="ex adm-carte"><h3><i class="ph ph-eye"></i> Changer de vue</h3>
+        <p class="adm-aide">Regardez l'application comme un autre utilisateur, sans vous déconnecter. Un bandeau permet de revenir.</p>
+        <div class="adm-vues">${vue("","Enseignant (ma vue)","chalkboard-teacher")}${vue("apprenant","Apprenant","user-circle")}${vue("visiteur","Visiteur, élève sans code","user")}</div>
+        <p class="adm-aide">Pour la vue élève avec une classe, entrez un code d'une de vos classes de test dans une fenêtre privée.</p></div>
+    </div>
+    <div class="ex adm-carte">
+      <div class="adm-outils">
+        <div class="ev-onglets">${f("tous","Tous")}${f("prof","Professeurs")}${f("apprenant","Apprenants")}${f("admin","Admins")}${f("suspendu","Suspendus")}</div>
+        <label class="lx-cherche"><i class="ph ph-magnifying-glass"></i><input type="search" placeholder="Nom ou e-mail" value="${echapH(_admCherche)}" oninput="admChercher(this.value)"></label>
+      </div>
+      <div id="admListe"></div>
+    </div>
+    <p class="adm-aide"><i class="ph ph-info"></i> Supprimer efface la fiche et la progression d'un apprenant. L'identifiant de connexion lui-même ne peut être effacé que dans la console Firebase (Authentication). Un professeur ne se supprime pas d'ici : suspendez-le, ses classes restent intactes.</p>
+  </div>`;
+  admDessinerListe();
+}
+function admDessinerListe(){
+  const z=document.getElementById("admListe"); if(!z)return;
+  const q=_admCherche.toLowerCase().trim();
+  const moi=(fbAuth()&&fbAuth().currentUser||{}).uid;
+  const l=_admComptes.filter(function(c){
+    if(_admFiltre==="prof"&&c.role==="apprenant")return false;
+    if(_admFiltre==="apprenant"&&c.role!=="apprenant")return false;
+    if(_admFiltre==="admin"&&!c.admin)return false;
+    if(_admFiltre==="suspendu"&&!c.suspendu)return false;
+    if(q&&((c.prenom||"")+" "+(c.nom||"")+" "+(c.email||"")).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  }).sort(function(x,y){ return (y.cree||0)-(x.cree||0); });
+  if(!l.length){ z.innerHTML='<p class="badge-vide">Aucun compte.</p>'; return; }
+  const dt=function(ms){ return ms?new Date(ms).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"}):"-"; };
+  z.innerHTML='<div class="adm-table"><div class="adm-ligne adm-tete"><span>Compte</span><span>Rôle</span><span>Inscrit</span><span>Vu</span><span>Activité</span><span></span></div>'
+    +l.map(function(c){
+      const nom=((c.prenom?capNom(c.prenom)+" ":"")+(c.nom||"")).trim()||"(sans nom)";
+      const act=c.role==="apprenant"?((c.points||0)+" pts"):(c.nbClasses+" classe"+(c.nbClasses>1?"s":"")+" · "+c.nbCodes+" codes");
+      return '<div class="adm-ligne'+(c.suspendu?' susp':'')+'">'
+        +'<span class="adm-qui"><b>'+echapH(nom)+(c.admin?' <i class="ph-fill ph-shield-star adm-badge" title="Administrateur"></i>':'')+'</b><small>'+echapH(c.email||"")+(c.ancien?' · fiche à la prochaine connexion':'')+'</small></span>'
+        +'<span><select onchange="admRole(\''+c.id+'\',this.value)"'+(c.id===moi?' disabled':'')+'>'
+          +Object.keys(ADM_ROLES).map(function(r){ return '<option value="'+r+'"'+((c.role||"prof")===r?' selected':'')+'>'+ADM_ROLES[r]+'</option>'; }).join("")+'</select></span>'
+        +'<span>'+dt(c.cree)+'</span><span>'+dt(Math.max(c.vu||0,c.actif||0))+'</span><span>'+act+'</span>'
+        +'<span class="adm-actions">'
+          +(c.id===moi?'<small>vous</small>':
+            '<button class="mc-mini'+(c.admin?' on':'')+'" title="'+(c.admin?'Retirer le rôle administrateur':'Nommer administrateur')+'" onclick="admAdmin(\''+c.id+'\')"><i class="ph ph-shield-star"></i></button>'
+           +'<button class="mc-mini" title="'+(c.suspendu?'Rétablir le compte':'Suspendre le compte')+'" onclick="admSuspendre(\''+c.id+'\')"><i class="ph ph-'+(c.suspendu?'play':'pause')+'"></i></button>'
+           +(c.role==="apprenant"?'<button class="mc-mini sup" title="Supprimer la fiche et la progression" onclick="admSupprimer(\''+c.id+'\')"><i class="ph ph-trash"></i></button>':''))
+        +'</span></div>';
+    }).join("")+'</div>';
+}
+function admTrouve(id){ return _admComptes.filter(function(c){ return c.id===id; })[0]||{}; }
+function admNom(c){ return ((c.prenom?capNom(c.prenom)+" ":"")+(c.nom||"")).trim()||c.email||"ce compte"; }
+async function admRole(id,r){
+  const c=admTrouve(id); if(!ADM_ROLES[r]||c.role===r)return;
+  if(!await dlgConfirmer("Passer « "+admNom(c)+" » en "+ADM_ROLES[r].toLowerCase()+" ?"+(r==="prof"?"\n\nIl pourra créer des classes et des codes élèves.":"\n\nIl perdra l'accès à l'espace enseignant (ses classes restent enregistrées)."))){ admDessinerListe(); return; }
+  const d={role:r}; if(c.ancien){ d.nom=c.nom||""; d.email=c.email||""; d.cree=c.cree||Date.now(); }
+  fbStore().collection("comptes").doc(id).set(d,{merge:true}).then(function(){ c.role=r; c.ancien=false; toast("Rôle modifié."); admDessiner(); })
+    .catch(function(){ toast("Modification refusée."); admDessinerListe(); });
+}
+async function admAdmin(id){
+  const c=admTrouve(id), nv=!c.admin;
+  if(!await dlgConfirmer(nv?("Nommer « "+admNom(c)+" » administrateur ?\n\nIl verra tous les comptes et pourra les gérer."):("Retirer le rôle administrateur à « "+admNom(c)+" » ?")))return;
+  const ref=fbStore().collection("admins").doc(id);
+  (nv?ref.set({le:Date.now(),par:fbAuth().currentUser.uid}):ref.delete())
+    .then(function(){ c.admin=nv; toast(nv?"Administrateur nommé.":"Rôle retiré."); admDessinerListe(); }).catch(function(){ toast("Modification refusée."); });
+}
+async function admSuspendre(id){
+  const c=admTrouve(id), nv=!c.suspendu;
+  if(!await dlgConfirmer(nv?("Suspendre « "+admNom(c)+" » ?\n\nIl sera déconnecté à sa prochaine ouverture de l'application. Rien n'est effacé."):("Rétablir « "+admNom(c)+" » ?")))return;
+  const d={suspendu:nv}; if(c.ancien){ d.role="prof"; d.nom=c.nom||""; d.email=c.email||""; d.cree=c.cree||Date.now(); }
+  fbStore().collection("comptes").doc(id).set(d,{merge:true}).then(function(){ c.suspendu=nv; c.ancien=false; toast(nv?"Compte suspendu.":"Compte rétabli."); admDessinerListe(); })
+    .catch(function(){ toast("Modification refusée."); });
+}
+async function admSupprimer(id){
+  const c=admTrouve(id);
+  if(!await dlgConfirmer("Supprimer la fiche et la progression de « "+admNom(c)+" » ?\n\nPrénom, nom, e-mail et progression seront effacés. C'est IRRÉVERSIBLE.\n\nPour libérer aussi son adresse e-mail, supprimez ensuite son identifiant dans la console Firebase (Authentication)."))return;
+  const ref=fbStore().collection("comptes").doc(id);
+  ref.collection("donnees").doc("profil").delete().catch(function(){}).then(function(){ return ref.delete(); })
+    .then(function(){ _admComptes=_admComptes.filter(function(x){ return x.id!==id; }); toast("Compte supprimé."); admDessiner(); })
+    .catch(function(){ toast("Suppression refusée."); });
+}
 
 /* ---------- Prof : générer des codes élèves ---------- */
 function codeEleveAlea(){ const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let c=""; for(let i=0;i<5;i++)c+=A[Math.floor(Math.random()*A.length)]; return c; }
@@ -11698,6 +12102,23 @@ async function renommerClasse(classId){
   const s=fbStore(),a=fbAuth(),u=a&&a.currentUser; if(!s||!u)return;
   s.collection("classes").doc(classId).set({nom:nom},{merge:true})
     .then(()=>{toast("Classe renommée.");_tcRows=null;dashboardProf();}).catch(()=>toast("Erreur."));
+}
+/* Classe de collègues : réglage explicite (champ collegues), sinon déduit du nom. */
+function classeCollegues(c){
+  if(!c)return false;
+  if(c.collegues===true||c.collegues===false)return c.collegues;
+  return /coll[eè]gue|\bprofs?\b/i.test(c.nom||"");
+}
+async function basculerCollegues(classId){
+  const c=_mesClasses.filter(x=>x.id===classId)[0]||{};
+  const nv=!classeCollegues(c);
+  const msg=nv
+    ? "Faire de « "+(c.nom||"cette classe")+" » une classe de COLLÈGUES ?\n\nLeurs codes auront tout débloqué (leçons, évaluations, cours, Nova) et pourront lancer des parties de classe que leurs propres élèves rejoindront avec le code affiché. Ils n'ont accès à aucune de tes données."
+    : "Refaire de « "+(c.nom||"cette classe")+" » une classe d'ÉLÈVES ?\n\nLes codes retrouveront la progression normale par paliers.";
+  if(!(await dlgConfirmer(msg)))return;
+  const s=fbStore(),a=fbAuth(),u=a&&a.currentUser; if(!s||!u)return;
+  s.collection("classes").doc(classId).set({collegues:nv},{merge:true})
+    .then(()=>{toast(nv?"Classe de collègues : tout est débloqué pour leurs codes.":"Classe d'élèves rétablie.");_tcRows=null;dashboardProf();}).catch(()=>toast("Erreur."));
 }
 function grouperClasse(classId,grp){
   const s=fbStore(),a=fbAuth(),u=a&&a.currentUser; if(!s||!u)return;
@@ -11753,11 +12174,13 @@ function dashboardProf(){
           h+=`<div class="mc-carte" style="border-top:5px solid ${col}">
             <button class="mc-ouvrir" onclick="ouvrirProf('evalsClasse','${c.id}')" title="Ouvrir les notes de la classe">
               <span class="mc-nom"><i class="ph ph-users-three"></i> ${echapH(c.nom||"Classe")}</span>
+              ${classeCollegues(c)?'<span class="mc-coll"><i class="ph-fill ph-key"></i> Collègues : tout débloqué</span>':''}
               <span class="mc-stats" id="mcS-${c.id}"><i class="ph ph-spinner-gap"></i> indicateurs…</span>
             </button>
             <div class="mc-barre">
               <button class="mc-mini" title="Élèves et codes" aria-label="Élèves et codes" onclick="rosterClasse('${c.id}')"><i class="ph ph-identification-card"></i></button>
               <button class="mc-mini" title="Renommer" aria-label="Renommer" onclick="renommerClasse('${c.id}')"><i class="ph ph-pencil-simple"></i></button>
+              <button class="mc-mini${classeCollegues(c)?" mc-coll-on":""}" title="${classeCollegues(c)?"Classe de collègues : tout est débloqué et ils peuvent lancer des parties. Cliquer pour en refaire une classe d'élèves.":"Faire de cette classe une classe de collègues (tout débloqué, création de parties)"}" aria-label="Classe de collègues" onclick="basculerCollegues('${c.id}')"><i class="ph ph-chalkboard-teacher"></i></button>
               <select class="mc-sel" title="Ranger dans un niveau" onchange="grouperClasse('${c.id}',this.value)">${opts}</select>
             </div>
           </div>`;
@@ -12466,6 +12889,10 @@ function chargerDevoirs(force){
         const d=(cd&&cd.exists?(cd.data()||{}):{});
         _bonusLibre=d.bonusLibre||{};       /* réglage de la note bonus (socle, pas, seuil) */
         _trimClasse=d.trimestres||[];       /* trimestres publiés par le prof : bornent la note bonus */
+        /* classe de collègues : réglage explicite du professeur (sinon déduit du nom) */
+        const col=(d.collegues===true||d.collegues===false)?d.collegues:undefined;
+        if(d.nom&&profil.classeNom!==d.nom)profil.classeNom=d.nom;
+        if(profil.collegue!==col){ profil.collegue=col; try{ sauverProfil(profil); }catch(e){} try{ construireMenu(); }catch(e){} }
         _coursOpen=d.coursOpen||{};   /* quels cours de collège sont ouverts à cette classe */
         _coursEtapes=d.coursEtapes||{};   /* jusqu'à quelle étape chaque cours est ouvert */
         _libresDemandees=d.libresDemandees||{};   /* évaluations libres passées en demandées */
@@ -18575,6 +19002,36 @@ function accueilVue(k){
     const b=document.getElementById("apNav_"+s); if(b)b.classList.toggle("on",s===k);
   });
 }
+/* Vignettes de l'accueil enseignant : même famille que les tuiles de domaine des
+   leçons (couverture colorée, médaille or, emblème en filigrane, pointe inversée).
+   [titre, description, icône Phosphor, teinte --dom-*, action] */
+const AP_TUILES={
+  suivi:[
+    ["Élèves et codes","Noms, codes, mots secrets, points","identification-card","lire","ouvrirProf('rosterClasse')"],
+    ["Travail en classe","Plan de classe, comportements, notes","chalkboard-simple","theorie","ouvrirProf('ecranTravailProf')"],
+    ["Notes &amp; bulletins","Cours, chant, comportement, bilan et export Pronote","exam","rythme","ouvrirNotes()"],
+    ["Votes","Faire voter la classe, résultats en direct","chart-bar","culture","ouvrirProf('ecranVotesProf')"],
+    ["Classement","Le palmarès d'une classe","trophy","loin","classementProf()"],
+    ["Diplômes","Les meilleurs d'une classe ou du collège, à imprimer","certificate","ecoute","ecranDiplomesProf()"]],
+  contenus:[
+    ["Mes leçons","Écrire une leçon et ses exercices","chalkboard-teacher","perso","ecranLeconsProf()"],
+    ["Badges &amp; niveaux","Ce que gagnent les élèves, et comment","medal","loin","ecranBonusInfoProf()"],
+    ["Imprimer","Feuilles papier : exercices, éval, recueils de leçons","printer","eval","ecranImpressionProf()"]],
+  classe:[
+    ["Faire une séance","Projeter une leçon, écran par écran","presentation","lire","ecranLecons()"],
+    ["Cours de collège","Les parcours interactifs","graduation-cap","ecoute","ecranCoursCollege()"],
+    ["Multijoueur","Toute la classe sur un quiz","users-three","culture","ecranModeMulti()"],
+    ["Jeux à élimination","Calmar musical · Bougies","fish","rythme","ecranModeCalmar()"]]
+};
+/* une couleur par onglet (Suivi bleu, Contenus vert comme la Théorie, En classe violet) */
+function apTuilesHTML(l,teinte){
+  return '<div class="ap-tuiles">'+l.map(function(t){
+    return '<button class="ap-tuile" style="--d:var(--dom-'+(teinte||t[3])+')" onclick="'+t[4]+'">'
+      +'<span class="ap-cov"><span class="lx-emb" aria-hidden="true"><i class="ph ph-'+t[2]+'"></i></span>'
+      +'<span class="lx-med"><i class="ph-fill ph-'+t[2]+'"></i></span></span>'
+      +'<span class="ap-tuile-b"><b>'+t[0]+'</b><small>'+t[1]+'</small></span></button>';
+  }).join("")+'</div>';
+}
 function accueilProf(){
   if(typeof arreterChronoLive==="function")arreterChronoLive();
   masquerInterfaceNormale(); majRetour(null);
@@ -18608,6 +19065,7 @@ function accueilProf(){
             <button class="ac-cta" onclick="ouvrirProf('ecranDevoirsProf')"><i class="ph-fill ph-backpack"></i> Donner du travail</button>
             <button class="ac-cta2" onclick="ouvrirProf('ecranRendus')">Travaux rendus</button>
             <button class="ac-cta2" onclick="ecranJeuHost()"><i class="ph-fill ph-play"></i> Lancer une partie</button>
+            ${estAdmin()?'<button class="ac-cta2 ac-admin" onclick="ecranAdmin()"><i class="ph-fill ph-shield-star"></i> Administration</button>':''}
           </div>
         </div>
         <div class="ac-panneau">
@@ -18643,60 +19101,15 @@ function accueilProf(){
     <div class="ap-panel">
         <div id="apPanel_suivi"${_accueilVue==="suivi"?"":" hidden"}>
           <div class="ap-panel-t"><i class="ph ph-users-three"></i> Suivi de mes classes</div>
-          <div class="prof-actions">
-            <button class="prof-act" onclick="ouvrirProf('rosterClasse')">
-              <i class="ph ph-identification-card"></i>
-              <b>Élèves et codes</b><span>Noms, codes, mots secrets, points</span></button>
-            <button class="prof-act" onclick="ouvrirProf('ecranTravailProf')">
-              <i class="ph ph-chalkboard-simple"></i>
-              <b>Travail en classe</b><span>Plan de classe, comportements, notes</span></button>
-            <button class="prof-act" onclick="ouvrirProf('ecranVotesProf')">
-              <i class="ph ph-chart-bar"></i>
-              <b>Votes</b><span>Faire voter la classe, résultats en direct</span></button>
-            <button class="prof-act" onclick="ouvrirNotes()">
-              <i class="ph ph-exam"></i>
-              <b>Notes &amp; bulletins</b><span>Cours, chant, comportement, bilan et export Pronote</span></button>
-            <button class="prof-act" onclick="ecranChantProf()">
-              <i class="ph ph-microphone-stage"></i>
-              <b>Chant</b><span>Morceaux, karaokés, enregistrements notés</span></button>
-            <button class="prof-act" onclick="classementProf()">
-              <i class="ph ph-trophy"></i>
-              <b>Classement</b><span>Le palmarès d'une classe</span></button>
-            <button class="prof-act" onclick="ecranDiplomesProf()">
-              <i class="ph ph-certificate"></i>
-              <b>Diplômes</b><span>Les meilleurs d'une classe ou du collège, à imprimer</span></button>
-          </div>
+          ${apTuilesHTML(AP_TUILES.suivi,"lire")}
         </div>
         <div id="apPanel_contenus"${_accueilVue==="contenus"?"":" hidden"}>
           <div class="ap-panel-t"><i class="ph ph-pencil-line"></i> Mes contenus</div>
-          <div class="prof-actions">
-            <button class="prof-act" onclick="ecranLeconsProf()">
-              <i class="ph ph-chalkboard-teacher"></i>
-              <b>Mes leçons</b><span>Écrire une leçon et ses exercices</span></button>
-            <button class="prof-act" onclick="ecranBonusInfoProf()">
-              <i class="ph ph-medal"></i>
-              <b>Badges &amp; niveaux</b><span>Ce que gagnent les élèves, et comment</span></button>
-            <button class="prof-act" onclick="ecranImpressionProf()">
-              <i class="ph ph-printer"></i>
-              <b>Imprimer (cours &amp; exercices)</b><span>Feuilles papier : exercices, éval, recueils de leçons</span></button>
-          </div>
+          ${apTuilesHTML(AP_TUILES.contenus,"theorie")}
         </div>
         <div id="apPanel_classe"${_accueilVue==="classe"?"":" hidden"}>
           <div class="ap-panel-t"><i class="ph ph-projector-screen-chart"></i> En classe, au tableau</div>
-          <div class="prof-actions">
-            <button class="prof-act" onclick="ecranLecons()">
-              <i class="ph ph-presentation"></i>
-              <b>Faire une séance</b><span>Projeter une leçon, écran par écran</span></button>
-            <button class="prof-act" onclick="ecranCoursCollege()">
-              <i class="ph ph-chalkboard-simple"></i>
-              <b>Cours de collège</b><span>Les parcours interactifs</span></button>
-            <button class="prof-act" onclick="ecranModeMulti()">
-              <i class="ph ph-users-three"></i>
-              <b>Multijoueur</b><span>Toute la classe sur un quiz</span></button>
-            <button class="prof-act" onclick="ecranModeCalmar()">
-              <i class="ph ph-fish"></i>
-              <b>Jeux à élimination</b><span>Calmar musical · Bougies</span></button>
-          </div>
+          ${apTuilesHTML(AP_TUILES.classe,"culture")}
         </div>
       </div>
 
@@ -18987,8 +19400,8 @@ function envoyerEvalProf(o,cidCible){
     .collection("evals").doc(id).set(o).then(function(){return true;})
     .catch(function(err){ if(err&&err.code==="permission-denied")return false; return enAttente(); }); };
   const u=a.currentUser;
-  if(u&&u.isAnonymous)return ecrire();
-  if(estProf(u))return Promise.resolve(false);
+  if(eleveOK(u))return ecrire();
+  if(u&&u.email)return Promise.resolve(false);
   return a.signInAnonymously().then(ecrire).catch(function(){ return enAttente(); });
 }
 
@@ -22265,10 +22678,15 @@ function etatCompte(){
   const u=a&&a.currentUser;
   if(u&&typeof estProf==="function"&&estProf(u))
     /* jamais l'adresse e-mail : l'écran peut être projeté devant la classe */
-    return {type:"prof",connecte:true,role:"Professeur connecté",
+    return {type:"prof",connecte:true,role:estAdmin()?"Administrateur":"Professeur connecté",
             detail:"Session enseignante ouverte sur cet appareil.",ic:"ph-chalkboard-teacher"};
+  if(u&&roleEffectif(u)==="apprenant"&&(_vueAdmin||!(profil&&profil.eleveCode)))
+    return {type:"apprenant",connecte:true,role:_vueAdmin?"Apprenant (vue de test)":"Apprenant",
+            detail:(nomCompte()||"Compte personnel")+" · progression sauvegardée",ic:"ph-user-circle"};
+  if(u&&roleEffectif(u)==="visiteur")
+    return {type:"anon",connecte:false,role:"Visiteur (vue de test)",detail:"Aucun compte : la progression reste sur l'appareil.",ic:"ph-user"};
   if(typeof profil==="object"&&profil&&profil.eleveCode)
-    return {type:"eleve",connecte:true,role:"Élève identifié",
+    return {type:"eleve",connecte:true,role:estCollegue()?"Collègue · accès complet":"Élève identifié",
             detail:"Code "+profil.eleveCode+(profil.classeNom?" · "+profil.classeNom:""),
             ic:"ph-identification-card"};
   return {type:"anon",connecte:false,role:"Non connecté",
@@ -22293,11 +22711,12 @@ function estVisiblePourCompte(id){
   /* « Mon espace » ne montre qu'une entrée : un professeur n'a pas de profil
      d'élève (ni points ni badges), un élève n'a rien à faire dans l'espace
      enseignant. Le groupe se réduit donc à un seul item, donc à un lien direct. */
-  const estP=(typeof profConnecte==="function")&&profConnecte();
-  if(id==="_progression")return !estP;
-  /* un professeur connecté ne voit plus « Espace enseignant » : c'est déjà son accueil ;
-     un visiteur non identifié le garde, c'est son chemin vers la connexion professeur */
-  if(id==="_prof")return !estP && !estEleveConnecte();
+  /* Le profil n'a de sens que pour un élève connecté (avec son code). Un visiteur
+     non connecté n'y verrait rien d'utile, et un professeur n'a pas de profil d'élève. */
+  if(id==="_progression")return estEleveConnecte()||estApprenant();
+  /* « Espace enseignant » n'est plus dans le menu : un professeur connecté y est déjà
+     (c'est son accueil), et la connexion se fait par le bouton de compte en haut. */
+  if(id==="_prof")return false;
   if(ITEMS_PROF.indexOf(id)<0)return true;
   return !estEleveConnecte();
 }
@@ -22317,7 +22736,8 @@ function dessinerMenuCompte(){
   const e=etatCompte();
   let actions="";
   if(e.type==="prof"){
-    actions=`<button onclick="fermerMenuCompte();dashboardProf()"><i class="ph ph-chalkboard-teacher"></i> Mon espace professeur</button>
+    actions=(estAdmin()?`<button onclick="fermerMenuCompte();ecranAdmin()"><i class="ph ph-shield-star"></i> Administration</button>`:"")
+           +`<button onclick="fermerMenuCompte();dashboardProf()"><i class="ph ph-chalkboard-teacher"></i> Mon espace professeur</button>
              <button onclick="fermerMenuCompte();deconnecterProf()"><i class="ph ph-sign-out"></i> Se déconnecter</button>`;
   }else if(e.type==="eleve"){
     /* « Mon code élève » n'apprenait rien (le code et la classe sont en tête du
@@ -22326,8 +22746,16 @@ function dessinerMenuCompte(){
     actions=`<button onclick="fermerMenuCompte();ecranProgression()"><i class="ph ph-user-circle"></i> Mon profil</button>
              <button onclick="fermerMenuCompte();ecranParametres()"><i class="ph ph-gear"></i> Paramètres</button>
              <button onclick="fermerMenuCompte();quitterClasse()"><i class="ph ph-sign-out"></i> Me déconnecter</button>`;
+  }else if(e.type==="apprenant"){
+    actions=(estAdmin()?`<button onclick="fermerMenuCompte();choisirVueAdmin('')"><i class="ph ph-arrow-u-up-left"></i> Revenir à ma vue</button>`:"")
+           +`<button onclick="fermerMenuCompte();ecranProgression()"><i class="ph ph-user-circle"></i> Mon profil</button>
+             <button onclick="fermerMenuCompte();ecranParametres()"><i class="ph ph-gear"></i> Paramètres</button>`
+           +(estAdmin()?"":`<button onclick="fermerMenuCompte();deconnecterCompte()"><i class="ph ph-sign-out"></i> Me déconnecter</button>`);
+  }else if(estAdmin()&&_vueAdmin){
+    actions=`<button onclick="fermerMenuCompte();choisirVueAdmin('')"><i class="ph ph-arrow-u-up-left"></i> Revenir à ma vue</button>`;
   }else{
     actions=`<button onclick="fermerMenuCompte();ecranMaClasse()"><i class="ph ph-sign-in"></i> Entrer mon code élève</button>
+             <button onclick="fermerMenuCompte();ecranApprenant()"><i class="ph ph-user-circle"></i> Mon compte apprenant</button>
              <button onclick="fermerMenuCompte();ecranProf()"><i class="ph ph-chalkboard-teacher"></i> Connexion professeur</button>`;
   }
   m.innerHTML=`<div class="cm-tete">
@@ -22403,7 +22831,7 @@ function ecranJouer(){
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   document.getElementById("titre").innerHTML='<i class="ph ph-game-controller"></i> Jouer';
   document.getElementById("intro").textContent="Seul, à deux ou avec toute la classe : choisis ton jeu.";
-  const prof=(typeof etatCompte==="function")&&etatCompte().type==="prof";
+  const prof=(typeof peutAnimer==="function")&&peutAnimer();
   const p1='<i class="ph-fill ph-user"></i> 1 joueur', p2='<i class="ph-fill ph-users"></i> 2 joueurs', pC='<i class="ph-fill ph-users-three"></i> Toute la classe';
   const nbDefis=(typeof _dfRecus==="object"&&_dfRecus)?Object.keys(_dfRecus).length:0;
   const seul=[
@@ -22434,7 +22862,7 @@ function rappelCodeJeu(){
   const e=(typeof etatCompte==="function")?etatCompte():{type:"anon"};
   if(e.type==="eleve")return `<div style="background:var(--juste-fond);border:1px solid var(--juste);border-radius:10px;padding:9px 12px;margin:12px 0">
       <i class="ph ph-identification-card"></i> Code <b style="letter-spacing:2px;color:var(--laiton)">${echapH(profil.eleveCode)}</b>${profil.classeNom?" · "+echapH(profil.classeNom):""} : tes points comptent pour ta progression.</div>`;
-  if(e.type==="prof")return "";
+  if(e.type==="prof"||e.type==="apprenant")return "";
   return `<div style="background:var(--faux-fond);border:1px solid var(--faux);border-radius:10px;padding:9px 12px;margin:12px 0">
       <i class="ph ph-warning"></i> Sans <b>code élève</b>, tes points restent sur cet appareil.
       <button class="action btn-nouv" style="margin-left:8px" onclick="ecranParametres()"><i class="ph ph-sign-in"></i> Entrer mon code</button></div>`;
@@ -22577,12 +23005,12 @@ function lancerDuelThemeChoisi(id){
 /* ---------- Multijoueur classe ---------- */
 function ecranModeMulti(){
   if(typeof fermerMenu==="function")fermerMenu();
-  /* idem : côté élève, seul « Rejoindre » a du sens */
-  if(estEleveConnecte()){ ecranJeuJoin(); return; }
+  /* idem : côté élève, seul « Rejoindre » a du sens (un collègue peut aussi créer) */
+  if(estEleveConnecte()&&!estCollegue()){ ecranJeuJoin(); return; }
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   document.getElementById("titre").innerHTML='<i class="ph ph-users-three"></i> Multijoueur : toute la classe';
   document.getElementById("intro").textContent="";
-  const prof=(typeof etatCompte==="function")&&etatCompte().type==="prof";
+  const prof=(typeof peutAnimer==="function")&&peutAnimer();
   /* seul un professeur connecté peut ouvrir une partie de classe */
   const creer=prof
     ? `<button class="mode-carte" onclick="ecranJeuHost()">
@@ -22633,8 +23061,20 @@ function ecranModeMulti(){
    ===================================================================== */
 /* Le professeur voit tout ouvert (utilisé par le Mode Histoire). */
 function arbToutOuvert(){
-  try{ return etatCompte().type==="prof"; }catch(e){ return false; }
+  try{ return etatCompte().type==="prof"||estCollegue(); }catch(e){ return false; }
 }
+/* Code « collègue » : un code d'une classe marquée « classe de collègues » par le
+   professeur (à défaut de réglage, une classe dont le nom contient « collègue » ou
+   « prof »). Un collègue a tout débloqué (paliers, évaluations, cours, Nova) et peut
+   lancer les parties de classe que ses élèves rejoignent avec le code affiché,
+   sans compte enseignant et sans aucun accès aux données des classes. */
+function estCollegue(){
+  if(typeof profil!=="object"||!profil||!profil.eleveCode)return false;
+  if(profil.collegue===true||profil.collegue===false)return profil.collegue;
+  return /coll[eè]gue|\bprofs?\b/i.test(profil.classeNom||"");
+}
+/* Peut créer une partie de classe (quiz, Calmar, bougies) : enseignant ou collègue. */
+function peutAnimer(){ try{ return etatCompte().type==="prof"||estCollegue(); }catch(e){ return false; } }
 /* =====================================================================
    MODE HISTOIRE : Roman visuel « Les Voyages du Chronophone »
    ---------------------------------------------------------------------
@@ -23330,11 +23770,11 @@ function ecranModeCalmar(){
   if(typeof fermerMenu==="function")fermerMenu();
   /* un élève n'a qu'une action possible ici : rejoindre. On lui épargne
      l'écran de choix, qui n'aurait qu'un seul bouton utilisable. */
-  if(estEleveConnecte()){ ecranCalmarJoin(); return; }
+  if(estEleveConnecte()&&!estCollegue()){ ecranCalmarJoin(); return; }
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   document.getElementById("titre").innerHTML='<i class="ph ph-fish"></i> Jeux à élimination';
   document.getElementById("intro").textContent="";
-  const prof=(typeof etatCompte==="function")&&etatCompte().type==="prof";
+  const prof=(typeof peutAnimer==="function")&&peutAnimer();
   const verrou=`<div class="mode-carte" style="cursor:default;opacity:.72">
        <i class="ph ph-lock"></i><b>Créer : réservé au professeur</b>
        <span>Demande à ton professeur de lancer la partie, puis rejoins-la avec le code affiché au tableau.</span></div>`;
@@ -23484,7 +23924,7 @@ function ecranCalmarHost(mode){
   fermerMenu();masquerInterfaceNormale();majRetour(ecranJouer,"Jouer");
   document.getElementById("titre").innerHTML=mode==="bougies"?'<i class="ph ph-fire-simple"></i> La symphonie des bougies':'<i class="ph ph-fish"></i> Le Calmar Musical';
   document.getElementById("intro").textContent="";
-  if(typeof etatCompte==="function"&&etatCompte().type!=="prof"){
+  if(typeof peutAnimer==="function"&&!peutAnimer()){
     document.getElementById("zone").innerHTML=`<div class="accueil" style="max-width:520px"><div class="ex">
       <p>Seul un <b>enseignant connecté</b> peut ouvrir une partie.</p>
       <button class="action btn-corr" onclick="ecranCalmarJoin()"><i class="ph ph-device-mobile"></i> Rejoindre une partie</button>
@@ -24315,8 +24755,8 @@ function publierClassement(){
   };
   return rattacherUidEleve().then(function(){
     const u=a.currentUser;
-    if(u&&u.isAnonymous)return ecrire();
-    if(estProf(u))return false;
+    if(eleveOK(u))return ecrire();
+    if(u&&u.email)return false;
     return a.signInAnonymously().then(ecrire);
   }).catch(function(){return false;});
 }
@@ -25635,6 +26075,8 @@ function ecranParametres(){
     const _mail=(function(){ try{ const u=fbAuth()&&fbAuth().currentUser; return (u&&u.email)||""; }catch(x){ return ""; } })();
     compte=`<p style="color:var(--encre-doux);margin-top:0">Vous êtes connecté comme <b>professeur</b> sur cet appareil${_mail?` (<b>${echapH(_mail)}</b>)`:""}. Le code élève ne s'applique pas ici.</p>
       <p style="color:var(--encre-doux);font-size:.86rem;margin-bottom:0"><i class="ph ph-sign-out"></i> Pour vous déconnecter, utilisez le menu du compte, en haut à droite.</p>`;
+  }else if(e.type==="apprenant"&&!_vueAdmin){
+    compte=compteApprenantHTML();
   }else if(profil.eleveCode){
     compte=`<p style="margin-top:0">Tu es identifié avec le code
       <b style="letter-spacing:2px;color:var(--laiton)">${echapH(profil.eleveCode)}</b>${profil.classeNom?" · "+echapH(profil.classeNom):""}.</p>
@@ -25685,7 +26127,7 @@ function ecranParametres(){
     secs.push({k:"stockage",ic:"ph-hard-drives",t:"Espace et chant"});
     secs.push({k:"sauvegarde",ic:"ph-floppy-disk",t:"Sauvegarde",alerte:sauvegardeEnRetard()});
     secs.push({k:"diplomes",ic:"ph-certificate",t:"Diplômes"});
-  }else{
+  }else if(e.type!=="apprenant"){
     secs.push({k:"moyenne",ic:"ph-exam",t:"Ma moyenne"});
   }
   secs.push({k:"apparence",ic:"ph-palette",t:"Apparence & son"});
@@ -25744,6 +26186,11 @@ function ecranParametres(){
       +'</div>';
   }else{ /* danger : prof = suppression compte ; élève/anonyme = réinitialisation */
     panneau=(e.type==="prof")?zoneProf:zoneReinit;
+    if(e.type==="apprenant"&&!_vueAdmin)panneau+=`<div class="rm-danger rm-carte-centre" style="margin-top:16px">
+         <h3><i class="ph ph-warning" style="color:var(--faux)"></i> Mon compte</h3>
+         <p style="color:var(--encre-doux);font-size:.85rem;margin-bottom:14px">Supprimer ton compte efface ton prénom, ton nom, ton adresse e-mail et ta progression. <b>C'est irréversible.</b></p>
+         <button class="action btn-danger" onclick="supprimerCompteApprenant()"><i class="ph ph-trash"></i> Supprimer mon compte</button>
+       </div>`;
   }
 
   const sous=(e.type==="prof")?"Réglages de votre espace enseignant, rangés par rubrique."
@@ -29928,18 +30375,54 @@ function ecranSoutien(){
 }
 /* Partager MusEduc : la page de présentation (vitrine), par le menu de partage du
    téléphone quand il existe, sinon en copiant le lien. */
+/* Le message donne envie de cliquer s'il parle à celui qui le reçoit : un
+   professeur écrit à un collègue (temps gagné, notes prêtes, classe qui
+   s'anime), un élève défie un camarade. Concret, court, personnel, sans
+   promesse, et le lien arrive juste après une invitation à regarder. */
+function partageMessage(){
+  let t="anon"; try{ t=etatCompte().type; }catch(e){}
+  if(t==="prof"||(typeof estCollegue==="function"&&estCollegue()))return {
+    sujet:"Un outil pour tes cours d'éducation musicale",
+    texte:"Salut ! J'utilise MusEduc avec mes classes et je pense que ça va te plaire.\n\n"
+      +"· Les élèves s'entraînent seuls (lecture de notes, rythme, écoute, compositeurs) et progressent par paliers.\n"
+      +"· Tu donnes un travail en deux clics et tu récupères les notes, prêtes pour Pronote.\n"
+      +"· En classe, on lance un jeu au tableau sur les téléphones ou les tablettes : la salle se réveille d'un coup.\n\n"
+      +"Gratuit, sans pub, rien à installer, et aucun nom d'élève n'est stocké.\n"
+      +"Les mini-vidéos montrent tout en une minute :"};
+  if(t==="eleve")return {
+    sujet:"Viens me battre sur MusEduc",
+    texte:"J'apprends la musique sur MusEduc et c'est vraiment un jeu : duel à la corde, L'ascension, le Calmar musical, des badges à gagner…\n"
+      +"Je te mets au défi de faire mieux que moi 😉\n\n"
+      +"Regarde à quoi ça ressemble :"};
+  return {
+    sujet:"Apprendre la musique en jouant : regarde ça",
+    texte:"J'ai découvert MusEduc : on apprend la musique en jouant (lecture de notes, rythme, écoute, compositeurs) avec Maestro, et les professeurs suivent leurs classes.\n"
+      +"Gratuit, sans pub, rien à installer.\n\n"
+      +"Les mini-vidéos montrent tout en une minute :"};
+}
 async function partagerMusEduc(){
   const url=new URL("vitrine.html",location.href).href;
-  const data={title:"MusEduc",text:"MusEduc : l'application d'éducation musicale pour les collégiens et leurs professeurs.",url:url};
-  /* Menu de partage du système : seulement sur téléphone et tablette. Sur ordinateur
-     (Chrome sous Windows notamment), navigator.share peut faire planter l'onglet
-     (RESULT_CODE_KILLED_BAD_MESSAGE) : on copie simplement le lien. */
+  const m=partageMessage(), sujet=m.sujet, texte=m.texte;
+  /* Téléphone et tablette : le menu de partage du système (WhatsApp, Signal,
+     Messages, e-mail…), l'élève choisit l'application. Sur ordinateur,
+     navigator.share peut faire planter l'onglet (Chrome sous Windows :
+     RESULT_CODE_KILLED_BAD_MESSAGE) : on ouvre la messagerie à la place. */
   const tactile=window.matchMedia&&window.matchMedia("(pointer:coarse)").matches;
   if(tactile&&navigator.share){
-    try{ await navigator.share(data); return; }catch(e){ if(e&&e.name==="AbortError")return; }
+    try{ await navigator.share({title:"MusEduc",text:texte,url:url}); return; }
+    catch(e){ if(e&&e.name==="AbortError")return; }
   }
-  try{ await navigator.clipboard.writeText(url); toast("Lien copié : colle-le dans un message ou un e-mail."); }
-  catch(e){ await dlgSaisir("Copie ce lien pour partager MusEduc :",url); }
+  /* Ordinateur : un e-mail tout prêt dans la messagerie (Outlook, Thunderbird,
+     Gmail si c'est la messagerie par défaut…), et le lien copié au cas où aucune
+     messagerie ne s'ouvre. */
+  const corps=texte+"\n\n"+url+"\n";
+  const a=document.createElement("a");
+  a.href="mailto:?subject="+encodeURIComponent(sujet)+"&body="+encodeURIComponent(corps);
+  document.body.appendChild(a); a.click(); a.remove();
+  let copie=false;
+  try{ await navigator.clipboard.writeText(url); copie=true; }catch(e){}
+  toast(copie?"Ta messagerie s'ouvre avec le message prêt. Le lien est aussi copié : tu peux le coller ailleurs."
+             :"Ta messagerie s'ouvre avec le message prêt.");
 }
 /* Carte discrète de soutien, affichée en bas de l'accueil. */
 function donCarteAccueilHTML(){
@@ -30245,7 +30728,7 @@ function ccTitreEtape(e){ return String(e.t||"").replace(/&nbsp;/g," ").replace(
 function ecranCoursCollege(){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
-  const estProfCC=(typeof ceProf==="function")&&ceProf();
+  const estProfCC=(typeof profConnecte==="function")&&profConnecte();
   if(estProfCC){ ecranCoursCollegeProf(); return; }
   document.getElementById("titre").innerHTML='<i class="ph ph-chalkboard-simple"></i> Cours de collège';
   document.getElementById("intro").textContent="Un cours à la fois, une étape après l'autre.";
@@ -30553,3 +31036,23 @@ if(_museducRouteProf){
   }catch(e){ setTimeout(_routerProf,350); }
 }
 else if(!profil.inscrit)setTimeout(ecranInscription,300); // 1er lancement : demander prénom + nom
+/* Comptes : à chaque session e-mail rétablie ou ouverte, on relit le rôle
+   (professeur, apprenant, administrateur) et, pour un apprenant, sa progression. */
+try{ const _aR=fbAuth(); if(_aR&&_aR.onAuthStateChanged)_aR.onAuthStateChanged(function(u){
+  if(!u||u.isAnonymous||!u.email){
+    if(_vueAdmin){ _vueAdmin=""; try{ sessionStorage.removeItem(VUE_CLE); }catch(e){} }
+    majVueAdminBandeau(); return;
+  }
+  if(_inscriptionEnCours)return;
+  chargerRole(u).then(function(chg){
+    const suite=(roleDe(u)==="apprenant")?apprenantRestaurer(u):Promise.resolve("");
+    return suite.then(function(issue){
+      majVueAdminBandeau();
+      if(chg||issue==="serveur"){
+        try{ construireMenu(); majIndicateurCompte(); }catch(e){}
+        const t=document.getElementById("titre");
+        if(t&&t.style.display==="none")accueil();
+      }
+    });
+  }).catch(function(){});
+}); }catch(e){}

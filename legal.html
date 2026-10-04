@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>MusEduc : informations légales</title>
 <meta name="description" content="Mentions légales, politique de confidentialité et conditions d'utilisation de MusEduc.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -96,16 +99,17 @@
   <!-- ===================== CONFIDENTIALITÉ ===================== -->
   <section id="confidentialite">
     <h2><span class="med">2</span> Politique de confidentialité</h2>
-    <div class="encadre"><b>En bref :</b> les élèves n'ont pas de compte nominatif. Ils sont reconnus par un <b>code</b> fourni par leur professeur ; leurs noms ne sont <b>jamais</b> envoyés sur nos serveurs et restent dans le navigateur du professeur. Aucune publicité, aucun traceur publicitaire, aucune revente de données.</div>
+    <div class="encadre"><b>En bref :</b> les élèves inscrits par leur professeur n'ont pas de compte nominatif. Ils sont reconnus par un <b>code</b> fourni par leur professeur ; leurs noms ne sont <b>jamais</b> envoyés sur nos serveurs et restent dans le navigateur du professeur. Seuls les <b>apprenants</b> (personnes de 15 ans et plus qui ouvrent elles-mêmes un compte personnel, sans professeur) indiquent leurs prénom et nom. Aucune publicité, aucun traceur publicitaire, aucune revente de données.</div>
 
     <h3>Qui est responsable ?</h3>
-    <p>Pour les comptes enseignants et le fonctionnement général du service, le responsable du traitement est l'éditeur (voir les mentions légales).</p>
+    <p>Pour les comptes enseignants, les comptes apprenants et le fonctionnement général du service, le responsable du traitement est l'éditeur (voir les mentions légales).</p>
     <p>Pour les données des élèves, c'est le professeur, dans le cadre de son enseignement, qui décide d'utiliser MusEduc avec sa classe : il agit (avec son établissement) comme responsable de ce traitement, et MusEduc comme <b>sous-traitant</b> au sens de l'article 28 du RGPD. Il lui revient d'informer les élèves et leurs familles et, si son établissement le demande, de signaler l'outil au délégué à la protection des données (DPO) de l'académie.</p>
 
     <h3>Quelles données ?</h3>
     <table>
       <tr><th>Qui</th><th>Données</th><th>Pourquoi</th></tr>
       <tr><td><b>Professeur</b></td><td>adresse e-mail, nom affiché, mot de passe (géré et chiffré par Firebase Authentication), classes, réglages, leçons et questions créées</td><td>créer et gérer son compte et ses classes</td></tr>
+      <tr><td><b>Apprenant</b> (compte personnel, 15 ans et plus)</td><td>prénom, nom, adresse e-mail, mot de passe (géré et chiffré par Firebase Authentication), confirmation d'avoir 15 ans ou plus, date d'inscription et de dernière visite, progression (points, badges, résultats des exercices et évaluations)</td><td>créer le compte, sauvegarder la progression et la retrouver sur tous ses appareils</td></tr>
       <tr><td><b>Élève avec un code</b></td><td>code élève, mot secret (seule une empreinte est enregistrée, jamais le mot lui-même), progression, points, badges, réponses et notes des exercices et évaluations, travaux rendus (temps passé, nombre d'essais, sorties de page), votes en classe, défis, observations « travail en classe » saisies par le professeur, enregistrements de chant déposés par l'élève</td><td>faire travailler l'élève, permettre au professeur de suivre et d'évaluer son travail</td></tr>
       <tr><td><b>Pendant une évaluation</b></td><td>journal de passation : absences de la page chronométrées, copier-coller, tentatives de capture ou de partage d'écran</td><td>aider le professeur à apprécier les conditions de passation ; ce journal n'entraîne aucune sanction automatique</td></tr>
       <tr><td><b>Jeux en direct</b></td><td>présence en ligne (signal bref), prénom ou pseudonyme facultatif le temps d'une partie</td><td>faire fonctionner les jeux de classe ; ces données sont effacées à la fin de la partie</td></tr>
@@ -115,18 +119,19 @@
 
     <h3>Sur quelle base ?</h3>
     <ul>
-      <li>Compte enseignant : l'exécution des présentes conditions d'utilisation (article 6.1.b du RGPD).</li>
+      <li>Compte enseignant et compte apprenant : l'exécution des présentes conditions d'utilisation (article 6.1.b du RGPD).</li>
       <li>Données des élèves : la mission d'enseignement du professeur et de son établissement (article 6.1.e du RGPD).</li>
       <li>Sécurité et bon fonctionnement du service : l'intérêt légitime de l'éditeur (article 6.1.f du RGPD).</li>
     </ul>
 
     <h3>Qui y a accès ?</h3>
-    <p>Le professeur voit les données de ses propres classes, et seulement elles. L'élève voit ses propres résultats. L'éditeur n'accède aux données que pour assurer le fonctionnement et la sécurité du service. Les données ne sont ni vendues, ni louées, ni cédées.</p>
+    <p>Le professeur voit les données de ses propres classes, et seulement elles. L'élève voit ses propres résultats. L'apprenant voit sa propre progression. L'éditeur, en tant qu'administrateur du service, voit la liste des comptes (nom, adresse e-mail, rôle, dates d'inscription et de dernière visite, nombre de classes et de codes d'un professeur, points d'un apprenant) pour gérer le service ; il n'ouvre pas les classes, les notes ni les progressions détaillées, et n'accède aux autres données que pour assurer le fonctionnement et la sécurité du service. Les données ne sont ni vendues, ni louées, ni cédées.</p>
     <p>Prestataires techniques : Google Firebase (stockage des données et authentification), Google Apps Script (solution de secours du jeu multijoueur, utilisée seulement si Firebase est indisponible) et GitHub (hébergement des pages). Firebase peut entraîner des transferts vers les États-Unis, encadrés par le cadre de protection des données UE-États-Unis (Data Privacy Framework) et les clauses contractuelles types de la Commission européenne.</p>
 
     <h3>Combien de temps ?</h3>
     <ul>
       <li>Les données d'un compte enseignant et de ses classes sont conservées tant que le compte existe. Le bouton <b>« Supprimer mon compte professeur »</b> (Paramètres) efface définitivement le compte, les classes, les codes élèves, les progressions et les notes.</li>
+      <li>Les données d'un compte apprenant sont conservées tant que le compte existe. Le bouton <b>« Supprimer mon compte »</b> (Paramètres, Zone danger) efface définitivement le prénom, le nom, l'adresse e-mail et la progression. Un compte apprenant resté inactif pendant trois ans peut être supprimé, après un message d'avertissement.</li>
       <li>Le professeur peut à tout moment réinitialiser une classe ou un élève (progression, notes, travaux, enregistrements, journal de passation).</li>
       <li>La présence en ligne et les données des parties en direct sont effacées à la fin de la session ou de la partie.</li>
     </ul>
@@ -152,6 +157,8 @@
     <p>L'application est aujourd'hui gratuite et sans publicité. Ses fonctionnalités peuvent évoluer ; si des options payantes étaient proposées un jour, elles seraient clairement signalées et ne s'appliqueraient qu'après acceptation de conditions de vente dédiées. Le service est fourni sans garantie de disponibilité permanente : il peut être interrompu pour maintenance ou en cas de panne d'un prestataire.</p>
     <h3>3. Compte enseignant</h3>
     <p>Le professeur crée son compte avec une adresse e-mail valide et un mot de passe qu'il garde confidentiel. Il est responsable de l'utilisation de son compte. Il peut le supprimer à tout moment depuis les Paramètres.</p>
+    <h3>3 bis. Compte apprenant</h3>
+    <p>Toute personne de <b>15 ans ou plus</b> peut ouvrir un compte apprenant personnel, avec ses prénom et nom, une adresse e-mail valide et un mot de passe qu'elle garde confidentiel. Elle s'entraîne seule, sans professeur ; elle peut ensuite rejoindre la classe d'un professeur avec le code élève qu'il lui donne, en gardant sa progression. Un jeune de moins de 15 ans utilise MusEduc avec le code de sa classe, ou avec un compte ouvert par un parent. Le compte peut être supprimé à tout moment depuis les Paramètres. L'éditeur peut suspendre un compte en cas d'usage contraire aux présentes conditions.</p>
     <h3>4. Utilisation avec des élèves</h3>
     <ul>
       <li>Le professeur informe ses élèves et leurs familles de l'usage de MusEduc, de la nature des données traitées (voir la politique de confidentialité) et, en évaluation, de l'existence du journal de passation.</li>
