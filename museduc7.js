@@ -1052,7 +1052,7 @@ const CLE_FA_GEO={w:302,h:343,refY:99,inter:102};       // refY = 4e ligne (entr
 function dessinerPortee(cle,pos,afficher){
   const W=230,H=140,x0=24,e=12,top=52,baseY=top+4*e,nx=140;
   const yLigne=n=>top+(4-n)*e; // n=1 (bas) .. 5 (haut)
-  let s=`<svg class="portee" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  let s=`<svg class="portee" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Portée en clé de ${cle==="fa"?"fa":"sol"}${afficher?", avec une note à lire (exercice visuel)":""}">`;
   for(let i=0;i<5;i++){const y=top+i*e;s+=`<line x1="${x0}" y1="${y}" x2="${W-15}" y2="${y}" stroke="#1f2440" stroke-width="1.4"/>`;}
   s+=cleSVG(cle,e,yLigne);
   if(afficher){
@@ -1088,7 +1088,7 @@ function dessinerGamme(cle){
   const e=13, x0=20, top=40, baseY=top+4*e, H=baseY+52, pas=38, xNote=96;
   const W=xNote+8*pas;
   const yLigne=n=>top+(4-n)*e;
-  let s=`<svg class="portee-gamme" viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">`;
+  let s=`<svg class="portee-gamme" viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px" role="img" aria-label="Gamme de do majeur en clé de ${cle==="fa"?"fa":"sol"} : do, ré, mi, fa, sol, la, si, do">`;
   for(let i=0;i<5;i++){const y=top+i*e;
     s+=`<line x1="${x0}" y1="${y}" x2="${W-10}" y2="${y}" stroke="currentColor" stroke-width="1.4" opacity=".85"/>`;}
   s+=cleSVG(cle,e,yLigne);
@@ -6382,7 +6382,7 @@ function construireMenu(){
     h+=`</div>`;
   });
   h+=`<button type="button" class="menu-partage" onclick="partagerMusEduc()"><span class="mp-ic"><i class="ph-fill ph-share-network"></i></span><span class="mp-txt"><b>Partager MusEduc</b><small>à un collègue, un ami</small></span><i class="ph ph-caret-right mp-fl"></i></button>`;
-  h+=`<div class="signature"><div class="sig-auteur">© ${new Date().getFullYear()} MusEduc · Philippe Boussetta</div><nav class="sig-liens"><a href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a><span aria-hidden="true">·</span><a href="legal.html#confidentialite" target="_blank" rel="noopener">Confidentialité</a></nav><div class="signature-v" title="Version de l'application. Si elle ne change pas après une mise en ligne, la page vient du cache : rechargez avec Ctrl+Maj+R.">Version ${VERSION_APP}</div></div>`;
+  h+=`<div class="signature"><div class="sig-auteur">© ${new Date().getFullYear()} MusEduc · Philippe Boussetta</div><nav class="sig-liens"><a href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a><span aria-hidden="true">·</span><a href="legal.html#confidentialite" target="_blank" rel="noopener">Confidentialité</a><span aria-hidden="true">·</span><a href="legal.html#accessibilite" target="_blank" rel="noopener">Accessibilité</a></nav><div class="signature-v" title="Version de l'application. Si elle ne change pas après une mise en ligne, la page vient du cache : rechargez avec Ctrl+Maj+R.">Version ${VERSION_APP}</div></div>`;
   document.getElementById("menu").innerHTML=h;
   menuActif(_menuActifId);
   majEnteteProfil();
@@ -7655,7 +7655,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-05o";
+const VERSION_APP="2026-10-05u";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -7826,7 +7826,7 @@ function pfMaitriseHTML(){
   if(!ordre.length)return "";
   if(_pfDom>=ordre.length)_pfDom=0;
   const onglets=ordre.map((gr,i)=>{ const lot=parGroupe[gr], n=lot.filter(d=>maitrise(d.id)==="fort").length;
-    return `<button type="button" class="${i===_pfDom?"on":""}" onclick="pfChoisirDomaine(${i})">${echapH(PF_DOM_COURT[gr]||gr)} <small>${n}/${lot.length}</small></button>`; }).join("");
+    return `<button type="button" role="tab" aria-selected="${i===_pfDom?"true":"false"}" class="${i===_pfDom?"on":""}" onclick="pfChoisirDomaine(${i})">${echapH(PF_DOM_COURT[gr]||gr)} <small>${n}/${lot.length}</small></button>`; }).join("");
   const tuiles=parGroupe[ordre[_pfDom]].map(d=>{
     const p=palierInfo(d.id), lab=labelMaitrise(d.id);
     const pct=p.joue?Math.min(100,Math.round(((Math.min(p.nm,4)-1)+(p.nm<4?p.serie/Math.max(1,p.total):0))/3*100)):0;
@@ -10608,6 +10608,14 @@ let _syncEnCours=false;
    identifiants des champs (pcMail, piNom…) sont ceux qu'attendent connecterProf,
    inscrireProf, inscrireApprenant et la touche Entrée. */
 function authChamp(id,lib,type,ic,attrs){
+  /* « secret » : le mot secret de l'élève. Un vrai champ mot de passe attire le
+     gestionnaire du navigateur, qui y versait l'e-mail et le mot de passe du
+     professeur : c'est un champ texte masqué par la feuille de style. */
+  if(type==="secret"){
+    return '<label class="auth-champ"><span class="auth-lib">'+lib+'</span><span class="auth-in"><i class="ph ph-'+ic+'"></i>'
+      +'<input id="'+id+'" type="text" class="champ-secret" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore '+(attrs||"")+'>'
+      +'<button type="button" class="auth-oeil" aria-label="Afficher le mot secret" onclick="authOeil(this)"><i class="ph ph-eye"></i></button></span></label>';
+  }
   const mdp=type==="password";
   return '<label class="auth-champ"><span class="auth-lib">'+lib+'</span><span class="auth-in"><i class="ph ph-'+ic+'"></i>'
     +'<input id="'+id+'" type="'+type+'" '+(mdp?'data-oeil="1" ':'')+(attrs||"")+'>'
@@ -10616,6 +10624,8 @@ function authChamp(id,lib,type,ic,attrs){
 }
 function authOeil(b){
   const i=b.parentNode.querySelector("input"); if(!i)return;
+  if(i.classList.contains("champ-secret")){ const v=i.classList.toggle("visible");
+    b.innerHTML='<i class="ph ph-eye'+(v?'-slash':'')+'"></i>'; return; }
   const voir=i.type==="password"; i.type=voir?"text":"password";
   b.innerHTML='<i class="ph ph-eye'+(voir?'-slash':'')+'"></i>';
   b.setAttribute("aria-label",voir?"Masquer le mot de passe":"Afficher le mot de passe");
@@ -10656,6 +10666,7 @@ function authCarteHTML(o){
         <h3>Bon retour&nbsp;!</h3>
         ${authChamp("pcMail","Adresse e-mail","email","envelope-simple",'autocomplete="username" placeholder="'+o.mailEx+'"')}
         ${authChamp("pcMdp","Mot de passe","password","lock-simple",'autocomplete="current-password"')}
+        ${souvenirHTML("pcSouvenir","Rester connecté","Décochez sur un ordinateur partagé.")}
         <button type="button" class="auth-lien" onclick="authMdpOublie()">Mot de passe oublié&nbsp;?</button>
         <div id="pcErr" class="auth-err"></div>
         <button class="auth-go" onclick="connecterProf()">Se connecter <i class="ph ph-arrow-right"></i></button>
@@ -10688,6 +10699,34 @@ function authQuiHTML(k){
   const t=function(c,ic,lib){ return '<button type="button" class="auth-qui-b'+(c===k?" on":"")+'" data-k="'+c+'" onclick="ecranConnexion(\''+c+'\')"><i class="ph-fill ph-'+ic+'"></i>'+lib+'</button>'; };
   return '<div class="auth-qui"><div class="auth-qui-t">Qui es-tu&nbsp;?</div><div class="auth-qui-g">'+t("eleve","student","Élève")+t("solo","user-circle","En solo")+t("prof","chalkboard-teacher","Prof")+'</div></div>';
 }
+/* « Se souvenir de moi » : coché, l'appareil garde la session et retient le code
+   (pour les élèves qui l'oublient) ; décoché, la session s'arrête à la fermeture
+   du navigateur et le code n'est pas retenu (appareil partagé). */
+function souvenirHTML(id,lib,aide){
+  let on=true; try{ on=localStorage.getItem("museduc-souvenir")!=="0"; }catch(e){}
+  return '<label class="auth-souvenir" title="'+aide+'"><input type="checkbox" id="'+id+'"'+(on?" checked":"")+'><span class="auth-levier"></span><span><b>'+lib+'</b><small>'+aide+'</small></span></label>';
+}
+function souvenirCode(){ try{ return localStorage.getItem("museduc-souvenir")!=="0"?(localStorage.getItem("museduc-dernier-code")||""):""; }catch(e){ return ""; } }
+function souvenirNoter(code){
+  const cb=document.getElementById("inSouvenir"), on=!cb||cb.checked;
+  try{
+    localStorage.setItem("museduc-souvenir",on?"1":"0");
+    if(on)localStorage.setItem("museduc-dernier-code",code); else localStorage.removeItem("museduc-dernier-code");
+    sessionStorage.setItem("museduc-session-eleve","1");
+  }catch(e){}
+}
+/* À l'ouverture : un élève qui n'a pas voulu qu'on se souvienne de lui est
+   déconnecté si c'est une nouvelle session (navigateur fermé entre-temps). Sa
+   progression est déjà sur le serveur, sous son code. */
+function souvenirVerifier(){
+  let off=false, meme=false;
+  try{ off=localStorage.getItem("museduc-souvenir")==="0"; meme=sessionStorage.getItem("museduc-session-eleve")==="1"; }catch(e){}
+  if(!off||meme||!profil.eleveCode||profil.eleveCode==="DEMO")return false;
+  try{ reinitProgressionLocale(); }catch(e){}
+  profil.eleveCode=""; profil.classeId=""; profil.classeNom=""; profil.codeProprietaire=""; profil.elevePreuve="";
+  sauverProfil(profil);
+  return true;
+}
 function ecranConnexion(k){
   if(!profil.inscrit){ profil.inscrit=true; try{ sauverProfil(profil); }catch(e){} }
   masquerInterfaceNormale(); majRetour(null);
@@ -10706,8 +10745,9 @@ function ecranConnexion(k){
       atouts:["Ta progression, tes points et tes badges sont sauvegardés","Tu retrouves le travail donné par ton professeur","Ton nom n'est jamais enregistré : seul ton professeur sait à qui est ce code"],
       pied:"Ton code et ton mot secret marchent sur n'importe quel appareil.",
       unique:'<label class="auth-champ"><span class="auth-lib">Mon code élève</span><span class="auth-in auth-code"><i class="ph ph-identification-card"></i>'
-        +'<input id="inCode" type="text" maxlength="8" placeholder="K7P2M" autocomplete="off" autocapitalize="characters"></span></label>'
-        +authChamp("inSecret","Mon mot secret","password","key",'maxlength="40" placeholder="ex : elephant" autocomplete="off" onkeydown="if(event.key===\'Enter\')rejoindreClasse()"')
+        +'<input id="inCode" type="text" maxlength="8" placeholder="K7P2M" value="'+echapH(souvenirCode())+'" name="museduc-code-eleve" autocomplete="off" autocapitalize="characters" spellcheck="false" data-lpignore="true" data-1p-ignore oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\')"></span></label>'
+        +authChamp("inSecret","Mon mot secret","secret","key",'maxlength="40" name="museduc-mot-secret" placeholder="ex : elephant" onkeydown="if(event.key===\'Enter\')rejoindreClasse()"')
+        +souvenirHTML("inSouvenir","Se souvenir de moi sur cet appareil","Décoche sur une tablette ou un ordinateur partagé.")
         +'<div id="inCErr" class="auth-err"></div>'
         +'<button class="auth-go" onclick="rejoindreClasse()">M\'identifier <i class="ph ph-arrow-right"></i></button>'
         +'<div class="auth-astuce"><i class="ph-fill ph-key"></i><span><b>La première fois</b>, choisis un mot secret facile à retenir (4 lettres ou plus) : il faudra ensuite ce mot en plus du code. Oublié&nbsp;? Ton professeur peut le remettre à zéro.</span></div>'+sans,
@@ -10760,7 +10800,11 @@ function connecterProf(){
   const mdp=((document.getElementById("pcMdp")||{}).value||"");
   const er=document.getElementById("pcErr"); if(er)er.style.display="none";
   if(!mail||!mdp){ authErr("pcErr",{code:"invalid-email"}); return; }
-  a.signInWithEmailAndPassword(mail,mdp).then(function(cr){
+  /* « Rester connecté » décoché : la session s'arrête à la fermeture du navigateur */
+  const garder=!document.getElementById("pcSouvenir")||document.getElementById("pcSouvenir").checked;
+  let pers=Promise.resolve();
+  try{ pers=a.setPersistence(garder?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION).catch(function(){}); }catch(x){}
+  pers.then(function(){ return a.signInWithEmailAndPassword(mail,mdp); }).then(function(cr){
     return chargerRole(cr.user).then(function(){ return roleDe(cr.user)==="apprenant"?apprenantRestaurer(cr.user):""; });
   }).then(()=>{ if(_role&&_role.suspendu)return; construireMenu(); majIndicateurCompte();
     toast(nomCompte()&&roleDe(fbAuth().currentUser)==="apprenant"?"Bon retour, "+capNom(_role.prenom||"")+" !":"Connecté !"); accueil(); }).catch(e=>authErr("pcErr",e));
@@ -10830,8 +10874,14 @@ function a11yCliquables(){
   try{ oeilMdp(); }catch(e){}
   document.querySelectorAll(A11Y_SEL).forEach(function(el){
     if(el.closest("svg"))return;
+    /* une carte cliquable qui contient déjà son propre bouton : c'est le bouton qu'on atteint au clavier */
+    if(el.querySelector("button,a[href],input,select,textarea"))return;
     el.setAttribute("tabindex","0");
     if(!el.hasAttribute("role"))el.setAttribute("role","button");
+  });
+  /* tableau trop large qui défile : il doit pouvoir être parcouru au clavier */
+  document.querySelectorAll("table").forEach(function(t){
+    if(!t.hasAttribute("tabindex")&&t.scrollWidth>t.clientWidth+2)t.setAttribute("tabindex","0");
   });
 }
 try{
@@ -11654,6 +11704,7 @@ function rejoindreClasse(){
       if(proprio && proprio!==code){ reinitProgressionLocale(); profil.codeProprietaire=""; }
       profil.eleveCode=code; profil.classeId=classId; profil.classeNom=(cl.exists?cl.data().nom:"")||""; profil.inscrit=true;
       profil.elevePreuve=r.preuve;
+      souvenirNoter(code);
       sauverProfil(profil); if(typeof majEnteteProfil==="function")majEnteteProfil();
       _restaureFait=false; _uidRattache=true; /* rattachement déjà écrit par la preuve */
       return restaurerEleve().then(function(retrouve){
@@ -11885,8 +11936,8 @@ function compteApprenantHTML(){
     <p style="color:var(--encre-doux);font-size:.88rem"><i class="ph ph-cloud-check"></i> Ta progression est sauvegardée dans ton compte : tu la retrouves sur tous tes appareils.</p>
     <p style="color:var(--encre-doux);font-size:.88rem"><i class="ph ph-users-three"></i> Ton professeur t'a donné un <b>code élève</b>&nbsp;? Entre-le ci-dessous : tu rejoins sa classe en gardant tes points et tes badges.</p>
     <div class="prog-prenom" style="max-width:320px;box-shadow:none;border:none;padding:0">
-      <input id="inCode" type="text" maxlength="8" placeholder="Ex : K7P2M" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;font-size:1.2rem;text-align:center">
-      <input id="inSecret" type="password" maxlength="40" placeholder="Mon mot secret" autocomplete="off" style="margin-top:8px;font-weight:700;font-size:1.05rem;text-align:center" onkeydown="if(event.key==='Enter')rejoindreClasse()">
+      <input id="inCode" type="text" maxlength="8" placeholder="Ex : K7P2M" name="museduc-code-eleve" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;font-size:1.2rem;text-align:center">
+      <input id="inSecret" type="text" class="champ-secret" maxlength="40" placeholder="Mon mot secret" name="museduc-mot-secret" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore style="margin-top:8px;font-weight:700;font-size:1.05rem;text-align:center" onkeydown="if(event.key==='Enter')rejoindreClasse()">
       <div id="inCErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
       <button class="action btn-corr" style="margin-top:10px" onclick="rejoindreClasse()"><i class="ph ph-sign-in"></i> Rejoindre la classe</button>
     </div>
@@ -21512,7 +21563,7 @@ const DIP_CATS=[
   {k:"maitrise", titre:"Le plus de leçons maîtrisées", phrase:"pour le plus de leçons maîtrisées, trois niveaux validés", lib:"Leçons maîtrisées",
    d:"M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8M9 18h6"}
 ];
-function dipReglages(){ const d=(profil&&profil.diplome)||{}; return {prof:d.prof||"", college:d.college||"", ville:d.ville||""}; }
+function dipReglages(){ const d=(profil&&profil.diplome)||{}; return {prof:d.prof||"", college:d.college||"", ville:d.ville||"", style:d.style||"rond", encre:d.encre||"#2b55a8"}; }
 function dipValTxt(k,v){
   if(k==="moyenne")return String(Math.round(v*10)/10).replace(".",",")+" / 20";
   if(k==="points")return Math.round(v).toLocaleString("fr-FR")+" pts";
@@ -21539,27 +21590,64 @@ function dipAnneeScolaire(p){
   return y+"-"+(y+1);
 }
 /* ---- le tampon (SVG), partagé par le diplôme et l'aperçu des réglages ---- */
+/* Tampons des diplômes (05/10/2026) : six styles et cinq encres, choisis dans
+   Paramètres > Diplômes. Tout est dessiné à la couleur "#2b55a8", remplacée à la fin. */
+const DIP_STYLES=[["rond","Rond classique"],["sceau","Sceau dentelé"],["etoiles","Couronne d'étoiles"],["note","Note de musique"],["ovale","Ovale"],["cadre","Cadre officiel"]];
+const DIP_ENCRES=[["#2b55a8","Bleu"],["#b3261e","Rouge"],["#1f7a4d","Vert"],["#6b3fa0","Violet"],["#2a2f38","Noir"]];
 function dipTamponSVG(R,taille,encre){
-  const E=encre||"#2b55a8";
+  R=R||{};
+  const style=R.style||"rond", E=encre||R.encre||"#2b55a8", C="#2b55a8";
   const maj=function(x){ return String(x||"").toUpperCase(); };
   const haut=maj(R.college||"COLLÈGE"), bas=maj(R.ville?R.ville+" · ÉDUCATION MUSICALE":"ÉDUCATION MUSICALE"), prof=maj(R.prof||"LE PROFESSEUR");
   const fs=function(t,max){ return Math.max(6.5,Math.min(max,200/(t.length*0.8))).toFixed(1); };
   const fp=Math.max(9,Math.min(15,120/(prof.length*0.62))).toFixed(1);
   const id="tp"+Math.floor(Math.random()*1e6);
-  const svg='<svg width="'+(taille||178)+'" height="'+(taille||178)+'" viewBox="0 0 178 178" class="dip-tamp" aria-hidden="true">'
-    +'<path id="'+id+'h" d="M 23 89 A 66 66 0 0 1 155 89" fill="none"/>'
-    +'<path id="'+id+'b" d="M 23 89 A 66 66 0 0 0 155 89" fill="none"/>'
-    +'<circle cx="89" cy="89" r="85" fill="none" stroke="#2b55a8" stroke-width="3.5"/>'
-    +'<circle cx="89" cy="89" r="79" fill="none" stroke="#2b55a8" stroke-width="1.2"/>'
-    +'<circle cx="89" cy="89" r="47" fill="none" stroke="#2b55a8" stroke-width="1.6"/>'
-    +'<text fill="#2b55a8" font-family="Inter, sans-serif" font-size="'+fs(haut,11.5)+'" font-weight="700" letter-spacing="1.1"><textPath href="#'+id+'h" startOffset="50%" text-anchor="middle">'+echapH(haut)+'</textPath></text>'
-    +'<text fill="#2b55a8" font-family="Inter, sans-serif" font-size="'+fs(bas,9)+'" font-weight="700" letter-spacing=".6"><textPath href="#'+id+'b" startOffset="50%" text-anchor="middle">'+echapH(bas)+'</textPath></text>'
-    +'<path d="M 14 89 l 3 -3 l 3 3 l -3 3 z M 158 89 l 3 -3 l 3 3 l -3 3 z" fill="#2b55a8"/>'
-    +'<text x="89" y="79" fill="#2b55a8" font-family="Inter, sans-serif" font-size="8.5" font-weight="700" letter-spacing="1.5" text-anchor="middle">LE PROFESSEUR</text>'
-    +'<text x="89" y="97" fill="#2b55a8" font-family="\'Baloo 2\', sans-serif" font-size="'+fp+'" font-weight="800" text-anchor="middle">'+echapH(prof)+'</text>'
-    +'<path d="M 62 106 L 116 106" stroke="#2b55a8" stroke-width="1.2"/>'
-    +'</svg>';
-  return E==="#2b55a8"?svg:svg.split("#2b55a8").join(E);
+  const T=taille||178;
+  const arcs='<path id="'+id+'h" d="M 23 89 A 66 66 0 0 1 155 89" fill="none"/><path id="'+id+'b" d="M 23 89 A 66 66 0 0 0 155 89" fill="none"/>'
+    +'<text fill="'+C+'" font-family="Inter, sans-serif" font-size="'+fs(haut,11.5)+'" font-weight="700" letter-spacing="1.1"><textPath href="#'+id+'h" startOffset="50%" text-anchor="middle">'+echapH(haut)+'</textPath></text>'
+    +'<text fill="'+C+'" font-family="Inter, sans-serif" font-size="'+fs(bas,9)+'" font-weight="700" letter-spacing=".6"><textPath href="#'+id+'b" startOffset="50%" text-anchor="middle">'+echapH(bas)+'</textPath></text>';
+  const centre=function(y){ return '<text x="89" y="'+(y-18)+'" fill="'+C+'" font-family="Inter, sans-serif" font-size="8.5" font-weight="700" letter-spacing="1.5" text-anchor="middle">LE PROFESSEUR</text>'
+    +'<text x="89" y="'+y+'" fill="'+C+'" font-family="\'Baloo 2\', sans-serif" font-size="'+fp+'" font-weight="800" text-anchor="middle">'+echapH(prof)+'</text>'
+    +'<path d="M 62 '+(y+9)+' L 116 '+(y+9)+'" stroke="'+C+'" stroke-width="1.2"/>'; };
+  const etoile=function(x,y,r){ let d=""; for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rr=i%2?r*0.45:r; d+=(i?"L":"M")+(x+rr*Math.cos(a)).toFixed(1)+" "+(y+rr*Math.sin(a)).toFixed(1); } return '<path d="'+d+'Z" fill="'+C+'"/>'; };
+  const note='<path d="M82 68 v-15 l14 -3 v14" fill="none" stroke="'+C+'" stroke-width="2.2"/><circle cx="79.2" cy="68" r="3.4" fill="'+C+'"/><circle cx="93.2" cy="64" r="3.4" fill="'+C+'"/>';
+  let corps="";
+  if(style==="sceau"){
+    let d=""; const n=36; for(let i=0;i<=n*2;i++){ const a=i*Math.PI/n, r=i%2?80:87; d+=(i?"L":"M")+(89+r*Math.cos(a)).toFixed(1)+" "+(89+r*Math.sin(a)).toFixed(1); }
+    corps='<path d="'+d+'Z" fill="none" stroke="'+C+'" stroke-width="2.4" stroke-linejoin="round"/>'
+      +'<circle cx="89" cy="89" r="73" fill="none" stroke="'+C+'" stroke-width="1.2"/><circle cx="89" cy="89" r="47" fill="none" stroke="'+C+'" stroke-width="1.6" stroke-dasharray="3 2.5"/>'
+      +arcs+centre(97);
+  }else if(style==="etoiles"){
+    let st=""; for(let i=0;i<12;i++){ const a=i*Math.PI/6; if(i===0||i===6)continue; st+=etoile(89+57*Math.cos(a),89+57*Math.sin(a),3.6); }
+    corps='<circle cx="89" cy="89" r="85" fill="none" stroke="'+C+'" stroke-width="3.5"/><circle cx="89" cy="89" r="79" fill="none" stroke="'+C+'" stroke-width="1.2"/>'
+      +'<circle cx="89" cy="89" r="47" fill="none" stroke="'+C+'" stroke-width="1.6"/>'+arcs+etoile(14,89,4)+etoile(164,89,4)+etoile(89,62,6.5)+centre(100);
+  }else if(style==="note"){
+    corps='<circle cx="89" cy="89" r="85" fill="none" stroke="'+C+'" stroke-width="2"/><circle cx="89" cy="89" r="81" fill="none" stroke="'+C+'" stroke-width="2" stroke-dasharray="1 4" stroke-linecap="round"/>'
+      +'<circle cx="89" cy="89" r="47" fill="none" stroke="'+C+'" stroke-width="2.4"/>'+arcs+note+centre(104);
+  }else if(style==="ovale"){
+    const fo=Math.max(6,Math.min(11,132/(haut.length*0.72))).toFixed(1), fb=Math.max(5.5,Math.min(9,120/(bas.length*0.68))).toFixed(1);
+    corps='<ellipse cx="89" cy="89" rx="86" ry="58" fill="none" stroke="'+C+'" stroke-width="3.5"/><ellipse cx="89" cy="89" rx="80" ry="52" fill="none" stroke="'+C+'" stroke-width="1.2"/>'
+      +'<text x="89" y="62" fill="'+C+'" font-family="Inter, sans-serif" font-size="'+fo+'" font-weight="700" letter-spacing="1" text-anchor="middle">'+echapH(haut)+'</text>'
+      +'<path d="M 34 70 L 144 70 M 34 112 L 144 112" stroke="'+C+'" stroke-width="1"/>'
+      +'<text x="89" y="86" fill="'+C+'" font-family="Inter, sans-serif" font-size="8" font-weight="700" letter-spacing="1.5" text-anchor="middle">LE PROFESSEUR</text>'
+      +'<text x="89" y="103" fill="'+C+'" font-family="\'Baloo 2\', sans-serif" font-size="'+fp+'" font-weight="800" text-anchor="middle">'+echapH(prof)+'</text>'
+      +'<text x="89" y="123" fill="'+C+'" font-family="Inter, sans-serif" font-size="'+fb+'" font-weight="700" letter-spacing=".4" text-anchor="middle">'+echapH(bas)+'</text>';
+  }else if(style==="cadre"){
+    const fo=Math.max(6.5,Math.min(10.5,118/(haut.length*0.72))).toFixed(1), fb=Math.max(6.5,Math.min(9,140/(bas.length*0.75))).toFixed(1);
+    corps='<rect x="8" y="34" width="162" height="110" rx="8" fill="none" stroke="'+C+'" stroke-width="3.5"/><rect x="14" y="40" width="150" height="98" rx="5" fill="none" stroke="'+C+'" stroke-width="1.2"/>'
+      +'<text x="89" y="60" fill="'+C+'" font-family="Inter, sans-serif" font-size="'+fo+'" font-weight="800" letter-spacing="1" text-anchor="middle">'+echapH(haut)+'</text>'
+      +etoile(24,57,3.4)+etoile(154,57,3.4)
+      +'<text x="89" y="82" fill="'+C+'" font-family="Inter, sans-serif" font-size="8" font-weight="700" letter-spacing="1.5" text-anchor="middle">LE PROFESSEUR</text>'
+      +'<text x="89" y="100" fill="'+C+'" font-family="\'Baloo 2\', sans-serif" font-size="'+fp+'" font-weight="800" text-anchor="middle">'+echapH(prof)+'</text>'
+      +'<path d="M 40 110 L 138 110" stroke="'+C+'" stroke-width="1"/>'
+      +'<text x="89" y="126" fill="'+C+'" font-family="Inter, sans-serif" font-size="'+fb+'" font-weight="700" letter-spacing=".6" text-anchor="middle">'+echapH(bas)+'</text>';
+  }else{
+    corps='<circle cx="89" cy="89" r="85" fill="none" stroke="'+C+'" stroke-width="3.5"/><circle cx="89" cy="89" r="79" fill="none" stroke="'+C+'" stroke-width="1.2"/>'
+      +'<circle cx="89" cy="89" r="47" fill="none" stroke="'+C+'" stroke-width="1.6"/>'+arcs
+      +'<path d="M 14 89 l 3 -3 l 3 3 l -3 3 z M 158 89 l 3 -3 l 3 3 l -3 3 z" fill="'+C+'"/>'+centre(97);
+  }
+  const svg='<svg width="'+T+'" height="'+T+'" viewBox="0 0 178 178" class="dip-tamp" aria-hidden="true">'+corps+'</svg>';
+  return E===C?svg:svg.split(C).join(E);
 }
 /* ---- un diplôme (A4 paysage, 1123 × 794 px) ---- */
 function dipPageHTML(o){
@@ -21867,12 +21955,20 @@ function dipReglagesHTML(){
     +champ("dipProf","Nom du professeur",R.prof,"Ex : M. Boussetta")
     +champ("dipCollege","Établissement",R.college,"Ex : Collège Le Cèdre")
     +champ("dipVille","Ville",R.ville,"Ex : Canteleu")
+    +'<div class="dip-choix-t">Style du tampon</div><div class="dip-styles">'+DIP_STYLES.map(function(st){
+        return '<button type="button" class="dip-style'+(R.style===st[0]?" on":"")+'" data-s="'+st[0]+'" onclick="dipChoisir(this,\'dip-style\')" title="'+st[1]+'">'
+          +dipTamponSVG(Object.assign({},R,{style:st[0]}),64)+'<small>'+st[1]+'</small></button>'; }).join("")+'</div>'
+    +'<div class="dip-choix-t">Couleur de l\'encre</div><div class="dip-encres">'+DIP_ENCRES.map(function(en){
+        return '<button type="button" class="dip-encre'+(R.encre===en[0]?" on":"")+'" data-e="'+en[0]+'" style="--e:'+en[0]+'" onclick="dipChoisir(this,\'dip-encre\')" title="'+en[1]+'"><span></span>'+en[1]+'</button>'; }).join("")+'</div>'
     +'<button class="rm-cta" onclick="dipReglagesSauver()"><i class="ph-fill ph-floppy-disk"></i> Enregistrer</button></div>'
     +'<div class="dip-reg-apercu" id="dipApercu">'+dipTamponSVG(R,170)+'</div></div></div>';
 }
 function dipLireChamps(){ const v=function(id){ const el=document.getElementById(id); return el?el.value.trim():""; };
-  return {prof:v("dipProf"), college:v("dipCollege"), ville:v("dipVille")}; }
-function dipApercu(){ const z=document.getElementById("dipApercu"); if(z)z.innerHTML=dipTamponSVG(dipLireChamps(),170); }
+  const st=document.querySelector(".dip-style.on"), en=document.querySelector(".dip-encre.on"), R0=dipReglages();
+  return {prof:v("dipProf"), college:v("dipCollege"), ville:v("dipVille"), style:st?st.dataset.s:R0.style, encre:en?en.dataset.e:R0.encre}; }
+function dipChoisir(b,cls){ document.querySelectorAll("."+cls).forEach(function(x){ x.classList.toggle("on",x===b); }); dipApercu(); }
+function dipApercu(){ const R=dipLireChamps(); const z=document.getElementById("dipApercu"); if(z)z.innerHTML=dipTamponSVG(R,170);
+  document.querySelectorAll(".dip-style").forEach(function(b){ const sv=b.querySelector("svg"); if(sv)sv.outerHTML=dipTamponSVG(Object.assign({},R,{style:b.dataset.s}),64); }); }
 function dipReglagesSauver(){ profil.diplome=dipLireChamps(); sauverProfil(profil);
   profReglagesEnvoyer().then(function(ok){ toast(ok?"Tampon des diplômes enregistré dans votre compte.":"Tampon enregistré sur cet appareil seulement (pas de connexion au serveur)."); }); }
 /* Réglages personnels du professeur (périodes de l'année, tampon des diplômes) :
@@ -26465,8 +26561,8 @@ function ecranParametres(){
   }else{
     compte=`<p style="color:var(--encre-doux);margin-top:0">Entre le code que ton professeur t'a donné : ta progression et tes notes lui seront envoyées. <b>Ton nom n'est jamais enregistré.</b></p>
       <div class="prog-prenom" style="max-width:320px;box-shadow:none;border:none;padding:0">
-        <input id="inCode" type="text" maxlength="8" placeholder="Ex : K7P2M" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;font-size:1.2rem;text-align:center">
-        <input id="inSecret" type="password" maxlength="40" placeholder="Mon mot secret" autocomplete="off" style="margin-top:8px;font-weight:700;font-size:1.05rem;text-align:center" onkeydown="if(event.key==='Enter')rejoindreClasse()">
+        <input id="inCode" type="text" maxlength="8" placeholder="Ex : K7P2M" name="museduc-code-eleve" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;font-size:1.2rem;text-align:center">
+        <input id="inSecret" type="text" class="champ-secret" maxlength="40" placeholder="Mon mot secret" name="museduc-mot-secret" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore style="margin-top:8px;font-weight:700;font-size:1.05rem;text-align:center" onkeydown="if(event.key==='Enter')rejoindreClasse()">
         <div id="inCErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
         <button class="action btn-corr" style="margin-top:10px" onclick="rejoindreClasse()"><i class="ph ph-sign-in"></i> M'identifier</button>
       </div>
@@ -26593,7 +26689,7 @@ function ecranParametres(){
   document.getElementById("zone").innerHTML=`
    <div class="accueil" style="max-width:1100px">
      <div class="pm-md">
-       <nav class="pm-nav">${nav}</nav>
+       <nav class="pm-nav" aria-label="Rubriques des paramètres">${nav}</nav>
        <div class="pm-zone" style="--d:${teinteDe(vue)}">${panneau}</div>
      </div>
    </div>`;
@@ -31470,6 +31566,7 @@ try{ const _a=fbAuth(); if(_a&&_a.onAuthStateChanged)_a.onAuthStateChanged(funct
   }catch(e){}
 }); }catch(e){}
 try{rtdbMaj();}catch(e){}   /* rien en cours : on relâche la connexion Realtime */
+try{ if(souvenirVerifier()){ construireMenu(); majIndicateurCompte(); accueil(); } }catch(e){}
 try{demarrerSyncEleve();}catch(e){}
 /* Les noms importés (CSV) sont conservés en local et relus par labelDe à chaque
    affichage : ils reviennent seuls à chaque ouverture, rien à recharger. */

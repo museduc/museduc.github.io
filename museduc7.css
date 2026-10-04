@@ -6,7 +6,7 @@
     --accent-a:#1e3a63; --accent-b:#F2C94C; --accent-c:#3d6ba3;
     --maestro-blue:#1e3a63; --maestro-dark:#16233a; --maestro-gold:#F2C94C; --maestro-light:#3d6ba3;
     /* texte */
-    --encre:#16233a; --encre-doux:#7c8ea5; --papier:#eaf3fb; --papier-fonce:#d7e6f4;
+    --encre:#16233a; --encre-doux:#566782; --papier:#eaf3fb; --papier-fonce:#d7e6f4;
     /* accent principal (variable "laiton" conservée pour compat) = bleu marine */
     --laiton:#1e3a63; --laiton-clair:#3d6ba3; --juste:#1a9c6b; --juste-fond:rgba(26,156,107,.10);
     --faux:#dc2626; --faux-fond:rgba(220,38,38,.08);
@@ -19,7 +19,7 @@
        n'offre que 1,74 de contraste sur blanc. Meme teinte (39 deg), meme
        saturation, luminosite abaissee jusqu'a 4,63 : conforme AA.
        Sur les fonds bleus ou sombres, il reprend sa version vive (voir plus bas). */
-    --or-texte:#8E6D0B;
+    --or-texte:#765A05;
     /* surfaces : cartes blanches sur fond bleu très clair + halos radiaux */
     --surface:#ffffff; --surface-2:rgba(242,201,76,.09);
     --teinte-douce:rgba(242,201,76,.12);   /* softTint : pilules, badges, pistes */
@@ -1598,7 +1598,8 @@
   .lcc-ic.bleu{background:var(--bandeau);color:var(--or);border:3px double var(--or);}
   .lcc-ic.or{background:var(--or);color:var(--laiton);border:3px double var(--laiton);}
   .lcc-ic.gris{background:var(--surface-2,#eee);color:var(--encre-doux);border:3px double var(--ligne);}
-  .lcc.lcc-off{opacity:.72;}
+  .lcc.lcc-off{opacity:1;filter:grayscale(.6);}
+  .lcc.lcc-off .lcc-desc,.lcc.lcc-off .lcc-desc b{color:var(--encre-doux);}
   .lcc.lcc-off:hover{transform:none;box-shadow:none;}
   .lcc-btn.gris{background:var(--surface-2,#e6e6e6);color:var(--encre-doux);box-shadow:none;cursor:not-allowed;border:1px solid var(--ligne);}
   .lcc-btn.gris:hover{transform:none;filter:none;}
@@ -3223,7 +3224,7 @@
   .jxb-avert i{color:#e8900c!important;font-size:1.4rem;flex:none}
   /* Page Jouer : trois familles (seul · à deux · toute la classe), couleurs de la charte */
   .jx{display:flex;flex-direction:column;gap:22px}
-  .jx-famille{--jc:var(--bandeau);--jf:rgba(35,116,176,.10)}
+  .jx-famille{--jc:#1b5c90;--jf:rgba(35,116,176,.10)}
   .jx-famille.deux{--jc:#b8860b;--jf:rgba(242,201,76,.18)}
   .jx-famille.classe{--jc:#16233a;--jf:rgba(22,35,58,.08)}
   .jx-fam-t{display:flex;align-items:center;gap:12px;margin:0 0 12px}
@@ -5728,7 +5729,7 @@
   .pf-maitrise-t{margin-bottom:6px;}
   .pf-onglets{display:flex;gap:4px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--ligne);border-radius:22px;padding:4px;}
   .pf-onglets button{border:none;background:none;font-family:inherit;font-size:.84rem;font-weight:600;padding:7px 13px;border-radius:var(--rayon-pill);color:var(--encre-doux);cursor:pointer;white-space:nowrap;}
-  .pf-onglets button small{font-size:.72rem;opacity:.75;}
+  .pf-onglets button small{font-size:.72rem;}
   .pf-onglets button:hover{color:var(--encre);}
   .pf-onglets button.on{background:var(--laiton);color:#fff;font-weight:700;}
   .pf-aide{font-size:.84rem;color:var(--encre-doux);margin:6px 0 10px;}
@@ -6788,3 +6789,29 @@
   .stock-sup{width:34px;height:34px;border:none;border-radius:10px;background:var(--faux-fond);color:var(--faux);cursor:pointer}
   .stock-total{float:right;font-size:.8rem;font-weight:600;color:var(--encre-doux)}
   .stock-aide{font-size:.84rem;color:var(--encre-doux)}
+  /* mot secret : masqué sans être un champ « mot de passe » (le navigateur n'y verse rien) */
+  .champ-secret{-webkit-text-security:disc;text-security:disc}
+  .champ-secret.visible{-webkit-text-security:none;text-security:none}
+  /* levier « Se souvenir de moi » */
+  .auth-souvenir{display:flex;align-items:center;gap:10px;margin:4px 0 10px;cursor:pointer;user-select:none}
+  .auth-souvenir input{position:absolute;opacity:0;width:1px;height:1px}
+  .auth-levier{position:relative;width:42px;height:24px;flex:none;border-radius:999px;background:var(--papier-fonce);border:1.5px solid var(--ligne);transition:background var(--t-rapide)}
+  .auth-levier::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform var(--t-rapide)}
+  .auth-souvenir input:checked+.auth-levier{background:var(--juste);border-color:var(--juste)}
+  .auth-souvenir input:checked+.auth-levier::after{transform:translateX(18px)}
+  .auth-souvenir input:focus-visible+.auth-levier{outline:3px solid var(--or);outline-offset:2px}
+  .auth-souvenir span:last-child{display:flex;flex-direction:column;line-height:1.25}
+  .auth-souvenir b{font-size:.9rem;color:var(--encre)}
+  .auth-souvenir small{font-size:.76rem;color:var(--encre-doux)}
+  /* choix du tampon des diplômes */
+  .dip-choix-t{margin:14px 0 6px;font-weight:700;font-size:.88rem;color:var(--encre)}
+  .dip-styles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .dip-style{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:14px;border:2px solid var(--ligne);background:var(--surface);cursor:pointer;font:inherit}
+  .dip-style small{font-size:.72rem;font-weight:600;color:var(--encre-doux);text-align:center;line-height:1.2}
+  .dip-style.on{border-color:var(--laiton);background:var(--teinte-douce)}
+  .dip-encres{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .dip-encre{display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 6px;border-radius:999px;border:2px solid var(--ligne);background:var(--surface);cursor:pointer;font:inherit;font-size:.82rem;font-weight:600;color:var(--encre)}
+  .dip-encre span{width:18px;height:18px;border-radius:50%;background:var(--e)}
+  .dip-encre.on{border-color:var(--e)}
+  /* ===== Accessibilité (05/10/2026) ===== */
+  .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
