@@ -481,8 +481,8 @@ function sauverProfil(p){
   const s=JSON.stringify(p);
   try{localStorage.setItem(STORE_KEY,s);}catch(e){
     memoireSecours=s;
-    if(!window._stockageKO){ window._stockageKO=true;
-      setTimeout(function(){ try{ toast("Attention : ce navigateur n'enregistre pas les données de MusEduc (navigation privée, stockage plein ou bloqué). Ce que vous réglez sera perdu en fermant la page."); }catch(x){} },500); }
+    if(!window._stockageKO){ window._stockageKO=String((e&&e.name)||"erreur");
+      setTimeout(function(){ try{ stockageAlerte(); }catch(x){} },500); }
   }
 }
 let profil=chargerProfil();
@@ -7655,7 +7655,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-05m";
+const VERSION_APP="2026-10-05o";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -10672,11 +10672,13 @@ function authCarteHTML(o){
     </div>
   </div>`;
 }
+/* « Plus tard » : plus d'écran « Qui es-tu ? » jusqu'à la fin de la session */
+function connexionPlusTard(){ try{ sessionStorage.setItem("museduc-plustard","1"); }catch(e){} accueil(); }
 function authOuvrir(html){
   const t=document.getElementById("titre"), i=document.getElementById("intro");
   t.style.display="none"; i.style.display="none"; i.textContent="";
   document.getElementById("zone").innerHTML='<div class="auth-logo"><span class="logo-mot"><span class="mus">Mus</span><span class="educ">Educ</span></span></div>'
-    +html+'<p class="auth-plustard"><button type="button" onclick="accueil()">Plus tard, je découvre d’abord <i class="ph ph-arrow-right"></i></button></p>';
+    +html+'<p class="auth-plustard"><button type="button" onclick="connexionPlusTard()">Plus tard, je découvre d’abord <i class="ph ph-arrow-right"></i></button></p>';
   setTimeout(function(){ const f=document.querySelector(".auth-form > div:not([hidden]) input, .auth-form > .auth-champ input"); if(f&&window.matchMedia("(pointer:fine)").matches)f.focus(); },60);
 }
 /* Connexion en UN écran (04/10/2026) : plus de fenêtre de bienvenue puis d'une
@@ -26568,6 +26570,8 @@ function ecranParametres(){
       +'<button id="btnChrono" class="rm-switch '+(profil.chronoEntrain?"on":"")+'" aria-pressed="'+(profil.chronoEntrain?'true':'false')+'" aria-label="Chronomètre pendant l\'entraînement" onclick="basculerChronoEntrain()"><span></span></button></div>'
       +'<div class="pm-ligne"><div class="pm-ligne-l"><b>Énergie des animations</b><span>Halos, reflets, balancement des rubans</span></div>'
       +'<div class="rm-chips">'+["discret","standard","maximal"].map(function(v){return '<button class="rm-chip '+(energie===v?"on":"")+'" onclick="reglerEnergie(\''+v+'\')">'+v+'</button>';}).join("")+'</div></div>'
+      +'<div class="pm-ligne"><div class="pm-ligne-l"><b>Stockage de ce navigateur</b><span>Vérifier que MusEduc peut enregistrer, et libérer de la place</span></div>'
+      +'<button class="action btn-nouv" onclick="ecranStockage()"><i class="ph ph-hard-drives"></i> Vérifier</button></div>'
       +(e.type==="prof"?('<div class="pm-ligne"><div class="pm-ligne-l"><b>Rubriques élèves dans le menu</b><span>Leçons, Cours de collège, Compositeurs, Vocabulaire, Jouer (dont Les aventures de Nova). Pratique pour montrer en classe.</span></div>'
         +'<button class="rm-switch '+(profil.voirMenuEleve!==false?"on":"")+'" aria-pressed="'+(profil.voirMenuEleve!==false?'true':'false')+'" aria-label="Afficher les rubriques élèves" onclick="basculerMenuEleve()"><span></span></button></div>'):"")
       +'</div>';
@@ -30726,6 +30730,66 @@ function soutienChiffres(){
   try{ cours=Object.keys(COURS_DEF).length; }catch(e){}
   return {lecons:lecons,compos:compos,mots:mots,cours:cours};
 }
+/* =====================================================================
+   STOCKAGE DU NAVIGATEUR : diagnostic (05/10/2026). Quand le navigateur
+   refuse d'enregistrer, on montre pourquoi (plein ou bloqué), ce qui prend
+   la place, et on propose de libérer ce qui peut l'être sans rien perdre.
+   ===================================================================== */
+const STOCK_CLES={"educmus_profil_v1":["Progression et réglages","garder"],
+  "educmus_labels_v1":["Noms de vos élèves (uniquement sur cet appareil)","garder"],
+  "educmus_roster_v1":["Liste de classe importée","garder"],
+  "educmus_contacts_v1":["Contacts des familles","garder"],
+  "museduc_entete_bulletin_v1":["En-tête des bulletins","garder"],
+  "museduc-role":["Rôle du compte (se recharge seul)","libre"],
+  "museduc-mae-lus":["Messages de Maestro déjà lus","libre"],
+  "theme":["Thème clair ou sombre","libre"]};
+function stockageInfo(k){
+  if(STOCK_CLES[k])return STOCK_CLES[k];
+  if(/^firebase:/.test(k))return ["Session de connexion (Firebase)","garder"];
+  if(/^seanceDer_|^ccx/.test(k))return ["Mémo d'affichage","libre"];
+  return ["Donnée inconnue (ancienne version ou autre site)","inconnu"];
+}
+function stockageAlerte(){
+  if(document.getElementById("stockAlerte"))return;
+  const b=document.createElement("div"); b.id="stockAlerte"; b.className="stock-alerte";
+  b.innerHTML='<i class="ph-fill ph-warning"></i><span><b>Ce navigateur n\u2019enregistre pas MusEduc.</b> Vos réglages seront perdus en fermant la page.</span>'
+    +'<button onclick="ecranStockage()">Voir pourquoi</button><button class="x" onclick="this.parentNode.remove()" aria-label="Fermer"><i class="ph ph-x"></i></button>';
+  document.body.appendChild(b);
+}
+function stockageTest(){
+  try{ localStorage.setItem("__museduc_test","x"); localStorage.removeItem("__museduc_test"); return "ok"; }
+  catch(e){ return String((e&&e.name)||"erreur"); }
+}
+function ecranStockage(){
+  const al=document.getElementById("stockAlerte"); if(al)al.remove();
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  document.getElementById("titre").innerHTML='<i class="ph ph-hard-drives"></i> Stockage de ce navigateur';
+  document.getElementById("intro").textContent="";
+  const test=stockageTest();
+  let cles=[], total=0;
+  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i), v=localStorage.getItem(k)||""; const n=(k.length+v.length)*2; total+=n; cles.push({k:k,n:n}); } }catch(e){}
+  cles.sort(function(a,b){ return b.n-a.n; });
+  const ko=function(n){ return n<1024?n+" o":(n<1048576?Math.round(n/1024)+" Ko":(Math.round(n/104857.6)/10)+" Mo"); };
+  const diag=test==="ok"?'<div class="stock-etat ok"><i class="ph-fill ph-check-circle"></i> Le navigateur enregistre normalement.</div>'
+    :(/Quota/i.test(test)?'<div class="stock-etat ko"><i class="ph-fill ph-warning"></i> <b>Stockage plein.</b> Libérez de la place ci-dessous : les lignes « libre » ou « inconnu » peuvent être supprimées.</div>'
+      :'<div class="stock-etat ko"><i class="ph-fill ph-warning"></i> <b>Stockage bloqué</b> ('+echapH(test)+'). C\u2019est souvent la <b>navigation privée</b> ou un réglage du navigateur qui interdit les données de sites (cookies et données de sites bloqués pour museduc.fr). Ouvrez MusEduc dans une fenêtre normale ou autorisez les données de ce site.</div>');
+  const lignes=cles.map(function(c){
+    const inf=stockageInfo(c.k);
+    return '<div class="stock-l '+inf[1]+'"><span class="stock-k"><b>'+echapH(inf[0])+'</b><small>'+echapH(c.k)+'</small></span><span class="stock-n">'+ko(c.n)+'</span>'
+      +(inf[1]==="garder"?'<span class="stock-tag">à garder</span>':'<button class="stock-sup" onclick="stockageSupprimer(\''+c.k.replace(/'/g,"\\'")+'\')"><i class="ph ph-trash"></i></button>')+'</div>';
+  }).join("")||'<p class="badge-vide">Rien d\u2019enregistré.</p>';
+  document.getElementById("zone").innerHTML='<div class="accueil" style="max-width:760px">'+diag
+    +'<div class="ex"><h3 style="margin-top:0"><i class="ph ph-database"></i> Ce que MusEduc garde ici <span class="stock-total">'+ko(total)+' au total</span></h3>'+lignes+'</div>'
+    +'<p class="stock-aide"><i class="ph ph-info"></i> Vos classes, notes, périodes et tampon des diplômes sont aussi dans votre compte : seuls les <b>noms des élèves</b> ne vivent que sur cet appareil (pensez à la Sauvegarde dans les Paramètres).</p></div>';
+  if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(function(e){
+    const h=document.querySelector(".stock-total"); if(h&&e&&e.quota)h.textContent+=" · navigateur : "+ko(e.usage||0)+" utilisés sur "+ko(e.quota); }).catch(function(){});
+}
+async function stockageSupprimer(k){
+  if(!await dlgConfirmer("Supprimer « "+k+" » de ce navigateur ?"))return;
+  try{ localStorage.removeItem(k); }catch(e){}
+  if(stockageTest()==="ok"){ window._stockageKO=false; try{ sauverProfil(profil); }catch(e){} toast("Place libérée : MusEduc peut de nouveau enregistrer."); }
+  ecranStockage();
+}
 function ecranSoutien(){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
@@ -31461,7 +31525,22 @@ if(_museducRouteProf){
     else setTimeout(_routerProf,350);
   }catch(e){ setTimeout(_routerProf,350); }
 }
-else if(!profil.inscrit)setTimeout(function(){ if(!profil.inscrit&&!(fbAuth()&&fbAuth().currentUser&&fbAuth().currentUser.email))ecranConnexion("eleve"); },400); // 1er lancement : directement l'écran de connexion
+else{
+  /* Personne de connecté (ni professeur, ni élève avec code, ni compte en solo) :
+     on ouvre « Qui es-tu ? » à chaque visite, sauf si l'on a choisi « Plus tard »
+     pendant cette session. On attend que la session Firebase soit rétablie, sinon
+     un professeur déjà connecté verrait passer l'écran. */
+  const _qui=function(){
+    let tard=false; try{ tard=sessionStorage.getItem("museduc-plustard")==="1"; }catch(e){}
+    if(tard)return;
+    const t=document.getElementById("titre");
+    if(etatCompte().type==="anon"&&!_vueAdmin&&t&&t.style.display==="none")ecranConnexion("eleve");
+  };
+  let _quiFait=false;
+  const _quiUneFois=function(){ if(_quiFait)return; _quiFait=true; setTimeout(_qui,300); };
+  try{ const _aq=fbAuth(); if(_aq&&_aq.onAuthStateChanged){ const _off=_aq.onAuthStateChanged(function(){ try{_off();}catch(e){} _quiUneFois(); }); setTimeout(_quiUneFois,3000); } else setTimeout(_quiUneFois,400); }
+  catch(e){ setTimeout(_quiUneFois,400); }
+}
 /* Comptes : à chaque session e-mail rétablie ou ouverte, on relit le rôle
    (professeur, apprenant, administrateur) et, pour un apprenant, sa progression. */
 try{ const _aR=fbAuth(); if(_aR&&_aR.onAuthStateChanged)_aR.onAuthStateChanged(function(u){
