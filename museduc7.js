@@ -6325,17 +6325,16 @@ function construireMenu(){
   /* Deux portes d'entrée seulement : les leçons (rangées par domaine, sur leur
      propre page) et les cours de collège. Les anciens accordéons par niveau
      alourdissaient le menu alors que le niveau figure déjà sur les vignettes. */
-  const nbLecons=CATEGORIES.filter(g=>!g.special).reduce((n,g)=>n+g.items.length,0);
   let famille="";
   const titreFamille=function(id){ const f=MENU_FAMILLES[id]||""; if(f&&f!==famille){ famille=f; return '<span class="menu-sec">'+f+'</span>'; } return ""; };
   if(menuEleveVisible()){
     h+=titreFamille("_lecons");
     h+=`<button class="accordeon accordeon-direct" data-id="_lecons" onclick="ouvrir('_lecons')">
           <span class="acc-fleche"><i class="ph ph-graduation-cap"></i></span>
-          <span class="acc-lib">Leçons</span><span class="acc-compte">${nbLecons}</span></button>`;
+          <span class="acc-lib">Leçons</span></button>`;
     h+=`<button class="accordeon accordeon-direct" data-id="_cours_college" onclick="ouvrir('_cours_college')">
           <span class="acc-fleche"><i class="ph ph-chalkboard-simple"></i></span>
-          <span class="acc-lib">Cours de collège</span><span class="acc-compte">2</span></button>`;
+          <span class="acc-lib">Cours de collège</span></button>`;
   }
   // Évaluation (et autres groupes spéciaux) toujours en DERNIER, en accordéon
   CATEGORIES.filter(g=>g.special).forEach(g=>{
@@ -6353,7 +6352,7 @@ function construireMenu(){
       /* Travail à faire : note de musique rouge vif dès qu'un devoir attend.
          C'est le seul repère visible sans ouvrir l'écran. */
       if(it.id==="_devoirs"&&typeof devoirsAFaire==="function"){
-        const n=devoirsAFaire().length;
+        let n=0; try{ const lus=maeLus(); n=devoirsAFaire().filter(function(d){ return !lus["dv-"+d.id]; }).length; }catch(e){ n=devoirsAFaire().length; }
         if(n)pastille=`<span class="acc-devoir" title="${n} travail${n>1?"x":""} à faire">`+
           `<i class="ph-fill ph-music-note"></i>${n>1?n:""}</span>`;
       }
@@ -6378,7 +6377,7 @@ function construireMenu(){
         <span class="ic">${it.ic}</span><span class="lib">${it.nom}</span></button>`;});
     h+=`</div>`;
   });
-  h+=`<button type="button" class="menu-partage" onclick="partagerMusEduc()"><i class="ph ph-share-network"></i> Partager MusEduc</button>`;
+  h+=`<button type="button" class="menu-partage" onclick="partagerMusEduc()"><span class="mp-ic"><i class="ph-fill ph-share-network"></i></span><span class="mp-txt"><b>Partager MusEduc</b><small>à un collègue, un ami</small></span><i class="ph ph-caret-right mp-fl"></i></button>`;
   h+=`<div class="signature"><div class="sig-auteur">© ${new Date().getFullYear()} MusEduc · Philippe Boussetta</div><nav class="sig-liens"><a href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a><span aria-hidden="true">·</span><a href="legal.html#confidentialite" target="_blank" rel="noopener">Confidentialité</a></nav><div class="signature-v" title="Version de l'application. Si elle ne change pas après une mise en ligne, la page vient du cache : rechargez avec Ctrl+Maj+R.">Version ${VERSION_APP}</div></div>`;
   document.getElementById("menu").innerHTML=h;
   menuActif(_menuActifId);
@@ -6410,7 +6409,9 @@ function construireNavBas(){
   const nav=document.getElementById("navBas"); if(!nav)return;
   const estP=(typeof profConnecte==="function")&&profConnecte();
   document.body.classList.add("avec-nav-bas");
-  let n=0; if(!estP){ try{ if(typeof devoirsAFaire==="function")n=devoirsAFaire().length; }catch(e){} }
+  /* la pastille ne compte que le travail encore jamais vu (message de Maestro lu ou
+     page « Travail à faire » ouverte) : lire les messages la fait disparaître */
+  let n=0; if(!estP){ try{ if(typeof devoirsAFaire==="function"){ const lus=maeLus(); n=devoirsAFaire().filter(function(d){ return !lus["dv-"+d.id]; }).length; } }catch(e){} }
   nav.innerHTML=(estP?NAV_BAS_PROF:NAV_BAS).map(function(o){
     const on=o.k===navBasCle;
     const pas=(o.k==="plus"&&n)?`<span class="nb-pastille" title="${n} travail${n>1?"x":""} à faire">${n}</span>`:"";
@@ -7650,7 +7651,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-04m";
+const VERSION_APP="2026-10-05e";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -7744,78 +7745,73 @@ function majPastillesMenu(){
 function ecranProgression(){
   /* un enseignant n'a pas de progression d'eleve : on lui montre son espace */
   if(typeof profConnecte==="function"&&profConnecte()){ profilProf(); return; }
-  fermerMenu();masquerInterfaceNormale();majRetour(null);
-  _pfNotesOuvert={dem:false,bon:false};   /* menus de notes fermés à chaque ouverture de la page */
-  /* Refonte « option A » : le ruban fait office de titre. */
+  fermerMenu();masquerInterfaceNormale();majRetour(accueil,"Accueil");
+  _pfNotesOuvert={dem:false,bon:false};
+  /* Refonte du 04/10/2026 : des chiffres, des anneaux et des icônes plutôt que des
+     phrases (les élèves lisent en diagonale). Les explications restent en info-bulle. */
   const _t=document.getElementById("titre"), _i=document.getElementById("intro");
   if(_t){ _t.textContent="Mon profil"; _t.style.display="none"; }
   if(_i){ _i.textContent=""; _i.style.display="none"; }
   const doms=domainesEval();
   const totalThemes=doms.length, maitrises=doms.filter(d=>maitrise(d.id)==="fort").length;
   const g=gradeDe(profil.points);
-  /* À la place du prénom : le code élève et la classe (ce qui identifie l'élève dans
-     l'application). Sans code : invitation à rejoindre sa classe. */
   const ident=profil.eleveCode
-    ? `<div class="pf-code-l"><span class="pf-code" title="Mon code élève">${escapeHtml(profil.eleveCode)}</span>${profil.classeNom?`<span class="pf-classe">${escapeHtml(profil.classeNom)}</span>`:""}</div>`
+    ? `<span class="pf-code" title="Mon code élève">${escapeHtml(profil.eleveCode)}</span>${profil.classeNom?`<span class="pf-classe">${escapeHtml(profil.classeNom)}</span>`:""}`
     : (estApprenant()
-      ? `<div class="pf-code-l"><span class="pf-code pf-nom">${escapeHtml(nomCompte()||"Mon compte")}</span><span class="pf-classe">Apprenant</span></div>`
-      : `<div class="pf-code-l"><span class="pf-code pf-sans">Sans code élève</span><button class="pf-rejoindre" onclick="ecranMaClasse()"><i class="ph ph-identification-card"></i> J'ai un code</button></div>`);
-  let h=`<div class="pf">
-    <div class="pf-ruban">
+      ? `<span class="pf-code pf-nom">${escapeHtml(nomCompte()||"Mon compte")}</span>`
+      : `<button class="pf-rejoindre" onclick="ecranMaClasse()"><i class="ph ph-identification-card"></i> J'ai un code</button>`);
+  const kpi=function(ic,val,lib,teinte){ return `<div class="pf2-kpi" style="--d:${teinte}"><span><i class="ph-fill ph-${ic}"></i></span><b>${val}</b><small>${lib}</small></div>`; };
+  const totalVis=BADGES_VISIBLES.length, obtenus=nbBadgesObtenus();
+  let h=`<div class="pf pf2">
+    <div class="pf-ruban pf2-ruban">
       <div class="pf-id">
         <div class="medaillon" style="background:conic-gradient(var(--or) ${g.pct}%, rgba(255,255,255,.18) ${g.pct}%)">
           <div class="md-coeur"><span class="md-val">${g.niveau}</span><span class="md-lib">niveau</span></div>
         </div>
         <div class="pf-txt">
-          ${ident}
+          <div class="pf-code-l">${ident}</div>
           <div class="pf-grade">${g.nom}</div>
           <div class="pf-jauge"><div style="width:${g.pct}%"></div></div>
-          <div class="pf-next">${g.next?`Plus que <b>${Math.max(0,g.next.p-profil.points)} pts</b> avant «&nbsp;${g.next.nom}&nbsp;»`:`<i class="ph ph-crown"></i> Grade maximum atteint&nbsp;! Bravo&nbsp;!`}</div>
+          <div class="pf-next">${g.next?`<b>${Math.max(0,g.next.p-profil.points)} pts</b> <i class="ph ph-arrow-right"></i> ${g.next.nom}`:`<i class="ph-fill ph-crown"></i> Grade maximum`}</div>
         </div>
       </div>
-      <div class="pf-kpis">
-        <div class="pf-kpi"><i class="ph ph-star"></i><div><b>${profil.points}</b><span>points</span></div></div>
-        <div class="pf-kpi"><i class="ph ph-fire"></i><div><b>${profil.serie||0} jour${(profil.serie||0)>1?"s":""}</b><span>de suite</span></div></div>
-        <div class="pf-kpi"><i class="ph ph-target"></i><div><b>${profil.exercices}</b><span>séries faites</span></div></div>
-        <div class="pf-kpi"><i class="ph ph-trophy"></i><div><b>${maitrises}/${totalThemes}</b><span>thèmes maîtrisés</span></div></div>
+      <div class="pf2-kpis">
+        ${kpi("star",profil.points||0,"points","var(--or)")}
+        ${kpi("fire",profil.serie||0,"jours de suite","#e8743b")}
+        ${kpi("target",profil.exercices||0,"séries","#3ba7e8")}
+        ${kpi("trophy",maitrises+"/"+totalThemes,"thèmes","#5cc98a")}
       </div>
     </div>
-    <div class="pf-cols">
-      <section class="pf-carte">
-        <div class="pf-carte-t"><h2>Mes notes</h2></div>
-        <div id="progNotes">${progNotesHTML()}</div>
-      </section>
-      <div class="pf-col">`;
-  /* badges : seuls les badges obtenus sont montrés, une case « à découvrir » compte le reste */
-  const totalVis=BADGES_VISIBLES.length, obtenus=nbBadgesObtenus();
-  h+=`<section class="pf-carte"><div class="pf-carte-t"><h2>Mes badges</h2><span class="pf-pill">${obtenus} / ${totalVis}</span></div>`;
-  if(obtenus===0&&!aLeBadgeCache()){
-    h+=`<p class="badge-vide" style="margin:0">Tu n'as pas encore de badge. Entraîne-toi&nbsp;: ils apparaîtront ici au fur et à mesure&nbsp;!</p>`;
-  }else{
-    h+=`<div class="pf-badges">`;
-    BADGES_VISIBLES.filter(b=>profil.badges.includes(b.id)).forEach(b=>{
-      h+=`<div class="pf-badge" title="${echapH(b.desc)}"><span class="bc-emoji">${b.emoji}</span><span class="bc-nom">${b.nom}</span></div>`;});
-    if(aLeBadgeCache()){ const bc=BADGES.find(b=>b.id==="legende");
-      h+=`<div class="pf-badge badge-cache" title="${echapH(bc.desc)}"><span class="bc-emoji">${bc.emoji}</span><span class="bc-nom">${bc.nom}</span></div>`; }
-    if(obtenus<totalVis)h+=`<div class="pf-badge plus"><b>+${totalVis-obtenus}</b><span>à découvrir</span></div>`;
-    h+=`</div>`;
-  }
-  if(obtenus<totalVis) h+=`<p class="pf-indice"><i class="ph ph-lightbulb"></i> <span><b>Indice de la semaine&nbsp;:</b> ${indiceBadgeDuJour()}</span></p>`;
-  else if(!aLeBadgeCache()) h+=`<p class="pf-indice"><i class="ph ph-trophy"></i> <span>Tous les badges débloqués&nbsp;! Il paraît qu'un <b>31ᵉ badge secret</b> récompense ceux qui réussissent absolument tout, à la perfection…</span></p>`;
-  else h+=`<p class="pf-indice"><i class="ph ph-confetti"></i> <span>Collection complète, badge secret inclus. Tu es une véritable légende de MusEduc&nbsp;!</span></p>`;
-  h+=`</section>`;
-  const jk=(profil&&profil.jokersSurvie)||0;
-  if(jk>0) h+=`<section class="pf-carte pf-joker"><span class="pf-joker-ic"><i class="ph-fill ph-lifebuoy"></i></span>
-      <div style="flex:1;min-width:0"><b>Joker${jk>1?"s":""} de Survie</b><span>${jk>1?jk+" jokers":"1 joker"} en réserve : en mode Survie, ta 1ʳᵉ erreur d'une partie est pardonnée.</span></div>
-      <b class="pf-joker-n">${jk}</b></section>`;
-  h+=`</div></div>
+    <div class="pf2-cols">
+      ${estApprenant()?pfCoursValidesHTML():`<section class="pf-carte pf2-carte"><div class="pf2-t"><span class="pf2-t-ic" style="--d:var(--dom-rythme)"><i class="ph-fill ph-exam"></i></span><h2>Mes notes</h2></div>
+        <div id="progNotes">${progNotesHTML()}</div></section>`}
+      <section class="pf-carte pf2-carte"><div class="pf2-t"><span class="pf2-t-ic" style="--d:var(--or-texte)"><i class="ph-fill ph-medal"></i></span><h2>Mes badges</h2><span class="pf-pill">${obtenus}/${totalVis}</span></div>
+        ${pfBadgesHTML()}</section>
+    </div>
     <div id="progTravail"></div>
-    <section class="pf-carte pf-maitrise" id="pfMaitrise">${pfMaitriseHTML()}</section>
+    <section class="pf-carte pf2-carte pf-maitrise" id="pfMaitrise">${pfMaitriseHTML()}</section>
   </div>`;
   document.getElementById("zone").innerHTML=h;
   remonter();
   progChargerNotesChant();
   try{ if(typeof progChargerTravail==="function")progChargerTravail(); }catch(e){}
+}
+/* Collection de badges : tous visibles, les obtenus en couleur, les autres en
+   silhouette avec un cadenas (le nom et la condition sont dans l'info-bulle). */
+function pfBadgesHTML(){
+  let h='<div class="pf2-badges">'+BADGES_VISIBLES.map(function(b){
+    const ok=profil.badges.includes(b.id);
+    return '<span class="pf2-badge'+(ok?' ok':'')+'" title="'+echapH(b.nom+(ok?" : "+b.desc:" : à débloquer"))+'"><span class="pf2-b-e">'+b.emoji+'</span>'+(ok?'':'<i class="ph-fill ph-lock-simple"></i>')+'</span>';
+  }).join("");
+  if(aLeBadgeCache()){ const bc=BADGES.find(b=>b.id==="legende");
+    h+='<span class="pf2-badge ok secret" title="'+echapH(bc.nom+" : "+bc.desc)+'"><span class="pf2-b-e">'+bc.emoji+'</span></span>'; }
+  h+='</div>';
+  const jk=(profil&&profil.jokersSurvie)||0;
+  const puces=[];
+  if(nbBadgesObtenus()<BADGES_VISIBLES.length)
+    puces.push('<button class="pf2-puce" onclick="this.classList.toggle(\'ouvert\')"><i class="ph-fill ph-lightbulb"></i> Indice<span class="pf2-bulle">'+echapH(indiceBadgeDuJour())+'</span></button>');
+  if(jk>0)puces.push('<span class="pf2-puce vert" title="En mode L\'ascension, ta 1re erreur d\'une partie est pardonnée"><i class="ph-fill ph-lifebuoy"></i> '+jk+' joker'+(jk>1?"s":"")+'</span>');
+  return h+(puces.length?'<div class="pf2-puces">'+puces.join("")+'</div>':'');
 }
 /* Maîtrise par thème : un onglet par domaine, les thèmes du domaine choisi en barres. */
 let _pfDom=0;
@@ -7827,17 +7823,17 @@ function pfMaitriseHTML(){
   if(_pfDom>=ordre.length)_pfDom=0;
   const onglets=ordre.map((gr,i)=>{ const lot=parGroupe[gr], n=lot.filter(d=>maitrise(d.id)==="fort").length;
     return `<button type="button" class="${i===_pfDom?"on":""}" onclick="pfChoisirDomaine(${i})">${echapH(PF_DOM_COURT[gr]||gr)} <small>${n}/${lot.length}</small></button>`; }).join("");
-  const lignes=parGroupe[ordre[_pfDom]].map(d=>{
+  const tuiles=parGroupe[ordre[_pfDom]].map(d=>{
     const p=palierInfo(d.id), lab=labelMaitrise(d.id);
-    /* 3 paliers : chacun vaut un tiers de la jauge, la série en cours remplit le reste */
     const pct=p.joue?Math.min(100,Math.round(((Math.min(p.nm,4)-1)+(p.nm<4?p.serie/Math.max(1,p.total):0))/3*100)):0;
-    return `<button type="button" class="pf-theme" onclick="ouvrir('${d.id}')" title="S'entraîner">
-      <span class="pf-theme-nom">${d.nom}${p.joue?'<span class="pf-theme-niv">'+palierPastillesHTML(p)+(p.tps?' <span class="pl-tps"><i class="ph ph-timer"></i> '+fmtTemps(p.tps)+'</span>':'')+'</span>':''}</span>
-      <span class="pt-barre"><span class="pt-rempli ${lab.cls}" style="width:${p.joue?Math.max(pct,6):0}%"></span></span>
-      <span class="pt-label ${lab.cls}">${lab.txt}</span></button>`; }).join("");
-  return `<div class="pf-carte-t pf-maitrise-t"><h2>Ma maîtrise par thème</h2><div class="pf-onglets" role="tablist">${onglets}</div></div>
-    <p class="pf-aide">Un thème est <b>maîtrisé</b> quand tu as validé les trois niveaux : Facile, Intermédiaire et Difficile. Clique sur un thème pour t'entraîner.</p>
-    <div class="pf-themes">${lignes}</div>`;
+    const ic=bossOK(d.id)?"ph-fill ph-crown":(!p.joue?"ph-sparkle":(p.nm>=4?"ph-fill ph-trophy":"ph-fill ph-music-notes"));
+    return `<button type="button" class="pf2-theme ${lab.cls}" onclick="ouvrir('${d.id}')" title="${echapH(d.nom)} : s'entraîner">
+      <span class="pf2-anneau" style="--p:${p.joue?Math.max(pct,4):0}"><i class="ph ${ic}"></i></span>
+      <b>${d.nom}</b>${p.joue?palierPastillesHTML(p):'<small>À découvrir</small>'}</button>`; }).join("");
+  return `<div class="pf2-t pf-maitrise-t"><span class="pf2-t-ic" style="--d:var(--dom-theorie)"><i class="ph-fill ph-chart-pie-slice"></i></span><h2>Ma maîtrise</h2>
+      <span class="pf2-info" title="Un thème est maîtrisé quand les trois niveaux (Facile, Intermédiaire, Difficile) sont validés. Clique sur un thème pour t'entraîner."><i class="ph ph-question"></i></span></div>
+    <div class="pf-onglets" role="tablist">${onglets}</div>
+    <div class="pf2-themes">${tuiles}</div>`;
 }
 function pfChoisirDomaine(i){ _pfDom=i; const z=document.getElementById("pfMaitrise"); if(z)z.innerHTML=pfMaitriseHTML(); }
 /* libellé de maîtrise accrocheur pour les élèves */
@@ -7864,6 +7860,7 @@ async function reinitProgression(){
 
 /* ----- Écran d'inscription (1er lancement) : prénom + nom ----- */
 function masquerInterfaceNormale(){
+  document.body.classList.remove("mode-connexion");
   if(typeof arreterChronoLive==="function")arreterChronoLive();
   if(classementTimer){clearInterval(classementTimer);classementTimer=null;} // stop l'auto-refresh du classement
   if(typeof jeuArreter==="function")jeuArreter(); // stop les timers du mode classe
@@ -7923,6 +7920,7 @@ function armerLeconLue(id){
 /* Carte « Évaluation » en bas d'une leçon : demandée (compte), libre (bonus),
    verrouillée (entraînement pas fini) ou déjà passée ce mois-ci. */
 function evalCarteHTML(domId){
+  if(estApprenant())return bossCarteHTML(domId);
   const ctx=(typeof evalContexte==="function")?evalContexte(domId):{mode:"libre"};
   if(ctx.mode==="bloque"){
     const p=ctx.prog||{};
@@ -8179,7 +8177,7 @@ function afficherQuestionEval(){
       ${i<total-1?`<button class="action btn-corr" onclick="navEval(1)">Suivant →</button>`
                  :`<button class="action btn-corr" onclick="terminerEval(false)"><i class="ph ph-check"></i> Terminer</button>`}
     </div>
-    <p class="eval-warn">Ne quitte pas le plein écran : chaque sortie est enregistrée pour ton professeur.</p>`;
+    <p class="eval-warn">${evalBoss?"Concentre-toi : "+BOSS_SEUIL+"/20 pour vaincre le boss.":"Ne quitte pas le plein écran : chaque sortie est enregistrée pour ton professeur."}</p>`;
   majChrono();
   if(ex.studio)stuDemarrer(document.getElementById("stuEval"),ex.studio,{mode:"eval"});
   if(document.querySelector("#zone .ce-yt")&&typeof ceMonterYT==="function")ceMonterYT();
@@ -9709,15 +9707,19 @@ document.getElementById("chkImmediat").addEventListener("change",e=>{immediat=e.
 function htmlDefiDuJour(){
   const id=defiDuJourId(); if(!id)return "";
   const o=objDuJour();
-  const nom=nomCat(id);
+  const theme=escapeHtml(nomThemePropre(nomCat(id)));
+  const aide="Un thème surprise, chronométré : réussis-le pour gagner 20 points bonus, une fois par jour.";
   if(o.defiFait){
-    return `<div class="defi-jour-carte fait">
-      <div class="djc-txt"><b><i class="ph ph-lightning"></i> Défi du jour</b><span>Relevé aujourd'hui : bravo&nbsp;! Reviens demain pour un nouveau thème.</span></div>
-      <span class="djc-fait"><i class="ph ph-check-circle"></i> +20 pts</span></div>`;
+    return `<div class="dj2 fait" title="Reviens demain pour un nouveau thème">
+      <span class="dj2-med"><i class="ph-fill ph-check-fat"></i></span>
+      <span class="dj2-txt"><b>Défi du jour</b><small>Relevé : à demain&nbsp;!</small></span>
+      <span class="dj2-gain"><i class="ph-fill ph-star"></i> +20</span></div>`;
   }
-  return `<div class="defi-jour-carte">
-    <div class="djc-txt"><b><i class="ph ph-lightning"></i> Défi du jour</b><span>Un thème surprise, chronométré&nbsp;: réussis-le pour gagner <b>+20 points</b> bonus (1 seule fois par jour).</span></div>
-    <button class="action btn-corr" onclick="lancerDefiDuJour()">Relever le défi&nbsp;: ${escapeHtml(nomThemePropre(nom))}</button></div>`;
+  return `<button class="dj2" onclick="lancerDefiDuJour()" title="${aide}">
+    <span class="dj2-med"><i class="ph-fill ph-lightning"></i></span>
+    <span class="dj2-txt"><b>Défi du jour</b><small><i class="ph-fill ph-timer"></i> ${theme}</small></span>
+    <span class="dj2-gain"><i class="ph-fill ph-star"></i> +20</span>
+    <span class="dj2-go"><i class="ph-fill ph-play"></i></span></button>`;
 }
 /* carte "Objectifs du jour" pour l'accueil */
 function conseilMaestro(){
@@ -9878,6 +9880,7 @@ function devoirEvalOuvertPour(domId){
     for(let i=0;i<vs.length;i++){ const v=vs[i];
       if(v.t!=="eval"||v.cible!==domId)continue;
       if(devoirVoletFait(d,i))continue;                 /* déjà rendue : verrouillée */
+      if(devoirVoletVerrouille(d,i))continue;           /* non rendue : trop tard */
       /* « faire refaire » par le prof : le volet rouvert passe outre le créneau */
       const _st=((devoirsEtat()[d.id]||{v:{}}).v||{})[String(i)]||{};
       if(!_st.reouvert){
@@ -9919,6 +9922,9 @@ function notesComptees(){
     out.push({d:n.d||0,note:n.note,sur:n.sur||20,lib:n.theme||"Évaluation",type:"eval"});
   });
   Object.keys(promues).forEach(function(k){ const o=promues[k]; delete o._v; out.push(o); });
+  if(_nrZero){ try{ devoirsNonRendus().forEach(function(d){ (d.volets||[]).forEach(function(v,i){
+    if(v.t==="eval"&&!devoirVoletFait(d,i)&&devoirVoletVerrouille(d,i))
+      out.push({d:d.echeance||0,note:0,sur:20,lib:(d.titre||"Évaluation")+" (NR*)",type:"eval"}); }); }); }catch(e){} }
   const ch=(profil.notesChant&&profil.notesChant.length)?profil.notesChant:notesChantListe();
   (ch||[]).forEach(function(n){ if(n&&n.note!=null)out.push({d:n.d||0,note:n.note,sur:n.sur||20,lib:n.titre||"Chant",type:"chant"}); });
   const tvl=(profil.notesTravail&&profil.notesTravail.length)?profil.notesTravail:((typeof tvMienNote==="function"&&tvMienNote())?[tvMienNote()]:[]);
@@ -10087,103 +10093,50 @@ let _pfNotesOuvert={dem:false,bon:false};   /* menus fermés à l'ouverture de l
 function pfNotesBascule(k,el){ _pfNotesOuvert[k]=!!el.open; }
 /* Carte « Note bonus » de l'élève : la note à part gagnée avec les évaluations
    passées librement, et ce qu'il faut faire pour la faire monter. */
-function progNoteBonusHTML(){
-  const r=bonusLibreClasse(); if(!r.pas&&r.socle<=0)return "";
-  const per=periodeEleve();
-  const b=noteBonusEleve();
-  const nb=function(x){ return String(Math.round(x*10)/10).replace(".",","); };
-  const tete=function(val,coul){
-    return '<div class="pn-moy" style="border-color:var(--or)"><div class="v" style="color:'+coul+'">'+val+'</div>'
-      +'<div style="flex-grow:1"><b style="font-size:.95rem">Ta note bonus</b>'
-      +'<div style="font-size:.8rem;color:var(--encre-doux)">évaluations que tu passes toi-même'
-      +(per.nom?' · '+echapH(per.nom):'')+'</div></div></div>'; };
-  if(!b){
-    return tete("- / 20","var(--encre-doux)")
-      +'<p style="font-size:.82rem;color:var(--encre-doux);margin:6px 0 12px"><i class="ph ph-info"></i> '
-      +'Passe des évaluations en bas des leçons : il te faut <b>'+r.socle+'</b> évaluation'+(r.socle>1?"s":"")
-      +' à <b>'+nb(r.seuil)+'/20</b> ou plus pour une note bonus complète. Ensuite, chaque nouvelle évaluation réussie ajoute <b>+'+nb(r.pas)+'</b>.</p>';
-  }
-  const coul=progNoteCoul(b.note/20*100);
-  let d='';
-  if(b.manque>0){
-    d='Socle : tes <b>'+b.nb+'</b> meilleure'+(b.nb>1?"s":"")+' divisée'+(b.nb>1?"s":"")+' par <b>'+r.socle+'</b> = <b>'+nb(b.socle)+'</b>. '
-      +'Il te manque <b>'+b.manque+'</b> évaluation'+(b.manque>1?"s":"")+' réussie'+(b.manque>1?"s":"")+' pour un socle complet.';
-  }else{
-    d='Socle (tes '+r.socle+' meilleures) : <b>'+nb(b.socle)+'</b>'
-      +(b.sup?' · endurance : <b>'+b.sup+'</b> évaluation'+(b.sup>1?"s":"")+' en plus = <b>+'+nb(b.pts)+'</b>':'')
-      +'. Chaque nouvelle évaluation réussie ajoute <b>+'+nb(r.pas)+'</b>.';
-  }
-  if(b.ignorees)d+=' <span style="color:var(--faux)">'+b.ignorees+' évaluation'+(b.ignorees>1?"s":"")+' sous '+nb(r.seuil)+'/20 ne compte'+(b.ignorees>1?"nt":"")+' pas.</span>';
-  if(b.brut>20)d+=' (total réel '+nb(b.brut)+', ramené à 20)';
-  /* un bonus ne peut que faire monter : on le dit quand il est sous la moyenne */
-  try{ const m=moyenneEleve();
-    if(m&&b.note<=m.moy) d+=' <b>Attention :</b> ta note bonus est en dessous de ta moyenne ('+nb(m.moy)+'/20)'
-      +' : elle ne te fera pas monter tant qu\'elle ne la dépasse pas.';
-  }catch(e){}
-  return tete(nb(b.note)+' / 20',coul.c)
-    +'<p style="font-size:.82rem;color:var(--encre-doux);margin:6px 0 12px">'+d+'</p>';
-}
 function progNotesHTML(){
   const comptees=notesComptees(), libres=notesLibres();
-  let h="";
+  const nb=function(x){ return String(Math.round(x*10)/10).replace(".",","); };
   if(!comptees.length&&!libres.length){
-    h+='<p class="badge-vide" style="margin:0 0 12px">Tu n\'as pas encore de note. Débloque l\'évaluation d\'une leçon '
-      +'en réussissant l\'entraînement en <b>Facile</b>, <b>Intermédiaire</b> et <b>Difficile</b>, '
-      +'ou enregistre-toi sur un <b>chant</b> : tes notes apparaîtront ici.</p>';
-  }else if(moyenneVisible()){
-    const m=moyenneEleve();
-    if(m){
-      const coul=progNoteCoul(m.moy/20*100);
-      h+='<div class="pn-moy"><div class="v" style="color:'+coul.c+'">'+String(m.moy).replace(".",",")+' / 20</div>'
-        +'<div style="flex-grow:1"><b style="font-size:.95rem">Ta moyenne générale</b>'
-        +'<div style="font-size:.8rem;color:var(--encre-doux)">sur '+m.nb+' note'+(m.nb>1?"s":"")+' comptée'+(m.nb>1?"s":"")
-        +'</div></div>'
-        +'<button class="btn-son mini" title="Masquer ma moyenne" onclick="basculerMoyenneParam()"><i class="ph ph-eye-slash"></i></button></div>';
-    }else{
-      h+='<p style="font-size:.85rem;color:var(--encre-doux);margin:0 0 12px"><i class="ph ph-info"></i> '
-        +'Pas encore de moyenne : seules les évaluations <b>demandées par ton professeur</b> comptent.</p>';
-    }
-    h+=progNoteBonusHTML();
-  }else{
-    h+='<p style="font-size:.85rem;color:var(--encre-doux);margin:0 0 12px"><i class="ph ph-eye-slash"></i> '
-      +'Ta moyenne est masquée. <a href="#" onclick="basculerMoyenneParam();return false">L\'afficher</a>.</p>';
+    return '<div class="pf2-vide"><span><i class="ph-fill ph-seal-question"></i></span><b>Pas encore de note</b>'
+      +'<button class="pf2-go" onclick="ecranLecons()"><i class="ph-fill ph-graduation-cap"></i> Aller aux leçons</button></div>';
   }
+  const anneau=function(lib,val,pct,aide){
+    const coul=pct==null?{c:"var(--encre-doux)"}:progNoteCoul(pct);
+    return '<div class="pf2-note" title="'+echapH(aide)+'"><span class="pf2-anneau grand" style="--p:'+(pct||0)+';--c:'+coul.c+'"><b style="color:'+coul.c+'">'+val+'</b><small>/20</small></span><span>'+lib+'</span></div>';
+  };
+  let h='<div class="pf2-notes">';
+  if(!(estApprenant()&&!comptees.length)){
+    if(moyenneVisible()){
+      const m=moyenneEleve();
+      h+=anneau("Moyenne",m?nb(m.moy):"-",m?m.moy/20*100:null,"Évaluations demandées par ton professeur");
+    }else h+='<button class="pf2-note masq" onclick="basculerMoyenneParam()" title="Afficher ma moyenne"><span class="pf2-anneau grand"><i class="ph ph-eye-slash"></i></span><span>Moyenne</span></button>';
+  }
+  const r=bonusLibreClasse();
+  if(r.pas||r.socle>0){
+    const b=noteBonusEleve();
+    h+=anneau("Note bonus",b?nb(b.note):"-",b?b.note/20*100:null,"Évaluations que tu passes toi-même en bas des leçons"+(r.socle?" : il en faut "+r.socle+" réussies à "+nb(r.seuil)+"/20 pour une note complète":""));
+  }
+  h+='</div>';
   const ligne=function(n){
     const pct=n.note/(n.sur||20)*100, coul=progNoteCoul(pct);
     const chant=(n.type==="chant");
     const ic=chant?"ph-fill ph-microphone-stage":(n.type==="travail"?"ph-fill ph-chalkboard-teacher":(n.type==="libre"?"ph-fill ph-barbell":"ph-fill ph-seal-check"));
-    const sous=chant?"Chant":(n.type==="travail"?"Travail en classe":(n.type==="libre"?"Évaluation bonus":"Évaluation demandée"));
-    return '<div class="pn-item"><span class="pn-ic '+(chant?"chant":"eval")+'">'
-      +'<i class="'+ic+'"></i></span>'
-      +'<span class="pn-txt"><b>'+echapH(n.lib)+'</b><span>'+sous+(n.d?' · '+fmtDate(n.d):"")+'</span></span>'
-      +'<span class="pn-note" style="color:'+coul.c+';background:'+coul.b+'">'
-      +String(Math.round(n.note*10)/10).replace(".",",")+' / '+(n.sur||20)+'</span></div>';
+    return '<div class="pn-item"><span class="pn-ic '+(chant?"chant":"eval")+'"><i class="'+ic+'"></i></span>'
+      +'<span class="pn-txt"><b>'+echapH(n.lib)+'</b><span>'+(n.d?fmtDate(n.d):"")+'</span></span>'
+      +'<span class="pn-note" style="color:'+coul.c+';background:'+coul.b+'">'+nb(n.note)+' / '+(n.sur||20)+'</span></div>';
   };
-  const menu=function(k,cls,titre,sous,liste,vide){
-    const n=liste.length;
-    return '<details class="pf-det'+cls+'"'+(_pfNotesOuvert[k]?" open":"")+' ontoggle="pfNotesBascule(\''+k+'\',this)">'
-      +'<summary><i class="ph ph-caret-right"></i><span class="pf-det-t"><b>'+titre+'</b><small>'+sous+'</small></span>'
-      +'<span class="pf-det-n">'+n+' note'+(n>1?"s":"")+'</span></summary>'
-      +(n?'<div class="pn-liste">'+liste.map(ligne).join("")+'</div>':'<p class="pf-vide">'+vide+'</p>')
-      +'</details>';
+  const tiroir=function(k,ic,titre,liste){
+    return '<details class="pf2-tiroir"'+(_pfNotesOuvert[k]?" open":"")+' ontoggle="pfNotesBascule(\''+k+'\',this)">'
+      +'<summary><i class="ph-fill '+ic+'"></i><b>'+titre+'</b><span class="pf2-n">'+liste.length+'</span><i class="ph ph-caret-down pf2-fl"></i></summary>'
+      +(liste.length?'<div class="pn-liste">'+liste.map(ligne).join("")+'</div>':'<p class="pf-vide">Aucune pour l\'instant.</p>')+'</details>';
   };
-  h+='<div class="pf-dets">'
-    +(estApprenant()&&!comptees.length?"":menu("dem",""," Évaluations demandées".trim(),"données par ton professeur · comptent dans la moyenne",comptees,"Aucune évaluation demandée pour l\'instant."))
-    +menu("bon"," bonus","Évaluations bonus","passées librement · donnent une note bonus à part",libres,"Aucune évaluation bonus. Termine l\'entraînement d\'une leçon pour en passer une.")
-    +'</div>';
-  /* Bonus en réserve : un de niveau et un de badge, cumulables entre eux. */
+  h+='<div class="pf2-tiroirs">'
+    +(estApprenant()&&!comptees.length?"":tiroir("dem","ph-seal-check","Demandées",comptees))
+    +tiroir("bon","ph-barbell","Bonus",libres)+'</div>';
   const _bn=(typeof bonusNiveauDetenu==="function")?bonusNiveauDetenu():null;
   const _bb=(typeof bonusBadgeDetenu==="function")?bonusBadgeDetenu():null;
-  const carteBonus=function(b,origine){
-    return '<div class="pf-bonus"><i class="'+b.ic+'"></i><span>Bonus '+origine+' : <b>'+echapH(b.nom)+'</b> : '+echapH(b.desc)+'. '
-      +(b.quand==="eval"?'À utiliser au début d\'une évaluation.':'À utiliser dans le jeu concerné.')+'</span></div>';
-  };
-  if(_bn||_bb){
-    if(_bn)h+=carteBonus(_bn,"de niveau");
-    if(_bb)h+=carteBonus(_bb,"de badge");
-  }else{
-    h+='<div class="pf-bonus vide"><i class="ph ph-gift"></i><span>Monte de niveau et décroche des <b>badges</b> : certains t\'offrent un <b>bonus</b> à utiliser sur une évaluation.</span></div>';
-  }
+  const puce=function(b){ return '<span class="pf2-puce or" title="'+echapH(b.desc+". "+(b.quand==="eval"?"À utiliser au début d'une évaluation.":"À utiliser dans le jeu concerné."))+'"><i class="'+b.ic+'"></i> '+echapH(b.nom)+'</span>'; };
+  if(_bn||_bb)h+='<div class="pf2-puces">'+(_bn?puce(_bn):"")+(_bb?puce(_bb):"")+'</div>';
   return h;
 }
 /* Chargé après coup : les notes de chant sont sur le serveur. */
@@ -10221,6 +10174,13 @@ function accueilPanneauHTML(){
     +acRond("Mes points",g.pct||0,pts,"","Points",
       '<b>'+(g.next?resteG+" pts pour le niveau "+(g.niveau+1):"niveau maximum")+'</b><br>'+(ptsJour?"+"+ptsJour+" aujourd\u2019hui":"aucun point aujourd\u2019hui"),bleu,
       String(pts).length>3?"font-size:1.25rem":"");
+  if(estApprenant()){
+    const nv=nbCoursValides(), tc=domainesEval().length;
+    return '<div class="acp-col"><div class="acp-t"><i class="ph-fill ph-medal"></i> Récompenses</div>'+gauche+'</div>'
+      +'<div class="acp-sep" aria-hidden="true"></div>'
+      +'<div class="acp-col"><div class="acp-t"><i class="ph-fill ph-crown"></i> Boss</div>'
+      +acRond("Mes cours validés",tc?nv/tc*100:0,nv,"/"+tc,"Cours",'<b>boss vaincus</b><br>un par leçon maîtrisée',or)+'</div>';
+  }
   let droite=acRond("Mes évaluations bonus",fait/soc*100,fait,"/"+soc,"Bonus",
       '<b>évaluations bonus</b><br>'+(nb?"note bonus "+String(nb.note).replace(".",",")+"/20":"passées de toi-même"),or);
   if(moyenneVisible()){
@@ -10471,20 +10431,8 @@ function accueil(){
 
 
 
-    <details class="ap-aide">
-    <summary><i class="ph ph-compass"></i> Comment ça marche&nbsp;?</summary>
-    <ol class="accueil-etapes anim-liste" style="margin-top:14px">
-      <li><span class="et-num">1</span><span class="et-txt"><b>Apprends</b>&nbsp;: dans <b>Leçons</b>, les thèmes sont rangés du plus simple (6<sup>e</sup>) au plus avancé (3<sup>e</sup>). Ouvre-en un, <b>lis la leçon</b>, puis entraîne-toi juste en dessous.</span></li>
-      <li><span class="et-num">2</span><span class="et-txt"><b>Joue</b>&nbsp;: dans <b>Jouer</b>, tu trouves <b><i class="ph ph-lightning"></i> Survie : l'ascension</b> tout seul, le <b><i class="ph ph-sword"></i> Duel</b> face à face sur le même appareil (tir à la corde), les <b><i class="ph ph-paper-plane-tilt"></i> Défis</b> à envoyer à un camarade (avec une mise de points), et le <b><i class="ph ph-users-three"></i> Multijoueur</b> quand ton professeur lance une partie en classe.</span></li>
-      <li><span class="et-num">3</span><span class="et-txt"><b>Retiens le vocabulaire</b>&nbsp;: dans <b>Vocabulaire</b>, coche les mots à apprendre, révise-les avec les <b>cartes qui se retournent</b>, puis passe le test. Les mots ratés reviennent, et les mots sus te sont redemandés plus tard pour ne pas les oublier.</span></li>
-      <li><span class="et-num">4</span><span class="et-txt"><b>Passe l'évaluation</b> proposée en bas de chaque leçon&nbsp;: ta note part directement à ton professeur, avec le détail de tes réponses.</span></li>
-      <li><span class="et-num">5</span><span class="et-txt"><b>Progresse</b>&nbsp;: chaque bonne réponse rapporte des points (${PLAFOND_JOUR} au maximum par jour) qui font monter ton <b>niveau</b> et débloquent des <b>badges</b> <i class="ph ph-medal"></i>. Reviens chaque jour pour le <b>défi</b> et garde ta <b>série</b> <i class="ph ph-fire"></i>&nbsp;; tu retrouves ta place dans <b>Classement</b>.</span></li>
-    </ol>
-    </details>
+    ${accueilPistesHTML()}
 
-    <div class="cta-debut">
-      <p class="cta-note">Pas de pression&nbsp;: tu peux te tromper autant que tu veux, c'est comme ça qu'on progresse. Chaque erreur t'explique la bonne réponse. Allez, <b>Maestro compte sur toi</b>&nbsp;!</p>
-    </div>
     ${typeof donCarteAccueilHTML==="function"?donCarteAccueilHTML():""}
   </div>`;
   try{ majRangAccueil(); }catch(e){}
@@ -10643,38 +10591,155 @@ function maitriseParTheme(){
 
 /* ---------- Synchronisation élève -> Firestore ---------- */
 let _syncEnCours=false;
-function ecranProf(){
-  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
-  document.getElementById("titre").innerHTML='<i class="ph ph-chalkboard-teacher"></i> Espace professeur';
-  const a=fbAuth(), s=fbStore();
-  if(!a||!s){ document.getElementById("intro").textContent=""; document.getElementById("zone").innerHTML=svcIndispo(); return; }
-  /* deja connecte : on ne l'envoie pas sur « Mes classes » mais sur son accueil */
-  if(estProf(a.currentUser)){ accueilProf(); return; }
-  document.getElementById("intro").textContent="Crée ton compte professeur (gratuit) pour suivre le travail de tes élèves.";
-  document.getElementById("zone").innerHTML=`
-    <div class="prof-auth">
-      <div class="ex">
-        <h3 style="margin-top:0"><i class="ph ph-sign-in"></i> J'ai déjà un compte</h3>
-        <div class="prog-prenom" style="max-width:none;box-shadow:none;border:none;padding:0">
-          <label>Adresse e-mail</label><input id="pcMail" type="email" autocomplete="username" placeholder="prof@ecole.fr">
-          <label>Mot de passe</label><input id="pcMdp" type="password" autocomplete="current-password" placeholder="••••••••">
-          <div id="pcErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
-          <button class="action btn-corr" style="margin-top:10px" onclick="connecterProf()">Se connecter</button>
-        </div>
-      </div>
-      <div class="ex">
-        <h3 style="margin-top:0"><i class="ph ph-user-plus"></i> Créer un compte</h3>
-        <div class="prog-prenom" style="max-width:none;box-shadow:none;border:none;padding:0">
-          <label>Nom (affiché)</label><input id="piNom" type="text" maxlength="40" placeholder="M. / Mme …">
-          <label>Adresse e-mail</label><input id="piMail" type="email" autocomplete="username" placeholder="prof@ecole.fr">
-          <label>Mot de passe (6 caractères min.)</label><input id="piMdp" type="password" autocomplete="new-password" placeholder="choisis un mot de passe">
-          <div id="piErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
-          <button class="action btn-defi" style="margin-top:10px" onclick="inscrireProf()">Créer mon compte</button>
-        </div>
-      </div>
-      <p style="color:var(--encre-doux);font-size:.82rem;margin-top:4px"><i class="ph ph-lock"></i> <b>RGPD :</b> les données des élèves (noms, notes) ne sont visibles que par toi. N'inscris tes élèves qu'avec l'accord de ton établissement. En créant un compte, tu acceptes les <a href="legal.html#cgu" target="_blank" rel="noopener">conditions d'utilisation</a> et la <a href="legal.html#confidentialite" target="_blank" rel="noopener">politique de confidentialité</a>.</p>
-    </div>`;
+/* ---------- Écrans de connexion (enseignant, apprenant) ----------
+   Une carte en deux volets : à gauche ce que l'on gagne à créer un compte, à
+   droite un formulaire compact à onglets (Se connecter / Créer un compte). Les
+   identifiants des champs (pcMail, piNom…) sont ceux qu'attendent connecterProf,
+   inscrireProf, inscrireApprenant et la touche Entrée. */
+function authChamp(id,lib,type,ic,attrs){
+  const mdp=type==="password";
+  return '<label class="auth-champ"><span class="auth-lib">'+lib+'</span><span class="auth-in"><i class="ph ph-'+ic+'"></i>'
+    +'<input id="'+id+'" type="'+type+'" '+(mdp?'data-oeil="1" ':'')+(attrs||"")+'>'
+    +(mdp?'<button type="button" class="auth-oeil" aria-label="Afficher le mot de passe" onclick="authOeil(this)"><i class="ph ph-eye"></i></button>':'')
+    +'</span></label>';
 }
+function authOeil(b){
+  const i=b.parentNode.querySelector("input"); if(!i)return;
+  const voir=i.type==="password"; i.type=voir?"text":"password";
+  b.innerHTML='<i class="ph ph-eye'+(voir?'-slash':'')+'"></i>';
+  b.setAttribute("aria-label",voir?"Masquer le mot de passe":"Afficher le mot de passe");
+}
+function authOnglet(k){
+  ["cnx","ins"].forEach(function(x){
+    const p=document.getElementById("auth_"+x), b=document.getElementById("authOn_"+x);
+    if(p)p.hidden=(x!==k); if(b){ b.classList.toggle("on",x===k); b.setAttribute("aria-selected",x===k?"true":"false"); }
+  });
+  const f=document.querySelector("#auth_"+k+" input"); if(f)setTimeout(function(){ f.focus(); },30);
+}
+function authMdpOublie(){
+  const a=fbAuth(); if(!a)return;
+  const mail=((document.getElementById("pcMail")||{}).value||"").trim();
+  const er=document.getElementById("pcErr");
+  if(!mail){ if(er){ er.textContent="Écris d'abord ton adresse e-mail ci-dessus."; er.style.display="block"; } return; }
+  a.sendPasswordResetEmail(mail).then(function(){
+    if(er)er.style.display="none";
+    toast("Un e-mail pour choisir un nouveau mot de passe vient d'être envoyé à "+mail+".");
+  }).catch(function(e){ authErr("pcErr",e); });
+}
+function authCarteHTML(o){
+  return `<div class="auth${o.cls?" "+o.cls:""}${o.qui?" avec-qui":""}">
+    ${o.qui||""}
+    <div class="auth-vitrine"${o.teinte?` style="--d:${o.teinte}"`:""}>
+      <img class="auth-maestro" src="${IMG_BONJOUR}" alt="Maestro">
+      <div class="auth-eyebrow">${o.eyebrow}</div>
+      <h2>${o.titre}</h2>
+      <ul>${o.atouts.map(function(t){ return '<li><i class="ph-fill ph-check-circle"></i><span>'+t+'</span></li>'; }).join("")}</ul>
+      <p class="auth-pied">${o.pied}</p>
+    </div>
+    <div class="auth-form">
+      ${o.unique?o.unique:`<div class="auth-onglets" role="tablist">
+        <button id="authOn_cnx" role="tab" class="${o.depart==="ins"?"":"on"}" onclick="authOnglet('cnx')">Se connecter</button>
+        <button id="authOn_ins" role="tab" class="${o.depart==="ins"?"on":""}" onclick="authOnglet('ins')">Créer un compte</button>
+      </div>
+      <div id="auth_cnx"${o.depart==="ins"?" hidden":""}>
+        <h3>Bon retour&nbsp;!</h3>
+        ${authChamp("pcMail","Adresse e-mail","email","envelope-simple",'autocomplete="username" placeholder="'+o.mailEx+'"')}
+        ${authChamp("pcMdp","Mot de passe","password","lock-simple",'autocomplete="current-password"')}
+        <button type="button" class="auth-lien" onclick="authMdpOublie()">Mot de passe oublié&nbsp;?</button>
+        <div id="pcErr" class="auth-err"></div>
+        <button class="auth-go" onclick="connecterProf()">Se connecter <i class="ph ph-arrow-right"></i></button>
+        <p class="auth-bas">Pas encore de compte&nbsp;? <button type="button" class="auth-lien" onclick="authOnglet('ins')">Créer un compte</button></p>
+      </div>
+      <div id="auth_ins"${o.depart==="ins"?"":" hidden"}>
+        <h3>${o.titreIns}</h3>
+        ${o.champsIns}
+        <div id="${o.errIns}" class="auth-err"></div>
+        <button class="auth-go" onclick="${o.actionIns}">Créer mon compte <i class="ph ph-arrow-right"></i></button>
+        <p class="auth-bas">Déjà un compte&nbsp;? <button type="button" class="auth-lien" onclick="authOnglet('cnx')">Se connecter</button></p>
+      </div>`}
+      <p class="auth-rgpd"><i class="ph ph-lock-key"></i> ${o.rgpd}</p>
+    </div>
+  </div>`;
+}
+function authOuvrir(html){
+  const t=document.getElementById("titre"), i=document.getElementById("intro");
+  t.style.display="none"; i.style.display="none"; i.textContent="";
+  document.getElementById("zone").innerHTML='<div class="auth-logo"><span class="logo-mot"><span class="mus">Mus</span><span class="educ">Educ</span></span></div>'
+    +html+'<p class="auth-plustard"><button type="button" onclick="accueil()">Plus tard, je découvre d’abord <i class="ph ph-arrow-right"></i></button></p>';
+  setTimeout(function(){ const f=document.querySelector(".auth-form > div:not([hidden]) input, .auth-form > .auth-champ input"); if(f&&window.matchMedia("(pointer:fine)").matches)f.focus(); },60);
+}
+/* Connexion en UN écran (04/10/2026) : plus de fenêtre de bienvenue puis d'une
+   page. En haut du formulaire, « Je suis… » Élève / En solo / Prof ; le
+   formulaire et le volet de gauche suivent le choix, sans changer de page. */
+function authQuiHTML(k){
+  const t=function(c,ic,lib){ return '<button type="button" class="auth-qui-b'+(c===k?" on":"")+'" data-k="'+c+'" onclick="ecranConnexion(\''+c+'\')"><i class="ph-fill ph-'+ic+'"></i>'+lib+'</button>'; };
+  return '<div class="auth-qui"><div class="auth-qui-t">Qui es-tu&nbsp;?</div><div class="auth-qui-g">'+t("eleve","student","Élève")+t("solo","user-circle","En solo")+t("prof","chalkboard-teacher","Prof")+'</div></div>';
+}
+function ecranConnexion(k){
+  if(!profil.inscrit){ profil.inscrit=true; try{ sauverProfil(profil); }catch(e){} }
+  masquerInterfaceNormale(); majRetour(null);
+  if(typeof fermerMenu==="function")fermerMenu();
+  /* écran de connexion seul, sans menu : on s'inscrit, ou on choisit « Plus tard » */
+  document.body.classList.add("mode-connexion");
+  const a=fbAuth(), s=fbStore();
+  if(!a||!s){ document.getElementById("zone").innerHTML=svcIndispo(); return; }
+  if(k==="prof"&&estProf(a.currentUser)){ accueilProf(); return; }
+  if(k==="solo"&&estApprenant()){ accueil(); return; }
+  const sans='';
+  if(k==="eleve"){
+    document.getElementById("titre").innerHTML='<i class="ph ph-identification-card"></i> Connexion';
+    authOuvrir(authCarteHTML({cls:"auth-eleve", eyebrow:"Espace élève", qui:authQuiHTML(k),
+      titre:"Rejoins ta classe avec ton code",
+      atouts:["Ta progression, tes points et tes badges sont sauvegardés","Tu retrouves le travail donné par ton professeur","Ton nom n'est jamais enregistré : seul ton professeur sait à qui est ce code"],
+      pied:"Ton code et ton mot secret marchent sur n'importe quel appareil.",
+      unique:'<label class="auth-champ"><span class="auth-lib">Mon code élève</span><span class="auth-in auth-code"><i class="ph ph-identification-card"></i>'
+        +'<input id="inCode" type="text" maxlength="8" placeholder="K7P2M" autocomplete="off" autocapitalize="characters"></span></label>'
+        +authChamp("inSecret","Mon mot secret","password","key",'maxlength="40" placeholder="ex : elephant" autocomplete="off" onkeydown="if(event.key===\'Enter\')rejoindreClasse()"')
+        +'<div id="inCErr" class="auth-err"></div>'
+        +'<button class="auth-go" onclick="rejoindreClasse()">M\'identifier <i class="ph ph-arrow-right"></i></button>'
+        +'<div class="auth-astuce"><i class="ph-fill ph-key"></i><span><b>La première fois</b>, choisis un mot secret facile à retenir (4 lettres ou plus) : il faudra ensuite ce mot en plus du code. Oublié&nbsp;? Ton professeur peut le remettre à zéro.</span></div>'+sans,
+      rgpd:"Aucun nom ni e-mail d'élève n'est enregistré : ta progression est liée à ton code."}));
+    return;
+  }
+  if(k==="solo"){
+    document.getElementById("titre").innerHTML='<i class="ph ph-user-circle"></i> Connexion';
+    authOuvrir(authCarteHTML({
+      teinte:"var(--dom-theorie)", eyebrow:"Apprendre en solo", depart:"ins", mailEx:"toi@exemple.fr", qui:authQuiHTML(k),
+      titre:"La musique à ton rythme, avec Maestro",
+      atouts:["Leçons, jeux et défis pour lire les notes, le rythme et écouter",
+              "Ta progression est sauvegardée et te suit sur tous tes appareils",
+              "Ce que tu as déjà fait ici sans compte est repris"],
+      pied:"Réservé aux 15 ans et plus. Plus jeune&nbsp;? Choisis « Élève » et utilise le code de ta classe.",
+      titreIns:"Créer mon compte",
+      champsIns:'<div class="auth-2">'+authChamp("aiPrenom","Prénom","text","user",'maxlength="40" autocomplete="given-name"')
+        +authChamp("aiNom","Nom","text","user",'maxlength="40" autocomplete="family-name"')+'</div>'
+        +authChamp("aiMail","Adresse e-mail","email","envelope-simple",'autocomplete="username" placeholder="toi@exemple.fr"')
+        +authChamp("aiMdp","Mot de passe","password","lock-simple",'autocomplete="new-password" placeholder="6 caractères minimum"')
+        +'<label class="auth-case"><input id="aiAge" type="checkbox"><span>J\'ai <b>15 ans ou plus</b></span></label>'
+        +'<label class="auth-case"><input id="aiCgu" type="checkbox"><span>J\'accepte les <a href="legal.html#cgu" target="_blank" rel="noopener">conditions d\'utilisation</a> et la <a href="legal.html#confidentialite" target="_blank" rel="noopener">politique de confidentialité</a></span></label>',
+      errIns:"aiErr", actionIns:"inscrireApprenant()",
+      rgpd:'Tes prénom, nom et adresse e-mail servent uniquement à ton compte. Pas de publicité, aucune revente. Tu peux supprimer ton compte à tout moment.'
+    }));
+    return;
+  }
+  document.getElementById("titre").innerHTML='<i class="ph ph-chalkboard-teacher"></i> Connexion';
+  authOuvrir(authCarteHTML({
+    teinte:"var(--bandeau)", eyebrow:"Espace enseignant", depart:"cnx", mailEx:"prof@ecole.fr", qui:authQuiHTML(k),
+    titre:"Votre classe de musique, du collège à la maison",
+    atouts:["Donnez du travail en deux clics, les notes arrivent prêtes pour Pronote",
+            "Lancez un jeu au tableau : toute la classe joue sur téléphone ou tablette",
+            "Suivez qui a travaillé, combien de temps, et où chacun bloque"],
+    pied:"Gratuit et sans publicité.",
+    titreIns:"Créer mon compte enseignant",
+    champsIns:authChamp("piNom","Nom affiché aux élèves","text","user",'maxlength="40" placeholder="M. Martin, Mme Durand…"')
+      +authChamp("piMail","Adresse e-mail","email","envelope-simple",'autocomplete="username" placeholder="prof@ecole.fr"')
+      +authChamp("piMdp","Mot de passe","password","lock-simple",'autocomplete="new-password" placeholder="6 caractères minimum"'),
+    errIns:"piErr", actionIns:"inscrireProf()",
+    rgpd:'Les noms de vos élèves restent sur votre appareil : seuls des codes anonymes vont sur nos serveurs. En créant un compte, vous acceptez les <a href="legal.html#cgu" target="_blank" rel="noopener">conditions d\'utilisation</a> et la <a href="legal.html#confidentialite" target="_blank" rel="noopener">politique de confidentialité</a>.'
+  }));
+}
+function ecranProf(){ ecranConnexion("prof"); }
+function ecranApprenant(){ ecranConnexion("solo"); }
 function authErr(id,e){ const el=document.getElementById(id); if(!el)return; let m="Une erreur est survenue."; const c=(e&&e.code)||""; if(c.includes("invalid-email"))m="Adresse e-mail invalide."; else if(c.includes("email-already-in-use"))m="Un compte existe déjà avec cet e-mail."; else if(c.includes("weak-password"))m="Mot de passe trop court (6 caractères minimum)."; else if(c.includes("wrong-password")||c.includes("invalid-credential")||c.includes("user-not-found"))m="E-mail ou mot de passe incorrect."; else if(c.includes("network"))m="Problème de connexion Internet."; el.textContent=m; el.style.display="block"; }
 function connecterProf(){
   const a=fbAuth(); if(!a)return;
@@ -11047,7 +11112,7 @@ document.addEventListener("keydown",function(e){
   if(e.key!=="Enter")return;
   const t=e.target; if(!t||t.tagName!=="INPUT")return;
   const actions={inCode:rejoindreClasse,pcMail:connecterProf,pcMdp:connecterProf,
-                 piNom:inscrireProf,piMail:inscrireProf,piMdp:inscrireProf,ncNom:creerClasse};
+                 piNom:inscrireProf,piMail:inscrireProf,piMdp:inscrireProf,aiPrenom:inscrireApprenant,aiNom:inscrireApprenant,aiMail:inscrireApprenant,aiMdp:inscrireApprenant,ncNom:creerClasse};
   const f=actions[t.id||""];
   if(f){ e.preventDefault(); try{f();}catch(x){} return; }
   if(t.classList.contains("lbl-in")){ e.preventDefault(); t.blur(); }
@@ -11546,20 +11611,7 @@ function ecranMaClasse(){
       </div>`;
     return;
   }
-  document.getElementById("zone").innerHTML=`
-    <div class="ex" style="max-width:440px">
-      <div class="prog-prenom" style="max-width:none;box-shadow:none;border:none;padding:0">
-        <label>Mon code élève</label>
-        <input id="inCode" type="text" maxlength="8" placeholder="Ex : K7P2M" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;font-size:1.3rem;text-align:center">
-        <label style="margin-top:12px">Mon mot secret</label>
-        <input id="inSecret" type="password" maxlength="40" placeholder="Ex : elephant" autocomplete="off" style="font-weight:700;font-size:1.1rem;text-align:center" onkeydown="if(event.key==='Enter')rejoindreClasse()">
-        <div id="inCErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
-        <button class="action btn-corr" style="margin-top:12px" onclick="rejoindreClasse()"><i class="ph ph-sign-in"></i> M'identifier</button>
-      </div>
-      ${aideMotSecret()}
-      <p style="color:var(--encre-doux);font-size:.84rem;margin-top:10px"><i class="ph ph-info"></i> Pas de code&nbsp;? Tu peux continuer sans compte&nbsp;: ta progression reste sur cet appareil.</p>
-    </div>`;
-  setTimeout(()=>{const e=document.getElementById("inCode");if(e)e.focus();},60);
+  ecranConnexion("eleve");
 }
 function rejoindreClasse(){
   const code=((document.getElementById("inCode")||{}).value||"").trim().toUpperCase();
@@ -11657,57 +11709,6 @@ function majEnteteProfil(){
   if(typeof majIndicateurCompte==="function")setTimeout(majIndicateurCompte,0);
 }
 
-/* ---------- Écran de bienvenue unifié (aucun nom) ---------- */
-const BV_SVG={
-  cap:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5 12 4l10 4.5-10 4.5z"/><path d="M6 10.5V15c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 8.5v5.5"/></svg>',
-  board:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12.5" rx="1.6"/><path d="M8 20l2.5-3.5M16 20l-2.5-3.5"/><path d="M7 8.5h6M7 11.5h4"/></svg>',
-  card:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="9" cy="12" r="2.2"/><path d="M14 10.5h4M14 13.5h4M6 15.5h5.5"/></svg>',
-  play:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5l12 7-12 7z"/></svg>',
-  lock:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
-};
-function bvOptionsHTML(){
-  return `<button class="bv2-opt bv2-or" onclick="bvEleve()">
-      <span class="bv2-ic">${BV_SVG.cap}</span>
-      <span class="bv2-txt"><b>Je suis \u00e9l\u00e8ve</b><span>Rejoins ta classe ou explore</span></span></button>
-    <button class="bv2-opt bv2-bleu" onclick="bvChoix('prof')">
-      <span class="bv2-ic">${BV_SVG.board}</span>
-      <span class="bv2-txt"><b>Je suis enseignant</b><span>Cr\u00e9e ta classe et suis tes \u00e9l\u00e8ves</span></span></button>
-    <button class="bv2-opt bv2-ligne" onclick="bvChoix('solo')">
-      <span class="bv2-ic">${BV_SVG.play}</span>
-      <span class="bv2-txt"><b>J'apprends en solo</b><span>Un compte \u00e0 toi, sans professeur (15 ans et plus)</span></span></button>`;
-}
-function bvEleveHTML(){
-  return `<button class="bv2-opt bv2-or" onclick="bvChoix('code')">
-      <span class="bv2-ic">${BV_SVG.card}</span>
-      <span class="bv2-txt"><b>J'ai un code de ma classe</b><span>Rejoins la classe de ton professeur</span></span></button>
-    <button class="bv2-opt bv2-ligne" onclick="bvChoix('anon')">
-      <span class="bv2-ic">${BV_SVG.play}</span>
-      <span class="bv2-txt"><b>Continuer sans compte</b><span>Explore librement, sans code</span></span></button>
-    <button class="bv2-retour" onclick="bvRetour()"><i class="ph ph-arrow-left"></i> Retour</button>`;
-}
-function bvEleve(){ const z=document.getElementById("bvChoixZone"); if(z)z.innerHTML=bvEleveHTML(); }
-function bvRetour(){ const z=document.getElementById("bvChoixZone"); if(z)z.innerHTML=bvOptionsHTML(); }
-function ecranInscription(){
-  const ov=document.createElement("div");ov.className="bienvenue-overlay";ov.id="inscriptionOverlay";
-  ov.innerHTML=`<div class="bv2-carte">
-      <div class="bv2-banner"><div class="bv2-wm"><span style="color:#fff">MUS</span><span style="color:var(--or)">EDUC</span></div></div>
-      <div class="bv2-body">
-        <div class="bv2-greet">
-          <img class="bv2-maestro" src="${IMG_BONJOUR}" alt="Maestro">
-          <div><h2 class="bv2-h2">Bienvenue&nbsp;!</h2>
-            <p class="bv2-p">Pr\u00eat(e) pour ton <b>aventure musicale</b>&nbsp;? Dis-nous qui tu es.</p></div>
-        </div>
-        <div class="bv2-choix" id="bvChoixZone">${bvOptionsHTML()}</div>
-        <div class="bv2-rgpd">${BV_SVG.lock}<span>Aucun nom ni e-mail d'\u00e9l\u00e8ve n'est enregistr\u00e9. Ta progression est li\u00e9e \u00e0 ton code. <a href="legal.html#confidentialite" target="_blank" rel="noopener">En savoir plus</a></span></div>
-      </div>
-    </div>`;
-  document.body.appendChild(ov);
-}
-function bvChoix(q){ profil.inscrit=true; sauverProfil(profil);
-  const ov=document.getElementById("inscriptionOverlay"); if(ov)ov.remove();
-  if(q==="code")ecranMaClasse(); else if(q==="prof")ecranProf(); else if(q==="solo")ecranApprenant(); }
-
-
 /* ---------- Comptes : lecture du rôle à chaque connexion ---------- */
 /* Renvoie true si le rôle a changé (il faut alors redessiner). Un ancien
    professeur sans fiche reçoit la sienne ici ; un compte suspendu est déconnecté. */
@@ -11720,8 +11721,11 @@ function chargerRole(u){
   ]).then(function(r){
     const c=r[0], ad=r[1], d=(c&&c.exists)?(c.data()||{}):null;
     const avant=JSON.stringify(_role);
-    _role={uid:u.uid,role:(d&&d.role)||"prof",admin:!!(ad&&ad.exists),suspendu:!!(d&&d.suspendu),
-           prenom:(d&&d.prenom)||"",nom:(d&&d.nom)||""};
+    /* lecture impossible (réseau, hors ligne) : on garde ce qu'on savait déjà de ce compte */
+    const prec=(_role&&_role.uid===u.uid)?_role:null;
+    if(!c&&prec&&!ad)return false;
+    _role={uid:u.uid,role:(d&&d.role)||(!c&&prec?prec.role:"prof"),admin:ad?!!ad.exists:!!(prec&&prec.admin),suspendu:!!(d&&d.suspendu),
+           prenom:(d&&d.prenom)||(prec&&prec.prenom)||"",nom:(d&&d.nom)||(prec&&prec.nom)||""};
     roleSauver();
     const auj=new Date().toDateString();
     if(!d&&c){
@@ -11767,6 +11771,7 @@ function apprenantSync(){
   if(Date.now()-_apActifEnvoye>600000){
     _apActifEnvoye=Date.now();
     ref.update({actif:Date.now(),points:profil.points||0}).catch(function(){});
+    try{ amiPublierScore(); }catch(e){}
   }
   return p;
 }
@@ -11804,45 +11809,6 @@ function apprenantRestaurer(u){
 }
 
 /* ---------- Apprenant : écran d'inscription et de connexion ---------- */
-function ecranApprenant(){
-  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
-  const t=document.getElementById("titre"), i=document.getElementById("intro");
-  t.style.display=""; i.style.display="";
-  t.innerHTML='<i class="ph ph-user-circle"></i> Mon compte apprenant';
-  const a=fbAuth(), s=fbStore();
-  if(!a||!s){ i.textContent=""; document.getElementById("zone").innerHTML=svcIndispo(); return; }
-  if(estApprenant()){ accueil(); return; }
-  i.textContent="Apprends la musique à ton rythme, sans professeur : ta progression est sauvegardée et te suit sur tous tes appareils.";
-  document.getElementById("zone").innerHTML=`
-    <div class="prof-auth ap-auth">
-      <div class="ex">
-        <h3 style="margin-top:0"><i class="ph ph-user-plus"></i> Créer mon compte</h3>
-        <div class="prog-prenom" style="max-width:none;box-shadow:none;border:none;padding:0">
-          <div class="ap-auth-2">
-            <div><label>Prénom</label><input id="aiPrenom" type="text" maxlength="40" autocomplete="given-name"></div>
-            <div><label>Nom</label><input id="aiNom" type="text" maxlength="40" autocomplete="family-name"></div>
-          </div>
-          <label>Adresse e-mail</label><input id="aiMail" type="email" autocomplete="username" placeholder="toi@exemple.fr">
-          <label>Mot de passe (6 caractères min.)</label><input id="aiMdp" type="password" autocomplete="new-password" placeholder="choisis un mot de passe">
-          <label class="ap-case"><input id="aiAge" type="checkbox"><span>J'ai <b>15 ans ou plus</b></span></label>
-          <label class="ap-case"><input id="aiCgu" type="checkbox"><span>J'accepte les <a href="legal.html#cgu" target="_blank" rel="noopener">conditions d'utilisation</a> et la <a href="legal.html#confidentialite" target="_blank" rel="noopener">politique de confidentialité</a></span></label>
-          <div id="aiErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
-          <button class="action btn-defi" style="margin-top:12px" onclick="inscrireApprenant()">Créer mon compte</button>
-        </div>
-        <p class="ap-auth-note"><i class="ph ph-info"></i> Moins de 15 ans&nbsp;? Entre plutôt le code donné par ton professeur, ou demande à un parent de créer le compte.</p>
-      </div>
-      <div class="ex">
-        <h3 style="margin-top:0"><i class="ph ph-sign-in"></i> J'ai déjà un compte</h3>
-        <div class="prog-prenom" style="max-width:none;box-shadow:none;border:none;padding:0">
-          <label>Adresse e-mail</label><input id="pcMail" type="email" autocomplete="username" placeholder="toi@exemple.fr">
-          <label>Mot de passe</label><input id="pcMdp" type="password" autocomplete="current-password" placeholder="••••••••">
-          <div id="pcErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
-          <button class="action btn-corr" style="margin-top:10px" onclick="connecterProf()">Se connecter</button>
-        </div>
-        <p class="ap-auth-note"><i class="ph ph-sparkle"></i> Ce que tu as déjà fait sur cet appareil sans compte est repris dans ton nouveau compte.</p>
-      </div>
-    </div>`;
-}
 function inscrireApprenant(){
   const a=fbAuth(), s=fbStore(); if(!a||!s)return;
   const val=function(id){ return ((document.getElementById(id)||{}).value||"").trim(); };
@@ -11888,6 +11854,8 @@ async function supprimerCompteApprenant(){
   if(!await dlgConfirmer("SUPPRIMER TON COMPTE ?\n\nTon prénom, ton nom, ton adresse e-mail et toute ta progression seront effacés définitivement.\n\nCette action est IRRÉVERSIBLE."))return;
   const ref=s.collection("comptes").doc(u.uid);
   ref.collection("donnees").doc("profil").delete().catch(function(){})
+    .then(function(){ return s.collection("scores").doc(u.uid).delete().catch(function(){}); })
+    .then(function(){ return profil.codeAmi?s.collection("codesAmis").doc(profil.codeAmi).delete().catch(function(){}):null; })
     .then(function(){ return ref.delete(); })
     .then(function(){ return u.delete(); })
     .then(function(){ profilVierge(); profil.inscrit=true; sauverProfil(profil); _role=null; roleSauver();
@@ -11909,7 +11877,9 @@ function compteApprenantHTML(){
       <div id="inCErr" style="color:var(--faux);font-size:.84rem;margin-top:6px;display:none"></div>
       <button class="action btn-corr" style="margin-top:10px" onclick="rejoindreClasse()"><i class="ph ph-sign-in"></i> Rejoindre la classe</button>
     </div>
-    <button class="action btn-nouv" style="margin-top:14px" onclick="deconnecterCompte()"><i class="ph ph-sign-out"></i> Me déconnecter</button>`;
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+      <button class="action btn-nouv" onclick="deconnecterCompte()"><i class="ph ph-sign-out"></i> Me déconnecter</button>
+      <button class="action btn-danger" onclick="supprimerCompteApprenant()"><i class="ph ph-trash"></i> Supprimer mon compte</button></div>`;
 }
 
 /* ---------- Administrateur : changer de vue ---------- */
@@ -12852,7 +12822,7 @@ function devoirFini(d){
    Maestro ; une évaluation non rendue s'affiche « N.R. » dans le carnet du prof.
    Une évaluation à créneau est non rendue dès la fermeture du créneau. */
 const RETARD_MAX_DEFAUT=7;
-let _retardMax=null;
+let _retardMax=null, _nrZero=false;
 function retardMaxEleve(){ return (typeof _retardMax==="number"&&_retardMax>=0)?_retardMax:RETARD_MAX_DEFAUT; }
 function devoirFermeCreneau(d){ const v=(d&&d.volets||[]).filter(function(x){ return x.t==="eval"&&x.ferme; })[0]; return v?v.ferme:0; }
 function devoirEstNonRendu(d,maxJ,maintenant){
@@ -12862,6 +12832,13 @@ function devoirEstNonRendu(d,maxJ,maintenant){
   return t>d.echeance+maxJ*86400000;
 }
 function devoirNonRendu(d){ return !devoirFini(d)&&devoirEstNonRendu(d,retardMaxEleve()); }
+/* Non rendu = verrouillé : plus rien ne peut y être rendu, sauf un volet que le
+   professeur a rouvert (« faire refaire »). */
+function devoirVoletVerrouille(d,i){
+  if(!devoirNonRendu(d))return false;
+  const st=((devoirsEtat()[d.id]||{v:{}}).v||{})[String(i)]||{};
+  return !st.reouvert;
+}
 function devoirsAFaire(){ return (_devoirs||[]).filter(function(d){ return !devoirFini(d)&&!devoirNonRendu(d); }); }
 function devoirsNonRendus(){ return (_devoirs||[]).filter(devoirNonRendu); }
 
@@ -12903,6 +12880,7 @@ function chargerDevoirs(force){
         _progSeuil=(typeof d.progSeuil==="number")?d.progSeuil:null;
         _progNbQ=(typeof d.progNbQ==="number")?d.progNbQ:null;   /* nb de questions par série imposé par le prof */
         _retardMax=(typeof d.retardMax==="number")?d.retardMax:null;   /* jours de retard acceptés avant « non rendu » */
+        _nrZero=(d.nrZero===true);   /* non rendu : NR (ne compte pas) ou NR* (compte 0) */
         try{ majPanneauAccueil(); }catch(x){}   /* l'accueil affichait le socle par défaut (3) au lieu de celui du prof */
       }).catch(function(){ _bonusLibre={}; _trimClasse=[]; _coursOpen={}; });
     }
@@ -12959,6 +12937,7 @@ function devoirFait(cible,action,info){
   _devoirs.forEach(function(d){
     (d.volets||[]).forEach(function(v,i){
       if(devoirVoletFait(d,i))return;
+      if(devoirVoletVerrouille(d,i))return;          /* non rendu : trop tard */
       const e=devoirEtat(d.id), k=String(i);
       const cur=e.v[k]||(e.v[k]={});
       if(v.t==="lecon"&&v.cible===cible){
@@ -13133,6 +13112,7 @@ let _mae={msgs:[],i:0,manuel:false};
 function maestroDemarrer(){
   _mae={msgs:[],i:0,manuel:false};
   maestroAjouter(maestroMessagesLocaux());
+  if(estApprenant())maestroMessagesAmis().then(maestroAjouter).catch(function(){});
   if(profil.eleveCode){
     chargerDevoirs().then(function(){ maestroAjouter(maestroMessagesDevoirs()); }).catch(function(){});
     maestroChargerVotes();
@@ -13160,14 +13140,18 @@ function maestroAller(d){
 /* Messages déjà lus (affichés dans la bulle) : la pastille qui clignote ne compte
    que les autres. Gardé sur cet appareil ; le conseil du jour redevient neuf chaque jour. */
 function maeCleLu(m){ return m.id==="bonjour"?"bonjour|"+new Date().toISOString().slice(0,10):String(m.id); }
-function maeLus(){ try{ return JSON.parse(localStorage.getItem("museduc-mae-lus")||"{}")||{}; }catch(e){ return {}; } }
+/* _maeLusMem : copie en mémoire, au cas où le navigateur refuse d'enregistrer
+   (navigation privée, stockage plein ou bloqué) : la pastille baisse quand même. */
+let _maeLusMem={};
+function maeLus(){ let o={}; try{ o=JSON.parse(localStorage.getItem("museduc-mae-lus")||"{}")||{}; }catch(e){ o={}; } return Object.assign({},o,_maeLusMem); }
 function maeMarquerLu(m){
   try{
     const lus=maeLus(), cle=maeCleLu(m); if(lus[cle])return;
-    lus[cle]=Date.now();
+    lus[cle]=Date.now(); _maeLusMem[cle]=lus[cle];
     /* on oublie les messages lus il y a plus de 60 jours */
     Object.keys(lus).forEach(function(k){ if(Date.now()-lus[k]>60*864e5)delete lus[k]; });
     localStorage.setItem("museduc-mae-lus",JSON.stringify(lus));
+    if(cle.indexOf("dv-")===0){ try{ construireNavBas(); }catch(x){} try{ construireMenu(); }catch(x){} }
   }catch(e){}
 }
 function maestroRendre(){
@@ -13276,6 +13260,8 @@ function maestroChargerVotes(){
 /* ---------- Côté élève : écran du travail à faire ---------- */
 function ecranDevoirs(){
   if(typeof fermerMenu==="function")fermerMenu();
+  /* ouvrir la page vaut lecture : plus de pastille pour ces travaux */
+  try{ (devoirsAFaire()||[]).forEach(function(d){ maeMarquerLu({id:"dv-"+d.id}); }); }catch(e){}
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   document.getElementById("titre").innerHTML='<i class="ph ph-backpack"></i> Travail à faire';
   document.getElementById("intro").textContent="";
@@ -13311,7 +13297,7 @@ function ecranDevoirs(){
       h+=`</div>`;
       if(nonRendus.length){
         h+=`<div class="dvel-p" data-p="nr"${_dvElOnglet==="nr"?"":" hidden"}>
-          <p class="dvel-aide"><i class="ph ph-info"></i> Ces travaux n'ont pas été rendus à temps (${retardMaxEleve()} jour${retardMaxEleve()>1?"s":""} de retard au plus). Ton professeur les voit comme <b>non rendus</b>. Tu peux encore les faire pour t'entraîner.</p>`;
+          <p class="dvel-aide"><i class="ph ph-lock-simple"></i> Trop tard pour ces travaux : ils sont notés <b>${_nrZero?"NR*":"NR"}</b>${_nrZero?" et comptent <b>0</b>":" et ne comptent pas"}.</p>`;
         nonRendus.forEach(function(d){ h+=devoirCarteHTML(d,false,true); });
         h+=`</div>`;
       }
@@ -13366,8 +13352,8 @@ function devoirCarteHTML(d,fini,nonRendu){
         <i class="ph${ok?"-fill":""} ph-${ok?"check-circle":t.ic}" style="${ok?"color:var(--juste)":""};font-size:1.2rem"></i>
         <span style="flex:1;min-width:0"><b>${echapH(devoirVoletNom(v))}</b>
           <br><span style="font-size:.84rem;color:var(--encre-doux)">${t.lib} · ${detail}</span></span>
-        ${ok?"":`<button class="action btn-corr" style="padding:6px 12px;font-size:.88rem"
-            onclick="devoirLancerVolet('${d.id}',${i})"><i class="ph ph-play"></i> Y aller</button>`}
+        ${ok?"":(nonRendu&&devoirVoletVerrouille(d,i)?`<span class="dv-nr">${_nrZero?"NR*":"NR"}</span>`:`<button class="action btn-corr" style="padding:6px 12px;font-size:.88rem"
+            onclick="devoirLancerVolet('${d.id}',${i})"><i class="ph ph-play"></i> Y aller</button>`)}
       </div>`;
   });
   return h+`</div></div>`;
@@ -13382,6 +13368,7 @@ function devoirOuvrir(id){
 function devoirLancerVolet(id,i){
   const d=(_devoirs||[]).filter(function(x){return x.id===id;})[0]; if(!d)return;
   const v=(d.volets||[])[i]; if(!v)return;
+  if(devoirVoletVerrouille(d,i)){ toast("Trop tard : ce travail est non rendu."); return; }
   devoirChronoDemarrer(id,i);            /* on mesure à partir d'ici */
   if(v.t==="voc"){ devoirVocPopup(d,i); return; }
   if(v.t==="cours"){ if(typeof ecranCours==="function")ecranCours(String(v.cible).slice(6)); return; }
@@ -19182,7 +19169,7 @@ function classementProf(){
     _classProfListe=classes;
     if(!_classProfSel||(_classProfSel!=="__tout__"&&!classes.some(function(c){return c.id===_classProfSel;})))
       _classProfSel=classes[0].id;
-    z.innerHTML=`<div class="accueil clx" style="max-width:980px">
+    z.innerHTML=`<div class="accueil clx clx2" style="max-width:980px">
       <div class="clx-choix"><label for="clProfSel"><i class="ph ph-users-three"></i> Classe</label>
           <select id="clProfSel" onchange="classementProfChoisir(this.value)">
             <option value="__tout__"${_classProfSel==="__tout__"?" selected":""}>Toutes mes classes (le collège)</option>
@@ -19221,34 +19208,23 @@ function classementProfRendre(classId){
     const l=Object.keys(par).map(function(k){ return par[k]; });
     l.sort(function(x,y){ return (y.points||0)-(x.points||0) || (y.evals||0)-(x.evals||0); });
     if(!l.length){ z.innerHTML=`<p class="badge-vide">Personne dans le classement ${tout?"de vos classes":"de cette classe"} pour l'instant. Ouvrez la page de la classe une fois : cela l'amorce pour tout le monde.</p>`; return; }
-    /* Classement enseignant compact (30/09/2026) : bandeau de chiffres clés +
-       mini-podium nommé, puis une ligne serrée par élève avec barre de points. */
     const nomDe=function(x){ const lab=labelDe(x.cid,x.code); return lab||x.code; };
     const max=Math.max(1,l[0].points||0);
     const tot=l.reduce(function(a,x){ return a+(x.points||0); },0), moy=Math.round(tot/l.length);
     const actif=l.slice().sort(function(a,b){ return (b.evals||0)-(a.evals||0); })[0];
-    const podium=l.length>=3?'<div class="clx-podium">'+l.slice(0,3).map(function(x,k){
-        return '<div class="clx-pm p'+(k+1)+'"><i class="ph-fill ph-medal"></i><b title="'+echapH(nomDe(x))+'">'+echapH(nomDe(x))+'</b><span>'+(x.points||0)+'</span></div>'; }).join("")+'</div>':'';
-    let h='<div class="clx-moi clx-prof-tete"><div class="clx-chiffres">'
-      +'<div><b>'+l.length+'</b><span>élève'+(l.length>1?"s":"")+(tout?" · "+lot.length+" classe"+(lot.length>1?"s":""):"")+'</span></div>'
-      +'<div><b>'+moy+'</b><span>points en moyenne</span></div>'
-      +(actif&&actif.evals?'<div><b>'+(actif.evals||0)+'</b><span>évaluations pour '+echapH(nomDe(actif))+', le plus actif</span></div>':'')
-      +'</div>'+podium+'</div>';
-    const cols=tout?" clx-prof tout":" clx-prof";
-    h+='<div class="clx-liste"><div class="clx-l clx-entete'+cols+'"><span>#</span><span>Élève</span>'+(tout?'<span>Classe</span>':'')+'<span>Points</span><span></span><span>Niv.</span><span title="Évaluations passées (dont demandées)">Évals</span><span>Badges</span></div>';
-    l.forEach(function(x,k){
-      const r=k+1, lab=labelDe(x.cid,x.code), pct=Math.round((x.points||0)/max*100);
-      h+='<div class="clx-l'+cols+(r<=3?" top t"+r:"")+'">'
-        +'<span class="clx-n">'+(r<=3?'<i class="ph-fill ph-medal"></i>':r)+'</span>'
-        +'<span class="clx-code clx-nom">'+(lab?echapH(lab)+'<small>'+echapH(x.code)+'</small>':echapH(x.code))+'</span>'
-        +(tout?'<span class="clx-cl">'+echapH(x.cnom||"")+'</span>':'')
-        +'<span class="clx-barre"><i style="width:'+pct+'%"></i></span>'
-        +'<span class="clx-pts">'+(x.points||0)+'</span>'
-        +'<span class="clx-niv">N'+(x.niveau||1)+'</span>'
-        +'<span class="clx-ev" title="'+(x.evals||0)+' évaluation'+((x.evals||0)>1?"s":"")+' passée'+((x.evals||0)>1?"s":"")+(x.evalsOff?", dont "+x.evalsOff+" demandée"+(x.evalsOff>1?"s":""):"")+'"><b>'+(x.evals||0)+'</b>'+(x.evalsOff?'<small> ('+x.evalsOff+' dem.)</small>':'')+'</span>'
-        +'<span class="clx-bdg"><i class="ph-fill ph-seal-check"></i> '+(x.badges||0)+'</span></div>';
-    });
-    z.innerHTML=h+'</div>';
+    const chip=function(ic,v,lib){ return '<span class="clx2-chip"><i class="ph-fill ph-'+ic+'"></i><b>'+v+'</b>'+lib+'</span>'; };
+    let h='<div class="clx2-scene"><div class="clx2-chips">'
+      +chip("users-three",l.length,"élève"+(l.length>1?"s":""))
+      +chip("star",moy,"pts en moyenne")
+      +(actif&&actif.evals?chip("lightning",actif.evals,"évals · "+echapH(nomDe(actif))):"")+'</div>'
+      +clxPodiumHTML(l.slice(0,3),nomDe,"")+'</div>';
+    h+='<div class="clx2-liste">'+l.map(function(x,k){
+      const lab=labelDe(x.cid,x.code);
+      const sous=(lab?x.code:"")+(tout&&x.cnom?(lab?" · ":"")+x.cnom:"");
+      const ev='<span title="Évaluations passées'+(x.evalsOff?", dont "+x.evalsOff+" demandée"+(x.evalsOff>1?"s":""):"")+'"><i class="ph-fill ph-exam"></i>'+(x.evals||0)+'</span>';
+      return clxLigneHTML(x,k+1,max,nomDe(x),sous,ev,false);
+    }).join("")+'</div>';
+    z.innerHTML=h;
   }).catch(function(){ z.innerHTML=svcIndispo(tout?"Impossible de charger le classement de vos classes.":"Impossible de charger cette classe."); });
 }
 
@@ -19436,6 +19412,9 @@ function ecranEvalAccueil(){
 
 /* --- Lancement d'une évaluation sur UNE leçon précise --- */
 function ecranEvalDomaine(domId){
+  /* l'apprenant n'a pas d'évaluations notées : il affronte le boss final */
+  if(estApprenant()&&!_bossLancement){ ecranBossFinal(domId); return; }
+  evalBoss=false;
   masquerInterfaceNormale();
   /* Difficulté imposée : posée par devoirLancerVolet juste avant l'appel. On la
      consomme ici, pour qu'une évaluation ouverte librement ensuite reste libre. */
@@ -19538,7 +19517,9 @@ function lancerEval(domId){
   if(!evalDomaine||!GEN[evalDomaine]){toast("Évaluation indisponible pour cette leçon.");return;}
   evalGraine=graineDepuis((profil.eleveCode||"anon")+"|"+evalDomaine+"|"+Date.now());
   evalDiff=evalDiff||2;
-  if(evalCompoActif&&evalCompoActif.cible===evalDomaine){
+  if(evalBoss){
+    evalExos=genererBoss(evalDomaine);
+  } else if(evalCompoActif&&evalCompoActif.cible===evalDomaine){
     evalExos=genererEvalCours(evalCompoActif.coursId,evalCompoActif.parts,evalDiff);
   } else {
     evalExos=genererEval(evalDomaine,evalDiff,evalNbPour(evalDomaine));
@@ -19625,6 +19606,8 @@ function terminerEval(parTemps){
     if(addPts>0){ const add=Math.min(addPts,20-note); if(add>0){ noteBonus+=add; note=note+add; } }
   }
   evalBonusVoulu=null;
+  /* apprenant : le boss final valide le cours, sans note enregistrée */
+  if(evalBoss){ evalBoss=false; bossTerminer(evalDomaine,note,bons,total,parTemps); return; }
   const theme=(typeof nomCat==="function")?nomCat(evalDomaine):evalDomaine;
   /* Officielle si elle correspond à une évaluation DEMANDÉE ouverte (calculé AVANT
      devoirFait, qui va la verrouiller). Sinon c'est une évaluation libre (bonus). */
@@ -19723,7 +19706,8 @@ let _evCodes={};          /* classId -> codes de la classe (liste complète, fa�
 let _evANoter={};         /* classId -> nb d'enregistrements de chant déposés et pas encore notés */
 /* Notes saisies au carnet par le prof (codes A/n/w/r ou nombre). Interprétation :
    A = Absent, n = non noté, r = non rendu (les trois NE COMPTENT PAS) ; w = compte 0. */
-const CARNET_CODES={A:{t:"Abs",c:null},n:{t:"n.n.",c:null},r:{t:"N.R.",c:null},w:{t:"0",c:0}};
+/* NR = non rendu qui ne compte pas ; NR* = non rendu qui compte 0 (comme Pronote) */
+const CARNET_CODES={A:{t:"Abs",c:null},n:{t:"n.n.",c:null},r:{t:"NR",c:null},z:{t:"NR*",c:0},w:{t:"0",c:0}};
 function carnetInterp(v){
   if(v==null||v==="")return {txt:null,count:null,raw:null};
   if(typeof v==="string"&&CARNET_CODES[v])return {txt:CARNET_CODES[v].t,count:CARNET_CODES[v].c,raw:v,code:v};
@@ -20300,7 +20284,7 @@ function evGradebookData(classId,voirTout){
         raw=(carnet[col.key]!=null?carnet[col.key]:last);
         /* évaluation demandée, délai de retard dépassé, aucune copie : non rendue (N.R., ne compte pas) */
         if(raw==null&&col.src==="d"){ const dm=devMeta[col.key.slice(2)];
-          if(dm&&dm.nr&&(!dm.eleves||dm.eleves.indexOf(code)>=0))raw="r"; }
+          if(dm&&dm.nr&&(!dm.eleves||dm.eleves.indexOf(code)>=0))raw=nrZeroClasse(classId)?"z":"r"; }
         }
       }
       const it=carnetInterp(raw);
@@ -20318,7 +20302,7 @@ function evGradebookData(classId,voirTout){
         let best=null, codeTxt=null;
         cf.membres.forEach(function(k){ const c=cellsRow[k]; if(!c||c.raw===""||c.raw==null)return;
           if(c.count!=null){ if(best==null||c.count>best)best=c.count; }
-          else if(codeTxt==null||codeTxt==="r")codeTxt=c.raw; });
+          else if(codeTxt==null||codeTxt==="r"||codeTxt==="z")codeTxt=c.raw; });
         raw=(best!=null)?best:codeTxt;
       }
       const it=carnetInterp(raw);
@@ -20468,8 +20452,9 @@ function evSetNote(classId,key,code,val,move){
      réservé à « Rétablir la note de l'élève » (evResetNote). */
   const t=String(val==null?"":val).trim(); let store="";
   if(t!==""){ const low=t.toLowerCase();
-    if(low==="a")store="A"; else if(low==="n")store="n"; else if(low==="w")store="w"; else if(low==="r")store="r";
-    else { const num=parseFloat(t.replace(",",".")); if(isNaN(num)||num<0||num>20){ toast("Note entre 0 et 20, ou un code : A (absent), n (non noté), w (compte 0), r (non rendu)."); if(typeof evalsRendre==="function")evalsRendre(); return; } store=Math.round(num*100)/100; }
+    if(low==="a")store="A"; else if(low==="n")store="n"; else if(low==="w")store="w";
+    else if(low==="r"||low==="nr")store="r"; else if(low==="r*"||low==="nr*")store="z";
+    else { const num=parseFloat(t.replace(",",".")); if(isNaN(num)||num<0||num>20){ toast("Note entre 0 et 20, ou un code : A (absent), n (non noté), w (compte 0), NR (non rendu, ne compte pas), NR* (non rendu, compte 0)."); if(typeof evalsRendre==="function")evalsRendre(); return; } store=Math.round(num*100)/100; }
   }
   const s=fbStore(); if(!s){svcIndispo();return;}
   const o={}; o[key]=store;
@@ -22724,6 +22709,10 @@ function majIndicateurCompte(){
   try{ majBoutonProjection(); }catch(x){}
   try{ construireNavBas(); }catch(x){}
   const e=etatCompte();
+  /* visiteur : le bouton dit « Se connecter » (une icône seule ne se comprenait pas) */
+  try{ const bc=document.getElementById("btnCompte");
+    if(bc){ if(!bc.querySelector(".cm-lib")){ const sp=document.createElement("span"); sp.className="cm-lib"; sp.textContent="Se connecter"; bc.insertBefore(sp,bc.querySelector(".compte-pastille")); }
+      bc.classList.toggle("cm-anon",!e.connecte); } }catch(x){}
   const p=document.getElementById("comptePastille");
   if(p)p.className="compte-pastille"+(e.connecte?" on":"")+((e.connecte&&(_syncEtat.etat==="echec"||evalsAttente().length))?" alerte":"");
   const b=document.getElementById("btnCompte");
@@ -22731,37 +22720,47 @@ function majIndicateurCompte(){
   const m=document.getElementById("compteMenu");
   if(m&&m.classList.contains("ouvert"))dessinerMenuCompte();
 }
+/* Menu du compte (bouton en haut à droite). Visiteur : trois portes d'entrée
+   claires, comme sur l'écran de bienvenue (élève en or, apprenant en vert,
+   enseignant en marine). Connecté : une carte d'identité puis des actions. */
+function cmTuile(teinte,ic,lib,go){
+  return '<button class="cm3-tuile" style="--d:'+teinte+'" onclick="fermerMenuCompte();'+go+'"><span><i class="ph-fill ph-'+ic+'"></i></span><b>'+lib+'</b></button>';
+}
 function dessinerMenuCompte(){
   const m=document.getElementById("compteMenu"); if(!m)return;
   const e=etatCompte();
-  let actions="";
+  const OR="var(--or)", VERT="var(--dom-theorie)", BLEU="var(--bandeau)", ROUGE="var(--faux)", VIOLET="var(--dom-culture)";
+  /* Tout le menu en grosses tuiles d'un mot : on lit en diagonale. */
+  let titre="Je suis…", tuiles="";
   if(e.type==="prof"){
-    actions=(estAdmin()?`<button onclick="fermerMenuCompte();ecranAdmin()"><i class="ph ph-shield-star"></i> Administration</button>`:"")
-           +`<button onclick="fermerMenuCompte();dashboardProf()"><i class="ph ph-chalkboard-teacher"></i> Mon espace professeur</button>
-             <button onclick="fermerMenuCompte();deconnecterProf()"><i class="ph ph-sign-out"></i> Se déconnecter</button>`;
+    titre=estAdmin()?"Administrateur":"Professeur";
+    tuiles=(estAdmin()?cmTuile(OR,"shield-star","Admin","ecranAdmin()"):"")
+      +cmTuile(BLEU,"house","Accueil","accueilProf()")
+      +cmTuile(VIOLET,"users-three","Classes","dashboardProf()")
+      +cmTuile(VERT,"gear","Réglages","ecranParametres()")
+      +cmTuile(ROUGE,"sign-out","Quitter","deconnecterProf()");
   }else if(e.type==="eleve"){
-    /* « Mon code élève » n'apprenait rien (le code et la classe sont en tête du
-       profil, la protection du compte dans Paramètres > Mon compte) et « Ma
-       progression » ouvrait en fait le profil : on dit ce que c'est. */
-    actions=`<button onclick="fermerMenuCompte();ecranProgression()"><i class="ph ph-user-circle"></i> Mon profil</button>
-             <button onclick="fermerMenuCompte();ecranParametres()"><i class="ph ph-gear"></i> Paramètres</button>
-             <button onclick="fermerMenuCompte();quitterClasse()"><i class="ph ph-sign-out"></i> Me déconnecter</button>`;
+    titre="Code "+(profil.eleveCode||"");
+    tuiles=cmTuile(OR,"user-circle","Profil","ecranProgression()")
+      +cmTuile(BLEU,"backpack","Travail","ecranDevoirs()")
+      +cmTuile(VERT,"gear","Réglages","ecranParametres()")
+      +cmTuile(ROUGE,"sign-out","Quitter","quitterClasse()");
   }else if(e.type==="apprenant"){
-    actions=(estAdmin()?`<button onclick="fermerMenuCompte();choisirVueAdmin('')"><i class="ph ph-arrow-u-up-left"></i> Revenir à ma vue</button>`:"")
-           +`<button onclick="fermerMenuCompte();ecranProgression()"><i class="ph ph-user-circle"></i> Mon profil</button>
-             <button onclick="fermerMenuCompte();ecranParametres()"><i class="ph ph-gear"></i> Paramètres</button>`
-           +(estAdmin()?"":`<button onclick="fermerMenuCompte();deconnecterCompte()"><i class="ph ph-sign-out"></i> Me déconnecter</button>`);
+    titre=(_role&&_role.prenom)?capNom(_role.prenom):"Apprenant";
+    tuiles=(estAdmin()?cmTuile(OR,"arrow-u-up-left","Ma vue","choisirVueAdmin('')"):"")
+      +cmTuile(VERT,"user-circle","Profil","ecranProgression()")
+      +cmTuile(BLEU,"gear","Réglages","ecranParametres()")
+      +(estAdmin()?"":cmTuile(ROUGE,"sign-out","Quitter","deconnecterCompte()"));
   }else if(estAdmin()&&_vueAdmin){
-    actions=`<button onclick="fermerMenuCompte();choisirVueAdmin('')"><i class="ph ph-arrow-u-up-left"></i> Revenir à ma vue</button>`;
+    titre="Vue visiteur";
+    tuiles=cmTuile(OR,"arrow-u-up-left","Ma vue","choisirVueAdmin('')");
   }else{
-    actions=`<button onclick="fermerMenuCompte();ecranMaClasse()"><i class="ph ph-sign-in"></i> Entrer mon code élève</button>
-             <button onclick="fermerMenuCompte();ecranApprenant()"><i class="ph ph-user-circle"></i> Mon compte apprenant</button>
-             <button onclick="fermerMenuCompte();ecranProf()"><i class="ph ph-chalkboard-teacher"></i> Connexion professeur</button>`;
+    tuiles=cmTuile(OR,"student","Élève","ecranMaClasse()")
+      +cmTuile(VERT,"user-circle","En solo","ecranApprenant()")
+      +cmTuile(BLEU,"chalkboard-teacher","Prof","ecranProf()");
   }
-  m.innerHTML=`<div class="cm-tete">
-      <div class="cm-role"><i class="ph ${e.ic}"></i> ${echapH(e.role)}
-        <span style="width:9px;height:9px;border-radius:50%;flex:none;background:${e.connecte?"#2f9e63":"#e0483b"}"></span></div>
-      <div class="cm-detail">${echapH(e.detail)}</div>${(e.type==="eleve"&&syncTexte())?'<div class="cm-sync">'+syncTexte()+'</div>':''}</div>${actions}`;
+  m.innerHTML='<div class="cm3"><div class="cm3-t">'+(e.connecte?'<span class="cm3-point"></span>':'')+echapH(titre)+'</div>'
+    +'<div class="cm3-grille'+((tuiles.split('class="cm3-tuile"').length-1)%2===0?' deux':'')+'">'+tuiles+'</div></div>';
 }
 function basculerMenuCompte(ev){
   if(ev&&ev.stopPropagation)ev.stopPropagation();
@@ -22826,6 +22825,241 @@ function jeuCarteHTML(o){
     +'<span class="jx-corps"><b>'+o.titre+'</b><span>'+o.txt+'</span>'
     +'<span class="jx-go">'+o.go+' <i class="ph ph-arrow-right"></i></span></span></button>';
 }
+/* =====================================================================
+   APPRENANT (05/10/2026) : pas de notes, mais un BOSS FINAL par leçon, et
+   des AMIS (code ami, demande acceptée par l'autre) pour un classement privé.
+   ===================================================================== */
+const BOSS_SEUIL=14;          /* note sur 20 pour valider le cours */
+const BOSS_PTS=60;            /* points gagnés la première fois */
+let evalBoss=false, _bossLancement=false;
+function bossOK(domId){ return !!(profil.bossOK&&profil.bossOK[domId]); }
+function nbCoursValides(){ return Object.keys(profil.bossOK||{}).length; }
+/* carte en bas de la leçon, à la place de l'évaluation */
+function bossCarteHTML(domId){
+  if(!evalEntrainOK(domId)){
+    return `<div class="lcc lcc-off" title="Valide les trois niveaux d'entraînement pour l'affronter">
+        <div class="lcc-ic gris"><i class="ph-fill ph-lock-simple"></i></div>
+        <div class="lcc-titre">Boss final</div>
+        <div class="lcc-desc">Valide <b>Facile</b>, <b>Intermédiaire</b> et <b>Difficile</b> pour l'affronter.</div>
+        <button class="lcc-btn gris" disabled>Verrouillé <i class="ph ph-lock-simple"></i></button></div>`;
+  }
+  const b=(profil.bossOK||{})[domId];
+  return `<div class="lcc boss${b?" vaincu":""}" onclick="ecranBossFinal('${domId}')">
+      <div class="lcc-ic or"><i class="ph-fill ph-${b?"trophy":"crown"}"></i></div>
+      <div class="lcc-titre">${b?"Cours validé&nbsp;!":"Boss final"}</div>
+      <div class="lcc-desc">${b?"Battu avec <b>"+b.note+"/20</b>. Tu peux le rejouer pour le plaisir.":"20 questions des 3 niveaux mélangés : <b>"+BOSS_SEUIL+"/20</b> pour valider le cours."}</div>
+      <button class="lcc-btn or" onclick="event.stopPropagation();ecranBossFinal('${domId}')">${b?"Rejouer":"Affronter le boss"} <i class="ph ph-arrow-right"></i></button></div>`;
+}
+function ecranBossFinal(domId){
+  masquerInterfaceNormale(); majRetour(function(){ afficherLecon(domId); },"La leçon");
+  if(!evalEntrainOK(domId)){ afficherLecon(domId); return; }
+  const titre=(typeof nomCat==="function")?nomCat(domId):domId;
+  document.getElementById("titre").innerHTML='<i class="ph-fill ph-crown"></i> Boss final';
+  document.getElementById("intro").textContent="";
+  const puce=function(ic,t){ return '<span class="boss-puce"><i class="ph-fill ph-'+ic+'"></i>'+t+'</span>'; };
+  document.getElementById("zone").innerHTML=`<div class="accueil" style="max-width:560px"><div class="boss-ecran">
+      <div class="boss-couronne"><i class="ph-fill ph-crown"></i></div>
+      <h2>${titre}</h2>
+      <div class="boss-puces">${puce("list-numbers","20 questions")}${puce("shuffle","3 niveaux mélangés")}${puce("timer",EVAL_MINUTES+" min")}${puce("target",BOSS_SEUIL+"/20 pour gagner")}</div>
+      ${bossOK(domId)?'<p class="boss-deja"><i class="ph-fill ph-trophy"></i> Déjà battu avec '+profil.bossOK[domId].note+'/20</p>':''}
+      <button class="boss-go" onclick="lancerBoss('${domId}')"><i class="ph-fill ph-sword"></i> C'est parti&nbsp;!</button>
+    </div></div>`;
+  if(typeof remonter==="function")remonter();
+}
+function lancerBoss(domId){
+  evalBoss=true; evalDiff=2;
+  _bossLancement=true;
+  try{ lancerEval(domId); }finally{ _bossLancement=false; }
+}
+/* questions des trois difficultés, mélangées */
+function genererBoss(domId){
+  const l=[].concat(genererEval(domId,1,7)||[],genererEval(domId,2,7)||[],genererEval(domId,3,6)||[]);
+  for(let i=l.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=l[i]; l[i]=l[j]; l[j]=t; }
+  return l;
+}
+function bossTerminer(domId,note,bons,total,parTemps){
+  const gagne=note>=BOSS_SEUIL, premiere=gagne&&!bossOK(domId);
+  let pts=0;
+  if(gagne){
+    profil.bossOK=profil.bossOK||{};
+    const avant=profil.bossOK[domId];
+    if(!avant||note>avant.note)profil.bossOK[domId]={note:note,d:Date.now()};
+    if(premiere){ try{ pts=ajouterPoints(BOSS_PTS); }catch(e){} }
+    sauverProfil(profil);
+    try{ const nb=verifierBadges(); if(nb&&nb.length){ sauverProfil(profil); setTimeout(function(){ annoncerBadges(nb); },1400); } }catch(e){}
+    try{ if(typeof jouerEffet==="function")jouerEffet("parfait"); }catch(e){}
+  }
+  const titre=(typeof nomCat==="function")?nomCat(domId):domId;
+  document.getElementById("titre").innerHTML='<i class="ph-fill ph-crown"></i> Boss final';
+  document.getElementById("zone").innerHTML=`<div class="accueil" style="max-width:560px"><div class="boss-ecran ${gagne?"gagne":"perdu"}">
+      ${parTemps?'<p class="boss-temps"><i class="ph ph-timer"></i> Temps écoulé</p>':''}
+      <div class="boss-couronne"><i class="ph-fill ph-${gagne?"trophy":"skull"}"></i></div>
+      <h2>${gagne?"Cours validé&nbsp;!":"Pas encore…"}</h2>
+      <p class="boss-titre-l">${titre}</p>
+      <div class="boss-score"><b>${bons}</b>/${total}<small>bonnes réponses</small></div>
+      ${pts?'<p class="boss-pts"><i class="ph-fill ph-star"></i> +'+pts+' points</p>':''}
+      ${gagne?"":'<p class="boss-aide">Il faut <b>'+BOSS_SEUIL+'/20</b>. Revois les niveaux d’entraînement, puis retente ta chance.</p>'}
+      <div class="boss-actions">
+        ${gagne?"":'<button class="boss-go" onclick="ecranBossFinal(\''+domId+'\')"><i class="ph-fill ph-arrow-clockwise"></i> Retenter</button>'}
+        <button class="boss-go sec" onclick="afficherLecon('${domId}')"><i class="ph ph-book-open"></i> La leçon</button>
+      </div></div></div>`;
+  try{ apprenantSync(); }catch(e){}
+}
+
+/* ---------- Amis ---------- */
+function amiCodeAlea(){ const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let c=""; for(let i=0;i<6;i++)c+=A[Math.floor(Math.random()*A.length)]; return c; }
+function amiMoi(){ const a=fbAuth(); return a&&a.currentUser; }
+function amiNomCourt(){ return ((_role&&_role.prenom)?capNom(_role.prenom):"")+((_role&&_role.nom)?" "+String(_role.nom).charAt(0).toUpperCase()+".":""); }
+/* code ami de l'apprenant : créé à la première demande, gardé dans son profil */
+function amiMonCode(){
+  const s=fbStore(), u=amiMoi(); if(!s||!u)return Promise.resolve("");
+  if(profil.codeAmi)return Promise.resolve(profil.codeAmi);
+  const essai=function(n){
+    const c=amiCodeAlea(), ref=s.collection("codesAmis").doc(c);
+    return ref.get().then(function(d){
+      if(d.exists){ if(n>5)throw new Error("codes"); return essai(n+1); }
+      return ref.set({uid:u.uid,nom:amiNomCourt(),le:Date.now()}).then(function(){
+        profil.codeAmi=c; sauverProfil(profil); return c; });
+    });
+  };
+  return essai(0);
+}
+/* scores visibles par les amis seulement (règle Firestore) */
+function amiPublierScore(){
+  const s=fbStore(), u=amiMoi(); if(!s||!u||roleDe(u)!=="apprenant")return Promise.resolve();
+  const g=gradeDe(profil.points||0);
+  return s.collection("scores").doc(u.uid).set({nom:amiNomCourt(),points:profil.points||0,niveau:g.niveau,
+    badges:nbBadgesObtenus(),cours:nbCoursValides(),maj:Date.now()},{merge:true}).catch(function(){});
+}
+function amiAjouter(){
+  const s=fbStore(), u=amiMoi(); if(!s||!u)return;
+  const inp=document.getElementById("amiCodeIn"), er=document.getElementById("amiErr");
+  const code=((inp&&inp.value)||"").trim().toUpperCase();
+  const dire=function(m){ if(er){ er.textContent=m; er.style.display="block"; } };
+  if(er)er.style.display="none";
+  if(code.length<6){ dire("Le code ami a 6 caractères."); return; }
+  if(code===profil.codeAmi){ dire("C'est ton propre code !"); return; }
+  s.collection("codesAmis").doc(code).get().then(function(d){
+    if(!d.exists){ dire("Aucun apprenant n'a ce code."); return; }
+    const ami=d.data()||{};
+    return s.collection("amis").doc(u.uid).collection("liste").doc(ami.uid).get().then(function(x){
+      if(x.exists){ dire(x.data().etat==="ok"?"Vous êtes déjà amis.":"Demande déjà envoyée."); return; }
+      return amiMonCode().then(function(monCode){
+        return Promise.all([
+          s.collection("amis").doc(ami.uid).collection("demandes").doc(u.uid).set({nom:amiNomCourt(),code:monCode,le:Date.now()}),
+          s.collection("amis").doc(u.uid).collection("liste").doc(ami.uid).set({nom:ami.nom||"",code:code,etat:"attente",depuis:Date.now()})
+        ]);
+      }).then(function(){ toast("Demande envoyée à "+(ami.nom||"ton ami")+" !"); ecranAmis(); });
+    });
+  }).catch(function(){ dire("Impossible pour l'instant. Réessaie."); });
+}
+function amiAccepter(uid){
+  const s=fbStore(), u=amiMoi(); if(!s||!u)return;
+  const dref=s.collection("amis").doc(u.uid).collection("demandes").doc(uid);
+  dref.get().then(function(d){
+    const v=d.exists?(d.data()||{}):{};
+    return Promise.all([
+      s.collection("amis").doc(u.uid).collection("liste").doc(uid).set({nom:v.nom||"",code:v.code||"",etat:"ok",depuis:Date.now()}),
+      s.collection("amis").doc(uid).collection("liste").doc(u.uid).update({etat:"ok"}).catch(function(){})
+    ]).then(function(){ return dref.delete(); }).then(function(){
+      toast("Vous êtes amis !"); try{ maestroRetirer("ami-"+uid); }catch(e){}
+      if(document.querySelector(".amis"))ecranAmis(); });
+  }).catch(function(){ toast("Impossible pour l'instant."); });
+}
+function amiRefuser(uid){
+  const s=fbStore(), u=amiMoi(); if(!s||!u)return;
+  Promise.all([
+    s.collection("amis").doc(u.uid).collection("demandes").doc(uid).delete(),
+    s.collection("amis").doc(uid).collection("liste").doc(u.uid).delete().catch(function(){})
+  ]).then(function(){ try{ maestroRetirer("ami-"+uid); }catch(e){} if(document.querySelector(".amis"))ecranAmis(); })
+    .catch(function(){ toast("Impossible pour l'instant."); });
+}
+async function amiRetirer(uid,nom){
+  if(!await dlgConfirmer("Retirer "+(nom||"cet ami")+" de tes amis ?"))return;
+  const s=fbStore(), u=amiMoi(); if(!s||!u)return;
+  Promise.all([s.collection("amis").doc(u.uid).collection("liste").doc(uid).delete(),
+    s.collection("amis").doc(uid).collection("liste").doc(u.uid).delete().catch(function(){})])
+    .then(function(){ ecranAmis(); });
+}
+function amiDemandes(){
+  const s=fbStore(), u=amiMoi(); if(!s||!u||roleDe(u)!=="apprenant")return Promise.resolve([]);
+  return s.collection("amis").doc(u.uid).collection("demandes").get().then(function(q){
+    const l=[]; q.forEach(function(d){ l.push(Object.assign({uid:d.id},d.data()||{})); }); return l; }).catch(function(){ return []; });
+}
+/* messages de Maestro : une demande d'ami = un message avec Accepter / Refuser */
+function maestroMessagesAmis(){
+  return amiDemandes().then(function(l){
+    return l.map(function(d){ return {id:"ami-"+d.uid,prio:22,ic:"user-plus",titre:"Une demande d’ami",
+      corps:"<b>"+echapH(d.nom||"Un apprenant")+"</b> veut être ton ami sur MusEduc : vous verrez vos scores dans un classement à vous.",
+      actions:[{lib:"Accepter",principal:true,ic:"check",clic:"amiAccepter('"+d.uid+"')"},{lib:"Refuser",ic:"x",clic:"amiRefuser('"+d.uid+"')"}]}; });
+  });
+}
+function ecranAmis(){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  document.getElementById("titre").innerHTML='<i class="ph-fill ph-users-three"></i> Mes amis';
+  document.getElementById("intro").textContent="";
+  const z=document.getElementById("zone"), s=fbStore(), u=amiMoi();
+  if(!s||!u){ z.innerHTML=svcIndispo(); return; }
+  z.innerHTML='<p style="color:var(--encre-doux);text-align:center"><i class="ph ph-spinner-gap"></i> Chargement…</p>';
+  amiPublierScore();
+  Promise.all([amiMonCode(), amiDemandes(),
+    s.collection("amis").doc(u.uid).collection("liste").get().then(function(q){ const l=[]; q.forEach(function(d){ l.push(Object.assign({uid:d.id},d.data()||{})); }); return l; }).catch(function(){ return []; })
+  ]).then(function(r){
+    const code=r[0], dem=r[1], liste=r[2];
+    const ok=liste.filter(function(x){ return x.etat==="ok"; }), att=liste.filter(function(x){ return x.etat!=="ok"; });
+    return Promise.all(ok.map(function(a){ return s.collection("scores").doc(a.uid).get().then(function(d){ return Object.assign({code:a.uid,amiUid:a.uid,nomAmi:a.nom},d.exists?d.data():{}); }).catch(function(){ return {code:a.uid,amiUid:a.uid,nomAmi:a.nom}; }); }))
+      .then(function(sc){
+        const g=gradeDe(profil.points||0);
+        const moi={code:u.uid,nom:amiNomCourt()||"Moi",points:profil.points||0,niveau:g.niveau,badges:nbBadgesObtenus(),cours:nbCoursValides()};
+        const l=[moi].concat(sc).sort(function(a,b){ return (b.points||0)-(a.points||0); });
+        const max=Math.max(1,l[0].points||0);
+        const nomDe=function(x){ return x.code===u.uid?"Moi":(x.nom||x.nomAmi||"Ami"); };
+        let h='<div class="accueil amis clx2" style="max-width:860px">';
+        h+='<div class="amis-tete"><div class="amis-code"><small>Mon code ami</small><b>'+echapH(code||"…")+'</b>'
+          +'<button class="amis-copier" onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+code+'\').then(function(){toast(\'Code copié\');})"><i class="ph ph-copy"></i></button></div>'
+          +'<div class="amis-ajout"><small>Ajouter un ami</small><div class="amis-ajout-l"><input id="amiCodeIn" maxlength="6" placeholder="SON CODE" autocomplete="off" onkeydown="if(event.key===\'Enter\')amiAjouter()">'
+          +'<button onclick="amiAjouter()"><i class="ph-fill ph-user-plus"></i></button></div><div id="amiErr" class="auth-err"></div></div></div>';
+        if(dem.length)h+='<div class="amis-bloc"><h3><i class="ph-fill ph-bell-ringing"></i> Demandes reçues</h3>'+dem.map(function(d){
+          return '<div class="amis-ligne">'+clxAvatar(d.nom||"?")+'<b>'+echapH(d.nom||"Un apprenant")+'</b>'
+            +'<button class="amis-ok" onclick="amiAccepter(\''+d.uid+'\')"><i class="ph ph-check"></i> Accepter</button>'
+            +'<button class="amis-non" onclick="amiRefuser(\''+d.uid+'\')"><i class="ph ph-x"></i></button></div>'; }).join("")+'</div>';
+        h+='<div class="clx2-scene"><div class="clx2-titre"><i class="ph-fill ph-trophy"></i> Moi et mes amis</div>'+clxPodiumHTML(l.slice(0,3),nomDe,u.uid)+'</div>';
+        h+='<div class="clx2-liste">'+l.map(function(x,i){
+          const extra='<span title="Cours validés"><i class="ph-fill ph-crown"></i>'+(x.cours||0)+'</span>';
+          return clxLigneHTML(x,i+1,max,nomDe(x),"",extra,x.code===u.uid); }).join("")+'</div>';
+        if(!ok.length)h+='<p class="amis-vide"><i class="ph ph-hand-waving"></i> Donne ton code à un ami (15 ans et plus, avec un compte « En solo ») ou entre le sien : il devra accepter.</p>';
+        if(att.length)h+='<div class="amis-bloc"><h3><i class="ph ph-hourglass-medium"></i> En attente de réponse</h3>'+att.map(function(a){
+          return '<div class="amis-ligne">'+clxAvatar(a.nom||"?")+'<b>'+echapH(a.nom||a.code||"")+'</b><button class="amis-non" title="Annuler" onclick="amiRetirer(\''+a.uid+'\',\''+echapH(a.nom||"").replace(/'/g,"")+'\')"><i class="ph ph-x"></i></button></div>'; }).join("")+'</div>';
+        if(ok.length)h+='<div class="amis-bloc"><h3><i class="ph ph-users"></i> Mes amis</h3>'+ok.map(function(a){
+          return '<div class="amis-ligne">'+clxAvatar(a.nom||"?")+'<b>'+echapH(a.nom||"")+'</b><button class="amis-non" title="Retirer" onclick="amiRetirer(\''+a.uid+'\',\''+echapH(a.nom||"").replace(/'/g,"")+'\')"><i class="ph ph-user-minus"></i></button></div>'; }).join("")+'</div>';
+        z.innerHTML=h+'</div>';
+      });
+  }).catch(function(){ z.innerHTML=svcIndispo("Impossible de charger tes amis. Les règles Firestore (amis, scores, codesAmis) sont-elles publiées ?"); });
+}
+
+/* ---------- Accueil : « Par où commencer ? » en quatre tuiles ---------- */
+function accueilPistesHTML(){
+  const app=estApprenant();
+  const t=function(teinte,ic,titre,sous,go){ return '<button class="pis-t" style="--d:'+teinte+'" onclick="'+go+'"><span><i class="ph-fill ph-'+ic+'"></i></span><b>'+titre+'</b><small>'+sous+'</small></button>'; };
+  return '<div class="pistes"><div class="pistes-titre">Par où commencer&nbsp;?</div><div class="pistes-g">'
+    +t("var(--dom-lire)","graduation-cap","Apprends","Leçon puis entraînement","ecranLecons()")
+    +t("var(--dom-rythme)","game-controller","Joue","Seul ou à deux","ecranJouer()")
+    +t("var(--dom-culture)","cards","Retiens","Les mots du vocabulaire","ecranVocab()")
+    +(app?t("var(--or-texte)","crown","Valide","Bats le boss de chaque leçon","ecranLecons()")
+         :t("var(--dom-theorie)","chart-line-up","Progresse","Points, niveaux, badges","ecranProgression()"))
+    +'</div></div>';
+}
+
+/* profil de l'apprenant : ses cours validés à la place des notes */
+function pfCoursValidesHTML(){
+  const doms=domainesEval(), n=nbCoursValides(), tot=doms.length;
+  const l=doms.filter(function(d){ return bossOK(d.id); });
+  return '<section class="pf-carte pf2-carte"><div class="pf2-t"><span class="pf2-t-ic" style="--d:var(--or-texte)"><i class="ph-fill ph-crown"></i></span><h2>Mes cours validés</h2><span class="pf-pill">'+n+'/'+tot+'</span></div>'
+    +(l.length?'<div class="pf2-trophees">'+l.map(function(d){ return '<button class="pf2-trophee" onclick="afficherLecon(\''+d.id+'\')" title="Battu avec '+profil.bossOK[d.id].note+'/20"><i class="ph-fill ph-trophy"></i><span>'+d.nom+'</span></button>'; }).join("")+'</div>'
+      :'<div class="pf2-vide"><span><i class="ph-fill ph-crown"></i></span><b>Aucun boss vaincu</b><button class="pf2-go" onclick="ecranLecons()"><i class="ph-fill ph-graduation-cap"></i> Aller aux leçons</button></div>')
+    +'</section>';
+}
 function ecranJouer(){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
@@ -22849,6 +23083,16 @@ function ecranJouer(){
     return '<section class="jx-famille '+cls_+'"><div class="jx-fam-t"><span class="jx-fam-ic">'+ic+'</span><div><h2>'+titre+'</h2><p>'+sous+'</p></div></div>'
       +'<div class="jx-grille">'+l.map(jeuCarteHTML).join("")+'</div></section>';
   };
+  if(estApprenant()){
+    const amis=[{fam:"classe",ic:"ph-trophy",joueurs:'<i class="ph-fill ph-users-three"></i> Toi et tes amis',titre:"Classement entre amis",txt:"Ajoute tes amis avec leur code : vous comparez vos points, vos badges et vos boss vaincus.",go:"Mes amis",clic:"ecranAmis()"}];
+    document.getElementById("intro").textContent="Seul, à deux ou avec tes amis : choisis ton jeu.";
+    document.getElementById("zone").innerHTML='<div class="accueil jx" style="max-width:1080px">'
+      +famille("seul",'<i class="ph-fill ph-user"></i>',"Seul","Quand tu veux, à ton rythme.",seul)
+      +famille("deux",'<i class="ph-fill ph-users"></i>',"À deux","Sur le même appareil, face à face.",deux.slice(0,1))
+      +famille("classe",'<i class="ph-fill ph-users-three"></i>',"Avec mes amis","Un classement rien qu\u2019à vous.",amis)+'</div>';
+    if(typeof remonter==="function")remonter();
+    return;
+  }
   document.getElementById("zone").innerHTML='<div class="accueil jx" style="max-width:1080px">'
     +famille("seul",'<i class="ph-fill ph-user"></i>',"Seul","Quand tu veux, à ton rythme.",seul)
     +famille("deux",'<i class="ph-fill ph-users"></i>',"À deux","Contre un camarade, à côté de toi ou à distance.",deux)
@@ -24822,10 +25066,43 @@ function podiumHTML(liste,opt){
   return h+`</div>`;
 }
 
+/* ---------- Classement : podium et lignes visuels (04/10/2026) ---------- */
+const CLX_TEINTES=["--dom-lire","--dom-rythme","--dom-ecoute","--dom-culture","--dom-theorie","--dom-styles","--dom-loin"];
+function clxAvatar(nom,cls){
+  const t=String(nom||"?").trim();
+  const mots=t.split(/\s+/).filter(Boolean);
+  const ini=(mots.length>1?mots[0].charAt(0)+mots[1].charAt(0):t.slice(0,2)).toUpperCase();
+  let h=0; for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;
+  return '<span class="clx2-av'+(cls?" "+cls:"")+'" style="--d:var('+CLX_TEINTES[h%CLX_TEINTES.length]+')">'+echapH(ini)+'</span>';
+}
+/* podium : 2e, 1er, 3e ; nomFn(x) donne le nom affiché, moi = code de l'élève connecté */
+function clxPodiumHTML(top,nomFn,moi){
+  if(!top.length)return "";
+  const ordre=[1,0,2].filter(function(k){ return top[k]; });
+  return '<div class="clx2-podium">'+ordre.map(function(k){
+    const x=top[k], r=k+1, n=nomFn(x);
+    return '<div class="clx2-pm r'+r+(x.code===moi?" moi":"")+'">'
+      +(r===1?'<i class="ph-fill ph-crown clx2-couronne"></i>':'')
+      +clxAvatar(n,"grand")+'<b title="'+echapH(n)+'">'+echapH(n)+'</b>'
+      +'<span class="clx2-pts"><i class="ph-fill ph-star"></i> '+(x.points||0)+'</span>'
+      +'<div class="clx2-marche"><span>'+r+'</span></div></div>';
+  }).join("")+'</div>';
+}
+function clxLigneHTML(x,r,max,nom,sous,extra,moi){
+  const pct=Math.round((x.points||0)/max*100);
+  return '<div class="clx2-l'+(moi?" moi":"")+(r<=3?" t"+r:"")+'"'+(moi?' id="clxMoi"':'')+'>'
+    +'<span class="clx2-rang">'+r+'</span>'+clxAvatar(nom)
+    +'<span class="clx2-nom"><b>'+echapH(nom)+(moi?' <em>toi</em>':'')+'</b>'+(sous?'<small>'+echapH(sous)+'</small>':'')+'</span>'
+    +'<span class="clx2-barre"><i style="width:'+Math.max(pct,3)+'%"></i></span>'
+    +'<span class="clx2-puces"><span title="Niveau"><i class="ph-fill ph-chart-line-up"></i>'+(x.niveau||1)+'</span>'
+    +'<span title="Badges"><i class="ph-fill ph-medal"></i>'+(x.badges||0)+'</span>'+(extra||"")+'</span>'
+    +'<span class="clx2-total">'+(x.points||0)+'<small>pts</small></span></div>';
+}
 function ecranClassement(){
   if(typeof fermerMenu==="function")fermerMenu();
   /* l'enseignant voit le classement de TOUTES ses classes, avec ses propres noms */
   if(typeof profConnecte==="function"&&profConnecte()){ classementProf(); return; }
+  if(estApprenant()){ ecranAmis(); return; }
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   document.getElementById("titre").innerHTML='<i class="ph ph-trophy"></i> Classement de ma classe';
   document.getElementById("intro").textContent="";
@@ -24846,42 +25123,22 @@ function ecranClassement(){
     const l=[]; snap.forEach(function(d){ l.push(Object.assign({code:d.id},d.data())); });
     l.sort(function(a,b){return (b.points||0)-(a.points||0);});
     if(!l.length){ z.innerHTML='<p class="badge-vide">Personne dans le classement pour l\'instant.</p>'; return; }
-    /* Classement compact (refonte du 30/09/2026) : une carte « ta place » avec
-       l'objectif suivant et un mini-podium, puis une ligne serrée par élève avec
-       une barre de points (proportionnelle au premier). */
     const moi=l.findIndex(function(x){return x.code===profil.eleveCode;});
     const max=Math.max(1,l[0].points||0);
-    const sup=function(r){ return r===1?"er":"e"; };
-    let tete="";
+    let place="";
     if(moi>=0){
-      const me=l[moi], r=moi+1, med=r<=3?["or","argent","bronze"][r-1]:"";
-      const avant=moi>0?l[moi-1]:null, apres=l[moi+1]||null;
-      const ecartAvant=avant?Math.max(1,(avant.points||0)-(me.points||0)+1):0;
-      const obj=avant
-        ? '<i class="ph-fill ph-arrow-fat-up"></i> Encore <b>'+ecartAvant+' pt'+(ecartAvant>1?"s":"")+'</b> pour passer '+(moi)+'<sup>'+sup(moi)+'</sup>'
-        : '<i class="ph-fill ph-crown"></i> <b>Tu es en tête&nbsp;!</b>';
-      const avance=apres?'<span class="clx-avance"><i class="ph ph-shield-check"></i> '+Math.max(0,(me.points||0)-(apres.points||0))+' pts d\u2019avance sur le suivant</span>':'';
-      tete='<div class="clx-moi '+med+'"><div class="clx-rang"><i class="ph-fill ph-trophy"></i><b>'+r+'<sup>'+sup(r)+'</sup></b><span>sur '+l.length+'</span></div>'
-        +'<div class="clx-moi-txt"><div class="clx-moi-t">Ta place dans '+echapH(profil.classeNom||"ta classe")+'</div>'
-        +'<div class="clx-moi-pts">'+(me.points||0)+' points · niveau '+(me.niveau||1)+' · '+(me.badges||0)+' badge'+((me.badges||0)>1?"s":"")+'</div>'
-        +'<div class="clx-obj">'+obj+'</div>'+avance+'</div>'
-        +(l.length>=3?'<div class="clx-podium">'+l.slice(0,3).map(function(x,k){
-            return '<div class="clx-pm p'+(k+1)+(x.code===profil.eleveCode?" moi":"")+'"><i class="ph-fill ph-medal"></i><b>'+echapH(x.code)+'</b><span>'+(x.points||0)+'</span></div>'; }).join("")+'</div>':'')
-        +'</div>';
+      const me=l[moi], r=moi+1, avant=moi>0?l[moi-1]:null;
+      const ecart=avant?Math.max(1,(avant.points||0)-(me.points||0)+1):0;
+      place='<div class="clx2-place"><span class="clx2-place-r">'+r+'<sup>'+(r===1?"er":"e")+'</sup></span>'
+        +'<span class="clx2-place-t"><b>Ta place</b><small>sur '+l.length+'</small></span>'
+        +(avant?'<span class="clx2-obj"><i class="ph-fill ph-arrow-fat-up"></i> +'+ecart+' pts</span>':'<span class="clx2-obj or"><i class="ph-fill ph-crown"></i> En tête</span>')+'</div>';
     }
-    const lignes=l.map(function(x,i){
-      const r=i+1, cest=x.code===profil.eleveCode, pct=Math.round((x.points||0)/max*100);
-      return '<div class="clx-l'+(cest?" moi":"")+(r<=3?" top t"+r:"")+'"'+(cest?' id="clxMoi"':'')+'>'
-        +'<span class="clx-n">'+(r<=3?'<i class="ph-fill ph-medal"></i>':r)+'</span>'
-        +'<span class="clx-code">'+echapH(x.code)+(cest?' <em>toi</em>':'')+'</span>'
-        +'<span class="clx-barre"><i style="width:'+pct+'%"></i></span>'
-        +'<span class="clx-pts">'+(x.points||0)+'</span>'
-        +'<span class="clx-niv" title="Niveau">N'+(x.niveau||1)+'</span>'
-        +'<span class="clx-bdg" title="Badges"><i class="ph-fill ph-seal-check"></i> '+(x.badges||0)+'</span></div>';
-    }).join("");
-    z.innerHTML='<div class="accueil clx" style="max-width:820px">'+tete
-      +'<div class="clx-liste"><div class="clx-l clx-entete"><span>#</span><span>Code</span><span>Points</span><span></span><span>Niv.</span><span>Badges</span></div>'+lignes+'</div>'
-      +'<p class="clx-rgpd"><i class="ph ph-lock"></i> Ta classe uniquement, chacun par son code&nbsp;: aucun nom n\u2019apparaît.</p></div>';
+    const lignes=l.map(function(x,i){ return clxLigneHTML(x,i+1,max,x.code,"","",x.code===profil.eleveCode); }).join("");
+    z.innerHTML='<div class="accueil clx2" style="max-width:860px">'
+      +'<div class="clx2-scene"><div class="clx2-titre"><i class="ph-fill ph-trophy"></i> '+echapH(profil.classeNom||"Ma classe")+'</div>'
+      +clxPodiumHTML(l.slice(0,3),function(x){return x.code;},profil.eleveCode)+'</div>'
+      +place+'<div class="clx2-liste">'+lignes+'</div>'
+      +'<p class="clx-rgpd"><i class="ph ph-lock"></i> Ta classe uniquement, par code : aucun nom.</p></div>';
     const m=document.getElementById("clxMoi"); if(m&&moi>8)setTimeout(function(){ try{ m.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){} },300);
   }).catch(function(){ z.innerHTML=svcIndispo("Impossible de charger le classement."); });
 }
@@ -25962,6 +26219,16 @@ function retardMaxCourant(){
   }
   return (typeof profil.retardMax==="number")?profil.retardMax:RETARD_MAX_DEFAUT;
 }
+function nrZeroCourant(){
+  if(Array.isArray(_profClasses)&&_profClasses.length){
+    for(let i=0;i<_profClasses.length;i++){ if(typeof _profClasses[i].nrZero==="boolean")return _profClasses[i].nrZero; }
+  }
+  return profil.nrZero===true;
+}
+function nrZeroClasse(cid){
+  const cl=(_profClasses||[]).filter(function(x){ return x.id===cid; })[0];
+  return (cl&&typeof cl.nrZero==="boolean")?cl.nrZero:nrZeroCourant();
+}
 function retardMaxClasse(cid){
   const cl=(_profClasses||[]).filter(function(x){ return x.id===cid; })[0];
   return (cl&&typeof cl.retardMax==="number")?cl.retardMax:retardMaxCourant();
@@ -26009,7 +26276,11 @@ function reglesClasseCarteHTML(){
     /* Travail en retard */
     +'<div class="rc-bloc"><div class="rc-sous"><i class="ph ph-hourglass-medium"></i> Travail en retard</div>'
     +'<label for="retardMaxIn">Jours de retard acceptés après la date limite&nbsp;: <input id="retardMaxIn" type="number" min="0" max="60" value="'+retardMaxCourant()+'" style="'+_rcInputStyle+'"></label>'
-    +'<div class="rc-note">Pendant ce délai, l\'élève peut encore rendre son travail et Maestro le lui rappelle. Au-delà, le travail passe en <b>non rendu</b> : il rejoint l\'onglet « Non rendus » de l\'élève, et une évaluation non rendue s\'affiche <b>N.R.</b> dans le carnet (elle ne compte pas dans la moyenne ; vous pouvez la remplacer par une note ou par <b>w</b> pour compter 0). Une évaluation à créneau est non rendue dès la fermeture du créneau. Défaut : '+RETARD_MAX_DEFAUT+' jours.</div></div>'
+    +'<div class="rc-note">Pendant ce délai, l\'élève peut encore rendre son travail et Maestro le lui rappelle. Au-delà, le travail est <b>non rendu</b> : l\'élève ne peut plus le faire. Une évaluation à créneau est non rendue dès la fermeture du créneau. Défaut : '+RETARD_MAX_DEFAUT+' jours.</div>'
+    +'<div class="rc-nr"><span class="rc-nr-lib">Une évaluation non rendue&nbsp;:</span>'
+    +'<label class="rc-nr-opt"><input type="radio" name="nrZeroIn" value="0"'+(nrZeroCourant()?'':' checked')+'><b>NR</b><span>ne compte pas</span></label>'
+    +'<label class="rc-nr-opt"><input type="radio" name="nrZeroIn" value="1"'+(nrZeroCourant()?' checked':'')+'><b>NR*</b><span>compte 0</span></label></div>'
+    +'<div class="rc-note">Dans le carnet, vous pouvez aussi saisir <b>NR</b>, <b>NR*</b> ou une note à la main.</div></div>'
     +'<div style="text-align:center;margin-top:10px"><button class="rm-cta" onclick="reglesClasseSauver()"><i class="ph-fill ph-floppy-disk"></i> Enregistrer les règles</button></div>'
     +'</div>';
 }
@@ -26020,6 +26291,7 @@ function reglesClasseSauver(){
   let n=parseInt((document.getElementById("progSeuilIn")||{}).value,10); if(isNaN(n))n=SEUIL_DEBLOC; n=Math.max(1,Math.min(20,n));
   let nq=parseInt((document.getElementById("progNbQIn")||{}).value,10); if(isNaN(nq))nq=PROG_NBQ_DEFAUT; nq=Math.max(5,Math.min(30,nq));
   let rm=parseInt((document.getElementById("retardMaxIn")||{}).value,10); if(isNaN(rm))rm=RETARD_MAX_DEFAUT; rm=Math.max(0,Math.min(60,rm));
+  const nrz=!!(document.querySelector('input[name="nrZeroIn"]:checked')||{value:"0"}).value.match(/1/);
   const bl=bonusLibreRegles({socle:(document.getElementById("bnSocleIn")||{}).value,
                              pas:(document.getElementById("bnPasIn")||{}).value,
                              seuil:(document.getElementById("bnSeuilIn")||{}).value,
@@ -26027,14 +26299,14 @@ function reglesClasseSauver(){
                              coefBonus:(document.getElementById("bnCoefBonusIn")||{}).value});
   /* Les périodes datées partent avec : elles bornent la note bonus que voit l'élève. */
   const tri=trimPublies();
-  profil.defisSemaineMax=q; profil.defisAccSemaineMax=qa; profil.progSeries=s; profil.progSeuil=n; profil.progNbQ=nq; profil.retardMax=rm;
+  profil.defisSemaineMax=q; profil.defisAccSemaineMax=qa; profil.progSeries=s; profil.progSeuil=n; profil.progNbQ=nq; profil.retardMax=rm; profil.nrZero=nrz;
   profil.bonusLibre=bl; try{sauverProfil(profil);}catch(e){}
   const st=fbStore(), a=fbAuth(), u=a&&a.currentUser;
   const ecrire=function(){
     if(!st||!u||!Array.isArray(_profClasses)||!_profClasses.length){ toast("Règles enregistrées."); return; }
     Promise.all(_profClasses.map(function(cl){
-      cl.defisSemaineMax=q; cl.defisAccSemaineMax=qa; cl.progSeries=s; cl.progSeuil=n; cl.progNbQ=nq; cl.bonusLibre=bl; cl.retardMax=rm;   /* miroir local */
-      return st.collection("classes").doc(cl.id).set({defisSemaineMax:q,defisAccSemaineMax:qa,progSeries:s,progSeuil:n,progNbQ:nq,retardMax:rm,
+      cl.defisSemaineMax=q; cl.defisAccSemaineMax=qa; cl.progSeries=s; cl.progSeuil=n; cl.progNbQ=nq; cl.bonusLibre=bl; cl.retardMax=rm; cl.nrZero=nrz;   /* miroir local */
+      return st.collection("classes").doc(cl.id).set({defisSemaineMax:q,defisAccSemaineMax:qa,progSeries:s,progSeuil:n,progNbQ:nq,retardMax:rm,nrZero:nrz,
                                                       bonusLibre:bl,trimestres:tri},{merge:true}).catch(function(){});
     })).then(function(){ toast("Règles enregistrées pour vos classes."); });
   };
@@ -26061,9 +26333,6 @@ function paramVue(k){ _paramVue=k; ecranParametres(); }
 function ecranParametres(){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
-  /* Ruban marine à la place du titre (cohérent avec les Évaluations). */
-  const _t=document.getElementById("titre"),_i=document.getElementById("intro");
-  if(_t)_t.style.display="none"; if(_i)_i.style.display="none";
   const e=etatCompte();
   const sombre=document.documentElement.getAttribute("data-theme")==="dark";
 
@@ -26136,10 +26405,20 @@ function ecranParametres(){
   if(!_paramVue || !secs.some(function(s){return s.k===_paramVue;})) _paramVue=secs[0].k;
   const vue=_paramVue;
 
-  const nav=secs.map(function(s,i){
+  /* une couleur de la charte par rubrique (tuile du menu et médaille du panneau) */
+  const PM_TEINTES={compte:"lire",trimestres:"theorie",regles:"rythme",stockage:"ecoute",sauvegarde:"culture",
+    diplomes:"loin",moyenne:"theorie",apparence:"styles"};
+  const teinteDe=function(k){ return k==="danger"?"var(--faux)":"var(--dom-"+(PM_TEINTES[k]||"lire")+")"; };
+  const SOUS={compte:"Connexion et identité",trimestres:"Trimestres ou semestres",regles:"Notes, défis, progression",
+    stockage:"Place prise par le chant",sauvegarde:"Copie de vos données",diplomes:"Tampon et signature",
+    moyenne:"Affichage sur l'accueil",apparence:"Thème, sons, animations",danger:"Actions définitives"};
+  const nav='<div class="pm-moi" style="--d:'+teinteDe("compte")+'"><span class="pm-moi-av"><i class="ph-fill '+e.ic+'"></i></span>'
+      +'<span class="pm-moi-t"><b>'+echapH(e.role)+'</b><small>'+echapH(e.type==="prof"?"Espace enseignant":(e.detail||""))+'</small></span></div>'
+    +secs.map(function(s,i){
     return (i===secs.length-1?'<div class="pm-nav-sep"></div>':'')
-      +'<button class="pm-nav-it'+(s.k===vue?' on':'')+(s.dang?' dang':'')+'" onclick="paramVue(\''+s.k+'\')">'
-      +'<i class="ph '+s.ic+'"></i> '+s.t+(s.alerte?'<span class="pm-nav-alerte" title="Sauvegarde à faire" aria-label="Sauvegarde à faire"></span>':'')+'</button>';
+      +'<button class="pm-nav-it'+(s.k===vue?' on':'')+(s.dang?' dang':'')+'" style="--d:'+teinteDe(s.k)+'" onclick="paramVue(\''+s.k+'\')">'
+      +'<span class="pm-nav-ic"><i class="ph-fill '+s.ic+'"></i></span><span class="pm-nav-t"><b>'+s.t+'</b><small>'+(SOUS[s.k]||"")+'</small></span>'
+      +(s.alerte?'<span class="pm-nav-alerte" title="Sauvegarde à faire" aria-label="Sauvegarde à faire"></span>':'')+'</button>';
   }).join("");
 
   let panneau="";
@@ -26195,15 +26474,15 @@ function ecranParametres(){
 
   const sous=(e.type==="prof")?"Réglages de votre espace enseignant, rangés par rubrique."
     :"Tes réglages, rangés par rubrique.";
+  /* même bandeau à pointes inversées que les autres pages */
+  const _t=document.getElementById("titre"),_i=document.getElementById("intro");
+  if(_t){ _t.style.display=""; _t.innerHTML='<i class="ph ph-gear"></i> Paramètres'; }
+  if(_i){ _i.style.display=""; _i.textContent=sous; }
   document.getElementById("zone").innerHTML=`
    <div class="accueil" style="max-width:1100px">
-     <div class="ev-riban">${rubanRetourHTML()}
-       <div class="ev-rib-ic"><i class="ph ph-gear" style="font-size:1.5rem"></i></div>
-       <div class="ev-rib-txt"><div class="ev-rib-titre">Paramètres</div><div class="ev-rib-sous">${sous}</div></div>
-     </div>
      <div class="pm-md">
        <nav class="pm-nav">${nav}</nav>
-       <div>${panneau}</div>
+       <div class="pm-zone" style="--d:${teinteDe(vue)}">${panneau}</div>
      </div>
    </div>`;
   if(typeof remonter==="function")remonter();
@@ -30771,14 +31050,14 @@ function ecranCoursCollege(){
   const def=COURS_DEF[sel.c.id], pct=Math.round(sel.faits/sel.n*100), fini=sel.faits===sel.n;
   const onglets=etats.length>1?'<nav class="ccx-onglets" aria-label="Mes cours">'+etats.map(function(x){
       return '<button class="ccx-onglet'+(x===sel?" on":"")+'" onclick="_ccOnglet=\''+x.c.id+'\';ecranCoursCollege()">'
-        +(x.faits===x.n?'<i class="ph-bold ph-check"></i>':'')+echapH(COURS_DEF[x.c.id].titre)+' · '+CC_NIV_LIB[x.c.niveau]+'</button>'; }).join("")+'</nav>':'';
+        +(x.faits===x.n?'<i class="ph ph-check"></i>':'')+echapH(COURS_DEF[x.c.id].titre)+' · '+CC_NIV_LIB[x.c.niveau]+'</button>'; }).join("")+'</nav>':'';
   const lim=(function(){ ceCours=sel.c.id; const l=ceLimiteProf(); ceCours=av; return l; })();
   const evalBloc=fini
     ?'<button class="ccx-eval ok" onclick="lecDernierDomaine=null;ouvrir(\'evalcours-'+sel.c.id+'\')"><i class="ph-fill ph-exam"></i><span><b>Entraînement et évaluation</b><small>Débloqués : entraîne-toi, puis passe l\'évaluation</small></span><i class="ph ph-arrow-right"></i></button>'
     :'<div class="ccx-eval"><i class="ph ph-exam"></i><span><b>Entraînement et évaluation</b><small>S\'ouvrent quand les '+sel.n+' étapes sont terminées.</small></span></div>';
   const lignes=sel.pas.map(function(p){
     const cls="ccx-et "+p.st;
-    const num=p.st==="fait"?'<i class="ph-bold ph-check"></i>':(p.i+1);
+    const num=p.st==="fait"?'<i class="ph ph-check"></i>':(p.i+1);
     const droite=p.st==="fait"?'<span class="ccx-tag v">Terminée</span>'
       :p.st==="cour"?'<span class="ccx-go"><i class="ph-fill ph-play"></i> '+(sel.faits?"Reprendre":"Commencer")+'</span>'
       :p.st==="prof"?'<span class="ccx-tag g">Plus tard en classe</span>'
@@ -30973,8 +31252,11 @@ try{ const _a=fbAuth(); if(_a&&_a.onAuthStateChanged)_a.onAuthStateChanged(funct
        rôle : un prof qui rouvre l'app ne reste pas sur l'accueil élève. */
     if(_dernierEtatProf!==estP){
       const t=document.getElementById("titre");
-      const surFormulaire=!!document.getElementById("pcMail");   /* espace enseignant, pas encore identifie */
-      if(t&&(t.style.display==="none"||surFormulaire))accueil();      /* l'accueil masque son titre */
+      /* l'écran de connexion masque aussi le titre : on ne le remplace par l'accueil
+         que si la personne vient justement de se connecter (sinon la carte s'ouvrait
+         et se refermait aussitôt) */
+      const surConnexion=!!document.querySelector("#zone .auth");
+      if(t&&((t.style.display==="none"&&!surConnexion)||(surConnexion&&estP)))accueil();
     }
     _dernierEtatProf=estP;
   }catch(e){}
@@ -31013,7 +31295,7 @@ const MENU_ECRANS={accueil:"",accueilProf:"",
   ecranCompositeurs:"_compositeurs",ecranVocab:"_vocab",ecranChant:"_chant",ecranDevoirs:"_devoirs",
   ecranClassement:"_classement",ecranProgression:"_progression",ecranSoutien:"_soutenir",ecranParametres:"_parametres",ecranProf:"_prof"};
 Object.keys(NAV_BAS_ECRANS).forEach(function(nom){
-  if(NAV_BAS_ECRANS[nom]==="jouer")MENU_ECRANS[nom]="_jouer";
+  if(NAV_BAS_ECRANS[nom]==="jouer"&&!(nom in MENU_ECRANS))MENU_ECRANS[nom]="_jouer";
   else if(!(nom in MENU_ECRANS))MENU_ECRANS[nom]="";
 });
 Object.keys(MENU_ECRANS).forEach(function(nom){
@@ -31035,7 +31317,7 @@ if(_museducRouteProf){
     else setTimeout(_routerProf,350);
   }catch(e){ setTimeout(_routerProf,350); }
 }
-else if(!profil.inscrit)setTimeout(ecranInscription,300); // 1er lancement : demander prénom + nom
+else if(!profil.inscrit)setTimeout(function(){ if(!profil.inscrit&&!(fbAuth()&&fbAuth().currentUser&&fbAuth().currentUser.email))ecranConnexion("eleve"); },400); // 1er lancement : directement l'écran de connexion
 /* Comptes : à chaque session e-mail rétablie ou ouverte, on relit le rôle
    (professeur, apprenant, administrateur) et, pour un apprenant, sa progression. */
 try{ const _aR=fbAuth(); if(_aR&&_aR.onAuthStateChanged)_aR.onAuthStateChanged(function(u){
@@ -31051,7 +31333,7 @@ try{ const _aR=fbAuth(); if(_aR&&_aR.onAuthStateChanged)_aR.onAuthStateChanged(f
       if(chg||issue==="serveur"){
         try{ construireMenu(); majIndicateurCompte(); }catch(e){}
         const t=document.getElementById("titre");
-        if(t&&t.style.display==="none")accueil();
+        if(t&&t.style.display==="none"&&!document.querySelector("#zone .auth"))accueil();
       }
     });
   }).catch(function(){});
