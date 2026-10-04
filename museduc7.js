@@ -479,7 +479,11 @@ function sauverProfil(p){
   p.majLocale=Date.now();
   try{ if(typeof apprenantPlanifierSync==="function")apprenantPlanifierSync(); }catch(e){}
   const s=JSON.stringify(p);
-  try{localStorage.setItem(STORE_KEY,s);}catch(e){memoireSecours=s;}
+  try{localStorage.setItem(STORE_KEY,s);}catch(e){
+    memoireSecours=s;
+    if(!window._stockageKO){ window._stockageKO=true;
+      setTimeout(function(){ try{ toast("Attention : ce navigateur n'enregistre pas les données de MusEduc (navigation privée, stockage plein ou bloqué). Ce que vous réglez sera perdu en fermant la page."); }catch(x){} },500); }
+  }
 }
 let profil=chargerProfil();
 
@@ -7651,7 +7655,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-05e";
+const VERSION_APP="2026-10-05m";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -7783,7 +7787,7 @@ function ecranProgression(){
       </div>
     </div>
     <div class="pf2-cols">
-      ${estApprenant()?pfCoursValidesHTML():`<section class="pf-carte pf2-carte"><div class="pf2-t"><span class="pf2-t-ic" style="--d:var(--dom-rythme)"><i class="ph-fill ph-exam"></i></span><h2>Mes notes</h2></div>
+      ${estSolo()?pfCoursValidesHTML():`<section class="pf-carte pf2-carte"><div class="pf2-t"><span class="pf2-t-ic" style="--d:var(--dom-rythme)"><i class="ph-fill ph-exam"></i></span><h2>Mes notes</h2></div>
         <div id="progNotes">${progNotesHTML()}</div></section>`}
       <section class="pf-carte pf2-carte"><div class="pf2-t"><span class="pf2-t-ic" style="--d:var(--or-texte)"><i class="ph-fill ph-medal"></i></span><h2>Mes badges</h2><span class="pf-pill">${obtenus}/${totalVis}</span></div>
         ${pfBadgesHTML()}</section>
@@ -7920,7 +7924,7 @@ function armerLeconLue(id){
 /* Carte « Évaluation » en bas d'une leçon : demandée (compte), libre (bonus),
    verrouillée (entraînement pas fini) ou déjà passée ce mois-ci. */
 function evalCarteHTML(domId){
-  if(estApprenant())return bossCarteHTML(domId);
+  if(estSolo())return bossCarteHTML(domId);
   const ctx=(typeof evalContexte==="function")?evalContexte(domId):{mode:"libre"};
   if(ctx.mode==="bloque"){
     const p=ctx.prog||{};
@@ -10105,7 +10109,7 @@ function progNotesHTML(){
     return '<div class="pf2-note" title="'+echapH(aide)+'"><span class="pf2-anneau grand" style="--p:'+(pct||0)+';--c:'+coul.c+'"><b style="color:'+coul.c+'">'+val+'</b><small>/20</small></span><span>'+lib+'</span></div>';
   };
   let h='<div class="pf2-notes">';
-  if(!(estApprenant()&&!comptees.length)){
+  if(!(estSolo()&&!comptees.length)){
     if(moyenneVisible()){
       const m=moyenneEleve();
       h+=anneau("Moyenne",m?nb(m.moy):"-",m?m.moy/20*100:null,"Évaluations demandées par ton professeur");
@@ -10131,7 +10135,7 @@ function progNotesHTML(){
       +(liste.length?'<div class="pn-liste">'+liste.map(ligne).join("")+'</div>':'<p class="pf-vide">Aucune pour l\'instant.</p>')+'</details>';
   };
   h+='<div class="pf2-tiroirs">'
-    +(estApprenant()&&!comptees.length?"":tiroir("dem","ph-seal-check","Demandées",comptees))
+    +(estSolo()&&!comptees.length?"":tiroir("dem","ph-seal-check","Demandées",comptees))
     +tiroir("bon","ph-barbell","Bonus",libres)+'</div>';
   const _bn=(typeof bonusNiveauDetenu==="function")?bonusNiveauDetenu():null;
   const _bb=(typeof bonusBadgeDetenu==="function")?bonusBadgeDetenu():null;
@@ -10174,7 +10178,7 @@ function accueilPanneauHTML(){
     +acRond("Mes points",g.pct||0,pts,"","Points",
       '<b>'+(g.next?resteG+" pts pour le niveau "+(g.niveau+1):"niveau maximum")+'</b><br>'+(ptsJour?"+"+ptsJour+" aujourd\u2019hui":"aucun point aujourd\u2019hui"),bleu,
       String(pts).length>3?"font-size:1.25rem":"");
-  if(estApprenant()){
+  if(estSolo()){
     const nv=nbCoursValides(), tc=domainesEval().length;
     return '<div class="acp-col"><div class="acp-t"><i class="ph-fill ph-medal"></i> Récompenses</div>'+gauche+'</div>'
       +'<div class="acp-sep" aria-hidden="true"></div>'
@@ -10535,6 +10539,10 @@ function fbAuth(){ if(!fbPret()||typeof firebase.auth!=="function")return null; 
 const ROLE_CLE="museduc-role", VUE_CLE="museduc-vue";
 let _role=null; try{ _role=JSON.parse(localStorage.getItem(ROLE_CLE)||"null"); }catch(e){ _role=null; }
 let _vueAdmin=""; try{ _vueAdmin=sessionStorage.getItem(VUE_CLE)||""; }catch(e){}
+/* vue élève fictive restée en plan (onglet fermé) : on rend son profil à l'administrateur.
+   « DEMO » ne peut pas être un vrai code (4 lettres, et la lettre O n'est jamais tirée). */
+try{ if(_vueAdmin!=="eleve"&&typeof profil==="object"&&profil&&profil.eleveCode==="DEMO"){
+  profil.eleveCode=""; profil.classeId=""; profil.classeNom=""; profil.elevePreuve=""; sauverProfil(profil); } }catch(e){}
 let _inscriptionEnCours=false, _apSyncT=null, _apActifEnvoye=0;
 function roleSauver(){ try{ localStorage.setItem(ROLE_CLE,JSON.stringify(_role)); }catch(e){} }
 /* rôle réel d'un compte e-mail ("" pour un élève anonyme ou personne) */
@@ -10548,11 +10556,14 @@ function estAdmin(){
 /* L'administrateur peut regarder l'application comme un apprenant ou un visiteur. */
 function roleEffectif(u){
   const r=roleDe(u);
-  if(r&&estAdmin()&&(_vueAdmin==="apprenant"||_vueAdmin==="visiteur"))return _vueAdmin;
+  if(r&&estAdmin()&&(_vueAdmin==="apprenant"||_vueAdmin==="visiteur"||_vueAdmin==="eleve"))return _vueAdmin;
   return r;
 }
 function estProf(u){ return roleEffectif(u)==="prof"; }
 function estApprenant(){ try{ const a=fbAuth(); return roleEffectif(a&&a.currentUser)==="apprenant"; }catch(e){ return false; } }
+/* compte « En solo » qui n'a PAS rejoint de classe : pas de notes, boss final, amis.
+   Dès qu'il entre un code élève, il redevient un élève comme les autres (notes, évaluations, jeux de classe). */
+function estSolo(){ return estApprenant()&&!(profil&&profil.eleveCode); }
 /* compte autorisé à écrire la progression d'un code élève : anonyme ou apprenant */
 function eleveOK(u){ return !!(u&&(u.isAnonymous||roleDe(u)==="apprenant")); }
 function svcIndispo(msg){ return `<div class="ex"><p><i class="ph ph-warning"></i> ${msg||"Le service en ligne n'est pas disponible."} <br><span style="color:var(--encre-doux);font-size:.9rem">Vérifie ta connexion Internet. Le professeur doit avoir activé <b>Authentication</b> et <b>Firestore</b> dans la console Firebase.</span></p></div>`; }
@@ -11099,7 +11110,7 @@ async function supprimerCompteProf(){
     .then(function(){ return s.collection("comptes").doc(u.uid).delete().catch(function(){}); })
     .then(function(){ return u.delete(); })
     .then(function(){ try{localStorage.removeItem(LABELS_KEY);}catch(e){} _labelsMem=null;
-                      toast("Compte supprimé."); accueil(); })
+                      toast("Compte supprimé."); construireMenu(); ecranConnexion("prof"); })
     .catch(function(e){
       const c=String((e&&e.code)||"");
       if(c.indexOf("requires-recent-login")>=0) toast("Par sécurité : déconnecte-toi, reconnecte-toi, puis réessaie.");
@@ -11690,7 +11701,7 @@ async function quitterClasse(){
     if(typeof majEnteteProfil==="function")majEnteteProfil();
     if(typeof majIndicateurCompte==="function")majIndicateurCompte();
     toast("Déconnecté. Ta progression est sauvegardée sous ton code.");
-    ecranParametres();
+    ecranConnexion("eleve");
   };
   try{ const p=syncEleve(); if(p&&p.then){ p.then(fin,fin); return; } }catch(e){}
   fin();
@@ -11845,7 +11856,7 @@ function deconnecterCompte(){
     try{ if(typeof presenceArreter==="function")presenceArreter(); }catch(e){}
     profilVierge(); profil.inscrit=true; sauverProfil(profil);
     construireMenu(); majIndicateurCompte();
-    toast("Déconnecté. Ta progression est sauvegardée dans ton compte."); accueil();
+    toast("Déconnecté. Ta progression est sauvegardée dans ton compte."); ecranConnexion("solo");
   });
 }
 async function supprimerCompteApprenant(){
@@ -11859,7 +11870,7 @@ async function supprimerCompteApprenant(){
     .then(function(){ return ref.delete(); })
     .then(function(){ return u.delete(); })
     .then(function(){ profilVierge(); profil.inscrit=true; sauverProfil(profil); _role=null; roleSauver();
-      construireMenu(); majIndicateurCompte(); toast("Compte supprimé."); accueil(); })
+      construireMenu(); majIndicateurCompte(); toast("Compte supprimé."); ecranConnexion("solo"); })
     .catch(function(e){
       const c=String((e&&e.code)||"");
       if(c.indexOf("requires-recent-login")>=0)toast("Par sécurité : déconnecte-toi, reconnecte-toi, puis réessaie.");
@@ -11883,25 +11894,54 @@ function compteApprenantHTML(){
 }
 
 /* ---------- Administrateur : changer de vue ---------- */
+/* Vues de test de l'administrateur. « eleve » = élève d'une classe, FICTIF (code
+   DEMO dans votre première classe) : on voit ses accès, son travail à faire, sans
+   rien écrire sur le serveur (un compte e-mail n'écrit jamais à la place d'un code). */
+const VUES_ADMIN={eleve:"Élève d'une classe",apprenant:"Élève en solo",visiteur:"Visiteur sans compte"};
+function vueEleveEntrer(){
+  const p=(Array.isArray(_profClasses)&&_profClasses.length)?Promise.resolve(_profClasses):chargerClassesProf();
+  return p.then(function(l){
+    l=l||[];
+    const cl=l.filter(function(c){ return !classeCollegues(c); })[0]||l[0]||null;
+    try{ sessionStorage.setItem("museduc-vue-profil",JSON.stringify(profil)); }catch(e){}
+    profil.eleveCode="DEMO"; profil.classeId=cl?cl.id:""; profil.classeNom=cl?(cl.nom||"Ma classe"):"Classe de démonstration";
+    profil.elevePreuve="demo"; profil.collegue=false;
+    try{ _devoirs=null; _devoirsMaj=0; _bonusLibre=null; }catch(e){}
+    sauverProfil(profil);
+  });
+}
+function vueEleveSortir(){
+  let p=null;
+  try{ p=JSON.parse(sessionStorage.getItem("museduc-vue-profil")||"null"); sessionStorage.removeItem("museduc-vue-profil"); }catch(e){}
+  if(p)profil=p; else { profil.eleveCode=""; profil.classeId=""; profil.classeNom=""; profil.elevePreuve=""; }
+  try{ _devoirs=null; _devoirsMaj=0; _bonusLibre=null; }catch(e){}
+  sauverProfil(profil);
+}
 function choisirVueAdmin(v){
   if(!estAdmin())return;
-  _vueAdmin=(v==="apprenant"||v==="visiteur")?v:"";
-  try{ if(_vueAdmin)sessionStorage.setItem(VUE_CLE,_vueAdmin); else sessionStorage.removeItem(VUE_CLE); }catch(e){}
-  construireMenu(); majIndicateurCompte(); majVueAdminBandeau();
-  toast(_vueAdmin?("Vous voyez l'application comme "+(_vueAdmin==="apprenant"?"un apprenant":"un visiteur (élève sans code)")+"."):"Retour à votre vue.");
-  accueil();
+  if(v==="solo")v="apprenant";
+  const nv=VUES_ADMIN[v]?v:"";
+  if(_vueAdmin==="eleve"&&nv!=="eleve")vueEleveSortir();
+  const fin=function(){
+    _vueAdmin=nv;
+    try{ if(nv)sessionStorage.setItem(VUE_CLE,nv); else sessionStorage.removeItem(VUE_CLE); }catch(e){}
+    construireMenu(); majIndicateurCompte(); majVueAdminBandeau();
+    if(nv){ toast("Vue : "+VUES_ADMIN[nv]+"."); accueil(); }
+    else{ toast("Retour à votre vue."); ecranAdmin(); }
+  };
+  if(nv==="eleve"&&_vueAdmin!=="eleve")vueEleveEntrer().then(fin,fin); else fin();
 }
 function majVueAdminBandeau(){
   let b=document.getElementById("vueAdminBandeau");
   if(!(estAdmin()&&_vueAdmin)){ if(b)b.remove(); return; }
   if(!b){ b=document.createElement("div"); b.id="vueAdminBandeau"; b.className="vue-admin"; document.body.appendChild(b); }
-  b.innerHTML='<i class="ph-fill ph-eye"></i> Vue '+(_vueAdmin==="apprenant"?"apprenant":"visiteur")
-    +'<button onclick="choisirVueAdmin(\'\')">Revenir à ma vue</button>';
+  b.innerHTML='<i class="ph-fill ph-eye"></i> Vue : '+(VUES_ADMIN[_vueAdmin]||"")
+    +'<button onclick="choisirVueAdmin(\'\')">Revenir à l\u2019administration</button>';
 }
 
 /* ---------- Administrateur : tableau des comptes ---------- */
 let _admComptes=[], _admFiltre="tous", _admCherche="";
-const ADM_ROLES={prof:"Professeur",apprenant:"Apprenant"};
+const ADM_ROLES={prof:"Professeur",apprenant:"Élève en solo"};
 function ecranAdmin(){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
@@ -11942,10 +11982,10 @@ function admDessiner(){
   l.forEach(function(c){ if(!c.cree)return; const k=Math.floor((now-c.cree)/sem); if(k>=0&&k<8)sems[7-k]++; });
   const mx=Math.max(1,Math.max.apply(null,sems));
   const kpi=function(v,lib,ic){ return '<div class="adm-kpi"><i class="ph-fill ph-'+ic+'"></i><b>'+v+'</b><span>'+lib+'</span></div>'; };
-  const vue=function(v,lib,ic){ return '<button class="adm-vue'+(_vueAdmin===v?' on':'')+'" onclick="choisirVueAdmin(\''+v+'\')"><i class="ph ph-'+ic+'"></i> '+lib+'</button>'; };
+  const vue=function(v,lib,ic,sous){ return '<button class="adm-vue'+(_vueAdmin===v?' on':'')+'" onclick="choisirVueAdmin(\''+v+'\')"><i class="ph-fill ph-'+ic+'"></i><span><b>'+lib+'</b><small>'+sous+'</small></span></button>'; };
   const f=function(k,lib){ return '<button class="'+(_admFiltre===k?'on':'')+'" onclick="admFiltrer(\''+k+'\')">'+lib+'</button>'; };
   document.getElementById("zone").innerHTML=`<div class="accueil adm" style="max-width:1120px">
-    <div class="adm-kpis">${kpi(nP,"professeurs","chalkboard-teacher")}${kpi(nA,"apprenants","user-circle")}
+    <div class="adm-kpis">${kpi(nP,"professeurs","chalkboard-teacher")}${kpi(nA,"élèves en solo","user-circle")}
       ${kpi(l.totClasses||0,"classes","users-three")}${kpi(l.totCodes||0,"codes élèves","identification-card")}
       ${kpi(nouv,"inscrits cette semaine","user-plus")}${kpi(actifs,"actifs cette semaine","pulse")}</div>
     <div class="adm-duo">
@@ -11953,17 +11993,20 @@ function admDessiner(){
         <div class="adm-barres">${sems.map(function(n,i){ return '<div class="adm-barre"><span style="height:'+Math.round(n/mx*100)+'%"></span><b>'+n+'</b><small>'+(i===7?"cette sem.":"S-"+(7-i))+'</small></div>'; }).join("")}</div></div>
       <div class="ex adm-carte"><h3><i class="ph ph-eye"></i> Changer de vue</h3>
         <p class="adm-aide">Regardez l'application comme un autre utilisateur, sans vous déconnecter. Un bandeau permet de revenir.</p>
-        <div class="adm-vues">${vue("","Enseignant (ma vue)","chalkboard-teacher")}${vue("apprenant","Apprenant","user-circle")}${vue("visiteur","Visiteur, élève sans code","user")}</div>
-        <p class="adm-aide">Pour la vue élève avec une classe, entrez un code d'une de vos classes de test dans une fenêtre privée.</p></div>
+        <div class="adm-vues">${vue("","Moi, enseignant","chalkboard-teacher","votre vue normale")}
+          ${vue("eleve","Élève d'une classe","student","fictif, code DEMO dans votre classe : notes, travail, jeux de classe")}
+          ${vue("apprenant","Élève en solo","user-circle","compte personnel sans professeur : boss finals, amis")}
+          ${vue("visiteur","Visiteur sans compte","user","rien d'enregistré, avant inscription")}</div>
+        <p class="adm-aide">En vue de test, rien n'est écrit sur le serveur.</p></div>
     </div>
     <div class="ex adm-carte">
       <div class="adm-outils">
-        <div class="ev-onglets">${f("tous","Tous")}${f("prof","Professeurs")}${f("apprenant","Apprenants")}${f("admin","Admins")}${f("suspendu","Suspendus")}</div>
+        <div class="ev-onglets">${f("tous","Tous")}${f("prof","Professeurs")}${f("apprenant","En solo")}${f("admin","Admins")}${f("suspendu","Suspendus")}</div>
         <label class="lx-cherche"><i class="ph ph-magnifying-glass"></i><input type="search" placeholder="Nom ou e-mail" value="${echapH(_admCherche)}" oninput="admChercher(this.value)"></label>
       </div>
       <div id="admListe"></div>
     </div>
-    <p class="adm-aide"><i class="ph ph-info"></i> Supprimer efface la fiche et la progression d'un apprenant. L'identifiant de connexion lui-même ne peut être effacé que dans la console Firebase (Authentication). Un professeur ne se supprime pas d'ici : suspendez-le, ses classes restent intactes.</p>
+    <p class="adm-aide"><i class="ph ph-info"></i> Supprimer efface la fiche et la progression d'un élève en solo. L'identifiant de connexion lui-même ne peut être effacé que dans la console Firebase (Authentication). Un professeur ne se supprime pas d'ici : suspendez-le, ses classes restent intactes.</p>
   </div>`;
   admDessinerListe();
 }
@@ -13112,7 +13155,7 @@ let _mae={msgs:[],i:0,manuel:false};
 function maestroDemarrer(){
   _mae={msgs:[],i:0,manuel:false};
   maestroAjouter(maestroMessagesLocaux());
-  if(estApprenant())maestroMessagesAmis().then(maestroAjouter).catch(function(){});
+  if(estSolo())maestroMessagesAmis().then(maestroAjouter).catch(function(){});
   if(profil.eleveCode){
     chargerDevoirs().then(function(){ maestroAjouter(maestroMessagesDevoirs()); }).catch(function(){});
     maestroChargerVotes();
@@ -19101,6 +19144,7 @@ function accueilProf(){
       </div>
 
     <div id="profClasses"></div>
+    ${donBanniereHTML(true)}
     <div class="ex" style="margin-top:22px">
       <p style="margin:0;color:var(--encre-doux);font-size:.9rem"><i class="ph ph-eye"></i>
         Vous voyez l'application <b>comme un enseignant</b>. Pour la découvrir du point de vue d'un élève
@@ -19413,7 +19457,7 @@ function ecranEvalAccueil(){
 /* --- Lancement d'une évaluation sur UNE leçon précise --- */
 function ecranEvalDomaine(domId){
   /* l'apprenant n'a pas d'évaluations notées : il affronte le boss final */
-  if(estApprenant()&&!_bossLancement){ ecranBossFinal(domId); return; }
+  if(estSolo()&&!_bossLancement){ ecranBossFinal(domId); return; }
   evalBoss=false;
   masquerInterfaceNormale();
   /* Difficulté imposée : posée par devoirLancerVolet juste avant l'appel. On la
@@ -21827,7 +21871,29 @@ function dipReglagesHTML(){
 function dipLireChamps(){ const v=function(id){ const el=document.getElementById(id); return el?el.value.trim():""; };
   return {prof:v("dipProf"), college:v("dipCollege"), ville:v("dipVille")}; }
 function dipApercu(){ const z=document.getElementById("dipApercu"); if(z)z.innerHTML=dipTamponSVG(dipLireChamps(),170); }
-function dipReglagesSauver(){ profil.diplome=dipLireChamps(); sauverProfil(profil); toast("Tampon des diplômes enregistré."); }
+function dipReglagesSauver(){ profil.diplome=dipLireChamps(); sauverProfil(profil);
+  profReglagesEnvoyer().then(function(ok){ toast(ok?"Tampon des diplômes enregistré dans votre compte.":"Tampon enregistré sur cet appareil seulement (pas de connexion au serveur)."); }); }
+/* Réglages personnels du professeur (périodes de l'année, tampon des diplômes) :
+   gardés dans son compte, pour ne plus dépendre du seul navigateur et les
+   retrouver sur tous ses appareils. */
+function profReglagesEnvoyer(){
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
+  if(!s||!u||!estProf(u))return Promise.resolve(false);
+  profil.reglagesMaj=Date.now(); sauverProfil(profil);
+  return s.collection("teachers").doc(u.uid).set({reglages:{periodeType:profil.periodeType||"",trimestres:profil.trimestres||[],
+    diplome:profil.diplome||{},maj:profil.reglagesMaj}},{merge:true}).then(function(){ return true; }).catch(function(){ return false; });
+}
+function profReglagesCharger(u){
+  const s=fbStore(); if(!s||!u)return Promise.resolve(false);
+  return s.collection("teachers").doc(u.uid).get().then(function(d){
+    const r=d.exists?((d.data()||{}).reglages||null):null;
+    if(!r){ if(profil.diplome||(profil.trimestres&&profil.trimestres.length))profReglagesEnvoyer(); return false; }
+    if((profil.reglagesMaj||0)>(r.maj||0)){ profReglagesEnvoyer(); return false; }   /* cet appareil est plus récent */
+    profil.periodeType=r.periodeType||profil.periodeType; profil.trimestres=r.trimestres||[];
+    profil.diplome=r.diplome||{}; profil.reglagesMaj=r.maj||Date.now(); sauverProfil(profil);
+    return true;
+  }).catch(function(){ return false; });
+}
 
 /* ---------- Positionnement par compétences (LSU) ---------- */
 const LSU_COMP={
@@ -22666,12 +22732,12 @@ function etatCompte(){
     return {type:"prof",connecte:true,role:estAdmin()?"Administrateur":"Professeur connecté",
             detail:"Session enseignante ouverte sur cet appareil.",ic:"ph-chalkboard-teacher"};
   if(u&&roleEffectif(u)==="apprenant"&&(_vueAdmin||!(profil&&profil.eleveCode)))
-    return {type:"apprenant",connecte:true,role:_vueAdmin?"Apprenant (vue de test)":"Apprenant",
+    return {type:"apprenant",connecte:true,role:_vueAdmin?"Élève en solo (vue de test)":"Élève en solo",
             detail:(nomCompte()||"Compte personnel")+" · progression sauvegardée",ic:"ph-user-circle"};
   if(u&&roleEffectif(u)==="visiteur")
     return {type:"anon",connecte:false,role:"Visiteur (vue de test)",detail:"Aucun compte : la progression reste sur l'appareil.",ic:"ph-user"};
   if(typeof profil==="object"&&profil&&profil.eleveCode)
-    return {type:"eleve",connecte:true,role:estCollegue()?"Collègue · accès complet":"Élève identifié",
+    return {type:"eleve",connecte:true,role:_vueAdmin==="eleve"?"Élève d'une classe (vue de test)":(estCollegue()?"Collègue · accès complet":"Élève identifié"),
             detail:"Code "+profil.eleveCode+(profil.classeNom?" · "+profil.classeNom:""),
             ic:"ph-identification-card"};
   return {type:"anon",connecte:false,role:"Non connecté",
@@ -22738,7 +22804,13 @@ function dessinerMenuCompte(){
       +cmTuile(BLEU,"house","Accueil","accueilProf()")
       +cmTuile(VIOLET,"users-three","Classes","dashboardProf()")
       +cmTuile(VERT,"gear","Réglages","ecranParametres()")
+      +cmTuile(OR,"heart","Soutenir","ecranSoutien()")
       +cmTuile(ROUGE,"sign-out","Quitter","deconnecterProf()");
+  }else if(e.type==="eleve"&&estAdmin()&&_vueAdmin==="eleve"){
+    titre="Vue : élève d'une classe";
+    tuiles=cmTuile(OR,"arrow-u-up-left","Admin","choisirVueAdmin('')")
+      +cmTuile(BLEU,"user-circle","Profil","ecranProgression()")
+      +cmTuile(VERT,"backpack","Travail","ecranDevoirs()");
   }else if(e.type==="eleve"){
     titre="Code "+(profil.eleveCode||"");
     tuiles=cmTuile(OR,"user-circle","Profil","ecranProgression()")
@@ -22746,13 +22818,14 @@ function dessinerMenuCompte(){
       +cmTuile(VERT,"gear","Réglages","ecranParametres()")
       +cmTuile(ROUGE,"sign-out","Quitter","quitterClasse()");
   }else if(e.type==="apprenant"){
-    titre=(_role&&_role.prenom)?capNom(_role.prenom):"Apprenant";
+    titre=(_role&&_role.prenom)?capNom(_role.prenom):"Élève en solo";
     tuiles=(estAdmin()?cmTuile(OR,"arrow-u-up-left","Ma vue","choisirVueAdmin('')"):"")
       +cmTuile(VERT,"user-circle","Profil","ecranProgression()")
       +cmTuile(BLEU,"gear","Réglages","ecranParametres()")
+      +cmTuile(OR,"heart","Soutenir","ecranSoutien()")
       +(estAdmin()?"":cmTuile(ROUGE,"sign-out","Quitter","deconnecterCompte()"));
   }else if(estAdmin()&&_vueAdmin){
-    titre="Vue visiteur";
+    titre="Vue : visiteur";
     tuiles=cmTuile(OR,"arrow-u-up-left","Ma vue","choisirVueAdmin('')");
   }else{
     tuiles=cmTuile(OR,"student","Élève","ecranMaClasse()")
@@ -23032,7 +23105,7 @@ function ecranAmis(){
         if(att.length)h+='<div class="amis-bloc"><h3><i class="ph ph-hourglass-medium"></i> En attente de réponse</h3>'+att.map(function(a){
           return '<div class="amis-ligne">'+clxAvatar(a.nom||"?")+'<b>'+echapH(a.nom||a.code||"")+'</b><button class="amis-non" title="Annuler" onclick="amiRetirer(\''+a.uid+'\',\''+echapH(a.nom||"").replace(/'/g,"")+'\')"><i class="ph ph-x"></i></button></div>'; }).join("")+'</div>';
         if(ok.length)h+='<div class="amis-bloc"><h3><i class="ph ph-users"></i> Mes amis</h3>'+ok.map(function(a){
-          return '<div class="amis-ligne">'+clxAvatar(a.nom||"?")+'<b>'+echapH(a.nom||"")+'</b><button class="amis-non" title="Retirer" onclick="amiRetirer(\''+a.uid+'\',\''+echapH(a.nom||"").replace(/'/g,"")+'\')"><i class="ph ph-user-minus"></i></button></div>'; }).join("")+'</div>';
+          return '<div class="amis-ligne">'+clxAvatar(a.nom||"?")+'<b>'+echapH(a.nom||"")+'</b><button class="amis-ok" title="Défier" onclick="ecranDefiLancer(\''+echapH(a.code||"")+'\')"><i class="ph-fill ph-sword"></i> Défier</button><button class="amis-non" title="Retirer" onclick="amiRetirer(\''+a.uid+'\',\''+echapH(a.nom||"").replace(/'/g,"")+'\')"><i class="ph ph-user-minus"></i></button></div>'; }).join("")+'</div>';
         z.innerHTML=h+'</div>';
       });
   }).catch(function(){ z.innerHTML=svcIndispo("Impossible de charger tes amis. Les règles Firestore (amis, scores, codesAmis) sont-elles publiées ?"); });
@@ -23040,7 +23113,7 @@ function ecranAmis(){
 
 /* ---------- Accueil : « Par où commencer ? » en quatre tuiles ---------- */
 function accueilPistesHTML(){
-  const app=estApprenant();
+  const app=estSolo();
   const t=function(teinte,ic,titre,sous,go){ return '<button class="pis-t" style="--d:'+teinte+'" onclick="'+go+'"><span><i class="ph-fill ph-'+ic+'"></i></span><b>'+titre+'</b><small>'+sous+'</small></button>'; };
   return '<div class="pistes"><div class="pistes-titre">Par où commencer&nbsp;?</div><div class="pistes-g">'
     +t("var(--dom-lire)","graduation-cap","Apprends","Leçon puis entraînement","ecranLecons()")
@@ -23083,8 +23156,11 @@ function ecranJouer(){
     return '<section class="jx-famille '+cls_+'"><div class="jx-fam-t"><span class="jx-fam-ic">'+ic+'</span><div><h2>'+titre+'</h2><p>'+sous+'</p></div></div>'
       +'<div class="jx-grille">'+l.map(jeuCarteHTML).join("")+'</div></section>';
   };
-  if(estApprenant()){
-    const amis=[{fam:"classe",ic:"ph-trophy",joueurs:'<i class="ph-fill ph-users-three"></i> Toi et tes amis',titre:"Classement entre amis",txt:"Ajoute tes amis avec leur code : vous comparez vos points, vos badges et vos boss vaincus.",go:"Mes amis",clic:"ecranAmis()"}];
+  if(estSolo()){
+    const nbDf=(typeof _dfRecus==="object"&&_dfRecus)?Object.keys(_dfRecus).length:0;
+    const amis=[{fam:"classe",ic:"ph-trophy",joueurs:'<i class="ph-fill ph-users-three"></i> Toi et tes amis',titre:"Classement entre amis",txt:"Ajoute tes amis avec leur code : vous comparez vos points, vos badges et vos boss vaincus.",go:"Mes amis",clic:"ecranAmis()"},
+      {fam:"classe",ic:"ph-paper-plane-tilt",joueurs:'<i class="ph-fill ph-users"></i> Avec un ami · à distance',titre:"Défier un ami",txt:"Tu joues maintenant, ton ami a 48 h pour battre ton score. Le gagnant prend la mise du perdant.",go:"Lancer un défi",clic:"ecranDefiLancer()"},
+      {fam:"classe",ic:"ph-tray",joueurs:'<i class="ph-fill ph-users"></i>'+(nbDf?' <b>'+nbDf+' à relever</b>':' Mes défis'),titre:"Mes défis",txt:"Les défis reçus de tes amis, ceux qui les attendent, et tes résultats.",go:"Voir mes défis",clic:"ecranMesDefis()"}];
     document.getElementById("intro").textContent="Seul, à deux ou avec tes amis : choisis ton jeu.";
     document.getElementById("zone").innerHTML='<div class="accueil jx" style="max-width:1080px">'
       +famille("seul",'<i class="ph-fill ph-user"></i>',"Seul","Quand tu veux, à ton rythme.",seul)
@@ -25102,7 +25178,7 @@ function ecranClassement(){
   if(typeof fermerMenu==="function")fermerMenu();
   /* l'enseignant voit le classement de TOUTES ses classes, avec ses propres noms */
   if(typeof profConnecte==="function"&&profConnecte()){ classementProf(); return; }
-  if(estApprenant()){ ecranAmis(); return; }
+  if(estSolo()){ ecranAmis(); return; }
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   document.getElementById("titre").innerHTML='<i class="ph ph-trophy"></i> Classement de ma classe';
   document.getElementById("intro").textContent="";
@@ -25162,7 +25238,8 @@ const MISES=[5,10,15,20];
 const DEFIS_PAR_JOUR=5;                 // total de défis envoyés par jour
 const DEFIS_MEME_ADVERSAIRE=1;          // …dont 1 seul au même camarade : anti-harcèlement
 const DEFIS_PAR_SEMAINE=1;              // défis envoyés par semaine, si le prof n'a rien réglé
-const DEFIS_ACC_PAR_SEMAINE=1;          // défis relevés par semaine, si le prof n'a rien réglé
+const DEFIS_ACC_PAR_SEMAINE=1;
+const DEFIS_AMIS_SEMAINE=3;             // élèves en solo, entre amis : envoyés ET relevés par semaine          // défis relevés par semaine, si le prof n'a rien réglé
 const DEFI_VALIDITE_MS=48*60*60*1000;   // le camarade a 48 h pour relever le défi
 const DEFI_ABANDON_MS=24*60*60*1000;    // relevé mais jamais terminé au bout de 24 h : victoire par abandon
 const DEFI_SECS={1:15,2:12,3:10};       // temps par question
@@ -25195,8 +25272,8 @@ function compteurDefisAcc(){
   if(!profil.defisAccSemaine||profil.defisAccSemaine.w!==w)profil.defisAccSemaine={w:w,total:0};
   return profil.defisAccSemaine;
 }
-function defisParSemaine(){ return (typeof _defisSemaineMax==="number"&&_defisSemaineMax>=0)?_defisSemaineMax:DEFIS_PAR_SEMAINE; }
-function defisAccParSemaine(){ return (typeof _defisAccSemaineMax==="number"&&_defisAccSemaineMax>=0)?_defisAccSemaineMax:DEFIS_ACC_PAR_SEMAINE; }
+function defisParSemaine(){ if(estSolo())return DEFIS_AMIS_SEMAINE; return (typeof _defisSemaineMax==="number"&&_defisSemaineMax>=0)?_defisSemaineMax:DEFIS_PAR_SEMAINE; }
+function defisAccParSemaine(){ if(estSolo())return DEFIS_AMIS_SEMAINE; return (typeof _defisAccSemaineMax==="number"&&_defisAccSemaineMax>=0)?_defisAccSemaineMax:DEFIS_ACC_PAR_SEMAINE; }
 function peutDefier(codeCible){
   const maxSem=defisParSemaine();
   if(maxSem<=0)return {ok:false,msg:"Ton professeur a désactivé l'envoi de défis pour le moment."};
@@ -25245,7 +25322,7 @@ function dfScoreRep(q,a,secs){
   return 100+Math.max(0,Math.round((L-Math.min(a.ms||0,L))/L*50));
 }
 function dfCumul(qs,reps,secs){ const out=[]; let t=0; reps=dfTab(reps); for(let i=0;i<qs.length;i++){ t+=dfScoreRep(qs[i],reps[i],secs); out.push(t); } return out; }
-function dfAvatar(code,cls){ return `<span class="df-av ${cls||""}">${echapH(String(code||"?").slice(0,2))}</span>`; }
+function dfAvatar(code,cls){ return `<span class="df-av ${cls||""}">${echapH(String(dfNom(code)||"?").slice(0,2))}</span>`; }
 function dfCacherTitre(t){
   majRetour(null);
   const _t=document.getElementById("titre"), _i=document.getElementById("intro");
@@ -25283,16 +25360,38 @@ function dfViderFile(){
 }
 
 /* ---------- 1. Lancer un défi ---------- */
+/* Élève en solo : ses défis passent par son code ami, et seulement avec ses amis. */
+let _dfAmis=[], _dfAmisPret=false;
+function monCodeDefi(){ return profil.eleveCode||(estSolo()?(profil.codeAmi||""):""); }
+function dfChargerAmis(){
+  const s=fbStore(), u=fbAuth()&&fbAuth().currentUser;
+  if(!s||!u||!estSolo())return Promise.resolve([]);
+  return amiMonCode().then(function(){
+    return s.collection("amis").doc(u.uid).collection("liste").get(); }).then(function(q){
+    const l=[]; q.forEach(function(d){ const v=d.data()||{}; if(v.etat==="ok"&&v.code)l.push({uid:d.id,code:v.code,nom:v.nom||v.code}); });
+    _dfAmis=l; _dfAmisPret=true; return l;
+  }).catch(function(){ _dfAmisPret=true; return _dfAmis; });
+}
+function dfAmiDe(code){ return (_dfAmis||[]).filter(function(a){ return a.code===code; })[0]||null; }
+function dfNom(code){ const a=dfAmiDe(code); return a?a.nom:String(code||""); }
+function dfAmisChoixHTML(){
+  if(!_dfAmis.length)return '<div class="dl-carte"><p style="margin:0 0 10px">Tu n\u2019as pas encore d\u2019amis à défier.</p><button class="sv-cta" onclick="ecranAmis()"><i class="ph-fill ph-user-plus"></i> Ajouter un ami</button></div>';
+  return '<div class="dl-carte"><div class="dl-mini">Quel ami veux-tu défier&nbsp;?</div><div class="df-amis">'
+    +_dfAmis.map(function(a){ return '<button type="button" class="df-ami'+(defiCfg.cible===a.code?" on":"")+'" onclick="dfChoisirAmi(\''+a.code+'\')">'+clxAvatar(a.nom)+'<b>'+echapH(a.nom)+'</b></button>'; }).join("")
+    +'</div><div class="df-note">Pas besoin qu\u2019il soit connecté en même temps que toi.</div></div>';
+}
 function ecranDefiLancer(cibleInit){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); dfCacherTitre("Défier un camarade");
   if(typeof cibleInit==="string")defiCfg.cible=cibleInit;
   const z=document.getElementById("zone");
   const btnBoite=`<button class="sv-btn-rond" onclick="ecranMesDefis()" aria-label="Mes défis"><i class="ph ph-tray"></i></button>`;
-  const hero=`<div class="df-hero"><h2>Pose ton score, ton camarade le bat quand il veut</h2>
+  const hero=`<div class="df-hero"><h2>Pose ton score, ${estSolo()?"ton ami":"ton camarade"} le bat quand il veut</h2>
       <div class="df-etapes"><div><b>1</b><span>Tu joues tes ${DUEL_NB} questions</span></div><div><b>2</b><span>Il reçoit ton score</span></div><div><b>3</b><span>Il a 48 h pour le battre</span></div></div></div>`;
   const simple=function(html){ z.innerHTML=`<div class="dl-lobby df-lobby">${dfTete('<i class="ph-fill ph-paper-plane-tilt"></i> Défi à retardement',"ecranJouer()",btnBoite,hero)}<div class="dl-lobby-corps">${html}</div></div>`; };
-  if(!profil.eleveCode||!profil.classeId){
+  if(estSolo()&&!_dfAmisPret){ simple('<p style="text-align:center;color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement de tes amis…</p>');
+    dfChargerAmis().then(function(){ ecranDefiLancer(cibleInit); }); return; }
+  if(!estSolo()&&(!profil.eleveCode||!profil.classeId)){
     simple(`<div class="dl-carte"><p style="margin:0 0 10px">Pour défier un camarade, tu dois être identifié par ton <b>code élève</b>.</p>
       <button class="sv-cta" onclick="ecranParametres()"><i class="ph ph-sign-in"></i> Entrer mon code</button></div>`);
     return;
@@ -25316,11 +25415,11 @@ function ecranDefiLancer(cibleInit){
   const cs=compteurDefisSemaine(), ca=compteurDefisAcc(), ms=defisParSemaine(), ma=defisAccParSemaine();
   const pauvre=pts<MISE_MIN;
   simple(`
-     <div class="dl-carte">
+     ${estSolo()?dfAmisChoixHTML():`<div class="dl-carte">
        <label class="dl-mini" for="dfCible">Code élève de ton adversaire</label>
        <input id="dfCible" class="df-code" maxlength="5" placeholder="K7P2M" value="${echapH(defiCfg.cible||"")}" autocomplete="off" autocapitalize="characters" spellcheck="false" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
        <div class="df-note">Un camarade de ta classe. Pas besoin qu'il soit connecté en même temps que toi.</div>
-     </div>
+     </div>`}
      <div class="dl-carte dl-theme">
        <div style="flex:1;min-width:0"><div class="dl-mini">Thème</div><div class="dl-theme-nom">${th?echapH(th.nom):"Aucun thème disponible"}</div></div>
        <button type="button" class="dl-lien" onclick="dfBasculerThemes()">Changer</button>
@@ -25338,6 +25437,7 @@ function ecranDefiLancer(cibleInit){
   if(typeof remonter==="function")remonter();
 }
 function dfMemoCible(){ const el=document.getElementById("dfCible"); if(el)defiCfg.cible=el.value.trim().toUpperCase(); }
+function dfChoisirAmi(code){ defiCfg.cible=code; ecranDefiLancer(); }
 function dfBasculerThemes(){ const p=document.getElementById("dfThemes"); if(p)p.hidden=!p.hidden; }
 function dfChoisirTheme(id){ dfMemoCible(); profil.defiTheme=id; dfSauver(); ecranDefiLancer(); }
 function dfChoisirDiff(d){ dfMemoCible(); jeuCfg.diff=d; profil.defiDiff=d; dfSauver(); ecranDefiLancer(); }
@@ -25347,15 +25447,19 @@ function lancerDefiEnvoi(cat){
   const cible=defiCfg.cible, mise=defiCfg.mise;
   const err=document.getElementById("dfErr"), btn=document.getElementById("dfGo");
   const dire=function(m){ if(err){ err.innerHTML='<i class="ph ph-warning-circle"></i> '+m; err.hidden=false; } if(btn)btn.disabled=false; };
-  if(!/^[A-HJ-NP-Z2-9]{5}$/.test(cible)){ dire("Entre le code élève de ton adversaire (5 caractères)."); return; }
-  if(cible===profil.eleveCode){ dire("Tu ne peux pas te défier toi-même&nbsp;!"); return; }
+  if(estSolo()){ if(!dfAmiDe(cible)){ dire("Choisis un de tes amis."); return; } }
+  else if(!/^[A-HJ-NP-Z2-9]{5}$/.test(cible)){ dire("Entre le code élève de ton adversaire (5 caractères)."); return; }
+  if(cible===monCodeDefi()){ dire("Tu ne peux pas te défier toi-même&nbsp;!"); return; }
   if(MISES.indexOf(mise)<0||mise<MISE_MIN||mise>MISE_MAX){ dire("Choisis une mise entre "+MISE_MIN+" et "+MISE_MAX+" points."); return; }
   if(mise>(profil.points||0)){ dire("Tu n'as pas assez de points pour cette mise."); return; }
   if(profil.defiEnCours){ dfReprendre(false); dire("Ton défi précédent est en cours d'envoi. Réessaie dans un instant."); return; }
   const autorise=peutDefier(cible); if(!autorise.ok){ dire(autorise.msg); return; }
   const s=fbStore(); if(!s){ dire("Service indisponible."); return; }
   if(err)err.hidden=true; if(btn)btn.disabled=true;
-  dfAvecTimeout(authElevePret().then(function(){ return s.collection("eleveCodes").doc(cible).get(); }),12000).then(function(doc){
+  /* élève en solo : la cible est un ami accepté (déjà vérifié), pas de code élève à contrôler */
+  const verif=estSolo()?Promise.resolve({exists:true,data:function(){ return {classId:profil.classeId}; }})
+    :authElevePret().then(function(){ return s.collection("eleveCodes").doc(cible).get(); });
+  dfAvecTimeout(verif,12000).then(function(doc){
     if(!doc.exists){ dire("Ce code n'existe pas. Vérifie-le."); return; }
     if(doc.data().classId!==profil.classeId){ dire("Ce camarade n'est pas dans ta classe."); return; }
     const diff=(jeuCfg.diff===1||jeuCfg.diff===3)?jeuCfg.diff:2;
@@ -25387,7 +25491,7 @@ function ecranDefiRecu(id){
   else if(pts<(d.mise||0))bloque="Il te faut au moins "+d.mise+" points pour relever ce défi (tu en as "+pts+").";
   const hero=`<div class="df-recu">
       ${dfAvatar(d.de,"rose grand")}
-      <div><h2><b>${echapH(d.de)}</b> te défie&nbsp;!</h2><p>${echapH(d.theme||nomCat(d.cat))} · ${dfNomDiff(d.diff)}</p></div>
+      <div><h2><b>${echapH(dfNom(d.de))}</b> te défie&nbsp;!</h2><p>${echapH(d.theme||nomCat(d.cat))} · ${dfNomDiff(d.diff)}</p></div>
     </div>
     <div class="df-abattre"><i class="ph-fill ph-trophy"></i><div style="flex:1"><span>Score à battre</span><b>${d.score||0}</b></div>
       <div style="text-align:right"><span>encore</span><b class="petit">${dfResteTxt(reste)}</b></div></div>`;
@@ -25395,7 +25499,7 @@ function ecranDefiRecu(id){
     ${dfTete('<i class="ph-fill ph-sword"></i> Défi reçu',"ecranMesDefis('recus')","",hero)}
     <div class="dl-lobby-corps">
       <div class="dl-carte df-regles">
-        <div><i class="ph ph-list-numbers"></i><span>${n} questions, <b>${secs} s</b> chacune&nbsp;: les mêmes que ${echapH(d.de)}.</span></div>
+        <div><i class="ph ph-list-numbers"></i><span>${n} questions, <b>${secs} s</b> chacune&nbsp;: les mêmes que ${echapH(dfNom(d.de))}.</span></div>
         <div><i class="ph ph-ghost"></i><span>Tu cours contre son <b>fantôme</b>&nbsp;: sa partie rejouée question par question.</span></div>
         <div><i class="ph ph-coins"></i><span>Mise&nbsp;: <b>${d.mise} points</b>, retirés dès que tu commences. Tu gagnes&nbsp;: tu la récupères et tu prends la sienne (+${d.mise}). Tu perds&nbsp;: −${d.mise}.</span></div>
       </div>
@@ -25413,7 +25517,7 @@ function dfCommencerReleve(id){
   const q=peutRelever(); if(!q.ok){ dire(q.msg); return; }
   if(!duelDispo()){ dire("Connexion au serveur impossible."); return; }
   if(btn)btn.disabled=true;
-  const ref=firebase.database().ref("defis/"+profil.eleveCode+"/"+id);
+  const ref=firebase.database().ref("defis/"+monCodeDefi()+"/"+id);
   rtdbTenir("defi-rel");
   dfAvecTimeout(authElevePret().then(function(){ return ref.once("value"); }),12000).then(function(s){
     const d=s.val();
@@ -25423,12 +25527,12 @@ function dfCommencerReleve(id){
     return verifierExpediteurDefi(d).then(function(ok){
       if(!ok)throw "Impossible de vérifier l'expéditeur de ce défi.";
       const monUid=((fbAuth()||{}).currentUser||{}).uid||"";
-      return firebase.database().ref("defis/"+d.de+"/"+id+"_r").set({etat:"accepte",par:profil.eleveCode,uid:monUid,accAt:maintenant()}).then(function(){ return d; });
+      return firebase.database().ref("defis/"+d.de+"/"+id+"_r").set({etat:"accepte",par:monCodeDefi(),uid:monUid,accAt:maintenant()}).then(function(){ return d; });
     });
   }).then(function(d){
     rtdbLacher("defi-rel");
     if(profil.defiEnCours)return;
-    ref.remove().catch(function(){ dfEnfiler("defis/"+profil.eleveCode+"/"+id,null); });
+    ref.remove().catch(function(){ dfEnfiler("defis/"+monCodeDefi()+"/"+id,null); });
     compteurDefisAcc().total++;
     const qs=dfTab(d.questions).map(function(x){ return {consigne:x.consigne,options:dfTab(x.options),correct:x.correct}; });
     const secs=d.secs||DEFI_SECS[d.diff]||12, L=secs*1000;
@@ -25444,9 +25548,9 @@ function dfCommencerReleve(id){
 }
 async function refuserDefi(id){
   const d=_dfRecus[id]; if(!d)return;
-  if(!await dlgConfirmer("Refuser le défi de "+d.de+" ?\n\nSa mise lui sera rendue."))return;
-  dfEnfiler("defis/"+d.de+"/"+id+"_r",{etat:"refuse",par:profil.eleveCode,le:maintenant()});
-  dfEnfiler("defis/"+profil.eleveCode+"/"+id,null);
+  if(!await dlgConfirmer("Refuser le défi de "+dfNom(d.de)+" ?\n\nSa mise lui sera rendue."))return;
+  dfEnfiler("defis/"+d.de+"/"+id+"_r",{etat:"refuse",par:monCodeDefi(),le:maintenant()});
+  dfEnfiler("defis/"+monCodeDefi()+"/"+id,null);
   delete _dfRecus[id]; _dfVerifies[id]=false;
   dfHist({id:id,adv:d.de,role:"releveur",theme:d.theme||nomCat(d.cat),mise:d.mise||0,moi:null,lui:d.score||0,issue:"refuse",le:maintenant()});
   dfSauver();
@@ -25479,13 +25583,13 @@ function dfQuestion(){
   const q=e.qs[k], max=n*150;
   const moi=dfCumul(e.qs,e.reps,e.secs), sc=k?moi[k-1]:0;
   let pistes=`<div class="df-piste moi"><i id="dfBar" style="width:${dfPct(sc,max)}%"></i><span class="df-pion" id="dfPion" style="left:${dfPct(sc,max)}%">TOI</span></div>`;
-  let droite=`défi pour <b>${echapH(e.adv)}</b>`, indice;
+  let droite=`défi pour <b>${echapH(dfNom(e.adv))}</b>`, indice;
   if(e.role==="releveur"){
     const g=dfCumul(e.qs,e.repsAdv,e.secs), gs=k?g[k-1]:0, a=e.repsAdv[k];
     pistes+=`<div class="df-piste fantome"><i id="dfBarG" style="width:${dfPct(gs,max)}%"></i><span class="df-pion" id="dfPionG" style="left:${dfPct(gs,max)}%">${echapH(e.adv.slice(0,2))}</span></div>`;
-    droite=`fantôme de ${echapH(e.adv)} <b id="dfScG">${gs}</b>`;
-    indice=a&&a.c>=0?`<i class="ph ph-timer"></i><span>${echapH(e.adv)} avait répondu en <b>${dfFmtS(a.ms)} s</b></span>`
-                    :`<i class="ph ph-timer"></i><span>${echapH(e.adv)} n'avait pas répondu à temps</span>`;
+    droite=`fantôme de ${echapH(dfNom(e.adv))} <b id="dfScG">${gs}</b>`;
+    indice=a&&a.c>=0?`<i class="ph ph-timer"></i><span>${echapH(dfNom(e.adv))} avait répondu en <b>${dfFmtS(a.ms)} s</b></span>`
+                    :`<i class="ph ph-timer"></i><span>${echapH(dfNom(e.adv))} n'avait pas répondu à temps</span>`;
   }else{
     indice=`<i class="ph ph-lightning"></i><span>Bonne réponse&nbsp;: <b>100 points</b>, jusqu'à +50 si tu es rapide.</span>`;
   }
@@ -25538,7 +25642,7 @@ function dfRepondre(i){
     const g=dfCumul(e.qs,e.repsAdv,e.secs), gs=g[k], a=e.repsAdv[k], gOk=a&&a.c===q.correct;
     const bg=document.getElementById("dfBarG"), pg=document.getElementById("dfPionG"), sg=document.getElementById("dfScG");
     if(bg)bg.style.width=dfPct(gs,max)+"%"; if(pg)pg.style.left=dfPct(gs,max)+"%"; if(sg)sg.textContent=gs;
-    txt+=`<span class="df-fant">${echapH(e.adv)}&nbsp;: ${gOk?"juste en "+dfFmtS(a.ms)+" s":(a&&a.c>=0?"raté":"pas de réponse")}</span>`;
+    txt+=`<span class="df-fant">${echapH(dfNom(e.adv))}&nbsp;: ${gOk?"juste en "+dfFmtS(a.ms)+" s":(a&&a.c>=0?"raté":"pas de réponse")}</span>`;
   }
   if(ind){ ind.className="df-indice "+(ok?"juste":"faux"); ind.innerHTML=txt; }
   setTimeout(function(){ if(_df===D)dfQuestion(); },ok?1200:1900);
@@ -25583,7 +25687,7 @@ function dfEnvoyerDefi(e,silencieux){
   _dfEnvoi=true; rtdbTenir("defi-envoi");
   dfAvecTimeout(authElevePret().then(function(){
     const monUid=((fbAuth()||{}).currentUser||{}).uid||"";
-    return firebase.database().ref("defis/"+e.adv+"/"+e.id).set({v:2,de:profil.eleveCode,uid:monUid,cat:e.cat,theme:e.theme,diff:e.diff,
+    return firebase.database().ref("defis/"+e.adv+"/"+e.id).set({v:2,de:monCodeDefi(),uid:monUid,cat:e.cat,theme:e.theme,diff:e.diff,
       mise:e.mise,secs:e.secs,questions:e.qs,reps:e.reps,score:score,etat:"envoye",cree:maintenant()});
   }),15000).then(function(){
     _dfEnvoi=false; rtdbLacher("defi-envoi");
@@ -25593,10 +25697,10 @@ function dfEnvoyerDefi(e,silencieux){
     profil.defiEnCours=null;
     const gain=ajouterPoints(Math.round(score/20));
     dfPointsMaj();
-    if(silencieux){ _dfMsgs.push({titre:"Défi envoyé à <b>"+echapH(e.adv)+"</b>",corps:"Ton score de "+score+" points l'attend : il a 48 h pour le battre."}); dfAfficherMessages(); return; }
+    if(silencieux){ _dfMsgs.push({titre:"Défi envoyé à <b>"+echapH(dfNom(e.adv))+"</b>",corps:"Ton score de "+score+" points l'attend : il a 48 h pour le battre."}); dfAfficherMessages(); return; }
     try{ jouerEffet("parfait"); }catch(x){}
-    dfEcranMessage(dfAvatar(e.adv,"rose grand"),"Défi envoyé à "+echapH(e.adv)+"&nbsp;!",
-      `Ton score&nbsp;: <b class="df-gros">${score}</b><br>${echapH(e.adv)} a <b>48 h</b> pour le battre sur les mêmes questions. Mise en jeu&nbsp;: <b>${e.mise} points</b>.${gain>0?`<br><span style="color:var(--or-texte)"><i class="ph ph-star"></i> +${gain} points pour ta progression</span>`:""}`,
+    dfEcranMessage(dfAvatar(e.adv,"rose grand"),"Défi envoyé à "+echapH(dfNom(e.adv))+"&nbsp;!",
+      `Ton score&nbsp;: <b class="df-gros">${score}</b><br>${echapH(dfNom(e.adv))} a <b>48 h</b> pour le battre sur les mêmes questions. Mise en jeu&nbsp;: <b>${e.mise} points</b>.${gain>0?`<br><span style="color:var(--or-texte)"><i class="ph ph-star"></i> +${gain} points pour ta progression</span>`:""}`,
       `<button class="sv-cta" onclick="ecranMesDefis('envoyes')"><i class="ph ph-tray"></i> Mes défis</button><button class="df-bouton2" onclick="ecranJouer()">Retour</button>`);
   }).catch(echec);
 }
@@ -25612,7 +25716,7 @@ function dfFinReleve(e,silencieux){
   const h={id:e.id,adv:e.adv,role:"releveur",theme:e.theme,mise:m,moi:sc,lui:sl,issue:issue,le:maintenant(),cMoi:moi,cLui:lui,gain:gain};
   dfHist(h);
   profil.defiEnCours=null;
-  dfEnfiler("defis/"+e.adv+"/"+e.id+"_r",{etat:"resultat",par:profil.eleveCode,score:sc,courbe:moi,joueAt:maintenant()});
+  dfEnfiler("defis/"+e.adv+"/"+e.id+"_r",{etat:"resultat",par:monCodeDefi(),score:sc,courbe:moi,joueAt:maintenant()});
   dfPointsMaj();
   if(silencieux){ _dfMsgs.push(dfMsgResultat(h)); dfAfficherMessages(); return; }
   dfEcranResultat(h);
@@ -25687,7 +25791,7 @@ function ecranMesDefis(onglet){
       `<div class="df-onglets">${tab("recus","À relever",nR)}${tab("envoyes","Envoyés",nE)}${tab("termines","Terminés",0)}</div>`)}
     <div class="dl-lobby-corps"><div id="mdListe" class="df-liste">${dfListeHTML()}</div>
       <button type="button" class="sv-cta" onclick="ecranDefiLancer()"><i class="ph-fill ph-paper-plane-tilt"></i> Lancer un défi</button></div></div>`;
-  if(_mdOnglet==="recus"&&profil.eleveCode&&duelDispo()){
+  if(_mdOnglet==="recus"&&monCodeDefi()&&duelDispo()){
     try{ if(defiTimer){ clearTimeout(defiTimer); defiTimer=null; } ecouterDefis(); }catch(e){}
   }
   if(typeof remonter==="function")remonter();
@@ -25695,12 +25799,12 @@ function ecranMesDefis(onglet){
 function dfListeHTML(){
   const now=maintenant();
   if(_mdOnglet==="recus"){
-    if(!profil.eleveCode)return `<p class="df-vide">Entre ton code élève pour recevoir des défis.</p>`;
+    if(!monCodeDefi())return `<p class="df-vide">Entre ton code élève pour recevoir des défis.</p>`;
     const ids=Object.keys(_dfRecus).sort(function(a,b){ return (_dfRecus[b].cree||0)-(_dfRecus[a].cree||0); });
     if(!ids.length)return `<p class="df-vide">${_dfBoiteLue?'<i class="ph ph-moon-stars"></i> Aucun défi à relever pour l\'instant.':'<i class="ph ph-spinner-gap"></i> Recherche de tes défis…'}</p>`;
     return ids.map(function(id){ const d=_dfRecus[id];
       return `<div class="df-item recu">
-        <div class="df-item-l">${dfAvatar(d.de,"rose")}<div style="flex:1;min-width:0"><div class="df-item-t">${echapH(d.de)} te défie</div><div class="df-item-s">${echapH(d.theme||"")} · ${dfNomDiff(d.diff)} · mise ${d.mise} pts</div></div></div>
+        <div class="df-item-l">${dfAvatar(d.de,"rose")}<div style="flex:1;min-width:0"><div class="df-item-t">${echapH(dfNom(d.de))} te défie</div><div class="df-item-s">${echapH(d.theme||"")} · ${dfNomDiff(d.diff)} · mise ${d.mise} pts</div></div></div>
         <div class="df-abattre clair"><i class="ph-fill ph-trophy"></i><div style="flex:1"><span>Score à battre</span><b>${d.score||0}</b></div><div style="text-align:right"><span>encore</span><b class="petit">${dfResteTxt(DEFI_VALIDITE_MS-(now-(d.cree||0)))}</b></div></div>
         <button type="button" class="sv-cta" onclick="ecranDefiRecu('${id}')">Voir le défi</button></div>`; }).join("");
   }
@@ -25795,6 +25899,9 @@ function traiterDefis(base,s){
 function verifierExpediteurDefi(d){
   if(!d||!d.de||!d.uid)return Promise.resolve(false);
   const s=fbStore(); if(!s)return Promise.resolve(false);
+  /* code ami (6 caractères) : il doit appartenir au compte qui a écrit le défi */
+  if(String(d.de).length===6)return s.collection("codesAmis").doc(d.de).get()
+    .then(function(x){ return !!(x.exists && (x.data()||{}).uid===d.uid); }).catch(function(){ return false; });
   return s.collection("eleveLien").doc(d.uid).get()
     .then(function(x){ return !!(x.exists && (x.data()||{}).code===d.de); })
     .catch(function(){ return false; });
@@ -25806,7 +25913,7 @@ function dfReprendre(visible){
     if(e&&!_df&&!_dfEnvoi){
       if(e.v!==2||!Array.isArray(e.qs)){ profil.defiEnCours=null; dfSauver(); }
       else{
-        if(!e.fini)_dfMsgs.push({titre:"Défi interrompu",corps:"Ta partie contre <b>"+echapH(e.adv)+"</b> s'est arrêtée : les questions restantes comptent sans réponse."});
+        if(!e.fini)_dfMsgs.push({titre:"Défi interrompu",corps:"Ta partie contre <b>"+echapH(dfNom(e.adv))+"</b> s'est arrêtée : les questions restantes comptent sans réponse."});
         dfTerminer(!visible);
       }
     }
@@ -25843,7 +25950,7 @@ function dfMajNotif(){
 }
 function afficherNotifDefi(id,d){
   const b=dfNotifBoite("defi");
-  b.innerHTML=`<div class="dn-tete"><i class="ph ph-sword"></i> <b>${echapH(d.de)}</b> te défie&nbsp;!</div>
+  b.innerHTML=`<div class="dn-tete"><i class="ph ph-sword"></i> <b>${echapH(dfNom(d.de))}</b> te défie&nbsp;!</div>
     <div class="dn-corps">${echapH(d.theme||"")} · ${dfNomDiff(d.diff)}<br><i class="ph ph-trophy"></i> Score à battre&nbsp;: <b>${d.score||0}</b> · mise <b>${d.mise} pts</b><br>Encore ${dfResteTxt(DEFI_VALIDITE_MS-(maintenant()-(d.cree||0)))} pour le relever</div>
     <div class="dn-actions"><button class="action btn-corr" onclick="ecranDefiRecu('${id}')"><i class="ph ph-eye"></i> Voir le défi</button><button class="action btn-nouv" onclick="plusTardDefi('${id}')">Plus tard</button></div>`;
 }
@@ -25858,10 +25965,10 @@ function plusTardDefi(id){ _dfPlusTard[id]=true; const b=document.getElementById
 const DEFI_PERIODE=45000;
 let defiTimer=null;
 function ecouterDefis(){
-  if(!profil.eleveCode||!duelDispo())return;
-  if(defiCodeEcoute===profil.eleveCode&&defiTimer)return;   /* déjà en place sur ce code */
+  if(!monCodeDefi()||!duelDispo())return;
+  if(defiCodeEcoute===monCodeDefi()&&defiTimer)return;   /* déjà en place sur ce code */
   arreterEcouteDefis();
-  defiCodeEcoute=profil.eleveCode;
+  defiCodeEcoute=monCodeDefi();
   const tour=function(){
     defiTimer=null;
     if(!defiCodeEcoute)return;
@@ -25924,6 +26031,7 @@ function presenceBattre(){
 }
 function presenceDemarrer(){
   if(presenceTimer)return;
+  if(_vueAdmin)return;                  /* vue de test : pas d'élève « en ligne » fictif */
   presenceBattre();
   presenceTimer=setInterval(presenceBattre,PRESENCE_PERIODE);
 }
@@ -26168,7 +26276,7 @@ function perRedessiner(){
 let _perPubT=null;
 function perEnregistrer(){
   sauverProfil(profil);
-  clearTimeout(_perPubT); _perPubT=setTimeout(publierTrimestres,600);
+  clearTimeout(_perPubT); _perPubT=setTimeout(function(){ publierTrimestres(); profReglagesEnvoyer(); },600);
 }
 async function perChoisirType(type){
   if(type===periodeType())return;
@@ -30606,49 +30714,77 @@ const DON_PAYPAL="https://www.paypal.com/donate/?hosted_button_id=GR922MLA973NW"
 const DON_BMC="";   /* ← colle ici ton lien Buy Me a Coffee (https://www.buymeacoffee.com/tonpseudo) ;
                        tant qu'il est vide, le bouton correspondant reste masqué. */
 
+/* Page « Soutenir » (05/10/2026) : honnête et motivante. Ce que l'on finance,
+   ce qui existe déjà (chiffres réels tirés de l'application), des montants
+   indicatifs, et les façons d'aider sans payer. Vouvoiement pour les adultes
+   (professeur, élève en solo), tutoiement pour les élèves. */
+function soutienChiffres(){
+  let lecons=0, compos=0, mots=0, cours=0;
+  try{ lecons=CATEGORIES.filter(function(g){ return !g.special; }).reduce(function(n,g){ return n+g.items.length; },0); }catch(e){}
+  try{ compos=Object.keys(QUIZ_COMPO).length; }catch(e){}
+  try{ mots=Object.keys(VOC_INDEX).length; }catch(e){}
+  try{ cours=Object.keys(COURS_DEF).length; }catch(e){}
+  return {lecons:lecons,compos:compos,mots:mots,cours:cours};
+}
 function ecranSoutien(){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
-  document.getElementById("titre").innerHTML='<i class="ph ph-hand-heart"></i> Soutenir MusEduc';
-  document.getElementById("intro").textContent="MusEduc est gratuit, sans publicité et sans revente de données.";
+  const t=etatCompte().type, vous=(t==="prof"||t==="apprenant");
+  const V=function(a,b){ return vous?a:b; };
+  document.getElementById("titre").innerHTML='<i class="ph-fill ph-hand-heart"></i> Soutenir MusEduc';
+  document.getElementById("intro").textContent="";
+  const c=soutienChiffres();
+  /* « + de » toujours vrai : seuil arrondi à la dizaine en dessous (ou n-1 pour les petits nombres),
+     il suit tout seul quand du contenu est ajouté */
+  const plusDe=function(n){ return n<=1?n:(n>=20?Math.floor((n-1)/10)*10:n-1); };
+  const chiffre=function(n,lib,ic){ return '<div class="so-chiffre"><i class="ph-fill ph-'+ic+'"></i><b><small>+ de</small> '+plusDe(n)+'</b><span>'+lib+'</span></div>'; };
+  const finance=function(ic,teinte,titre,txt){ return '<div class="so-fin" style="--d:'+teinte+'"><span><i class="ph-fill ph-'+ic+'"></i></span><b>'+titre+'</b><small>'+txt+'</small></div>'; };
+  const montant=function(v,lib,ic){ return '<a class="so-montant" href="'+DON_PAYPAL+'" target="_blank" rel="noopener noreferrer"><i class="ph-fill ph-'+ic+'"></i><b>'+v+'</b><small>'+lib+'</small></a>'; };
   document.getElementById("zone").innerHTML=`
-   <div class="accueil don-page" style="max-width:640px">
-     <div class="don-tete">
-       <img src="${IMG_BONJOUR}" alt="" class="don-perso">
-       <div>
-         <h3>Un coup de pouce&nbsp;?</h3>
-         <p>MusEduc est développé par <b>un professeur de musique</b>, sur son temps libre, pour ses élèves… et pour tous les autres. L'application est <b>gratuite et sans publicité</b>.</p>
+   <div class="accueil so" style="max-width:900px">
+     <div class="so-hero">
+       <img src="${IMG_FELICITE}" alt="Maestro" class="so-maestro">
+       <div class="so-hero-txt">
+         <div class="so-eyebrow"><i class="ph-fill ph-heart"></i> Fait par un prof, pour les élèves</div>
+         <h2>MusEduc grandit grâce à ${V("vous","toi")}</h2>
+         <p>Pas de publicité, pas de revente de données, pas d'investisseur&nbsp;: juste un professeur de musique qui, le soir, crée des leçons et des jeux pour que chacun prenne plaisir à apprendre la musique.</p>
+         <div class="so-ctas">
+           <a class="so-cta" href="${DON_PAYPAL}" target="_blank" rel="noopener noreferrer"><i class="ph-fill ph-heart"></i> Faire un don</a>
+           ${DON_BMC?`<a class="so-cta sec" href="${DON_BMC}" target="_blank" rel="noopener noreferrer"><i class="ph-fill ph-coffee"></i> Offrir un café</a>`:""}
+         </div>
        </div>
      </div>
-     <p class="don-txt">Si elle t'est utile (ou si elle aide tes élèves) tu peux participer aux frais (hébergement, matériel, temps de développement). C'est totalement libre&nbsp;: <b>rien n'est bloqué</b> si tu ne donnes pas.</p>
-     <div class="don-btns">
-       <a class="don-btn paypal" href="${DON_PAYPAL}" target="_blank" rel="noopener noreferrer">
-         <span class="db-ic"><i class="ph-fill ph-paypal-logo"></i></span>
-         <span class="db-txt"><b>Faire un don</b><small>par PayPal ou carte bancaire</small></span>
-         <i class="ph ph-arrow-up-right"></i></a>
-       ${DON_BMC?`<a class="don-btn cafe" href="${DON_BMC}" target="_blank" rel="noopener noreferrer">
-         <span class="db-ic"><i class="ph-fill ph-coffee"></i></span>
-         <span class="db-txt"><b>M'offrir un café</b><small>Buy Me a Coffee</small></span>
-         <i class="ph ph-arrow-up-right"></i></a>`:""}
+
+     <div class="so-chiffres">
+       ${chiffre(c.lecons,"leçons","graduation-cap")}${chiffre(c.cours,"cours de collège","chalkboard-simple")}
+       ${chiffre(c.compos,"compositeurs","music-notes")}${chiffre(c.mots,"mots de vocabulaire","cards")}
      </div>
-     <div class="astuce"><b><i class="ph ph-shield-check"></i> En toute confiance&nbsp;:</b>
-       le paiement se fait <b>entièrement sur le site sécurisé</b> du prestataire : MusEduc ne voit ni ne conserve
-       aucune donnée bancaire. Aucun compte n'est nécessaire pour utiliser l'application.</div>
-     <div class="partage-carte">
-       <span class="pc-ic"><i class="ph-fill ph-share-network"></i></span>
-       <span class="pc-txt"><b>Fais connaître MusEduc</b><small>Envoie la page de présentation à un collègue, à ton professeur ou à tes amis.</small></span>
-       <button type="button" class="ac-cta pc-btn" onclick="partagerMusEduc()"><i class="ph ph-share-network"></i> Partager</button>
+     <p class="so-sous">Déjà disponibles, gratuitement, pour tout le monde.</p>
+
+     <h3 class="so-h3">Ce que ${V("votre","ton")} soutien finance</h3>
+     <div class="so-fins">
+       ${finance("cloud-check","var(--dom-lire)","Les serveurs","Pour que les comptes, les notes et les jeux en direct marchent chaque jour.")}
+       ${finance("music-notes-plus","var(--dom-theorie)","De nouvelles leçons","Styles, compositeurs, cours interactifs, exercices sonores.")}
+       ${finance("game-controller","var(--dom-rythme)","De nouveaux jeux","Pour que réviser reste un plaisir, seul, à deux ou en classe.")}
+       ${finance("clock","var(--dom-culture)","Du temps","Corriger les bugs, écouter les idées, améliorer chaque détail.")}
      </div>
-     <div class="don-autres">
-       <h4><i class="ph ph-sparkle"></i> Et sans dépenser un centime&nbsp;?</h4>
-       <ul class="ce-liste">
-         <li>Parle de MusEduc autour de toi, à tes collègues ou à ton professeur de musique.</li>
-         <li>Signale-moi les fautes et les bugs que tu rencontres&nbsp;: ça aide énormément.</li>
-         <li>Propose des idées d'exercices ou de leçons qui te manquent.</li>
-       </ul>
+
+     <h3 class="so-h3">Un coup de pouce, à ${V("votre","ton")} rythme</h3>
+     <div class="so-montants">
+       ${montant("3 €","un café pour le développeur","coffee")}
+       ${montant("10 €","aide à créer une nouvelle leçon","music-note")}
+       ${montant("25 €","un vrai coup d'accélérateur","rocket-launch")}
+       ${montant("Libre","le montant que "+V("vous voulez","tu veux"),"hand-heart")}
      </div>
-     <p class="don-legal"><a href="legal.html" target="_blank" rel="noopener">Mentions légales, confidentialité et conditions d'utilisation</a></p>
-     <button class="action btn-nouv" onclick="accueil()"><i class="ph ph-arrow-left"></i> Retour à l'accueil</button>
+     <p class="so-confiance"><i class="ph-fill ph-shield-check"></i> Paiement sur le site sécurisé de PayPal (carte bancaire possible, sans compte). MusEduc ne voit aucune donnée bancaire. Montants indicatifs, rien n'est jamais bloqué si ${V("vous ne donnez","tu ne donnes")} pas.</p>
+
+     <h3 class="so-h3">Aider sans dépenser un centime</h3>
+     <div class="so-gratuit">
+       <button class="so-g" onclick="partagerMusEduc()"><span><i class="ph-fill ph-share-network"></i></span><b>Partager</b><small>${V("à un collègue, à un ami","à tes amis, à ton prof")}</small></button>
+       <a class="so-g" href="mailto:contact@museduc.fr?subject=Un%20bug%20dans%20MusEduc"><span><i class="ph-fill ph-bug"></i></span><b>Signaler un bug</b><small>une faute, un souci</small></a>
+       <a class="so-g" href="mailto:contact@museduc.fr?subject=Une%20id%C3%A9e%20pour%20MusEduc"><span><i class="ph-fill ph-lightbulb"></i></span><b>Proposer une idée</b><small>une leçon, un jeu</small></a>
+     </div>
+     <p class="don-legal"><a href="legal.html#cgv" target="_blank" rel="noopener">Mentions légales et informations sur les dons</a></p>
    </div>`;
   if(typeof remonter==="function")remonter();
 }
@@ -30703,8 +30839,16 @@ async function partagerMusEduc(){
   toast(copie?"Ta messagerie s'ouvre avec le message prêt. Le lien est aussi copié : tu peux le coller ailleurs."
              :"Ta messagerie s'ouvre avec le message prêt.");
 }
+/* Bannière de soutien bien visible (accueil du professeur et de l'élève en solo). */
+function donBanniereHTML(prof){
+  return '<div class="don-ban"><img src="'+IMG_FELICITE+'" alt="" class="don-ban-img">'
+    +'<div class="don-ban-txt"><b>'+(prof?"MusEduc vous fait gagner du temps ?":"MusEduc vous aide à progresser ?")+'</b>'
+    +'<small>Il vit sans publicité, grâce aux dons. Un petit geste aide à créer les prochaines leçons et les prochains jeux.</small></div>'
+    +'<button class="don-ban-btn" onclick="ecranSoutien()"><i class="ph-fill ph-heart"></i> Soutenir</button></div>';
+}
 /* Carte discrète de soutien, affichée en bas de l'accueil. */
 function donCarteAccueilHTML(){
+  if(estSolo())return donBanniereHTML(false);
   return `<button class="don-carte" onclick="ecranSoutien()">
     <span class="dc-ic"><i class="ph-fill ph-hand-heart"></i></span>
     <span class="dc-txt"><b>MusEduc te plaît&nbsp;?</b><small>L'application est gratuite : un petit don aide à la faire vivre.</small></span>
@@ -31327,8 +31471,10 @@ try{ const _aR=fbAuth(); if(_aR&&_aR.onAuthStateChanged)_aR.onAuthStateChanged(f
   }
   if(_inscriptionEnCours)return;
   chargerRole(u).then(function(chg){
+    if(roleDe(u)==="prof"){ try{ profReglagesCharger(u); }catch(e){} }
     const suite=(roleDe(u)==="apprenant")?apprenantRestaurer(u):Promise.resolve("");
     return suite.then(function(issue){
+      if(estSolo()){ try{ dfChargerAmis().then(function(){ if(typeof ecouterDefis==="function")ecouterDefis(); }); }catch(e){} }
       majVueAdminBandeau();
       if(chg||issue==="serveur"){
         try{ construireMenu(); majIndicateurCompte(); }catch(e){}
