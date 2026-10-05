@@ -8253,7 +8253,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-06c";
+const VERSION_APP="2026-10-06h";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -11165,7 +11165,7 @@ function estApprenant(){ try{ const a=fbAuth(); return roleEffectif(a&&a.current
 function estSolo(){ return estApprenant()&&!(profil&&profil.eleveCode); }
 /* compte autorisé à écrire la progression d'un code élève : anonyme ou apprenant */
 function eleveOK(u){ return !!(u&&(u.isAnonymous||roleDe(u)==="apprenant")); }
-function svcIndispo(msg){ return `<div class="ex"><p><i class="ph ph-warning"></i> ${msg||"Le service en ligne n'est pas disponible."} <br><span style="color:var(--encre-doux);font-size:.9rem">Vérifie ta connexion Internet. Le professeur doit avoir activé <b>Authentication</b> et <b>Firestore</b> dans la console Firebase.</span></p></div>`; }
+function svcIndispo(msg){ return `<div class="ex"><p><i class="ph ph-warning"></i> ${msg||"Le service en ligne n'est pas disponible."} <br><span style="color:var(--encre-doux);font-size:.9rem">Vérifie ta connexion Internet, puis réessaie dans quelques minutes.</span></p></div>`; }
 function echapH(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 /* ---------- Temps de connexion (cumulé, en minutes) ---------- */
@@ -11387,12 +11387,12 @@ function ecranConnexion(k){
       +authChamp("piMail","Adresse e-mail","email","envelope-simple",'autocomplete="username" placeholder="prof@ecole.fr"')
       +authChamp("piMdp","Mot de passe","password","lock-simple",'autocomplete="new-password" placeholder="6 caractères minimum"'),
     errIns:"piErr", actionIns:"inscrireProf()",
-    rgpd:'Les noms de vos élèves restent sur votre appareil : seuls des codes anonymes vont sur nos serveurs. En créant un compte, vous acceptez les <a href="legal.html#cgu" target="_blank" rel="noopener">conditions d\'utilisation</a> et la <a href="legal.html#confidentialite" target="_blank" rel="noopener">politique de confidentialité</a>.'
+    rgpd:'Les noms de vos élèves restent sur votre appareil : seuls des codes (pseudonymes) vont sur nos serveurs. En créant un compte, vous acceptez les <a href="legal.html#cgu" target="_blank" rel="noopener">conditions d\'utilisation</a> et la <a href="legal.html#confidentialite" target="_blank" rel="noopener">politique de confidentialité</a>.'
   }));
 }
 function ecranProf(){ ecranConnexion("prof"); }
 function ecranApprenant(){ ecranConnexion("solo"); }
-function authErr(id,e){ const el=document.getElementById(id); if(!el)return; let m="Une erreur est survenue."; const c=(e&&e.code)||""; if(c.includes("invalid-email"))m="Adresse e-mail invalide."; else if(c.includes("email-already-in-use"))m="Un compte existe déjà avec cet e-mail."; else if(c.includes("weak-password"))m="Mot de passe trop court (6 caractères minimum)."; else if(c.includes("wrong-password")||c.includes("invalid-credential")||c.includes("user-not-found"))m="E-mail ou mot de passe incorrect."; else if(c.includes("network"))m="Problème de connexion Internet."; el.textContent=m; el.style.display="block"; }
+function authErr(id,e){ const el=document.getElementById(id); if(!el)return; let m="Une erreur est survenue."; const c=(e&&e.code)||""; if(c.includes("reinit-requis"))m="MusEduc a changé d'hébergeur : choisissez un nouveau mot de passe avec « Mot de passe oublié » (une seule fois)."; else if(c.includes("too-many-requests"))m="Trop d'essais : réessayez dans un quart d'heure."; else if(c.includes("invalid-email"))m="Adresse e-mail invalide."; else if(c.includes("email-already-in-use"))m="Un compte existe déjà avec cet e-mail."; else if(c.includes("weak-password"))m="Mot de passe trop court (6 caractères minimum)."; else if(c.includes("wrong-password")||c.includes("invalid-credential")||c.includes("user-not-found"))m="E-mail ou mot de passe incorrect."; else if(c.includes("network"))m="Problème de connexion Internet."; el.textContent=m; el.style.display="block"; }
 function connecterProf(){
   const a=fbAuth(); if(!a)return;
   const mail=((document.getElementById("pcMail")||{}).value||"").trim();
@@ -11724,7 +11724,7 @@ async function ajusterPoints(classId,code){
   s.collection("classes").doc(classId).collection("eleves").doc(code)
     .set({ajustements:firebase.firestore.FieldValue.arrayUnion(aj)},{merge:true})
     .then(function(){ toast((delta>0?"+":"")+delta+" points pour "+lab+" : appliqué à sa prochaine connexion."); })
-    .catch(function(){ toast("Échec : vérifie que tes règles Firestore autorisent le professeur à écrire."); });
+    .catch(function(){ toast("Échec de l'enregistrement : réessaie dans un instant."); });
 }
 
 /* Supprime un code : le code lui-même, la progression de l'élève, et le nom local. */
@@ -11840,6 +11840,11 @@ function snapshotEleve(){
       /* progression des cours de collège : sans elle, un élève qui se déconnecte
          (ou change d'appareil) repartait de la première étape */
       cours:profil.cours||{},
+      /* aussi le vocabulaire, le mode Histoire, Clapping Music, les objectifs et
+         ateliers du jour, et les récompenses de chant déjà touchées (sinon elles
+         seraient comptées une seconde fois) : rien ne se perd en changeant d'appareil */
+      voc:profil.voc||null, histoire:profil.histoire||{}, chantRecomp:profil.chantRecomp||{},
+      clapRec:profil.clapRec||{}, clapMotifs:profil.clapMotifs||[], obj:profil.obj||null, atelierLe:profil.atelierLe||{},
       devoirs:profil.devoirs||{} } };
 }
 /* Récupère la progression du serveur si elle est plus avancée que celle de l'appareil.
@@ -12104,7 +12109,8 @@ function restaurerEleve(){
           if(sv){
             ["points","exercices","sansFaute","serie","dernierJour","badges","badgesTousVu","best","vus",
              "defisBest","survieBest","survieHist","diffParCat","reussiteParCat","sfDiff","notesEval",
-             "evalBonus","entrainOK","niveauMax","serieNiv","evalLibreMois","evalLibreLe","tempsTheme","histEntrain","bonusNiveau","bonusBadge","bonusActuel","bonusNiveauVu","jokersSurvie","refaireVus","defisSemaine","defisAccSemaine","defisEnvoyes","defisHist","echelleV2","jourPts","ptsJour","ajustementsVus","devoirs","cours"]
+             "evalBonus","entrainOK","niveauMax","serieNiv","evalLibreMois","evalLibreLe","tempsTheme","histEntrain","bonusNiveau","bonusBadge","bonusActuel","bonusNiveauVu","jokersSurvie","refaireVus","defisSemaine","defisAccSemaine","defisEnvoyes","defisHist","echelleV2","jourPts","ptsJour","ajustementsVus","devoirs","cours",
+             "voc","histoire","chantRecomp","clapRec","clapMotifs","obj","atelierLe"]
               .forEach(function(k){ if(sv[k]!==undefined&&sv[k]!==null)profil[k]=sv[k]; });
             try{ migrerBonus(profil); }catch(e){}   /* données serveur d'avant les 2 emplacements */
             profil.tempsMin=Math.max(profil.tempsMin||0,sv.tempsMin||0);
@@ -12323,7 +12329,7 @@ function rejoindreClasse(){
   }).catch(function(e){
     const c=String((e&&e.code)||(e&&e.message)||"");
     if(c.indexOf("permission-denied")>=0)
-      dire("Le serveur a refusé la connexion. Vérifie que la connexion <b>Anonyme</b> est activée dans Firebase, et que les règles sont publiées.");
+      dire("Le serveur a refusé la connexion. Réessaie dans un instant ; si cela continue, préviens ton professeur.");
     else if(c.indexOf("network")>=0||c.indexOf("unavailable")>=0)
       dire("Impossible de joindre le serveur. Vérifie ta connexion Internet.");
     else if(c.indexOf("auth")>=0)
@@ -12601,7 +12607,7 @@ function ecranAdmin(){
   const z=document.getElementById("zone");
   if(!estAdmin()){ z.innerHTML='<p class="badge-vide">Réservé à l\'administrateur.</p>'; return; }
   z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement des comptes…</p>';
-  admCharger().then(admDessiner).catch(function(){ z.innerHTML=svcIndispo("Lecture des comptes refusée. Les règles Firestore (admins, comptes) sont-elles publiées ?"); });
+  admCharger().then(admDessiner).catch(function(){ z.innerHTML=svcIndispo("Lecture des comptes refusée : êtes-vous connecté avec le compte administrateur ?"); });
 }
 function admCharger(){
   const s=fbStore();
@@ -12623,6 +12629,24 @@ function admCharger(){
   });
 }
 function admFiltrer(f){ _admFiltre=f; admDessiner(); }
+/* Serveur MusEduc (hébergement en France) : place occupée et nettoyages automatiques.
+   Sur l'ancien hébergement (Firebase), cette carte n'existe pas. */
+function admServeurCarte(){
+  if(typeof firebase==="undefined"||!firebase.museduc)return;
+  firebase.museduc.etat().then(function(e){
+    const z=document.querySelector(".accueil.adm"); if(!z||z.querySelector(".adm-serveur"))return;
+    const mo=function(o){ return (o/1e6).toFixed(o<1e7?1:0)+" Mo"; };
+    const util=e.disque.base, pc=Math.min(100,Math.round(util/e.disque.limite*100));
+    const d=document.createElement("div"); d.className="ex adm-carte adm-serveur";
+    d.innerHTML='<h3><i class="ph ph-hard-drives"></i> Serveur MusEduc (France)</h3>'
+      +'<div class="adm-jauge'+(pc>=80?' alerte':'')+'" role="img" aria-label="Disque utilisé : '+pc+' %"><span style="width:'+Math.max(1,pc)+'%"></span></div>'
+      +'<p class="adm-aide"><b>'+mo(util)+'</b> utilisés sur '+mo(e.disque.limite)+' ('+pc+' %), dont '+mo(e.disque.audio)+' d\'enregistrements de chant · '
+      +e.eleves+' fiches d\'élèves · '+e.classes+' classes · '+e.comptes.sessionsEleves+' appareils d\'élèves'
+      +(e.derniereConservation?' · dernier nettoyage automatique le '+new Date(e.derniereConservation.t).toLocaleDateString("fr-FR"):'')+'.'
+      +(pc>=80?'<br><b>Le disque se remplit : il faudra bientôt une formule d\'hébergement plus grande.</b>':'')+'</p>';
+    z.insertBefore(d,z.children[1]||null);
+  }).catch(function(){});
+}
 function admChercher(v){ _admCherche=v||""; admDessinerListe(); }
 function admDessiner(){
   const l=_admComptes, sem=7*864e5, now=Date.now();
@@ -12658,9 +12682,10 @@ function admDessiner(){
       </div>
       <div id="admListe"></div>
     </div>
-    <p class="adm-aide"><i class="ph ph-info"></i> Supprimer efface la fiche et la progression d'un élève en solo. L'identifiant de connexion lui-même ne peut être effacé que dans la console Firebase (Authentication). Un professeur ne se supprime pas d'ici : suspendez-le, ses classes restent intactes.</p>
+    <p class="adm-aide"><i class="ph ph-info"></i> Supprimer efface la fiche et la progression d'un élève en solo. ${(typeof firebase!=="undefined"&&firebase.museduc)?"L'identifiant de connexion est effacé avec elle. ":"L'identifiant de connexion lui-même ne peut être effacé que dans la console Firebase (Authentication). "}Un professeur ne se supprime pas d'ici : suspendez-le, ses classes restent intactes.</p>
   </div>`;
   admDessinerListe();
+  admServeurCarte();
 }
 function admDessinerListe(){
   const z=document.getElementById("admListe"); if(!z)return;
@@ -12689,6 +12714,7 @@ function admDessinerListe(){
           +(c.id===moi?'<small>vous</small>':
             '<button class="mc-mini'+(c.admin?' on':'')+'" title="'+(c.admin?'Retirer le rôle administrateur':'Nommer administrateur')+'" onclick="admAdmin(\''+c.id+'\')"><i class="ph ph-shield-star"></i></button>'
            +'<button class="mc-mini" title="'+(c.suspendu?'Rétablir le compte':'Suspendre le compte')+'" onclick="admSuspendre(\''+c.id+'\')"><i class="ph ph-'+(c.suspendu?'play':'pause')+'"></i></button>'
+           +((typeof firebase!=="undefined"&&firebase.museduc)?'<button class="mc-mini" title="Lien pour choisir un nouveau mot de passe" aria-label="Lien pour choisir un nouveau mot de passe" onclick="admLienMdp(\''+c.id+'\')"><i class="ph ph-key"></i></button>':'')
            +(c.role==="apprenant"?'<button class="mc-mini sup" title="Supprimer la fiche et la progression" onclick="admSupprimer(\''+c.id+'\')"><i class="ph ph-trash"></i></button>':''))
         +'</span></div>';
     }).join("")+'</div>';
@@ -12716,9 +12742,29 @@ async function admSuspendre(id){
   fbStore().collection("comptes").doc(id).set(d,{merge:true}).then(function(){ c.suspendu=nv; c.ancien=false; toast(nv?"Compte suspendu.":"Compte rétabli."); admDessinerListe(); })
     .catch(function(){ toast("Modification refusée."); });
 }
+/* Serveur MusEduc : lien « nouveau mot de passe » (7 jours, une seule fois) que
+   l'administrateur transmet lui-même, par exemple si l'e-mail n'arrive pas. */
+async function admLienMdp(id){
+  const c=admTrouve(id);
+  if(typeof firebase==="undefined"||!firebase.museduc)return;
+  try{
+    const r=await firebase.museduc.lienReinit(id);
+    let copie=false; try{ await navigator.clipboard.writeText(r.url); copie=true; }catch(e){}
+    await dlgSaisir("Lien à transmettre à « "+admNom(c)+" »"+(r.email?" ("+r.email+")":"")+" : il permet de choisir un nouveau mot de passe, une seule fois, pendant 7 jours."
+      +(copie?" Il est déjà copié : collez-le dans votre message.":""), r.url);
+  }catch(e){ toast("Création du lien refusée."); }
+}
 async function admSupprimer(id){
   const c=admTrouve(id);
-  if(!await dlgConfirmer("Supprimer la fiche et la progression de « "+admNom(c)+" » ?\n\nPrénom, nom, e-mail et progression seront effacés. C'est IRRÉVERSIBLE.\n\nPour libérer aussi son adresse e-mail, supprimez ensuite son identifiant dans la console Firebase (Authentication)."))return;
+  const complet=(typeof firebase!=="undefined"&&firebase.museduc);   /* serveur MusEduc : tout s'efface d'un coup */
+  if(!await dlgConfirmer("Supprimer la fiche et la progression de « "+admNom(c)+" » ?\n\nPrénom, nom, e-mail et progression seront effacés. C'est IRRÉVERSIBLE."
+    +(complet?"":"\n\nPour libérer aussi son adresse e-mail, supprimez ensuite son identifiant dans la console Firebase (Authentication).")))return;
+  if(complet){
+    firebase.museduc.supprimerCompte(id)
+      .then(function(){ _admComptes=_admComptes.filter(function(x){ return x.id!==id; }); toast("Compte supprimé."); admDessiner(); })
+      .catch(function(){ toast("Suppression refusée."); });
+    return;
+  }
   const ref=fbStore().collection("comptes").doc(id);
   ref.collection("donnees").doc("profil").delete().catch(function(){}).then(function(){ return ref.delete(); })
     .then(function(){ _admComptes=_admComptes.filter(function(x){ return x.id!==id; }); toast("Compte supprimé."); admDessiner(); })
@@ -13268,7 +13314,7 @@ function rosterAjouterMembreFait(classId,code){
        l'invitation, pour qu'il retrouve le travail et les votes de cette classe */
     .then(function(){ return s.collection("eleveCodes").doc(code).set({invite: FV?FV.arrayUnion(classId):[classId]},{merge:true}).catch(function(){}); })
     .then(function(){ if(typeof tvFermerPop==="function")tvFermerPop(); toast("Élève ajouté à cette classe."); rosterClasse(classId); })
-    .catch(function(){ toast("Ajout impossible (vérifiez vos règles Firestore)."); });
+    .catch(function(){ toast("Ajout impossible : réessayez dans un instant."); });
 }
 async function rosterRetirerMembre(classId,code){
   if(!await dlgConfirmer("Retirer cet élève invité de cette classe ? (il reste dans sa classe d'origine, rien n'est supprimé)"))return;
@@ -14290,12 +14336,8 @@ function ecranDevoirsProf(classId){
     const c=String((e&&e.code)||(e&&e.message)||"");
     if(c.indexOf("permission-denied")>=0){
       z.innerHTML=`<div class="ex" style="max-width:640px;margin:0 auto">
-        <h3 style="margin-top:0"><i class="ph ph-warning" style="color:var(--faux)"></i> Règles Firestore à publier</h3>
-        <p>Le serveur refuse l'accès à la collection <b>devoirs</b> : c'est normal tant que les nouvelles
-          règles de sécurité n'ont pas été publiées.</p>
-        <p style="color:var(--encre-doux);font-size:.9rem">Dans la <b>console Firebase</b> :
-          <i>Firestore Database</i> → onglet <i>Règles</i> → collez le contenu du fichier
-          <b>firestore.rules</b> fourni avec l'application → <b>Publier</b>. Puis revenez ici.</p>
+        <h3 style="margin-top:0"><i class="ph ph-warning" style="color:var(--faux)"></i> Accès refusé</h3>
+        <p>Le serveur refuse l'accès aux travaux. Déconnectez-vous, reconnectez-vous, puis revenez ici.</p>
       </div>`;
     }else{
       z.innerHTML=svcIndispo("Impossible de charger les travaux.");
@@ -14614,7 +14656,7 @@ function creerDevoir(classId){
   envoi.then(function(){ _dvVocSel=[]; toast(pourTous?"Travail donné à toute la classe !"
                                                 :("Travail donné à "+choisis.length+" élève"+(choisis.length>1?"s":"")+" !"));
      ecranDevoirsProf(classId); })
-   .catch(function(){ dire("Impossible d'enregistrer ce travail. Vérifiez que les règles Firestore sont publiées."); });
+   .catch(function(){ dire("Impossible d'enregistrer ce travail. Réessayez dans un instant."); });
 }
 async function supprimerDevoir(classId,devoirId){
   if(!await dlgConfirmer("Supprimer ce travail ?\n\nIl disparaîtra de l'écran de vos élèves. Ce qu'ils ont déjà fait reste acquis."))return;
@@ -15041,12 +15083,8 @@ function chChargerChants(force){
 function chParId(id){ return (_chants||[]).filter(function(c){return c.id===id;})[0]||null; }
 function chRegles(){
   return '<div class="ex" style="max-width:660px;margin:0 auto">'
-    +'<h3 style="margin-top:0"><i class="ph ph-warning" style="color:var(--faux)"></i> Règles à publier</h3>'
-    +'<p>Le serveur refuse l\'accès aux morceaux : c\'est normal tant que les nouvelles règles '
-    +'de sécurité n\'ont pas été publiées.</p>'
-    +'<p style="color:var(--encre-doux);font-size:.9rem">Dans la <b>console Firebase</b> : '
-    +'<i>Firestore Database</i>, onglet <i>Règles</i>, collez le contenu du fichier '
-    +'<b>firestore.rules</b> fourni avec l\'application, <b>Publier</b>. Puis revenez ici.</p></div>';
+    +'<h3 style="margin-top:0"><i class="ph ph-warning" style="color:var(--faux)"></i> Accès refusé</h3>'
+    +'<p>Le serveur refuse l\'accès aux morceaux. Déconnectez-vous, reconnectez-vous, puis revenez ici.</p></div>';
 }
 /* Petit lecteur posé à la place du bouton : lecture, pause, déplacement. */
 function chLecteurIci(idZone,cle,tele,nom){
@@ -15359,7 +15397,7 @@ function chEnregistrerChant(id){
   p.then(function(nid){
     toast(id?"Morceau modifié.":"Morceau créé : déposez maintenant les bandes.");
     return chChargerChants(true).then(function(){ ecranChantEdit(nid); });
-  }).catch(function(){ dire("Impossible d'enregistrer. Vérifiez que les règles Firestore sont publiées."); });
+  }).catch(function(){ dire("Impossible d'enregistrer. Réessayez dans un instant."); });
 }
 /* Dépôt d'une bande. On affiche l'avancement : un MP3 de plusieurs mégaoctets
    sur le réseau d'un établissement, cela prend un moment, et sans repère on
@@ -15400,7 +15438,7 @@ function chDeposer(chantId,quelle,input){
      input.disabled=false;
      const m=String((e&&e.code)||"");
      dire(m.indexOf("permission-denied")>=0
-       ? "Le serveur a refusé le dépôt : publiez les nouvelles règles Firestore."
+       ? "Le serveur a refusé le dépôt. Reconnectez-vous puis réessayez."
        : "L'envoi a échoué. Vérifiez votre connexion, puis réessayez.","var(--faux)");
    });
 }
@@ -16506,7 +16544,7 @@ function chEnrEnvoyer(){
     let txt;
     if(m.indexOf("permission-denied")>=0){
       txt="Le serveur a refusé l'envoi. Montre ce message à ton professeur : "
-         +"<b>les règles Firestore doivent être publiées</b> (collection « enr » et « enrAudio »).";
+         +"<b>le dépôt a été refusé</b> (vérifie que tu es bien connecté avec ton code).";
     }else if(m.indexOf("unavailable")>=0||m.indexOf("network")>=0||m.indexOf("deadline")>=0){
       txt="La connexion a lâché pendant l'envoi. Ton enregistrement est toujours là : réessaie.";
     }else if(m.indexOf("invalid-argument")>=0||m.indexOf("too large")>=0){
@@ -17152,7 +17190,7 @@ function ecranRendus(classId){
     if(c.indexOf("permission-denied")>=0){
       z.innerHTML='<div class="ex" style="max-width:640px;margin:0 auto">'
         +'<h3 style="margin-top:0"><i class="ph ph-warning" style="color:var(--faux)"></i> Règles Firestore à publier</h3>'
-        +'<p>Le serveur refuse l’accès aux devoirs : publiez les règles à jour depuis la console Firebase.</p></div>';
+        +'<p>Le serveur refuse l’accès aux devoirs. Reconnectez-vous puis réessayez.</p></div>';
     }else z.innerHTML=svcIndispo("Impossible de charger les travaux.");
   });
 }
@@ -17592,7 +17630,7 @@ function qProfAjouter(){
     toast(_qpEdit?"Question modifiée !":"Question enregistrée !");
     _qProfCharge=false;
     qProfCharger(true).then(lpCharger).then(function(){ ecranQuestionsProf(o.cat.indexOf("perso-")===0?o.cat:null); });
-  }).catch(function(){ dire("Impossible d'enregistrer. Vérifiez que les règles Firestore sont publiées."); });
+  }).catch(function(){ dire("Impossible d'enregistrer. Réessayez dans un instant."); });
 }
 /* Recharge le formulaire avec une question existante : on modifie sur place,
    au lieu de supprimer puis réécrire. */
@@ -17904,7 +17942,7 @@ function lpEnregistrer(id){
         c'est la suite naturelle et cela évite d'oublier cette étape */
      if(neuf){ ecranQuestionsProf("perso-"+neuf); return; }
      lpRetour(); })
-   .catch(function(){ dire("Impossible d'enregistrer. Vérifiez que les règles Firestore sont publiées."); });
+   .catch(function(){ dire("Impossible d'enregistrer. Réessayez dans un instant."); });
 }
 async function lpSupprimer(id,depuisGrille){
   if(depuisGrille!==undefined)_lpRetourGrille=!!depuisGrille;
@@ -21155,7 +21193,7 @@ function evSetNote(classId,key,code,val,move){
   const s=fbStore(); if(!s){svcIndispo();return;}
   const o={}; o[key]=store;
   s.collection("classes").doc(classId).collection("eleves").doc(code).set({carnet:o},{merge:true})
-    .catch(function(){toast("Échec de l'enregistrement : vérifie que tes règles Firestore autorisent le professeur (à republier si besoin).");});
+    .catch(function(){toast("Échec de l'enregistrement : réessaie dans un instant.");});
   _evEleves[classId]=_evEleves[classId]||{}; const el=(_evEleves[classId][code]=_evEleves[classId][code]||{});
   el.carnet=el.carnet||{}; el.carnet[key]=store;
   _gbFocus={key:key,code:code,move:move};
@@ -21171,7 +21209,7 @@ function evResetNote(classId,key,code){
   const s=fbStore(); if(!s){svcIndispo();return;}
   s.collection("classes").doc(classId).collection("eleves").doc(code)
     .set({carnet:{[key]:firebase.firestore.FieldValue.delete()}},{merge:true})
-    .catch(function(){toast("Échec : vérifie que tes règles Firestore autorisent le professeur.");});
+    .catch(function(){toast("Échec : réessaie dans un instant.");});
   const el=((_evEleves[classId]||{})[code]); if(el&&el.carnet)delete el.carnet[key];
   toast("Note de l'élève rétablie.");
   if(typeof evalsRendre==="function")evalsRendre();
@@ -21544,7 +21582,7 @@ function evLibreRenommer(classId,tk){
     if(cl){ cl.libreNoms=cl.libreNoms||{}; if(nom)cl.libreNoms[tk]=nom; else delete cl.libreNoms[tk]; }
     const x=document.getElementById("evColPop"); if(x)x.remove();
     toast("Nom mis à jour."); if(typeof evalsRendre==="function")evalsRendre();
-  }).catch(function(){ toast("Échec : vérifie tes règles Firestore."); });
+  }).catch(function(){ toast("Échec : réessaie dans un instant."); });
 }
 function evColSauver(classId,key){
   const src=key.charAt(0), id=key.slice(2);
@@ -21559,7 +21597,7 @@ function evColSauver(classId,key){
   pendant("Enregistrement…",ref.set(data,{merge:true})).then(function(){
     const x=document.getElementById("evColPop"); if(x)x.remove();
     toast("Évaluation mise à jour."); delete _evalsCache[classId]; evalsClasse(classId);
-  }).catch(function(){ toast("Échec : vérifie que tes règles Firestore sont publiées."); });
+  }).catch(function(){ toast("Échec : réessaie dans un instant."); });
 }
 async function evColSupprimer(classId,key){
   const src=key.charAt(0), id=key.slice(2);
@@ -21590,7 +21628,7 @@ async function evFaireRefaire(classId,code,devId){
   s.collection("classes").doc(classId).collection("eleves").doc(code)
     .set({refaire:firebase.firestore.FieldValue.arrayUnion(token)},{merge:true})
     .then(function(){ toast("« "+lab+" » pourra refaire l'évaluation à sa prochaine connexion."); })
-    .catch(function(){ toast("Échec : vérifie tes règles Firestore."); });
+    .catch(function(){ toast("Échec : réessaie dans un instant."); });
 }
 /* Clic droit sur une note du carnet : menu « saisir une note / faire refaire » (façon Pronote). */
 function evCellMenu(ev,classId,key,code){
@@ -22310,7 +22348,7 @@ function dipFenetre(pages,titre,cssPlus){
     +'@media screen{body{background:#8a97a8;padding:16px}.dip{margin:0 auto 16px;box-shadow:0 6px 24px rgba(0,0,0,.3)}}'
     +DIP_CSS_U+(cssPlus||"");
   w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><base href="'+base+'"><title>'+echapH(titre)+'</title>'
-    +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap">'
+    +'<link rel="stylesheet" href="polices/polices.css">'
     +'<style>'+css+'</style></head><body>'+pages.join("")
     +'<script>window.addEventListener("load",function(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();'
     +'f.then(function(){setTimeout(function(){window.focus();window.print();},250);});});<\/script></body></html>');
@@ -23465,6 +23503,9 @@ function estVisiblePourCompte(id){
   /* « Espace enseignant » n'est plus dans le menu : un professeur connecté y est déjà
      (c'est son accueil), et la connexion se fait par le bouton de compte en haut. */
   if(id==="_prof")return false;
+  /* neutralité commerciale : aucun appel aux dons pour un élève (ni pour un visiteur,
+     qui peut être un élève sans code) ; seulement les profs et les apprenants en solo */
+  if(id==="_soutenir")return etatCompte().type==="prof"||estSolo();
   if(ITEMS_PROF.indexOf(id)<0)return true;
   return !estEleveConnecte();
 }
@@ -23805,7 +23846,7 @@ function ecranAmis(){
           return '<div class="amis-ligne">'+clxAvatar(a.nom||"?")+'<b>'+echapH(a.nom||"")+'</b><button class="amis-ok" title="Défier" onclick="ecranDefiLancer(\''+echapH(a.code||"")+'\')"><i class="ph-fill ph-sword"></i> Défier</button><button class="amis-non" title="Retirer" onclick="amiRetirer(\''+a.uid+'\',\''+echapH(a.nom||"").replace(/'/g,"")+'\')"><i class="ph ph-user-minus"></i></button></div>'; }).join("")+'</div>';
         z.innerHTML=h+'</div>';
       });
-  }).catch(function(){ z.innerHTML=svcIndispo("Impossible de charger tes amis. Les règles Firestore (amis, scores, codesAmis) sont-elles publiées ?"); });
+  }).catch(function(){ z.innerHTML=svcIndispo("Impossible de charger tes amis. Réessaie dans un instant."); });
 }
 
 /* ---------- Accueil : « Par où commencer ? » en quatre tuiles ---------- */
@@ -27314,7 +27355,7 @@ function presenceAccueilMonter(){
 }
 function presenceAccueilDemonter(){ if(_presAccTimer){ clearInterval(_presAccTimer); _presAccTimer=null; } }
 function presenceAccueilPanelHTML(){
-  if(_presAccErr) return `<p style="color:var(--faux);margin:6px 0"><i class="ph ph-warning"></i> Le suivi temps réel est <b>refusé par le serveur</b>. Publie les règles de la Realtime Database (le fichier <b>database.rules.json</b>, qui doit contenir le bloc <b>« presence »</b>) dans la console Firebase, puis réessaie.</p>`;
+  if(_presAccErr) return `<p style="color:var(--faux);margin:6px 0"><i class="ph ph-warning"></i> Le suivi temps réel est <b>refusé par le serveur</b>. Réessaie dans un instant.</p>`;
   const avec=(_presAccData||[]).filter(function(r){ return r.codes.length; });
   if(!avec.length){
     /* Personne en ce moment : les 10 derniers élèves vus dans les 24 dernières heures,
@@ -32084,13 +32125,11 @@ function donBanniereHTML(prof){
     +'<small>Il vit sans publicité, grâce aux dons. Un petit geste aide à créer les prochaines leçons et les prochains jeux.</small></div>'
     +'<button class="don-ban-btn" onclick="ecranSoutien()"><i class="ph-fill ph-heart"></i> Soutenir</button></div>';
 }
-/* Carte discrète de soutien, affichée en bas de l'accueil. */
+/* Bas de l'accueil : bannière de soutien pour l'apprenant en solo seulement.
+   Neutralité commerciale : jamais d'appel aux dons pour un élève (ni pour un
+   visiteur, qui peut être un élève sans code). */
 function donCarteAccueilHTML(){
-  if(estSolo())return donBanniereHTML(false);
-  return `<button class="don-carte" onclick="ecranSoutien()">
-    <span class="dc-ic"><i class="ph-fill ph-hand-heart"></i></span>
-    <span class="dc-txt"><b>MusEduc te plaît&nbsp;?</b><small>L'application est gratuite : un petit don aide à la faire vivre.</small></span>
-    <i class="ph ph-caret-right dc-fl"></i></button>`;
+  return estSolo()?donBanniereHTML(false):"";
 }
 
 /* =====================================================================

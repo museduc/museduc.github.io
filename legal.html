@@ -8,9 +8,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>MusEduc : informations légales</title>
 <meta name="description" content="Mentions légales, politique de confidentialité et conditions d'utilisation de MusEduc.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="polices/polices.css">
 <style>
   :root{
     --encre:#16233a; --doux:#5c6b80; --bandeau:#2374b0; --marine:#1e3a63;
@@ -72,7 +70,7 @@
 
 <main class="wrap">
   <div class="ruban"><h1>Informations légales</h1></div>
-  <p class="maj">Dernière mise à jour : 3 octobre 2026</p>
+  <p class="maj">Dernière mise à jour : 6 octobre 2026</p>
   <nav class="sommaire" aria-label="Sommaire">
     <a href="#mentions">Mentions légales</a>
     <a href="#confidentialite">Confidentialité</a>
@@ -91,8 +89,7 @@
     <h3>Hébergement du site</h3>
     <p><b>GitHub, Inc.</b> (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis.</p>
     <h3>Hébergement des données</h3>
-    <p><b>Google Firebase</b> (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irlande, et Google LLC, États-Unis). La base de données en temps réel est située en Europe (Belgique).</p>
-    <h3>Propriété intellectuelle</h3>
+    <p><b>Google Firebase</b> (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irlande, et Google LLC, États-Unis). La base de données en temps réel est située en Europe (Belgique).</p>    <h3>Propriété intellectuelle</h3>
     <p>Le code, les textes, les exercices, les leçons, les illustrations originales, les sons et le graphisme de MusEduc sont la propriété de Philippe Boussetta. Toute reproduction ou réutilisation, totale ou partielle, sans autorisation écrite préalable est interdite (Code de la propriété intellectuelle, articles L111-1 et L122-4).</p>
     <p>Les images issues de Wikimedia Commons restent la propriété de leurs auteurs et sont utilisées selon leur licence (domaine public ou licence libre), indiquée sous chaque image. Les vidéos proposées à l'écoute sont hébergées par YouTube et appartiennent à leurs ayants droit.</p>
   </section>
@@ -100,35 +97,34 @@
   <!-- ===================== CONFIDENTIALITÉ ===================== -->
   <section id="confidentialite">
     <h2><span class="med">2</span> Politique de confidentialité</h2>
-    <div class="encadre"><b>En bref :</b> les élèves inscrits par leur professeur n'ont pas de compte nominatif. Ils sont reconnus par un <b>code</b> fourni par leur professeur ; leurs noms ne sont <b>jamais</b> envoyés sur nos serveurs et restent dans le navigateur du professeur. Seuls les <b>apprenants</b> (personnes de 15 ans et plus qui ouvrent elles-mêmes un compte personnel, sans professeur) indiquent leurs prénom et nom. Aucune publicité, aucun traceur publicitaire, aucune revente de données.</div>
+    <div class="encadre"><b>En bref :</b> les élèves inscrits par leur professeur n'ont pas de compte nominatif. Ils sont reconnus par un <b>code</b> fourni par leur professeur : c'est un <b>pseudonyme</b>, et non un anonymat, car le professeur sait à quel élève il correspond. Le code et tout ce qui s'y rattache sont donc des <b>données personnelles</b>, protégées comme telles. Les noms des élèves ne sont <b>jamais</b> envoyés sur nos serveurs et restent dans le navigateur du professeur. Seuls les <b>apprenants</b> (personnes de 15 ans et plus qui ouvrent elles-mêmes un compte personnel, en dehors de tout établissement) indiquent leurs prénom et nom. Aucune publicité, aucun traceur publicitaire, aucune revente de données.</div>
 
     <h3>Qui est responsable ?</h3>
-    <p>Pour les comptes enseignants, les comptes apprenants et le fonctionnement général du service, le responsable du traitement est l'éditeur (voir les mentions légales).</p>
-    <p>Pour les données des élèves, c'est le professeur, dans le cadre de son enseignement, qui décide d'utiliser MusEduc avec sa classe : il agit (avec son établissement) comme responsable de ce traitement, et MusEduc comme <b>sous-traitant</b> au sens de l'article 28 du RGPD. Il lui revient d'informer les élèves et leurs familles et, si son établissement le demande, de signaler l'outil au délégué à la protection des données (DPO) de l'académie.</p>
+    <p><b>Utilisation dans un établissement scolaire (EPLE).</b> Le responsable du traitement des données des élèves est le <b>chef d'établissement</b>, et lui seul. MusEduc agit comme <b>sous-traitant</b> au sens de l'article 28 du RGPD : il ne traite ces données que pour faire fonctionner le service, sur instruction de l'établissement, et ne les utilise à aucune autre fin. Une <b>convention de sous-traitance</b> est proposée à chaque établissement (écrire à <a href="mailto:contact@museduc.fr">contact@museduc.fr</a>). Avant l'utilisation avec les élèves, le chef d'établissement inscrit le traitement à son registre, fait informer les élèves et leurs responsables légaux, et peut consulter le délégué à la protection des données (DPD) de l'académie. Le professeur utilise MusEduc dans ce cadre, sous l'autorité de son chef d'établissement.</p>
+    <p><b>Comptes enseignants et comptes apprenants.</b> Pour la gestion de ces comptes (adresse e-mail, mot de passe, réglages) et pour les comptes apprenants ouverts à titre personnel, hors de tout établissement, le responsable du traitement est l'éditeur (voir les mentions légales).</p>
 
     <h3>Quelles données ?</h3>
     <table>
       <tr><th>Qui</th><th>Données</th><th>Pourquoi</th></tr>
       <tr><td><b>Professeur</b></td><td>adresse e-mail, nom affiché, mot de passe (géré et chiffré par Firebase Authentication), classes, réglages, leçons et questions créées</td><td>créer et gérer son compte et ses classes</td></tr>
       <tr><td><b>Apprenant</b> (compte personnel, 15 ans et plus)</td><td>prénom, nom, adresse e-mail, mot de passe (géré et chiffré par Firebase Authentication), confirmation d'avoir 15 ans ou plus, date d'inscription et de dernière visite, progression (points, badges, résultats des exercices et évaluations)</td><td>créer le compte, sauvegarder la progression et la retrouver sur tous ses appareils</td></tr>
-      <tr><td><b>Élève avec un code</b></td><td>code élève, mot secret (seule une empreinte est enregistrée, jamais le mot lui-même), progression, points, badges, réponses et notes des exercices et évaluations, travaux rendus (temps passé, nombre d'essais, sorties de page), votes en classe, défis, observations « travail en classe » saisies par le professeur, enregistrements de chant déposés par l'élève</td><td>faire travailler l'élève, permettre au professeur de suivre et d'évaluer son travail</td></tr>
+      <tr><td><b>Élève avec un code</b> (pseudonyme)</td><td>code élève, mot secret (seule une empreinte est enregistrée, jamais le mot lui-même), progression, points, badges, réponses et notes des exercices et évaluations, travaux rendus (temps passé, nombre d'essais, sorties de page), votes en classe, défis, observations « travail en classe » saisies par le professeur, enregistrements de chant déposés par l'élève</td><td>faire travailler l'élève, permettre au professeur de suivre et d'évaluer son travail</td></tr>
       <tr><td><b>Pendant une évaluation</b></td><td>journal de passation : absences de la page chronométrées, copier-coller, tentatives de capture ou de partage d'écran</td><td>aider le professeur à apprécier les conditions de passation ; ce journal n'entraîne aucune sanction automatique</td></tr>
       <tr><td><b>Jeux en direct</b></td><td>présence en ligne (signal bref), prénom ou pseudonyme facultatif le temps d'une partie</td><td>faire fonctionner les jeux de classe ; ces données sont effacées à la fin de la partie</td></tr>
       <tr><td><b>Élève sans code</b></td><td>progression enregistrée uniquement sur l'appareil</td><td>s'entraîner librement ; rien n'est envoyé sur nos serveurs</td></tr>
     </table>
-    <p>Les <b>noms et prénoms des élèves</b> saisis par le professeur restent dans le stockage local de son navigateur (et dans les sauvegardes qu'il télécharge lui-même) : ils ne sont jamais envoyés sur nos serveurs.</p>
+    <p>Les <b>noms et prénoms des élèves</b> saisis par le professeur restent dans le stockage local de son navigateur (et dans les sauvegardes qu'il télécharge lui-même) : ils ne sont jamais envoyés sur nos serveurs. Le code élève reste néanmoins une donnée personnelle, puisqu'il permet au professeur d'identifier l'élève : le présent texte s'applique pleinement aux données rattachées à un code.</p>
 
     <h3>Sur quelle base ?</h3>
     <ul>
-      <li>Compte enseignant et compte apprenant : l'exécution des présentes conditions d'utilisation (article 6.1.b du RGPD).</li>
-      <li>Données des élèves : la mission d'enseignement du professeur et de son établissement (article 6.1.e du RGPD).</li>
+      <li>Compte enseignant et compte apprenant : l'exécution des présentes conditions d'utilisation (article 6.1.b du RGPD). Un compte apprenant ne peut être ouvert qu'à partir de 15 ans (article 45 de la loi Informatique et Libertés).</li>
+      <li>Données des élèves en établissement : la mission d'intérêt public d'enseignement de l'établissement (article 6.1.e du RGPD), sous la responsabilité du chef d'établissement.</li>
       <li>Sécurité et bon fonctionnement du service : l'intérêt légitime de l'éditeur (article 6.1.f du RGPD).</li>
     </ul>
 
     <h3>Qui y a accès ?</h3>
     <p>Le professeur voit les données de ses propres classes, et seulement elles. L'élève voit ses propres résultats. L'apprenant voit sa propre progression. L'éditeur, en tant qu'administrateur du service, voit la liste des comptes (nom, adresse e-mail, rôle, dates d'inscription et de dernière visite, nombre de classes et de codes d'un professeur, points d'un apprenant) pour gérer le service ; il n'ouvre pas les classes, les notes ni les progressions détaillées, et n'accède aux autres données que pour assurer le fonctionnement et la sécurité du service. Les données ne sont ni vendues, ni louées, ni cédées.</p>
     <p>Prestataires techniques : Google Firebase (stockage des données et authentification), Google Apps Script (solution de secours du jeu multijoueur, utilisée seulement si Firebase est indisponible) et GitHub (hébergement des pages). Firebase peut entraîner des transferts vers les États-Unis, encadrés par le cadre de protection des données UE-États-Unis (Data Privacy Framework) et les clauses contractuelles types de la Commission européenne.</p>
-
     <h3>Combien de temps ?</h3>
     <ul>
       <li>Les données d'un compte enseignant et de ses classes sont conservées tant que le compte existe. Le bouton <b>« Supprimer mon compte professeur »</b> (Paramètres) efface définitivement le compte, les classes, les codes élèves, les progressions et les notes.</li>
@@ -136,14 +132,12 @@
       <li>Le professeur peut à tout moment réinitialiser une classe ou un élève (progression, notes, travaux, enregistrements, journal de passation).</li>
       <li>La présence en ligne et les données des parties en direct sont effacées à la fin de la session ou de la partie.</li>
     </ul>
-
     <h3>Cookies et stockage local</h3>
     <p>MusEduc n'utilise <b>aucun cookie publicitaire ni outil de mesure d'audience</b>. Le stockage local du navigateur sert uniquement au fonctionnement de l'application (progression, réglages, noms des élèves chez le professeur) : il ne nécessite pas de consentement.</p>
-    <p>Certaines ressources sont chargées depuis des services tiers, qui reçoivent alors l'adresse IP de l'appareil : polices Google Fonts, icônes (jsDelivr), vidéos YouTube en mode de confidentialité renforcée (youtube-nocookie.com), images de Wikimedia Commons. Les boutons de don ouvrent les sites de PayPal et Buy Me a Coffee, qui appliquent leur propre politique.</p>
+    <p>Les polices de caractères, les icônes et les images sont hébergées avec l'application. Seules les <b>vidéos YouTube</b> font appel à un service tiers, et uniquement quand l'utilisateur clique pour lancer une vidéo : elles sont alors chargées en mode de confidentialité renforcée (youtube-nocookie.com), et YouTube reçoit l'adresse IP de l'appareil. Les crédits des images renvoient vers Wikimedia Commons par de simples liens. Les boutons de don, jamais proposés aux élèves, ouvrent les sites de PayPal et de Buy Me a Coffee, qui appliquent leur propre politique.</p>
 
     <h3>Sécurité</h3>
     <p>Les échanges sont chiffrés (HTTPS). L'accès aux données est limité par des règles de sécurité appliquées par le serveur (Firebase), qui réservent les données de chaque classe à son professeur et à ses élèves.</p>
-
     <h3>Vos droits</h3>
     <p>Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de vos données. Pour un élève, la demande peut être faite par lui-même ou par ses représentants légaux, de préférence auprès de son professeur, qui gère ses données ; elle peut aussi être adressée à : <a href="mailto:contact@museduc.fr">contact@museduc.fr</a>.</p>
     <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la <b>CNIL</b> (www.cnil.fr).</p>
@@ -155,14 +149,15 @@
     <h3>1. Objet</h3>
     <p>MusEduc est une application d'éducation musicale destinée aux collégiens et à leurs professeurs : leçons, exercices, jeux, cours interactifs, outils de suivi de classe. Les présentes conditions encadrent son utilisation. Utiliser l'application, ou créer un compte enseignant, vaut acceptation de ces conditions.</p>
     <h3>2. Accès au service</h3>
-    <p>L'application est aujourd'hui gratuite et sans publicité. Ses fonctionnalités peuvent évoluer ; si des options payantes étaient proposées un jour, elles seraient clairement signalées et ne s'appliqueraient qu'après acceptation de conditions de vente dédiées. Le service est fourni sans garantie de disponibilité permanente : il peut être interrompu pour maintenance ou en cas de panne d'un prestataire.</p>
+    <p><b>Neutralité commerciale.</b> Aucune publicité ni aucune sollicitation commerciale (y compris les appels aux dons) n'est, ni ne sera, présentée aux élèves. L'utilisation de MusEduc par un élève ne sera jamais conditionnée à un paiement de sa part ou de celle de sa famille.</p>
+    <p>L'application est aujourd'hui gratuite. Si des options payantes étaient proposées un jour, elles ne s'adresseraient qu'aux enseignants, aux établissements ou aux apprenants titulaires d'un compte personnel ; elles seraient annoncées au moins trois mois à l'avance, ne s'appliqueraient qu'après acceptation de conditions de vente dédiées, et ne modifieraient jamais les conditions d'une convention en cours avec un établissement. Le service est fourni sans garantie de disponibilité permanente : il peut être interrompu pour maintenance ou en cas de panne.</p>
     <h3>3. Compte enseignant</h3>
     <p>Le professeur crée son compte avec une adresse e-mail valide et un mot de passe qu'il garde confidentiel. Il est responsable de l'utilisation de son compte. Il peut le supprimer à tout moment depuis les Paramètres.</p>
     <h3>3 bis. Compte apprenant</h3>
     <p>Toute personne de <b>15 ans ou plus</b> peut ouvrir un compte apprenant personnel, avec ses prénom et nom, une adresse e-mail valide et un mot de passe qu'elle garde confidentiel. Elle s'entraîne seule, sans professeur ; elle peut ensuite rejoindre la classe d'un professeur avec le code élève qu'il lui donne, en gardant sa progression. Un jeune de moins de 15 ans utilise MusEduc avec le code de sa classe, ou avec un compte ouvert par un parent. Le compte peut être supprimé à tout moment depuis les Paramètres. L'éditeur peut suspendre un compte en cas d'usage contraire aux présentes conditions.</p>
     <h3>4. Utilisation avec des élèves</h3>
     <ul>
-      <li>Le professeur informe ses élèves et leurs familles de l'usage de MusEduc, de la nature des données traitées (voir la politique de confidentialité) et, en évaluation, de l'existence du journal de passation.</li>
+      <li>Le professeur utilise MusEduc avec ses élèves dans le cadre fixé par son chef d'établissement, responsable du traitement (voir la politique de confidentialité) : inscription au registre, convention de sous-traitance, information des élèves et de leurs responsables légaux sur la nature des données traitées et, en évaluation, sur l'existence du journal de passation.</li>
       <li>Il distribue les codes élèves et veille à ce qu'ils restent personnels.</li>
       <li>Il ne saisit dans les champs libres (noms de classe, commentaires, appréciations, leçons) aucune donnée sensible ni information inutile sur un élève.</li>
       <li>Le journal de passation est une aide à l'appréciation du professeur : il ne constitue pas, à lui seul, la preuve d'une fraude.</li>
@@ -185,16 +180,16 @@
   <section id="cgv">
     <h2><span class="med">4</span> Vente et dons</h2>
     <p>MusEduc ne vend aujourd'hui <b>aucun produit ni service</b> : il n'existe donc pas de conditions générales de vente. Si des options payantes sont proposées un jour, des conditions générales de vente seront publiées ici avant leur mise en vente.</p>
-    <p>Les <b>dons</b> proposés sur la page « Soutenir MusEduc » sont volontaires et sans contrepartie : ils ne donnent accès à aucune fonctionnalité supplémentaire. Ils sont réalisés entièrement sur les sites de PayPal ou de Buy Me a Coffee, selon leurs propres conditions ; MusEduc ne voit ni ne conserve aucune donnée bancaire.</p>
+    <p>Les <b>dons</b> proposés sur la page « Soutenir MusEduc » sont volontaires et sans contrepartie : ils ne donnent accès à aucune fonctionnalité supplémentaire. Ils ne sont proposés qu'aux enseignants et aux apprenants titulaires d'un compte personnel, <b>jamais aux élèves</b>. Ils sont réalisés entièrement sur les sites de PayPal ou de Buy Me a Coffee, selon leurs propres conditions ; MusEduc ne voit ni ne conserve aucune donnée bancaire.</p>
   </section>
 
   <!-- ===================== ACCESSIBILITÉ ===================== -->
   <section id="accessibilite">
     <h2><span class="med">5</span> Accessibilité</h2>
-    <div class="encadre"><b>État de conformité :</b> MusEduc est <b>partiellement conforme</b> au référentiel général d'amélioration de l'accessibilité (RGAA 4.1). L'éditeur, particulier, n'est pas soumis à l'obligation légale d'accessibilité (article 47 de la loi n° 2005-102 du 11 février 2005), mais s'efforce de rendre l'application utilisable par le plus grand nombre, en particulier par les élèves en situation de handicap.</div>
-    <h3>Comment l'accessibilité a été vérifiée</h3>
-    <p>Aucun audit complet n'a encore été réalisé. Un contrôle automatique (outil axe-core, qui couvre une partie des critères) a été mené le 5 octobre 2026 sur les écrans principaux : accueil, connexion, leçons, jeux, profil et paramètres. Les défauts relevés (contrastes de couleur, titre principal de page, description des onglets) ont été corrigés.</p>
-    <h3>Ce qui est fait</h3>
+    <div class="encadre"><b>État de conformité :</b> MusEduc est <b>non conforme</b> au référentiel général d'amélioration de l'accessibilité (RGAA 4.1), car <b>aucun audit de conformité n'a encore été réalisé</b>. Tant qu'un audit n'a pas mesuré le taux de critères respectés, aucun autre niveau ne peut être déclaré. L'éditeur s'efforce néanmoins de rendre l'application utilisable par le plus grand nombre, en particulier par les élèves en situation de handicap.</div>
+    <h3>Ce qui a été vérifié</h3>
+    <p>Un contrôle automatique (outil axe-core, qui ne couvre qu'une partie des critères et ne remplace pas un audit) a été mené le 5 octobre 2026 sur les écrans principaux : accueil, connexion, leçons, jeux, profil et paramètres. Les défauts relevés (contrastes de couleur, titre principal de page, description des onglets) ont été corrigés. Un audit complet est prévu ; cette déclaration sera mise à jour avec son résultat.</p>
+    <h3>Améliorations déjà réalisées</h3>
     <ul>
       <li>Navigation possible au clavier, avec un repère visible sur l'élément actif.</li>
       <li>Langue de la page déclarée, titres et zones de navigation nommés pour les lecteurs d'écran.</li>
@@ -214,7 +209,7 @@
     <p>Si vous ne parvenez pas à accéder à un contenu ou à une fonctionnalité, écrivez à <a href="mailto:contact@museduc.fr?subject=Accessibilit%C3%A9">contact@museduc.fr</a> en décrivant le problème et l'appareil utilisé : une solution ou une alternative vous sera proposée.</p>
     <h3>Voies de recours</h3>
     <p>Si vous n'obtenez pas de réponse satisfaisante, vous pouvez saisir le <b>Défenseur des droits</b> (www.defenseurdesdroits.fr), par son formulaire en ligne, par téléphone au 09 69 39 00 00 ou par courrier gratuit : Défenseur des droits, Libre réponse 71120, 75342 Paris CEDEX 07.</p>
-    <p style="color:var(--encre-doux,#566782);font-size:.88rem">Déclaration établie le 5 octobre 2026.</p>
+    <p style="color:var(--encre-doux,#566782);font-size:.88rem">Déclaration établie le 5 octobre 2026, mise à jour le 5 octobre 2026 (statut corrigé : non conforme, en l'absence d'audit).</p>
   </section>
 </main>
 

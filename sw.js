@@ -3,8 +3,9 @@
    Règle d'or : ne JAMAIS servir une vieille version quand le réseau répond.
    - la page, la feuille de style et le programme : RÉSEAU D'ABORD ; la copie en
      cache ne sert que hors connexion ;
-   - les images et les icônes, qui ne changent pas : cache d'abord ;
-   - le reste (Firebase, polices, icônes Phosphor, musiques et sons en streaming)
+   - les images, les icônes et les polices (y compris les icônes Phosphor), qui ne
+     changent pas : cache d'abord ;
+   - le reste (données, musiques et sons en streaming)
      n'est pas intercepté : le navigateur s'en charge comme avant.
    Changer CACHE vide les anciennes copies à la prochaine visite. */
 const CACHE = "museduc-v4";   /* v4 : nouvelles icônes (le M en ruban), on vide les anciennes */
@@ -32,7 +33,7 @@ self.addEventListener("fetch", function (e) {
   if (u.origin !== self.location.origin) return;
   if (/\.(mp3|webm|ogg|wav|m4a|mp4)$/i.test(u.pathname)) return;   /* audio : streaming normal */
 
-  if (/\/(images|icons)\//.test(u.pathname)) {
+  if (/\/(images|icons|polices)\//.test(u.pathname)) {
     e.respondWith(caches.match(r).then(function (m) {
       return m || fetch(r).then(function (rep) { return garder(r, rep); });
     }));

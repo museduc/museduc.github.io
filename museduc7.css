@@ -7071,3 +7071,6 @@
     .cm-ligne{gap:3px}
   }
   @media (prefers-reduced-motion:reduce){#cmA2{transition:none}#cmA2.bientot .cm-piste.v2{animation:none}}
+  .adm-jauge{height:14px;border-radius:999px;background:var(--papier-fonce);overflow:hidden;margin:6px 0 10px}
+  .adm-jauge span{display:block;height:100%;background:var(--juste);border-radius:999px}
+  .adm-jauge.alerte span{background:var(--faux)}
