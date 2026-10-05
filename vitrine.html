@@ -21,6 +21,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="MusEduc, avec Maestro qui fait coucou">
 <meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"MusEduc","applicationCategory":"EducationalApplication","operatingSystem":"Web (ordinateur, tablette, téléphone)","url":"https://museduc.fr/","inLanguage":"fr","description":"Application d'éducation musicale : leçons, jeux, chant, vocabulaire et cours interactifs pour les élèves ; devoirs, notes et export Pronote pour le professeur, sans nom d'élève sur le serveur.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"audience":{"@type":"EducationalAudience","educationalRole":"teacher"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
@@ -318,6 +319,50 @@
     .s{opacity:0}.s3{opacity:1}
     .souris,.clic,.bravo,.plus10{display:none}
   }
+  /* ===== Vitrine v2 (05/10/2026) ===== */
+  .qui-sw{display:inline-flex;gap:4px;padding:5px;border-radius:999px;background:var(--surface);border:1px solid var(--ligne);box-shadow:var(--ombre-d);margin:0 0 18px;flex-wrap:wrap}
+  .qui-sw button{border:none;background:none;font:inherit;font-weight:700;font-size:.92rem;padding:9px 16px;border-radius:999px;color:var(--doux);cursor:pointer}
+  .qui-sw button.on{background:var(--marine);color:#fff}
+  .qui-sw button:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+  #leadTxt,#ctaZone,#noteCta{transition:opacity .25s}
+  @media(max-width:560px){.qui-sw{display:grid;grid-template-columns:repeat(3,1fr);border-radius:18px;width:100%}.qui-sw button{padding:9px 4px;font-size:.78rem;border-radius:14px;line-height:1.2}}
+  .confiance{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+  .confiance div{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--ligne);font-size:.86rem;font-weight:600;color:var(--encre)}
+  .confiance i{width:34px;height:34px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:1.05rem;background:var(--teinte)}
+  @media(max-width:860px){.confiance{grid-template-columns:repeat(2,1fr)}}
+  .fonctions{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:980px){.fonctions{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.fonctions{grid-template-columns:1fr}}
+  .fct{background:var(--surface);border:1px solid var(--ligne);border-radius:18px;padding:18px 16px;box-shadow:var(--ombre-d);transition:transform .2s,box-shadow .2s}
+  .fct:hover{transform:translateY(-4px);box-shadow:var(--ombre)}
+  .fct .ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;background:var(--c);color:#fff;margin-bottom:10px}
+  .fct h3{margin:0 0 6px;font-size:1.08rem;color:var(--marine)}
+  .fct p{margin:0;font-size:.88rem;color:var(--doux);line-height:1.45}
+  .fct .neuf{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--or);color:#16233a;font-family:var(--police);font-size:.68rem;font-weight:800;vertical-align:middle}
+  .solo{display:grid;grid-template-columns:1fr 1.25fr;gap:30px;align-items:center;background:linear-gradient(135deg,#2f8a55,#1d5c38);color:#fff;border-radius:28px;padding:40px 36px;overflow:hidden;position:relative}
+  @media(max-width:860px){.solo{grid-template-columns:1fr;padding:30px 22px}}
+  .solo h2{font-size:clamp(1.7rem,3.4vw,2.3rem);margin:0 0 10px;color:#fff}
+  .solo .kick{display:inline-block;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.16);font-weight:700;font-size:.8rem;margin-bottom:12px}
+  .solo p{margin:0 0 20px;color:rgba(255,255,255,.9)}
+  .solo-cartes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.solo-cartes{grid-template-columns:1fr}}
+  .solo-cartes div{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:16px}
+  .solo-cartes b{display:block;font-family:var(--titre);font-size:1.08rem;margin:6px 0 4px}
+  .solo-cartes span{font-size:.86rem;color:rgba(255,255,255,.85);line-height:1.4;display:block}
+  .solo-cartes em{font-style:normal;font-size:1.6rem}
+  .etab{display:flex;align-items:center;gap:24px;flex-wrap:wrap;background:var(--surface);border:2px solid var(--or);border-radius:24px;padding:26px 28px;box-shadow:var(--ombre-d)}
+  .etab .et-ic{font-size:2.4rem}
+  .etab h3{margin:0 0 4px;font-size:1.35rem;color:var(--marine)}
+  .etab p{margin:0;color:var(--doux);max-width:58ch}
+  .etab .btn{margin-left:auto}
+  .barre-cta{position:fixed;left:50%;bottom:16px;z-index:60;transform:translate(-50%,140%);display:flex;align-items:center;gap:12px;padding:10px 10px 10px 18px;border-radius:999px;
+    background:var(--marine);color:#fff;box-shadow:0 14px 34px rgba(16,40,70,.35);transition:transform .35s cubic-bezier(.2,.8,.2,1);max-width:calc(100vw - 24px)}
+  .barre-cta.vu{transform:translate(-50%,0)}
+  .barre-cta span{font-weight:700;font-size:.95rem;white-space:nowrap}
+  .barre-cta .btn{padding:10px 16px;font-size:.92rem}
+  .barre-cta .x{border:none;background:none;color:rgba(255,255,255,.7);font-size:1.2rem;cursor:pointer;padding:4px 8px}
+  @media(max-width:620px){.barre-cta span{display:none}}
+  @media (prefers-reduced-motion:reduce){.barre-cta{transition:none}}
 </style>
 </head>
 <body>
@@ -326,8 +371,9 @@
     <a class="marque" href="#"><img src="icons/favicon.svg" alt=""><span><span class="mus">Mus</span><span class="educ">Educ</span></span></a>
     <nav class="nav-liens" aria-label="Sections">
       <a href="#demo">La démo</a>
-      <a href="#eleves">Pour les élèves</a>
-      <a href="#seance">Une séance</a>
+      <a href="#eleves">Les modes</a>
+      <a href="#fonctions">Pour le prof</a>
+      <a href="#solo">En solo</a>
       <a href="#tarif">Tarif</a>
     </nav>
     <a class="btn btn-or" href="museduc7.html?prof=inscription">Créer mon espace</a>
@@ -343,14 +389,19 @@
   </div>
   <div class="wrap heros-grid">
     <div>
-      <span class="kicker">♪ Éducation musicale · collège</span>
+      <span class="kicker">♪ Éducation musicale · collège</span><br>
+      <div class="qui-sw" role="tablist" aria-label="Je suis">
+        <button role="tab" aria-selected="true" class="on" data-q="prof">Je suis professeur</button>
+        <button role="tab" aria-selected="false" data-q="solo">J'apprends seul</button>
+        <button role="tab" aria-selected="false" data-q="eleve">Je suis élève</button>
+      </div>
       <h1><span class="mot" style="animation-delay:.1s">La</span> <span class="mot" style="animation-delay:.25s">musique,</span> <span class="mot" style="animation-delay:.4s">enfin</span> <span class="mot" style="animation-delay:.55s">un</span> <span class="mot" style="animation-delay:.7s">logiciel</span> <span class="mot" style="animation-delay:.85s">qui</span> <span class="mot surligne" style="animation-delay:1s">donne envie</span>.</h1>
-      <p class="lead">Vos élèves apprennent en jouant : leçons, quiz, chant, vocabulaire, cours interactifs. Vous suivez chacun et relevez les notes d'un coup d'œil, sans jamais exposer un seul nom d'élève.</p>
-      <div class="cta">
+      <p class="lead" id="leadTxt">Vos élèves apprennent en jouant : leçons, quiz, chant, vocabulaire, cours interactifs. Vous suivez chacun et relevez les notes d'un coup d'œil, sans jamais exposer un seul nom d'élève.</p>
+      <div class="cta" id="ctaZone">
         <a class="btn btn-or" href="museduc7.html?prof=inscription">Créer mon espace enseignant</a>
         <a class="btn btn-ligne" href="museduc7.html">Essayer l'application</a>
       </div>
-      <p class="note-cta">Gratuit · rien à installer · fonctionne sur ordinateur et tablette</p>
+      <p class="note-cta" id="noteCta">Gratuit · rien à installer · fonctionne sur ordinateur, tablette et téléphone</p>
     </div>
 
     <div class="scene" aria-label="Démonstration animée de MusEduc">
@@ -437,10 +488,16 @@
 
   <div class="wrap">
     <div class="chiffres">
-      <div class="chiffre apparait"><b data-compte="47">47</b><span>leçons</span></div>
-      <div class="chiffre apparait"><b data-compte="50" data-suffixe="+">50+</b><span>compositeurs à découvrir</span></div>
+      <div class="chiffre apparait"><b data-compte="40" data-suffixe="+">40+</b><span>leçons</span></div>
+      <div class="chiffre apparait"><b data-compte="40" data-suffixe="+">40+</b><span>compositeurs à découvrir</span></div>
       <div class="chiffre apparait"><b data-compte="5">5</b><span>cours interactifs de collège</span></div>
       <div class="chiffre apparait"><b data-compte="0">0</b><span>nom d'élève sur le serveur</span></div>
+    </div>
+    <div class="confiance apparait">
+      <div><i>🎓</i>Conçu en classe par un professeur d'éducation musicale</div>
+      <div><i>🔒</i>Pensé pour le RGPD : aucun nom d'élève en ligne</div>
+      <div><i>🚫</i>Sans publicité, sans revente de données</div>
+      <div><i>♿</i>Déclaration d'accessibilité publiée</div>
     </div>
   </div>
 </section>
@@ -553,6 +610,46 @@
   </div>
 </section>
 
+<section id="fonctions" style="padding-top:20px">
+  <div class="wrap">
+    <h2 class="ttl apparait">Toute votre année, en un seul outil</h2>
+    <p class="sous apparait">Devoirs, notes, chant, votes, diplômes : ce qui demandait plusieurs outils et beaucoup de papier, réuni au même endroit.</p>
+    <div class="fonctions">
+      <div class="fct apparait" style="--c:#2374b0"><div class="ic">🎒</div><h3>Devoirs à la carte</h3><p>Leçon, entraînement, évaluation, vocabulaire ou cours : pour une classe ou quelques élèves, validé tout seul.</p></div>
+      <div class="fct apparait" style="--c:#a44f40"><div class="ic">📒</div><h3>Carnets de notes</h3><p>Notes demandées, note bonus, moyenne générale coefficientée : tout se calcule pour vous.</p></div>
+      <div class="fct apparait" style="--c:#1e3a63"><div class="ic">⇪</div><h3>Export Pronote</h3><p>Moyennes, appréciations et bulletins prêts à reporter, colonne par colonne.</p></div>
+      <div class="fct apparait" style="--c:#5e6d80"><div class="ic">⏰</div><h3>NR et NR* <span class="neuf">nouveau</span></h3><p>Un travail rendu trop tard se verrouille, noté NR ou NR* (compte 0), comme dans Pronote.</p></div>
+      <div class="fct apparait" style="--c:#e0483b"><div class="ic">👀</div><h3>Vigilance</h3><p>Sorties de page, copier-coller, captures : un indice clair pour apprécier chaque évaluation.</p></div>
+      <div class="fct apparait" style="--c:#307e46"><div class="ic">🪑</div><h3>Travail en classe</h3><p>Plan de salle, comportements en un clic, note de participation par période.</p></div>
+      <div class="fct apparait" style="--c:#9e4d6f"><div class="ic">🎤</div><h3>Chant et karaoké</h3><p>Déposez un morceau : l'élève s'enregistre dessus, vous écoutez et notez.</p></div>
+      <div class="fct apparait" style="--c:#007f80"><div class="ic">🗳️</div><h3>Votes de classe</h3><p>Faites voter la classe, résultats en direct au tableau, sans aucun nom affiché.</p></div>
+      <div class="fct apparait" style="--c:#985b0b"><div class="ic">🏅</div><h3>Diplômes <span class="neuf">nouveau</span></h3><p>Les meilleurs de chaque classe, à imprimer, avec votre tampon : six styles, cinq encres.</p></div>
+      <div class="fct apparait" style="--c:#2b70ab"><div class="ic">📽️</div><h3>Mode projection</h3><p>Leçons, jeux et classements agrandis pour le tableau ou le vidéoprojecteur.</p></div>
+      <div class="fct apparait" style="--c:#765ba4"><div class="ic">✍️</div><h3>Vos leçons, vos questions</h3><p>Écrivez les vôtres, ou importez-les d'un coup depuis un tableur.</p></div>
+      <div class="fct apparait" style="--c:#1a9c6b"><div class="ic">🤝</div><h3>Codes collègues <span class="neuf">nouveau</span></h3><p>Un collègue d'ULIS ou une AESH accède à tout et lance ses propres parties.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="solo" style="padding-top:20px">
+  <div class="wrap">
+    <div class="solo apparait">
+      <div>
+        <span class="kick">Nouveau · dès 15 ans</span>
+        <h2>Apprendre la musique seul, à son rythme</h2>
+        <p>Pas de professeur ? Créez un compte en solo : la progression vous suit sur tous vos appareils, et vos amis deviennent vos adversaires préférés.</p>
+        <a class="btn btn-or" href="museduc7.html?solo=inscription">Créer mon compte en solo</a>
+      </div>
+      <div class="solo-cartes">
+        <div><em>👑</em><b>Un boss par leçon</b><span>Trois niveaux d'entraînement, puis 20 questions mêlées pour valider le cours.</span></div>
+        <div><em>🧑‍🤝‍🧑</em><b>Des amis, un classement</b><span>Un code ami à partager, un classement rien qu'à vous.</span></div>
+        <div><em>⚔️</em><b>Des défis à distance</b><span>Posez votre score, votre ami a 48 h pour le battre.</span></div>
+        <div><em>☁️</em><b>Toujours sauvegardé</b><span>Ordinateur, tablette, téléphone : vous reprenez où vous en étiez.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="etapes" style="padding-top:20px">
   <div class="wrap">
     <h2 class="ttl apparait">Prêt en trois étapes</h2>
@@ -561,6 +658,16 @@
       <div class="pas apparait"><b>1</b><h3>Créez votre espace</h3><p>Une adresse e-mail, un mot de passe : votre espace enseignant est prêt.</p></div>
       <div class="pas apparait"><b>2</b><h3>Ouvrez une classe</h3><p>Distribuez les codes anonymes : vos élèves se connectent en un instant.</p></div>
       <div class="pas apparait"><b>3</b><h3>Jouez, suivez, notez</h3><p>Ils apprennent en s'amusant ; vous suivez les progrès et relevez les notes.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:20px">
+  <div class="wrap">
+    <div class="etab apparait">
+      <span class="et-ic" aria-hidden="true">🏫</span>
+      <div><h3>Un collège, une académie, un réseau ?</h3><p>Présentation à votre équipe, accompagnement de vos professeurs, questions sur les données : parlons-en.</p></div>
+      <a class="btn btn-ligne" href="mailto:contact@museduc.fr?subject=MusEduc%20pour%20notre%20%C3%A9tablissement">Nous contacter</a>
     </div>
   </div>
 </section>
@@ -591,6 +698,10 @@
       <details><summary>Où sont enregistrés les noms de mes élèves ?<span>+</span></summary><p>Uniquement sur votre appareil. Le serveur ne stocke que des codes. C'est pour cela que la sauvegarde est importante : elle met ces noms à l'abri dans un fichier que vous gardez.</p></details>
       <details><summary>Faut-il installer quelque chose ?<span>+</span></summary><p>Non, tout fonctionne dans le navigateur, sur ordinateur comme sur tablette. Vous ouvrez museduc.fr, c'est tout.</p></details>
       <details><summary>Est-ce vraiment gratuit ?<span>+</span></summary><p>Oui, MusEduc est aujourd'hui gratuit et sans publicité. Des options avancées pourront devenir payantes à l'avenir.</p></details>
+      <details><summary>Et si je ne suis pas professeur ?<span>+</span></summary><p>Dès 15 ans, vous pouvez créer un compte en solo : leçons, entraînement, boss finals, amis et défis, sans professeur. Un élève plus jeune utilise le code donné par son professeur.</p></details>
+      <details><summary>Ça marche sur les tablettes du collège ?<span>+</span></summary><p>Oui, sur iPad, tablettes Android, ordinateurs et téléphones, dans le navigateur. Sur une tablette partagée, il suffit de décocher « Se souvenir de moi » : l'élève est déconnecté à la fermeture.</p></details>
+      <details><summary>Mes collègues d'ULIS ou les AESH peuvent-ils l'utiliser ?<span>+</span></summary><p>Oui : une classe « collègues » leur donne des codes avec tout débloqué, et ils peuvent lancer leurs propres parties avec leurs élèves.</p></details>
+      <details><summary>MusEduc est-il accessible ?<span>+</span></summary><p>Il est partiellement conforme au référentiel d'accessibilité (RGAA) : contrastes renforcés, navigation au clavier, animations réglables, tiers-temps pour les évaluations. Le détail est dans notre <a href="legal.html#accessibilite">déclaration d'accessibilité</a>.</p></details>
       <details><summary>Puis-je récupérer mes données ?<span>+</span></summary><p>Oui. Un bouton exporte l'ensemble de vos données dans un fichier, que vous pouvez restaurer sur un autre ordinateur quand vous voulez.</p></details>
     </div>
   </div>
@@ -607,6 +718,12 @@
   </div>
 </section>
 
+<div class="barre-cta" id="barreCta" aria-hidden="true">
+  <span id="barreTxt">Prêt à essayer avec votre classe ?</span>
+  <a class="btn btn-or" id="barreBtn" href="museduc7.html?prof=inscription" tabindex="-1">Créer mon espace</a>
+  <button class="x" aria-label="Fermer" tabindex="-1" onclick="document.getElementById('barreCta').remove()">×</button>
+</div>
+
 <footer>
   <div class="wrap pied">
     <span class="marque" style="font-size:1.2rem"><img src="icons/favicon.svg" alt="" style="width:26px;height:26px"><span><span class="mus">Mus</span><span class="educ">Educ</span></span></span>
@@ -617,6 +734,7 @@
       <a href="legal.html#mentions">Mentions légales</a>
       <a href="legal.html#confidentialite">Confidentialité</a>
       <a href="legal.html#cgu">Conditions d'utilisation</a>
+      <a href="legal.html#accessibilite">Accessibilité</a>
     </div>
     <span>© <span id="annee"></span> MusEduc</span>
   </div>
@@ -639,6 +757,43 @@
     vues.forEach(function(v){v.classList.toggle("on",v.dataset.vue===k);});
   });},{rootMargin:"-45% 0px -45% 0px"});
   etapes.forEach(function(x){io2.observe(x);});
+
+  /* « Je suis… » : le texte et les boutons du haut s'adressent à la bonne personne */
+  var QUI={
+    prof:{lead:"Vos élèves apprennent en jouant : leçons, quiz, chant, vocabulaire, cours interactifs. Vous suivez chacun et relevez les notes d'un coup d'œil, sans jamais exposer un seul nom d'élève.",
+      cta:'<a class="btn btn-or" href="museduc7.html?prof=inscription">Créer mon espace enseignant</a><a class="btn btn-ligne" href="museduc7.html">Essayer l\'application</a>',
+      note:"Gratuit · rien à installer · fonctionne sur ordinateur, tablette et téléphone", barre:"Prêt à essayer avec votre classe ?", btn:["Créer mon espace","museduc7.html?prof=inscription"]},
+    solo:{lead:"Apprenez à lire la musique, le rythme et l'écoute à votre rythme : entraînement par niveaux, un boss final pour valider chaque leçon, des amis à défier. Votre progression vous suit partout.",
+      cta:'<a class="btn btn-or" href="museduc7.html?solo=inscription">Créer mon compte en solo</a><a class="btn btn-ligne" href="museduc7.html">Essayer sans compte</a>',
+      note:"Gratuit · dès 15 ans · sans professeur", barre:"Envie de progresser en musique ?", btn:["Créer mon compte","museduc7.html?solo=inscription"]},
+    eleve:{lead:"Ton professeur t'a donné un code ? Rejoins ta classe, gagne des points et des badges, grimpe dans le classement et défie tes camarades.",
+      cta:'<a class="btn btn-or" href="museduc7.html?eleve">Entrer mon code</a><a class="btn btn-ligne" href="museduc7.html">Découvrir sans compte</a>',
+      note:"Ton nom n'est jamais enregistré : seul ton professeur sait à qui est ton code", barre:"Ton code est prêt ?", btn:["Entrer mon code","museduc7.html?eleve"]}
+  };
+  function choisirQui(k){
+    var q=QUI[k]; if(!q)return;
+    document.querySelectorAll(".qui-sw button").forEach(function(b){ var on=b.dataset.q===k; b.classList.toggle("on",on); b.setAttribute("aria-selected",on?"true":"false"); });
+    ["leadTxt","ctaZone","noteCta"].forEach(function(id){ document.getElementById(id).style.opacity=0; });
+    setTimeout(function(){
+      document.getElementById("leadTxt").textContent=q.lead;
+      document.getElementById("ctaZone").innerHTML=q.cta;
+      document.getElementById("noteCta").textContent=q.note;
+      ["leadTxt","ctaZone","noteCta"].forEach(function(id){ document.getElementById(id).style.opacity=1; });
+    },180);
+    var bt=document.getElementById("barreTxt"), bb=document.getElementById("barreBtn");
+    if(bt)bt.textContent=q.barre; if(bb){ bb.textContent=q.btn[0]; bb.href=q.btn[1]; }
+    try{ sessionStorage.setItem("vitrine-qui",k); }catch(e){}
+  }
+  document.querySelectorAll(".qui-sw button").forEach(function(b){ b.addEventListener("click",function(){ choisirQui(b.dataset.q); }); });
+  try{ var _q=(location.hash||"").replace("#","")||sessionStorage.getItem("vitrine-qui"); if(QUI[_q]&&_q!=="prof")choisirQui(_q); }catch(e){}
+
+  /* barre d'appel : apparaît une fois le haut de page dépassé, disparaît sur l'appel final */
+  var barre=document.getElementById("barreCta"), heros=document.querySelector(".heros"), fin=document.querySelector(".final");
+  var horsHeros=false, surFin=false;
+  function majBarre(){ if(!barre)return; var v=horsHeros&&!surFin; barre.classList.toggle("vu",v); barre.setAttribute("aria-hidden",v?"false":"true");
+    barre.querySelectorAll("a,button").forEach(function(x){ x.tabIndex=v?0:-1; }); }
+  new IntersectionObserver(function(es){ horsHeros=!es[0].isIntersecting; majBarre(); }).observe(heros);
+  if(fin)new IntersectionObserver(function(es){ surFin=es[0].isIntersecting; majBarre(); }).observe(fin);
 </script>
 </body>
 </html>
