@@ -344,6 +344,7 @@ const CATEGORIES=[
     {id:"dictee-aigu",nom:"Plus aigu ou plus grave ?",ic:"⇅",niv:"6e"},
     {id:"ecoute",nom:"Écoute active",ic:"<i class='ph ph-ear'></i>",niv:"5e"},
     {id:"voc-ecoute",nom:"Vocabulaire de l'écoute",ic:"<i class='ph ph-megaphone'></i>",niv:"4e"},
+    {id:"textures",nom:"Monodie, canon, polyphonie",ic:"<i class='ph ph-stack'></i>",niv:"5e"},
     {id:"dictee-intervalle",nom:"Reconnaître un intervalle",ic:"<i class='ph ph-headphones'></i>",niv:"3e"},
   ]},
   {groupe:"Vocabulaire & culture",items:[
@@ -365,6 +366,7 @@ const CATEGORIES=[
     {id:"accords",nom:"Accords majeur / mineur",ic:"⑊",niv:"3e"},
     {id:"modulation",nom:"Les modulations",ic:"<i class='ph ph-arrows-down-up'></i>",niv:"3e"},
     {id:"formes",nom:"Formes musicales",ic:"⌗",niv:"3e"},
+    {id:"variations",nom:"Thème et variations",ic:"<i class='ph ph-magic-wand'></i>",niv:"4e"},
   ]},
   /* Les grands styles de musique : d'où ils viennent, comment ils sonnent, qui les a faits. */
   {groupe:"Styles de musique",items:[
@@ -498,6 +500,8 @@ const SON_PARFAIT="sons/parfait.mp3";
 const SON_PERDU="sons/perdu.mp3";const SON_BON="sons/bon.mp3";const SON_MAUVAIS="sons/mauvais.mp3";
 const _audios={};
 function jouerEffet(type){
+  /* fin de série ou de partie : la musique d'un exercice ne doit pas jouer par-dessus la fanfare */
+  if(type==="victoire"||type==="parfait"||type==="perdu"){ try{ if(typeof sonBtnCouper==="function")sonBtnCouper(); }catch(e){} }
   if(!profil||!profil.son)return;
   const src={valider:SON_VALIDER,bon:SON_BON,mauvais:SON_MAUVAIS,victoire:SON_VICTOIRE,parfait:SON_PARFAIT,perdu:SON_PERDU}[type];
   if(!src)return;
@@ -778,44 +782,11 @@ let evalRng=Math.random; // remplacé par un rng à graine pendant l'éval
 
 /* Capitalise joliment en gardant les séparateurs : "JEAN-LUC" -> "Jean-Luc" */
 function joliNom(s){return (s||"").toLowerCase().replace(/[a-zà-ÿ0-9]+/g,m=>m.charAt(0).toUpperCase()+m.slice(1));}
-/* =====================================================================
-   TRANSPORT DE SECOURS : Google Apps Script
-   Hérité d'avant Firebase. Ne sert plus qu'au multijoueur et au classement
-   quand Firebase n'est pas disponible (voir jeuPost/jeuGet). Aucun nom en clair.
-   ===================================================================== */
-const CLE_URL_SHEET="musiceduc_sheet_url";
-/* Pour que l'envoi marche quand les élèves ouvrent le fichier CHEZ EUX,
-   le professeur peut écrire l'URL ici, une fois pour toutes, entre les guillemets. */
-const URL_SHEET_PAR_DEFAUT="https://script.google.com/macros/s/AKfycbxCb2VVmBsMouAOYgTylwjUzRaLKji9aATX-_yfFg3HmQSF67EPEH6JDg3RujE3YY6W/exec";
-/* Le lien inscrit dans le fichier (URL_SHEET_PAR_DEFAUT) a PRIORITÉ : ainsi, un vieux
-   lien enregistré autrefois dans le navigateur ne peut plus désynchroniser l'application.
-   Le lien enregistré localement ne sert que si le fichier n'en contient aucun. */
-function lireUrlSheet(){try{const u=(localStorage.getItem(CLE_URL_SHEET)||"").trim();if(u)return u;}catch(e){}return URL_SHEET_PAR_DEFAUT||"";}
-/* Envoie une charge utile au Sheet. Retourne une promesse (résolue si la
-   requête est partie sans erreur réseau). Ne bloque jamais l'élève. */
-function envoyerCharge(charge){
-  const url=lireUrlSheet();
-  if(!url)return Promise.reject("Aucun lien configuré.");
-  return fetch(url,{method:"POST",redirect:"follow",
-    headers:{"Content-Type":"text/plain;charset=utf-8"},
-    body:JSON.stringify(charge)});
-}
-
-/* =====================================================================
-   CLASSEMENT EN DIRECT (via le même Google Sheet)
-   - Chaque élève envoie automatiquement {classe, nom, prénom, points}
-     quand ses points changent (au plus toutes les 40 s, jamais bloquant).
-   - L'écran « Classement » relit le Sheet (GET ?classement=1) toutes les
-     30 s et affiche le palmarès par classe.
-   ===================================================================== */
-/* --- RGPD : identifiant anonyme stable + noms chiffrés (jamais en clair sur le tableur) ---
-   - uid : identifiant aléatoire généré une fois et gardé dans le navigateur. C'est LUI qui
-     identifie l'élève dans le tableur -> changer de nom ou de classe met à jour la MÊME
-     ligne (plus de doublons).
-   - nom/prénom : chiffrés (XOR à flux, clé = secret embarqué + uid) puis encodés en
-     base64url. Le tableur ne voit que des suites illisibles ; seule l'application sait
-     les déchiffrer pour afficher le classement. */
-const SECRET_NOMS="MUSEDUC-NOMS-2026"; // clé de déchiffrement embarquée dans l'application
+/* L'ancien secours par Google Sheet (jeux et classement) est RETIRÉ (07/10/2026) :
+   son tableau de test restait lisible par n'importe qui. On efface l'adresse que
+   certains navigateurs avaient gardée. */
+try{ localStorage.removeItem("musiceduc_sheet_url"); }catch(e){}
+/* identifiant aléatoire stable de l'appareil (aucun nom) */
 function uidProfil(){
   if(!profil.uid){
     profil.uid=Date.now().toString(36)+Math.floor(Math.random()*1679616).toString(36)+Math.floor(Math.random()*1679616).toString(36);
@@ -823,7 +794,6 @@ function uidProfil(){
   }
   return profil.uid;
 }
-let dernierEnvoiClassement=0, derniersPointsEnvoyes=-1;
 let modeGraine=false;
 const rnd=n=>Math.floor((modeGraine?evalRng():Math.random())*n);
 const pick=a=>a[rnd(a.length)];
@@ -944,81 +914,347 @@ function audio(){if(!actx)actx=new (window.AudioContext||window.webkitAudioConte
 const MIDI_BASE={Do:60,"Ré":62,Mi:64,Fa:65,Sol:67,La:69,Si:71}; // octave centrale (Do3 = midi 60)
 function midiVersFreq(m){return 440*Math.pow(2,(m-69)/12);}
 
-/* ============ MÉLODIES CÉLÈBRES À RECONNAÎTRE (« Pour aller plus loin ») ============
-   Notation lisible -> [ [midi,durée en temps], ... ]. Ex : "E4 E4:0.5 R:1 C#5:2".
-   Ce sont les MOTIFS D'OUVERTURE, synthétisés au piano. niv : 1 facile, 2 inter, 3 difficile. */
+/* ============ LES GRANDES MÉLODIES À RECONNAÎTRE ============
+   Chaque œuvre est transcrite de sa partition (le tout début), voix d'accompagnement comprises :
+   m = la mélodie, a = les autres pistes, bpm = tempo de la noire, ti = timbre, an = date.
+   Notation mel() : "E4 E4:0.5 R:1 C#5:2 C4+E4:0.5" (durée en noires ; R = silence ;
+   + = accord ; | ignoré). Sources : partitions des articles Wikipédia, Mutopia Project
+   (éditions du domaine public), fichiers MIDI de Wikimedia Commons. Que des œuvres
+   du domaine public. Ne jamais ajouter une mélodie « de mémoire » : la vérifier sur partition. */
 function mel(str){
   const semi={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
-  return str.trim().split(/\s+/).map(tok=>{
-    const i=tok.indexOf(":");const dur=i>=0?parseFloat(tok.slice(i+1)):1;const p=i>=0?tok.slice(0,i):tok;
+  const h=function(p){ const mm=p.match(/^([A-G])([#b]?)(-?\d)$/); return mm?(parseInt(mm[3])+1)*12+semi[mm[1]]+(mm[2]==="#"?1:mm[2]==="b"?-1:0):null; };
+  return str.trim().split(/\s+/).filter(function(tok){ return tok&&tok!=="|"; }).map(function(tok){
+    const i=tok.indexOf(":"), dur=i>=0?parseFloat(tok.slice(i+1)):1, p=i>=0?tok.slice(0,i):tok;
     if(p[0]==="R")return [null,dur];
-    const mm=p.match(/^([A-G])([#b]?)(-?\d)$/);if(!mm)return [null,dur];
-    return [(parseInt(mm[3])+1)*12+semi[mm[1]]+(mm[2]==="#"?1:mm[2]==="b"?-1:0),dur];
+    if(p.indexOf("+")>=0){ const ac=p.split("+").map(h).filter(function(x){ return x!==null; }); return [ac.length?ac:null,dur]; }
+    return [h(p),dur];
   });
 }
 const MELODIES=[
-  // Niveau 1 : les plus iconiques
-  {t:"5ᵉ Symphonie",c:"Beethoven",niv:1,m:mel("G4:0.5 G4:0.5 G4:0.5 Eb4:2 R:0.5 F4:0.5 F4:0.5 F4:0.5 D4:2")},
-  {t:"Hymne à la joie",c:"Beethoven",niv:1,m:mel("E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4:1.5 D4:0.5 D4:2")},
-  {t:"Lettre à Élise",c:"Beethoven",niv:1,m:mel("E5:0.5 D#5:0.5 E5:0.5 D#5:0.5 E5:0.5 B4:0.5 D5:0.5 C5:0.5 A4:1")},
-  {t:"Une petite musique de nuit",c:"Mozart",niv:1,m:mel("G4:0.5 D4:0.5 G4:0.5 D4:0.5 G4:0.5 B4:0.5 D5:1 R:0.5 D5:0.5 A4:0.5 D5:0.5 A4:0.5 D5:0.5 F#5:0.5 A5:1")},
-  {t:"Marche turque",c:"Mozart",niv:1,m:mel("B4:0.5 A4:0.5 G#4:0.5 A4:0.5 C5:1 D5:0.5 C5:0.5 B4:0.5 C5:0.5 E5:1")},
-  {t:"Toccata et fugue en ré mineur",c:"Bach",niv:1,m:mel("A4:0.5 G4:0.5 A4:1.5 R:0.5 G4:0.25 F4:0.25 E4:0.25 D4:0.25 C#4:0.5 D4:2")},
-  {t:"Le Printemps de Vivaldi",c:"Vivaldi",niv:1,m:mel("E5:0.5 E5:0.5 E5:0.5 B4:0.5 B4:0.5 E5:0.5 E5:0.5 E5:0.5 B4:0.5 B4:0.5 F#5:0.5 E5:0.5 D#5:0.5 E5:0.5 F#5:1")},
-  {t:"Ouverture de Guillaume Tell",c:"Rossini",niv:1,m:mel("E4:0.25 E4:0.25 E4:0.5 E4:0.25 E4:0.25 E4:0.5 E4:0.25 E4:0.25 E4:0.5 G4:0.5 E4:0.5 C4:0.5")},
-  {t:"Le Beau Danube bleu",c:"Johann Strauss II",niv:1,m:mel("D4:1 F#4:0.5 A4:0.5 A4:1 R:0.5 A4:0.5 B4:0.5 B4:0.5 R:0.5 G4:0.5 G4:0.5")},
-  {t:"Dans l'antre du roi de la montagne",c:"Grieg",niv:1,m:mel("B3:0.5 C#4:0.5 D4:0.5 E4:0.5 F#4:0.5 D4:0.5 F#4:1 F4:0.5 D4:0.5 F4:2")},
-  {t:"La Chevauchée des Walkyries",c:"Wagner",niv:1,m:mel("B3:1 D4:0.5 B3:1 D4:0.5 B3:0.5 D4:0.5 F#4:1 D4:0.5 F#4:1")},
-  {t:"Chœur nuptial de Lohengrin",c:"Wagner",niv:1,m:mel("G4:0.5 C5:1 C5:0.5 C5:1.5 R:0.25 C5:0.5 B4:0.5 C5:0.5 D5:1.5")},
-  {t:"Le Lac des cygnes",c:"Tchaïkovski",niv:1,m:mel("B4:1 F#4:0.5 E4:0.5 D4:0.5 E4:0.5 F#4:1 B4:2")},
-  {t:"Alléluia du Messie",c:"Haendel",niv:1,m:mel("A4:0.5 A4:0.5 A4:0.5 A4:0.5 G4:0.5 A4:0.5 R:0.25 A4:0.5 A4:0.5 A4:0.5 A4:0.5 G4:0.5 A4:1")},
-  // Niveau 2 : très connues
-  {t:"Habanera de Carmen",c:"Bizet",niv:2,m:mel("D5:0.75 C#5:0.25 C5:0.5 B4:0.5 Bb4:0.5 A4:0.5 Ab4:0.5 G4:0.5 F#4:0.5 F4:0.5 E4:1")},
-  {t:"Sonate au clair de lune",c:"Beethoven",niv:2,m:mel("C#4:0.5 E4:0.5 G#4:0.5 C#4:0.5 E4:0.5 G#4:0.5 C#4:0.5 E4:0.5 G#4:0.5 E4:0.5 G#4:0.5 C#5:1")},
-  {t:"Ainsi parlait Zarathoustra",c:"Richard Strauss",niv:2,m:mel("C4:1 G4:1 C5:2 R:0.5 E5:1.5 Eb5:2.5")},
-  {t:"Canon en ré",c:"Pachelbel",niv:2,m:mel("D5:1 C#5:1 B4:1 A4:1 G4:1 F#4:1 G4:1 A4:1")},
-  {t:"Largo du Nouveau Monde",c:"Dvořák",niv:2,m:mel("E4:1 G4:1 G4:1 E4:1 D4:1 C4:1 D4:1 E4:1 G4:1 E4:2")},
-  {t:"Marche funèbre",c:"Chopin",niv:2,m:mel("Bb4:1 Bb4:0.5 Bb4:0.5 Bb4:1 Db5:0.75 C5:0.25 Bb4:1")},
-  {t:"Le Vol du bourdon",c:"Rimski-Korsakov",niv:2,m:mel("E5:0.25 D#5:0.25 D5:0.25 C#5:0.25 C5:0.25 B4:0.25 Bb4:0.25 A4:0.25 Ab4:0.25 G4:0.25 F#4:0.25 F4:0.25 E4:0.5")},
-  {t:"Le Matin de Peer Gynt",c:"Grieg",niv:2,m:mel("G5:0.5 E5:0.5 D5:0.5 C5:0.5 D5:0.5 E5:0.5 G5:0.5 E5:0.5 D5:0.5 C5:0.5 D5:0.5 E5:1")},
-  {t:"O Fortuna des Carmina Burana",c:"Carl Orff",niv:2,m:mel("E4:1 E4:0.5 A4:1 A4:0.5 G4:0.5 A4:0.5 F4:1 E4:2")},
-  {t:"Pomp and Circumstance",c:"Elgar",niv:2,m:mel("G4:1 A4:0.5 G4:1.5 E4:1 C5:1 B4:0.5 A4:0.5 G4:2")},
-  {t:"Menuet en sol",c:"Bach / Petzold",niv:2,m:mel("D5:1 G4:0.5 A4:0.5 B4:0.5 C5:0.5 D5:1 G4:1 G4:1")},
-  {t:"Marche nuptiale",c:"Mendelssohn",niv:2,m:mel("C5:1 C5:0.5 C5:0.5 G4:0.5 E4:0.5 C4:1 G4:1")},
-  {t:"40ᵉ Symphonie",c:"Mozart",niv:2,m:mel("Eb5:0.5 D5:0.5 D5:1 Eb5:0.5 D5:0.5 D5:1 Eb5:0.5 D5:0.5 D5:1 Bb5:1")},
-  // Niveau 3 : à connaître pour aller plus loin
-  {t:"La Moldau",c:"Smetana",niv:3,m:mel("E4:0.5 G4:0.5 A4:1 A4:0.5 B4:0.5 C5:1 C5:0.5 B4:0.5 A4:1 A4:0.5 G4:0.5 E4:1")},
-  {t:"Le Cygne du Carnaval",c:"Saint-Saëns",niv:3,m:mel("A4:1 G5:2 F#5:1 E5:1 D5:1 C#5:1 B4:1 A4:2")},
-  {t:"Symphonie inachevée",c:"Schubert",niv:3,m:mel("B3:1 C#4:0.5 D4:1.5 R:0.5 A4:1 G4:0.5 F#4:1.5")},
-  {t:"Boléro",c:"Ravel",niv:3,m:mel("C5:1 C5:0.5 B4:0.25 C5:0.25 D5:0.5 C5:0.5 Bb4:0.5 G4:1")},
-  {t:"Gymnopédie n°1",c:"Erik Satie",niv:3,m:mel("F#5:1.5 A5:0.5 G#5:1 B4:1 D5:1 F#5:1")},
-  {t:"Va, pensiero de Nabucco",c:"Verdi",niv:3,m:mel("F4:0.75 F4:0.25 F4:1 E4:0.5 F4:0.5 G4:1 F4:0.5 E4:0.5 D4:1")},
-  {t:"Allegretto de la 7ᵉ Symphonie",c:"Beethoven",niv:3,m:mel("E4:1 E4:0.5 E4:0.5 E4:1 E4:1 F4:1 F4:0.5 E4:0.5 E4:1 D4:1")},
-  {t:"Ave Maria",c:"Schubert",niv:3,m:mel("Bb4:1 Bb4:0.5 Bb4:0.5 Bb4:0.5 C5:0.5 Bb4:0.5 G4:1 Bb4:0.5 A4:0.5 G4:2")},
-  {t:"Danse macabre",c:"Saint-Saëns",niv:3,m:mel("A4:1 R:0.5 E5:1 R:0.5 A4:0.5 E5:0.5 A4:0.5 E5:0.5 F5:0.5 E5:0.5 D5:0.5 E5:0.5")},
-  {t:"La Danse de la Fée Dragée",c:"Tchaïkovski",niv:3,m:mel("E5:0.5 B4:0.5 G#4:0.5 E5:0.5 B4:0.5 A#4:0.5 B4:1")},
+  {t:"5ᵉ Symphonie",c:"Beethoven",an:"1808",niv:1,bpm:200,ti:"cordes",
+   info:"Quatre notes : trois brèves et une longue, lancées par tout l'orchestre à l'unisson.",
+   m:"R:0.5 G4:0.5 G4:0.5 G4:0.5 Eb4:5 R:1.5 F4:0.5 F4:0.5 F4:0.5 D4:8",
+   a:[{m:"R:0.5 G3:0.5 G3:0.5 G3:0.5 Eb3:5 R:1.5 F3:0.5 F3:0.5 F3:0.5 D3:8",ti:"cordes",v:0.7}]},
+  {t:"Hymne à la joie",c:"Beethoven",an:"1824",niv:1,bpm:120,ti:"cordes",
+   info:"Presque toujours des notes voisines : une mélodie que tout le monde peut chanter (le final de la 9ᵉ Symphonie).",
+   m:"F#4 F#4 G4 A4 A4 G4 F#4 E4 D4 D4 E4 F#4 F#4:1.5 E4:0.5 E4:2 F#4 F#4 G4 A4 A4 G4 F#4 E4 D4 D4 E4 F#4 E4:1.5 D4:0.5 D4:2"},
+  {t:"Lettre à Élise",c:"Beethoven",an:"1810",niv:1,bpm:72,ti:"piano",
+   info:"Deux notes voisines qui se balancent (mi, ré dièse), puis une descente vers la, au piano.",
+   m:"E5:0.25 D#5:0.25 E5:0.25 D#5:0.25 E5:0.25 B4:0.25 D5:0.25 C5:0.25 A4:0.5 R:0.25 C4:0.25 E4:0.25 A4:0.25 B4:0.5 R:0.25 E4:0.25 G#4:0.25 B4:0.25 C5:0.5 R:0.25 E4:0.25 E5:0.25 D#5:0.25 E5:0.25 D#5:0.25 E5:0.25 B4:0.25 D5:0.25 C5:0.25 A4:0.5 R:0.25 C4:0.25 E4:0.25 A4:0.25 B4:0.5 R:0.25 E4:0.25 C5:0.25 B4:0.25 A4:1.5",
+   a:[{m:"R:2 A2:0.25 E3:0.25 A3:0.25 R:0.75 E2:0.25 E3:0.25 G#3:0.25 R:0.75 A2:0.25 E3:0.25 A3:0.25 R:2.25 A2:0.25 E3:0.25 A3:0.25 R:0.75 E2:0.25 E3:0.25 G#3:0.25 R:0.75 A2:0.25 E3:0.25 A3:1",ti:"piano",v:0.75}]},
+  {t:"Une petite musique de nuit",c:"Mozart",an:"1787",niv:1,bpm:148,ti:"cordes",
+   info:"Les cordes lancent un arpège qui monte comme une fusée (sol, ré, sol, si, ré), puis la même idée redescend.",
+   m:"G4 R:0.5 D4:0.5 G4 R:0.5 D4:0.5 G4:0.5 D4:0.5 G4:0.5 B4:0.5 D5 R C5 R:0.5 A4:0.5 C5 R:0.5 A4:0.5 C5:0.5 A4:0.5 F#4:0.5 A4:0.5 D4 R",
+   a:[{m:"G3 R:0.5 D3:0.5 G3 R:0.5 D3:0.5 G3:0.5 D3:0.5 G3:0.5 B3:0.5 D4 R C4 R:0.5 A3:0.5 C4 R:0.5 A3:0.5 C4:0.5 A3:0.5 F#3:0.5 A3:0.5 D3 R",ti:"cordes",v:0.6}]},
+  {t:"Marche turque",c:"Mozart",an:"vers 1783",niv:1,bpm:126,ti:"piano",
+   info:"Des notes rapides tournent autour d'une note, puis la mélodie grimpe d'un étage à chaque fois.",
+   m:"B4:0.25 A4:0.25 G#4:0.25 A4:0.25 C5:0.5 R:0.5 D5:0.25 C5:0.25 B4:0.25 C5:0.25 E5:0.5 R:0.5 F5:0.25 E5:0.25 D#5:0.25 E5:0.25 B5:0.25 A5:0.25 G#5:0.25 A5:0.25 B5:0.25 A5:0.25 G#5:0.25 A5:0.25 C6 A5:0.5 C6:0.5 G5:0.125 A5:0.125 B5:0.25 F#5+A5:0.5 E5+G5:0.5 F#5+A5:0.5 G5:0.125 A5:0.125 B5:0.25 F#5+A5:0.5 E5+G5:0.5 F#5+A5:0.5 G5:0.125 A5:0.125 B5:0.25 F#5+A5:0.5 E5+G5:0.5 D#5+F#5:0.5 E5",
+   a:[{m:"R A3:0.5 C4+E4:0.5 C4+E4:0.5 C4+E4:0.5 A3:0.5 C4+E4:0.5 C4+E4:0.5 C4+E4:0.5 A3:0.5 C4+E4:0.5 A3:0.5 C4+E4:0.5 A3:0.5 C4+E4:0.5 C4+E4:0.5 C4+E4:0.5 E3:0.5 B3+E4:0.5 B3+E4:0.5 B3+E4:0.5 E3:0.5 B3+E4:0.5 B3+E4:0.5 B3+E4:0.5 E3:0.5 B3+E4:0.5 B2:0.5 B3:0.5 E3",ti:"piano",v:0.6}]},
+  {t:"Toccata et fugue en ré mineur",c:"Bach",an:"début du XVIIIᵉ siècle",niv:1,bpm:60,ti:"orgue",
+   info:"À l'orgue : un ornement rapide, une note tenue, puis une descente qui s'écrase dans le grave.",
+   m:"A5:0.083 G5:0.083 A5:1.834 R:0.25 G5:0.083 F5:0.083 E5:0.083 D5:0.083 C#5:0.334 D5:2 R:0.5 A4:0.083 G4:0.083 A4:1.834 R:0.25 E4:0.111 F4:0.111 C#4:0.334 D4:2.5",
+   a:[{m:"A4:0.083 G4:0.083 A4:1.834 R:0.25 G4:0.083 F4:0.083 E4:0.083 D4:0.083 C#4:0.334 D4:2 R:0.5 A3:0.083 G3:0.083 A3:1.834 R:0.25 E3:0.111 F3:0.111 C#3:0.334 D3:2.5",ti:"orgue",v:0.8}]},
+  {t:"Le Printemps (Les Quatre Saisons)",c:"Vivaldi",an:"1725",niv:1,bpm:104,ti:"cordes",
+   info:"Trois notes répétées, un petit tourbillon, puis un saut vers l'aigu : les cordes fêtent le retour du printemps.",
+   m:"E5:0.5 Ab5:0.5 Ab5:0.5 Ab5:0.5 F#5:0.25 E5:0.25 B5:1.5 B5:0.25 A5:0.25 Ab5:0.5 Ab5:0.5 Ab5:0.5 F#5:0.25 E5:0.25 B5:1.5 B5:0.25 A5:0.25 Ab5:0.5 A5:0.25 B5:0.25 A5:0.5 Ab5:0.5 F#5:0.5 Eb5:0.5 B4:0.5"},
+  {t:"Le Beau Danube bleu",c:"Johann Strauss fils",an:"1867",niv:1,bpm:165,ti:"cordes",
+   info:"Une valse à trois temps : la mélodie monte en arpège (ré, fa dièse, la) et l'orchestre répond par deux petites notes.",
+   m:"D4 F#4 A4 R:2 F#5+A5 F#5+A5 R D5+F#5 D5+F#5 R D4 D4 F#4 A4 R:2 G5+A5 G5+A5 R C#5+G5 C#5+G5 R:2",
+   a:[{m:"R:3 A4:7 R:5 G4+A4:7 R:2",ti:"cordes",v:0.55},{m:"R:3 D3 A3+D4+F#4 A3+D4+F#4 D3 A3+D4+F#4 A3+D4+F#4 D3 F#3+A3+D4 F#3+A3 D3 A3+D4 A3+D4+F#4 E3 A3+C#4+G4 A3+C#4+G4 E3 A3+C#4+G4 A3+C#4+G4 E3 G3+A3+C#4 G3+A3",ti:"piano",v:0.5}]},
+  {t:"Dans l'antre du roi de la montagne",c:"Grieg",an:"1875",niv:1,bpm:132,ti:"piano",
+   info:"Une petite marche qui monte pas à pas, répétée de plus en plus fort et de plus en plus vite.",
+   m:"B3:0.5 C#4:0.5 D4:0.5 E4:0.5 F#4:0.5 D4:0.5 F#4 F4:0.5 C#4:0.5 F4 E4:0.5 C4:0.5 E4 B3:0.5 C#4:0.5 D4:0.5 E4:0.5 F#4:0.5 D4:0.5 F#4:0.5 B4:0.5 A4:0.5 F#4:0.5 D4:0.5 F#4:0.5 A4 R",
+   a:[{m:"B2 F#3 B2 F#3 B2 F#3 B2 F#3 B2 F#3 B2 F#3 D3 A3 D3 A3",ti:"basson",v:0.6}]},
+  {t:"Prélude de Carmen",c:"Bizet",an:"1875",niv:1,bpm:116,ti:"cordes",
+   info:"Une fanfare de fête qui ouvre l'opéra : notes répétées et rebonds, en majeur, très rythmée.",
+   m:"A5:0.5 A5:0.25 A5:0.25 A5:0.25 E5:0.25 D5:0.25 E5:0.25 A5:0.5 A5:0.25 A5:0.25 A5:0.25 B5:0.25 C#6:0.25 B5:0.25 A5:0.5 A5:0.25 A5:0.25 B5:0.25 A5:0.25 Ab5:0.25 A5:0.25 B5:1.625 Bb5:0.25 R:0.125 D6:0.5 D6:0.25 D6:0.25 D6:0.25 A5:0.25 G5:0.25 A5:0.25 D6:0.5 D6:0.25 D6:0.25 D6:0.25 E6:0.25 F#6:0.25 E6:0.25 D6:0.5 D6:0.25 C#6:0.25 B5:0.5 B5:0.25 A5:0.25 Ab5:1.625 F#5:0.25 R:0.125",
+   a:[{m:"A2+C#3+E3+A3:0.5 C#4+E4:0.5 E3:0.5 B3+D4+E4:0.5 A3:0.5 C#4+E4:0.5 E3:0.5 B3+D4+E4:0.5 A3:0.5 C#4+E4:0.5 Ab3:0.5 A3+C#4+E4:0.5 F#3:0.5 A3+B3+Eb4:0.5 E3:0.5 Ab3+B3+E4:0.5 D3:0.5 F#3+A3+D4:0.5 A2:0.5 E3+G3+A3+D4:0.5 D3:0.5 F#3+A3+D4:0.5 A2:0.5 E3+G3+A3+D4:0.5 D3:0.5 F#3+A3+D4:0.5 Ab2:0.5 F#3+B3+D4:0.5 C#3:0.5 F3+Ab3+C#4:0.5 E3:0.5 Ab3+B3+D4:0.5",ti:"piano",v:0.5}]},
+  {t:"Chœur nuptial de Lohengrin",c:"Wagner",an:"1850",niv:1,bpm:72,ti:"cordes",
+   info:"Une marche lente et solennelle chantée par un chœur : une note, puis trois fois la même, plus aiguë.",
+   m:"F4 Bb4:0.75 Bb4:0.25 Bb4:1.5 R:0.5 F4 C5:0.75 A4:0.25 Bb4:1.5 R:0.5 F4 Bb4:0.75 Eb5:0.25 Eb5 D5:0.5 R:0.25 Bb4:0.25 Bb4 A4:0.75 Bb4:0.25 C5:1.5 R:0.5",
+   a:[{m:"F4 F4:0.75 F4:0.25 F4:1.5 R:0.5 F4 F4:0.75 F4:0.25 F4:1.5 R:0.5 F4 F4:0.75 Bb4:0.25 Bb4 Bb4:0.5 R:0.25 F4:0.25 F4 E4:0.75 E4:0.25 F4:1.5 R:0.5",ti:"cordes",v:0.5},{m:"D4 D4:0.75 D4:0.25 D4:1.5 R:0.5 D4 Eb4:0.75 C4:0.25 D4:1.5 R:0.5 D4 D4:0.75 G4:0.25 G4 F4:0.5 R:0.25 Eb4:0.25 D4 Bb3:0.75 Bb3:0.25 A3:1.5 R:0.5",ti:"cordes",v:0.5},{m:"Bb2 Bb2:0.75 Bb2:0.25 Bb2:1.5 R:0.5 Bb2 F2:0.75 F2:0.25 Bb2:1.5 R:0.5 Bb2 Bb2:0.75 Bb2:0.25 Bb2:3 G2:0.75 G2:0.25 F2:1.5 R:0.5",ti:"cordes",v:0.55}]},
+  {t:"Le Lac des cygnes",c:"Tchaïkovski",an:"1877",niv:1,bpm:84,ti:"anche",
+   info:"Le hautbois chante une longue note, puis une montée et des balancements : un thème mélancolique, en mineur.",
+   m:"F#5:2 B4:0.5 C#5:0.5 D5:0.5 E5:0.5 F#5:1.5 D5:0.5 F#5:1.5 D5:0.5 F#5:1.5 B4:0.5 D5:0.5 B4:0.5 G4:0.5 D5:0.5 B4 B4:3"},
+  {t:"Alléluia du Messie",c:"Haendel",an:"1742",niv:1,bpm:92,ti:"cordes",
+   info:"Tout le chœur chante « Al-lé-lu-ia ! » sur un rythme qui claque, deux fois, puis en rafale.",
+   m:"D5:1.5 A4:0.5 B4:0.5 A4:0.5 R D5:1.5 A4:0.5 B4:0.5 A4:0.5 R:0.5 D5:0.25 D5:0.25 D5:0.5 D5:0.5 R:0.5 D5:0.25 D5:0.25 D5:0.5 D5:0.5 R:0.5 D5:0.5 C#5:0.5 D5 C#5:0.5 D5 R",
+   a:[{m:"A4:1.5 A4:0.5 G4:0.5 F#4:0.5 R A4:1.5 A4:0.5 G4:0.5 F#4:0.5 R:0.5 A4:0.25 A4:0.25 B4:0.5 A4:0.5 R:0.5 A4:0.25 A4:0.25 B4:0.5 A4:0.5 R:0.5 A4:0.5 G4:0.5 F#4:0.5 E4:0.5 E4:0.5 F#4 R",ti:"cordes",v:0.55},{m:"F#4:1.5 D4:0.5 D4:0.5 D4:0.5 R F#4:1.5 D4:0.5 D4:0.5 D4:0.5 R:0.5 D4:0.25 D4:0.25 G4:0.5 F#4:0.5 R:0.5 D4:0.25 D4:0.25 G4:0.5 F#4:0.5 R:0.5 D4:0.5 E4:0.5 A3 A3:0.5 A3 R",ti:"cordes",v:0.55},{m:"D3:1.5 F#3:0.5 G3:0.5 D3:0.5 R D3:1.5 F#3:0.5 G3:0.5 D3:0.5 R:0.5 F#3:0.25 F#3:0.25 G3:0.5 D3:0.5 R:0.5 F#3:0.25 F#3:0.25 G3:0.5 D3:0.5 R:0.5 F#3:0.5 E3:0.5 D3:0.5 A3:0.5 A3:0.5 D3 R",ti:"cordes",v:0.6}]},
+  {t:"Te Deum (Prélude)",c:"Charpentier",an:"vers 1690",niv:1,bpm:130,ti:"cuivre",
+   info:"Une fanfare de trompette joyeuse et majestueuse, en ré majeur, sur une basse qui marche.",
+   m:"A4 D5 D5:0.5 E5:0.5 F#5 D5 A5:2 F#5:1.5 F#5:0.5 G5 A5:0.5 G5:0.5 F#5:0.5 G5:0.5 A5 E5:0.5 D5:0.5 E5:0.5 F#5:0.5 E5 A4 D5 D5:0.5 E5:0.5 F#5 D5 A5:2 F#5:1.5 F#5:0.5 G5:0.5 A5:0.5 F#5:0.5 G5:0.5 E5:1.5 D5:0.5 D5:3",
+   a:[{m:"D3 D3:2 D3 D3 C#3 A2 D3:1.5 D3:0.5 G2 G2 D3:0.5 E3:0.5 F#3:0.5 G3:0.5 A3:2 A3:0.5 G3:0.5 F#3:0.5 E3:0.5 D3:2 D3 D3 C#3 A2 D3:1.5 D3:0.5 G3 D3 A3 A2 D3:3",ti:"orgue",v:0.55}]},
+  {t:"Habanera de Carmen",c:"Bizet",an:"1875",niv:2,bpm:72,ti:"cordes",
+   info:"La voix descend lentement, demi-ton par demi-ton, sur le rythme de danse de la habanera.",
+   m:"R:3 D5:0.5 C#5:0.5 C5:0.3333 C5:0.3333 C5:0.3333 B4:0.5 Bb4:0.5 A4:0.5 A4:0.25 A4:0.25 Ab4:0.5 G4:0.5 F4:0.1667 G4:0.1667 F4:0.1667 E4:0.25 F4:0.25 G4:0.5 F4:0.5 E4:0.5",
+   a:[{m:"D2:0.5 R:0.25 A2:0.25 F3:0.5 A2:0.5 D2:0.5 R:0.25 A2:0.25 F3:0.5 A2:0.5 D2:0.5 R:0.25 A2:0.25 F3:0.5 A2:0.5 D2:0.5 R:0.25 A2:0.25 F3:0.5 A2:0.5 D2:0.5 R:0.25 A2:0.25 F3:0.5 A2:0.5 D2:0.5",ti:"piano",v:0.6}]},
+  {t:"Canon en ré",c:"Pachelbel",an:"vers 1700",niv:2,bpm:66,ti:"cordes",
+   info:"Huit notes de basse qui reviennent sans cesse ; au-dessus, la mélodie descend tranquillement.",
+   m:"F#5 E5 D5 C#5 B4 A4 B4 C#5 D5 C#5 B4 A4 G4 F#4 G4 E4",
+   a:[{m:"D3 A2 B2 F#2 G2 D2 G2 A2 D3 A2 B2 F#2 G2 D2 G2 A2",ti:"cordes",v:0.6}]},
+  {t:"Sonate « Clair de lune »",c:"Beethoven",an:"1801",niv:2,bpm:54,ti:"piano",
+   info:"Pas encore de mélodie : des arpèges lents en triolets, très doux, sur des basses graves.",
+   m:"Ab3:0.3333 C#4:0.3333 E4:0.3333 Ab3:0.3333 C#4:0.3333 E4:0.3333 Ab3:0.3333 C#4:0.3333 E4:0.3333 Ab3:0.3333 C#4:0.3333 E4:0.3333 Ab3:0.3333 C#4:0.3333 E4:0.3333 Ab3:0.3333 C#4:0.3333 E4:0.3333 Ab3:0.3333 C#4:0.3333 E4:0.3333 Ab3:0.3333 C#4:0.3333 E4:0.3333 A3:0.3333 C#4:0.3333 E4:0.3333 A3:0.3333 C#4:0.3333 E4:0.3333 A3:0.3333 D4:0.3333 F#4:0.3333 A3:0.3333 D4:0.3333 F#4:0.3333 Ab3:0.3333 C4:0.3333 F#4:0.3333 Ab3:0.3333 C#4:0.3333 E4:0.3333 Ab3:0.3333 C#4:0.3333 Eb4:0.3333 F#3:0.3333 C4:0.3333 Eb4:0.3333",
+   a:[{m:"C#2+C#3:4 B1+B2:4 A1+A2:2 F#1+F#2:2 Ab1+Ab2:2 Ab1+Ab2:2",ti:"piano",v:0.6}]},
+  {t:"Ainsi parlait Zarathoustra",c:"Richard Strauss",an:"1896",niv:2,bpm:80,ti:"cuivre",
+   info:"Trois notes de trompette qui montent (do, sol, do), puis l'orchestre éclate : un lever de soleil.",
+   m:"C4:3 G4:3 C5:3 E5:0.75 Eb5:4",
+   a:[{m:"C2:13.75",ti:"orgue",v:0.7}]},
+  {t:"Symphonie du Nouveau Monde (Largo)",c:"Dvořák",an:"1893",niv:2,bpm:52,ti:"anche",
+   info:"Le cor anglais chante une mélodie lente et paisible, comme un chant populaire.",
+   m:"F4:0.75 Ab4:0.25 Ab4 F4:0.75 Eb4:0.25 C#4 Eb4:0.75 F4:0.25 Ab4:0.75 F4:0.25 Eb4:2 F4:0.75 Ab4:0.25 Ab4 F4:0.75 Eb4:0.25 C#4 Eb4:0.5 F4:0.5 Eb4:0.75 C#4:0.25 C#4:2"},
+  {t:"40ᵉ Symphonie",c:"Mozart",an:"1788",niv:2,bpm:200,ti:"cordes",
+   info:"Deux notes voisines répétées comme un soupir (mi bémol, ré), puis un saut vers l'aigu, en sol mineur.",
+   m:"Eb5:0.5 D5:0.5 D5 Eb5:0.5 D5:0.5 D5 Eb5:0.5 D5:0.5 D5 Bb5 R Bb5:0.5 A5:0.5 G5 G5:0.5 F5:0.5 Eb5 Eb5:0.5 D5:0.5 C5 C5"},
+  {t:"Menuet en sol",c:"Petzold",an:"1725",niv:2,bpm:132,ti:"piano",
+   info:"Une danse à trois temps : un saut, puis une petite gamme qui monte. On l'a longtemps crue de Bach.",
+   m:"D5 G4:0.5 A4:0.5 B4:0.5 C5:0.5 D5 G4 G4 E5 C5:0.5 D5:0.5 E5:0.5 F#5:0.5 G5 G4 G4 C5 D5:0.5 C5:0.5 B4:0.5 A4:0.5 B4 C5:0.5 B4:0.5 A4:0.5 G4:0.5 F#4 G4:0.5 A4:0.5 B4:0.5 G4:0.5 A4:3",
+   a:[{m:"G3+B3+D4:2 A3 B3:3 C4:3 B3:3 A3:3 G3:3 D4 B3 G3 D4 D3:0.5 C4:0.5 B3:0.5 A3:0.5",ti:"piano",v:0.6}]},
+  {t:"Le Matin (Peer Gynt)",c:"Grieg",an:"1875",niv:2,bpm:80,ti:"flute",
+   info:"La flûte se balance doucement, descend puis remonte, comme le soleil qui se lève.",
+   m:"B5:0.5 Ab5:0.5 F#5:0.5 E5:0.5 F#5:0.5 Ab5:0.5 B5:0.5 Ab5:0.5 F#5:0.5 E5:0.5 F#5:0.25 Ab5:0.25 F#5:0.25 Ab5:0.25 B5:0.5 Ab5:0.5 C#6:0.5 Ab5:0.5 C#6:0.5 B5:0.5 Ab5:0.5 F#5:0.5 E5"},
+  {t:"Marche de Radetzky",c:"Johann Strauss père",an:"1848",niv:2,bpm:112,ti:"cordes",
+   info:"Une marche entraînante : trois notes piquées, un silence, trois notes piquées, puis une petite descente.",
+   m:"D5:0.5 D5:0.5 D5:0.5 R:0.5 D5:0.5 D5:0.5 D5:0.5 R:0.5 F#5 E5 D5:1.5 C#5:0.5 B4:0.5 Bb4:0.5 B4:0.5 C#5:0.5 D5 E5 A4 R:2 F#5:0.5 F5:0.5 F#5:0.5 R:0.5 F#5:0.5 F5:0.5 F#5:0.5 R:0.5 F#5:0.5 F5:0.5 F#5:0.5 R:0.5 E5:0.5 R:0.5 D5:0.5 R:0.5"},
+  {t:"Berceuse (Wiegenlied)",c:"Brahms",an:"1868",niv:2,bpm:80,ti:"flute",
+   info:"Une berceuse à trois temps, douce et balancée, qui monte peu à peu vers l'aigu.",
+   m:"G4:0.5 G4:0.5 Bb4:1.5 G4:0.5 G4 Bb4 R G4:0.5 Bb4:0.5 Eb5 D5:1.5 C5:0.5 C5 Bb4 F4:0.5 G4:0.5 Ab4 F4 F4:0.5 G4:0.5 Ab4 R F4:0.5 Ab4:0.5 D5:0.5 C5:0.5 Bb4 D5 Eb5 R"},
+  {t:"Marche funèbre",c:"Chopin",an:"1837",niv:2,bpm:52,ti:"piano",
+   info:"Une marche très lente, en mineur : la même note répétée, sur deux accords graves qui se balancent.",
+   m:"Bb3 Bb3:0.75 Bb3:0.25 Bb3:2 Bb3 Bb3:0.75 Bb3:0.25 Bb3:2 Bb3 Bb3:0.75 Bb3:0.25 Bb3 C#4:0.75 C4:0.25 C4:0.75 Bb3:0.25 Bb3:0.75 Bb3:0.25 Bb3:2",
+   a:[{m:"F3 F#3 F3 F#3 F3 F#3 F3 F#3 F3 F#3 F3 F#3 F3 F#3 F3 F#3",ti:"piano",v:0.5},{m:"Bb1+F2+Bb2 C#2+F#2+C#3 Bb1+F2+Bb2 C#2+F#2+C#3 Bb1+F2+Bb2 C#2+F#2+C#3 Bb1+F2+Bb2 C#2+F#2+C#3 Bb1+F2+Bb2 C#2+F#2+C#3 Bb1+F2+Bb2 C#2+F#2+C#3 Bb1+F2+Bb2 C#2+F#2+C#3 Bb1+F2+Bb2 C#2+F#2+C#3",ti:"piano",v:0.6}]},
+  {t:"Danse hongroise n°5",c:"Brahms",an:"1869",niv:2,bpm:100,ti:"cordes",
+   info:"Une danse tzigane en mineur : des notes longues qui s'étirent, puis des accélérations.",
+   m:"C#4:1.5 F#4:0.5 A4:1.5 F#4:0.5 F4:1.5 F#4:0.25 Ab4:0.25 F#4:2 B3+D4:1.5 C#4+E4:0.25 D4+F#4:0.25 A3+C#4:2 B3:0.25 A3:0.25 A3:0.25 Ab3:0.25 Ab3:0.75 C#4:0.25 F#3:2"},
+  {t:"Symphonie « Inachevée »",c:"Schubert",an:"1822",niv:3,bpm:96,ti:"cordes",
+   info:"Les violoncelles chantent un thème tendre en sol majeur, balancé à trois temps.",
+   m:"G3 D3:1.5 G3:0.5 F#3:0.75 G3:0.25 A3:1.5 G3:0.5 F#3:0.75 G3:0.25 A3:0.5 D3:0.5 E3:0.5 F#3:0.5 G3 D3:2 G3 D3:1.5 G3:0.5 Ab3:0.75 A3:0.25 B3:1.5 A3:0.5 Ab3:0.75 A3:0.25 B3:0.5 E3:0.5 F#3:0.5 Ab3:0.5 A3 E3:1.5 Ab3:0.5"},
+  {t:"Allegretto de la 7ᵉ Symphonie",c:"Beethoven",an:"1812",niv:3,bpm:76,ti:"cordes",
+   info:"Presque pas de mélodie : un rythme (long, brève-brève, long, long) répété sur des accords qui changent lentement.",
+   m:"A3+C4+E4 A3+C4+E4:0.5 A3+C4+E4:0.5 Ab3+B3+E4 Ab3+B3+E4 E3+B3+E4 E3+B3+E4:0.5 E3+B3+E4:0.5 A3+C4+E4 A3+C4+E4 A3+C4+E4 A3+C4+E4:0.5 A3+C4+D4+F#4:0.5 G3+C4+E4+G4 G3+C4+E4+G4 G3+B3+D4+G4 G3+A3+C4+G4:0.5 G3+B3+D4+G4:0.5 C4+E4+G4 R"},
+  {t:"Gymnopédie n°1",c:"Satie",an:"1888",niv:3,bpm:72,ti:"piano",
+   info:"Des accords qui se balancent lentement, puis une mélodie simple et rêveuse au-dessus.",
+   m:"R:7 F#5 A5 G5 F#5 C#5 B4 C#5 D5 A4:3",
+   a:[{m:"R D4+F#4:2 R C#4+F#4:2 R D4+F#4:2 R C#4+F#4:2 R D4+F#4:2 R C#4+F#4:2",ti:"piano",v:0.45},{m:"R B3:2 R A3:2 R B3:2 R A3:2 R B3:2 R A3:2",ti:"piano",v:0.45},{m:"G2:3 D2:3 G2:3 D2:3 G2:3 D2:3",ti:"piano",v:0.55}]},
+  {t:"Ave Maria",c:"Schubert",an:"1825",niv:3,bpm:40,ti:"cordes",
+   info:"Une mélodie lente et chantée, posée sur des arpèges très réguliers au piano.",
+   m:"Bb4:1.5 A4:0.25 Bb4:0.25 D5:1.75 C5:0.25 Bb4 R C5 Bb4:0.25 A4:0.25 G4:0.25 A4:0.25 Bb4",
+   a:[{m:"R:0.1667 D4+F4:0.1667 F4+Bb4:0.1667 Bb4+D5:0.1667 F4+Bb4:0.1667 D4+F4:0.1667 R:0.1667 D4+E4:0.1667 E4+Bb4:0.1667 Bb4+D5:0.1667 E4+Bb4:0.1667 D4+E4:0.1667 R:0.1667 D4+F4:0.1667 F4+Bb4:0.1667 Bb4+D5:0.1667 F4+Bb4:0.1667 D4+F4:0.1667 R:0.1667 Eb4+A4:0.1667 A4+C5:0.1667 C5+Eb5:0.1667 A4+C5:0.1667 Eb4+A4:0.1667 R:0.1667 D4+G4:0.1667 G4+Bb4:0.1667 Bb4+D5:0.1667 G4+Bb4:0.1667 D4+G4:0.1667 R:0.1667 D4+G4:0.1667 G4+Bb4:0.1667 Bb4+D5:0.1667 G4+Bb4:0.1667 D4+G4:0.1667 R:0.1667 Eb4+G4:0.1667 G4+C5:0.1667 C5+Eb5:0.1667 G4+C5:0.1667 Eb4+G4:0.1667 R:0.1667 Eb4+F4:0.1667 F4+A4:0.1667 A4+C5:0.1667 F4+A4:0.1667 Eb4+F4:0.1667 R:0.1667 D4+F4:0.1667 F4+Bb4:0.1667 Bb4+D5:0.1667 F4+Bb4:0.1667 D4+F4:0.1667",ti:"piano",v:0.4},{m:"Bb1+Bb2:0.5 R:0.5 G1+G2:0.5 R:0.5 F1+F2:0.5 R:0.5 F1+F2:0.5 R:0.5 G1+G2:0.5 R:0.5 G1+G2:0.5 R:0.5 Eb1+Eb2:0.5 R:0.5 F1+F2:0.5 R:0.5 Bb1+Bb2:0.5 R:0.5",ti:"piano",v:0.5}]},
+  {t:"Symphonie « La Surprise »",c:"Haydn",an:"1791",niv:3,bpm:58,ti:"cordes",
+   info:"Une mélodie toute simple jouée très doucement… jusqu'au coup de tonnerre de l'orchestre !",
+   m:"C4:0.5 C4:0.5 E4:0.5 E4:0.5 G4:0.5 G4:0.5 E4 F4:0.5 F4:0.5 D4:0.5 D4:0.5 B3:0.5 B3:0.5 G3 C4:0.5 C4:0.5 E4:0.5 E4:0.5 G4:0.5 G4:0.5 E4 C5:0.5 C5:0.5 F#4:0.5 F#4:0.5 G4:0.5 R:0.5 D4+B4+G5",
+   a:[{m:"R:16 G2+D4+B4+G5:1.5",ti:"cordes",v:2.4}]},
+  {t:"Clair de lune",c:"Debussy",an:"publié en 1905",niv:3,bpm:75,ti:"piano",
+   info:"Des arpèges qui coulent comme de l'eau sous une mélodie en accords, très douce.",
+   m:"F4+Ab4:3 Ab4+Cb5 Ab4+Db5:0.5 F4+Ab4:3 Ab4+Cb5 Ab4:0.5",
+   a:[{m:"Db2:0.25 Ab2:0.25 Db3:0.25 F3:0.25 Ab3:0.25 Db4:0.25 F2:0.25 C3:0.25 F3:0.25 Ab3:0.25 C4:0.25 F4:0.25 Ab2:0.25 Fb3:0.25 Ab3:0.25 Cb4:0.25 Fb4:0.25 Ab4:0.25 Db2:0.25 Ab2:0.25 Db3:0.25 F3:0.25 Ab3:0.25 Db4:0.25 F2:0.25 C3:0.25 F3:0.25 Ab3:0.25 C4:0.25 F4:0.25 Ab2:0.25 Fb3:0.25 Ab3:0.25 Cb4:0.25 Ab4:0.25 Fb4:0.25",ti:"piano",v:0.55},{m:"Db2:1.5 F2:1.5 Ab2:1.5 Db2:1.5 F2:1.5 Ab2:1.5",ti:"piano",v:0.35}]},
 ];
-/* joue une mélodie de la galerie (bouton <i class='ph ph-play'></i> dans la leçon) */
-function jouerMel(i){const it=MELODIES[i];if(it){try{audio().resume();}catch(e){}jouerSonBtn({melodie:it.m});}}
-/* galerie des mélodies pour la leçon, groupée par niveau */
-function galerieMelodiesHTML(){
-  const niveaux=[[1,"<i class='ph-fill ph-circle' style='color:#2f9e63'></i> Faciles : à connaître absolument"],[2,"<i class='ph-fill ph-circle' style='color:#EBAA27'></i> Intermédiaires : très célèbres"],[3,"<i class='ph-fill ph-circle' style='color:#e0483b'></i> Difficiles : pour la culture générale"]];
-  let h="";
-  niveaux.forEach(([n,lib])=>{
-    h+=`<div class="mel-niv">${lib}</div><div class="mel-gal">`;
-    MELODIES.forEach((it,i)=>{ if(it.niv!==n)return;
-      h+=`<div class="mel-carte"><button class="btn-son mini" onclick="jouerMel(${i})" title="Écouter"><i class="ph ph-play"></i></button><span class="mel-t">${it.t}</span><span class="mel-c">${it.c}</span></div>`;
+const ME_NIV=[[1,"Faciles","à connaître absolument"],[2,"Intermédiaires","très célèbres"],[3,"Difficiles","pour les oreilles fines"]];
+const ME_VOL={piano:0.22,cordes:0.2,flute:0.24,basson:0.2,anche:0.2,orgue:0.15,cuivre:0.2};
+const ME_ETAPES=[3,6,10,null], ME_POINTS=[4,3,2,1], ME_TOURS=8;
+let _me={jeton:0,anim:null,animEls:null,lecture:null,jeu:null,niv:"1"};
+
+function meOeuvre(t){ for(let i=0;i<MELODIES.length;i++)if(MELODIES[i].t===t)return MELODIES[i]; return null; }
+function mePistes(it){
+  if(!it._p) it._p=[{n:mel(it.m),ti:it.ti||"piano",v:1}].concat((it.a||[]).map(function(a){ return {n:mel(a.m),ti:a.ti||it.ti||"piano",v:a.v==null?0.6:a.v}; }));
+  return it._p;
+}
+function meLong(n){ return n.reduce(function(s,x){ return s+x[1]; },0); }
+function meDuree(it){ return Math.max.apply(null,mePistes(it).map(function(p){ return meLong(p.n); })); }
+/* temps (en noires) où finit la n-ième note de la mélodie */
+function meFinNotes(it,n){ let t=0,k=0; const N=mePistes(it)[0].n; for(let i=0;i<N.length;i++){ t+=N[i][1]; if(N[i][0]!==null&&++k>=n)return t; } return t; }
+function meHaut(x){ return Array.isArray(x)?Math.max.apply(null,x):x; }
+
+/* ---------- le son ---------- */
+/* joue l'œuvre jusqu'à « lim » noires (toute l'œuvre si lim est nul) dans le canal donné */
+function meJouer(it,lim,canal){
+  const ctx=audio(), spb=60/(it.bpm||100), t0=ctx.currentTime+0.1, L=lim==null?meDuree(it):lim;
+  mePistes(it).forEach(function(p){
+    let t=0; const vol=(ME_VOL[p.ti]||0.2)*p.v;
+    p.n.forEach(function(x){
+      if(t<L-1e-6&&x[0]!==null){
+        const d=Math.min(x[1],L-t)*spb, acc=Array.isArray(x[0]);
+        (acc?x[0]:[x[0]]).forEach(function(m){ txSon(t0+t*spb,m,p.ti==="piano"?d:d*0.94,p.ti,acc?vol*0.8:vol,canal); });
+      }
+      t+=x[1];
     });
-    h+=`</div>`;
   });
-  return h;
+  return {t0:t0,spb:spb,fin:t0+L*spb};
+}
+/* bouton « Écouter » des exercices et de la leçon (passe par le canal qu'on coupe) */
+function meExtrait(t,lim){
+  const it=meOeuvre(t); if(!it)return null;
+  try{ audio().resume(); }catch(e){}
+  const L=meJouer(it,lim==null?null:lim,sonBtnCanal(txBus()));
+  _me.lecture=Object.assign({it:it},L); return _me.lecture;
+}
+
+/* ---------- le dessin de la mélodie (sa « courbe ») ---------- */
+function meContourSVG(it,n){
+  const N=mePistes(it)[0].n, r=[]; let t=0,lo=200,hi=0;
+  N.forEach(function(x){ if(x[0]!==null){ const h=meHaut(x[0]); r.push([t,x[1],h]); if(h<lo)lo=h; if(h>hi)hi=h; } t+=x[1]; });
+  const tot=t||1; if(hi-lo<8){ const c=(hi+lo)/2; lo=c-4; hi=c+4; }
+  const H=40,P=3,bh=5;
+  let s='<svg class="me-courbe" viewBox="0 0 300 '+H+'" preserveAspectRatio="none" aria-hidden="true">';
+  r.forEach(function(q,i){ if(n!=null&&i>=n)return;
+    const x=q[0]/tot*300, w=Math.max(2.5,q[1]/tot*300-1.5), y=P+(hi-q[2])/(hi-lo)*(H-2*P-bh);
+    s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+bh+'" rx="1.5"/>'; });
+  return s+'</svg>';
+}
+/* les barres s'allument au fil de l'écoute */
+function meAnimer(els,L){
+  meArret();
+  if(!L||!els.length)return;
+  const N=mePistes(L.it)[0].n, debuts=[]; let t=0;
+  N.forEach(function(x){ if(x[0]!==null)debuts.push([t,t+x[1]]); t+=x[1]; });
+  els.forEach(function(e){ e.classList.add("joue"); const b=e.querySelector(".me-play");
+    if(b){ b.innerHTML='<i class="ph-fill ph-stop"></i>'; b.setAttribute("aria-label","Arrêter"); } });
+  const rects=els.map(function(e){ return Array.prototype.slice.call(e.querySelectorAll(".me-courbe rect")); });
+  const jeton=++_me.jeton; _me.animEls=els;
+  _me.anim=setInterval(function(){
+    if(jeton!==_me.jeton)return;
+    const now=audio().currentTime, tb=(now-L.t0)/L.spb;
+    rects.forEach(function(rs){ rs.forEach(function(r,i){ const d=debuts[i]; if(!d)return; r.classList.toggle("on",tb>=d[0]); r.classList.toggle("cur",tb>=d[0]&&tb<d[1]); }); });
+    if(now>L.fin+0.25)meArret();
+  },40);
+}
+/* appelée aussi par sonBtnCouper : toute lecture coupée éteint les barres */
+function meArret(){
+  _me.jeton++;
+  if(_me.anim){ clearInterval(_me.anim); _me.anim=null; }
+  (_me.animEls||[]).forEach(function(e){
+    e.classList.remove("joue");
+    e.querySelectorAll(".me-courbe rect").forEach(function(r){ r.classList.remove("on","cur"); });
+    const b=e.querySelector(".me-play"); if(b){ b.innerHTML='<i class="ph-fill ph-play"></i>'; b.setAttribute("aria-label","Écouter : "+(e.getAttribute("data-t")||"")); }
+  });
+  _me.animEls=null;
+}
+
+/* ---------- la collection ---------- */
+function meCarteHTML(i){
+  const it=MELODIES[i];
+  return '<div class="me-carte n'+it.niv+'" data-i="'+i+'" data-t="'+it.t+'">'
+    +'<div class="me-haut"><button type="button" class="me-play" onclick="meEcouter('+i+',this)" aria-label="Écouter : '+it.t+'"><i class="ph-fill ph-play"></i></button>'
+    +'<div class="me-tx"><b>'+it.t+'</b><span>'+it.c+' · '+it.an+'</span></div></div>'
+    +meContourSVG(it)
+    +'<p class="me-info">'+it.info+'</p></div>';
+}
+function galerieMelodiesHTML(){
+  return '<div class="me-galerie">'+ME_NIV.map(function(x){
+    return '<div class="me-niv"><span class="me-pastille n'+x[0]+'"></span>'+x[1]+' <small>'+x[2]+'</small></div>'
+      +'<div class="me-gal">'+MELODIES.map(function(it,i){ return it.niv===x[0]?meCarteHTML(i):""; }).join("")+'</div>';
+  }).join("")+'</div>';
+}
+/* un clic écoute, un second clic sur la carte qui joue arrête */
+function meEcouter(i,b){
+  const carte=b&&b.closest(".me-carte");
+  if(carte&&carte.classList.contains("joue")){ sonBtnCouper(); return; }
+  jouerSonBtn({oeuvre:MELODIES[i].t});
+  meAnimer(Array.prototype.slice.call(document.querySelectorAll('.me-carte[data-i="'+i+'"]')),_me.lecture);
+}
+
+/* ---------- le blind test des premières notes ---------- */
+function meJeuHTML(){ return '<div class="tx-atelier me-jeu" id="meJeu"><div class="tx-chargement">Chargement du blind test…</div></div>'; }
+function meInit(){ meArret(); _me.jeu=null; meJeuRendre(); }
+function mePool(niv){ return MELODIES.map(function(x,i){ return i; }).filter(function(i){ return niv==="tout"||MELODIES[i].niv===+niv; }); }
+function meNbTours(niv){ return Math.min(ME_TOURS,mePool(niv).length); }
+function meRecord(niv){ try{ return +localStorage.getItem("museduc-blindtest-"+niv)||0; }catch(e){ return 0; } }
+function meNiv(n){ _me.niv=n; meJeuRendre(); }
+function meJeuDemarrer(){
+  const tours=shuffle(mePool(_me.niv)).slice(0,meNbTours(_me.niv));
+  _me.jeu={tours:tours,i:0,etape:0,score:0,reussis:0,rep:null,ecoute:false,opts:[],msg:"",fini:false,record:false};
+  meTourPreparer(); meJeuRendre();
+  const b=document.querySelector("#meJeu .tx-play"); if(b)b.focus();
+}
+function meTourPreparer(){
+  const J=_me.jeu, i=J.tours[J.i];
+  J.opts=shuffle([i].concat(shuffle(mePool(_me.niv).filter(function(x){ return x!==i; })).slice(0,3)));
+  J.etape=0; J.rep=null; J.ecoute=false; J.msg="";
+}
+function meJeuRendre(){
+  const z=document.getElementById("meJeu"); if(!z)return;
+  const J=_me.jeu;
+  let h='<div class="tx-tete-at"><span class="tx-titre"><i class="ph-fill ph-ear"></i> Le blind test des premières notes</span>'
+    +(J&&!J.fini?'<span class="me-score">Mélodie '+(J.i+1)+' / '+J.tours.length+' · <b>'+J.score+'</b> pt'+(J.score>1?"s":"")+'</span>':'')+'</div>';
+  if(!J){
+    const rec=meRecord(_me.niv), max=meNbTours(_me.niv)*ME_POINTS[0];
+    h+='<p class="tx-aide me-regle">MusEduc joue les <b>3 premières notes</b> d\'une mélodie célèbre. Tu la reconnais ? Réponds tout de suite : <b>4 points</b>. '
+      +'Sinon, demande quelques notes de plus… mais chaque indice coûte un point.</p>'
+      +'<div class="cm-options"><div><span>Les mélodies</span><div class="cm-seg" role="group" aria-label="Choix des mélodies">'
+      +[["1","Faciles"],["2","Intermédiaires"],["3","Difficiles"],["tout","Toutes"]].map(function(x){ const on=_me.niv===x[0];
+        return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="meNiv(\''+x[0]+'\')">'+x[1]+'</button>'; }).join("")+'</div></div></div>'
+      +'<div class="tx-bas"><button type="button" class="cm-play tx-play" onclick="meJeuDemarrer()"><i class="ph-fill ph-play"></i> Commencer</button>'
+      +(rec?'<span class="me-record"><i class="ph-fill ph-trophy"></i> Ton record : <b>'+rec+'</b> / '+max+'</span>':'')+'</div>';
+  }else if(J.fini){
+    const max=J.tours.length*ME_POINTS[0], r=J.score/max;
+    h+='<div class="me-fin"><div class="me-fin-score"><b>'+J.score+'</b><span>/ '+max+'</span></div>'
+      +'<p>'+(r>=0.8?"Quelle oreille ! Tu reconnais ces mélodies dès les premières notes.":r>=0.5?"Belle partie : encore un peu d'écoute et tu les reconnaîtras toutes.":"Réécoute la collection ci-dessus, puis retente ta chance : tu vas vite progresser.")+'</p>'
+      +'<p class="me-fin-detail">'+J.reussis+' mélodie'+(J.reussis>1?"s":"")+' reconnue'+(J.reussis>1?"s":"")+' sur '+J.tours.length+'.</p>'
+      +(J.record?'<p class="me-bravo"><i class="ph-fill ph-trophy"></i> Nouveau record !</p>':'')+'</div>'
+      +'<div class="tx-bas"><button type="button" class="cm-play tx-play" onclick="meJeuDemarrer()"><i class="ph ph-arrow-counter-clockwise"></i> Rejouer</button>'
+      +'<button type="button" class="tx-devine-b" onclick="_me.jeu=null;meJeuRendre()"><i class="ph ph-sliders-horizontal"></i> Changer de série</button></div>';
+  }else{
+    const k=J.tours[J.i], it=MELODIES[k], n=ME_ETAPES[J.etape], pts=ME_POINTS[J.etape], fin=J.rep!==null;
+    h+='<div class="me-scene">'+(J.ecoute||fin?meContourSVG(it,fin?null:n):'<div class="me-vide"><i class="ph ph-question"></i></div>')+'</div>'
+      +'<div class="me-etapes" aria-hidden="true">'+ME_ETAPES.map(function(e,q){
+        return '<span class="'+(q<J.etape?"passe":q===J.etape?"cur":"")+'">'+(e?e+" notes":"tout")+'<b>'+ME_POINTS[q]+' pt'+(ME_POINTS[q]>1?"s":"")+'</b></span>'; }).join("")+'</div>';
+    if(!fin){
+      h+='<div class="tx-bas"><button type="button" class="cm-play tx-play" onclick="meJeuEcouter()"><i class="ph-fill ph-'+(J.ecoute?"arrow-counter-clockwise":"play")+'"></i> '
+        +(J.ecoute?"Réécouter":(n?"Écouter les "+n+" premières notes":"Écouter toute la mélodie"))+'</button>'
+        +(J.ecoute&&J.etape<ME_ETAPES.length-1?'<button type="button" class="tx-devine-b" onclick="meJeuEncore()"><i class="ph ph-plus-circle"></i> '
+          +(ME_ETAPES[J.etape+1]?"Encore des notes":"Toute la mélodie")+' (−1 pt)</button>':'')+'</div>'
+        +'<p class="me-vaut">'+(J.ecoute?'Quelle est cette mélodie ? Si tu trouves maintenant : <b>'+pts+' point'+(pts>1?"s":"")+'</b>.':'Écoute d\'abord, puis choisis ta réponse.')+'</p>';
+    }
+    h+='<div class="me-opts" role="group" aria-label="Quelle est cette mélodie ?">'+J.opts.map(function(q){
+        const cls=fin?(q===k?" bon":q===J.rep?" faux":""):"";
+        return '<button type="button" class="me-opt'+cls+'" onclick="meJeuRepondre('+q+')"'+(fin||!J.ecoute?" disabled":"")+'>'
+          +(fin&&q===k?'<i class="ph-fill ph-check-circle"></i> ':fin&&q===J.rep?'<i class="ph-fill ph-x-circle"></i> ':'')+MELODIES[q].t+'</button>'; }).join("")+'</div>';
+    if(fin){
+      h+='<div class="me-revele">'+meCarteHTML(k)+'</div>'
+        +'<div class="tx-bas"><button type="button" class="cm-play tx-play me-suivant" onclick="meJeuSuivant()">'
+        +(J.i+1<J.tours.length?"Mélodie suivante":"Voir mon score")+' <i class="ph ph-arrow-right"></i></button></div>';
+    }
+  }
+  h+='<div class="me-annonce" role="status" aria-live="polite">'+(J&&J.msg?J.msg:"")+'</div>';
+  z.innerHTML=h;
+}
+function meJeuEcouter(){
+  const J=_me.jeu; if(!J||J.rep!==null)return;
+  const it=MELODIES[J.tours[J.i]], n=ME_ETAPES[J.etape];
+  J.ecoute=true; meJeuRendre();
+  jouerSonBtn({oeuvre:it.t,limite:n?meFinNotes(it,n):null});
+  const sc=document.querySelector("#meJeu .me-scene"); if(sc)meAnimer([sc],_me.lecture);
+}
+function meJeuEncore(){ const J=_me.jeu; if(!J||J.rep!==null||J.etape>=ME_ETAPES.length-1)return; J.etape++; meJeuEcouter(); }
+function meJeuRepondre(q){
+  const J=_me.jeu; if(!J||J.rep!==null||!J.ecoute)return;
+  sonBtnCouper();
+  const k=J.tours[J.i], ok=q===k, pts=ME_POINTS[J.etape];
+  J.rep=q;
+  if(ok){ J.score+=pts; J.reussis++; J.msg="Bravo, c'est bien « "+MELODIES[k].t+" » : +"+pts+" point"+(pts>1?"s":"")+" !"; jouerEffet("bon"); }
+  else{ J.msg="Raté : c'était « "+MELODIES[k].t+" »."; jouerEffet("mauvais"); }
+  meJeuRendre();
+  const b=document.querySelector("#meJeu .me-suivant"); if(b)b.focus();
+}
+function meJeuSuivant(){
+  const J=_me.jeu; if(!J)return;
+  sonBtnCouper();
+  J.i++;
+  if(J.i>=J.tours.length){
+    J.fini=true; J.msg="";
+    if(J.score>meRecord(_me.niv)){ J.record=J.score>0; try{ localStorage.setItem("museduc-blindtest-"+_me.niv,String(J.score)); }catch(e){} }
+    if(J.score>=J.tours.length*ME_POINTS[0]*0.8)jouerEffet("victoire");
+  }else meTourPreparer();
+  meJeuRendre();
+  const b=document.querySelector("#meJeu .tx-play"); if(b)b.focus();
 }
 function jouerFreq(freq,debut,duree,vol=0.25){
   const ctx=audio(), t=ctx.currentTime+debut;
   // Timbre de piano : harmoniques + enveloppe à longue résonance (sustain), attaque douce.
   const sortie=ctx.createGain();
   sortie.gain.value=vol;
-  sortie.connect(ctx.destination);
+  sortie.connect((typeof _sonBtn!=="undefined"&&_sonBtn.dest)||ctx.destination);
   // filtre passe-bas qui se referme lentement : le son s'assombrit en s'éteignant, comme un vrai piano
   const filtre=ctx.createBiquadFilter();
   filtre.type="lowpass";
@@ -2621,6 +2857,74 @@ const GEN={
     if(it.son){ ex.sonBtn=Object.assign({label:"<i class='ph ph-play'></i> Écouter"},it.son); ex.rejouable=true; }
     return ex;}),
 
+  /* Voix superposées : écouter une texture, la reconnaître sur un schéma, compter
+     les voix d'un canon, distinguer homophonie et polyphonie, et du vocabulaire
+     (TX_NIV, TX_QUESTIONS et les extraits sonores sont définis avec la leçon). */
+  "textures":()=>mapEx(nbQuestions,()=>{
+    const niv=(difficulte===1||difficulte===3)?difficulte:2, pool=TX_NIV[niv];
+    const t=pick(niv===1?["ecoute","ecoute","schema","vocab","vocab","vocab"]
+      :niv===2?["ecoute","ecoute","schema","schema","vocab","vocab","vocab","homopoly"]
+      :["ecoute","ecoute","compte","homopoly","schema","vocab","vocab","vocab"]);
+    const noms=pool.map(function(k){ return TX_MODES[k].nom; });
+    if(t==="ecoute"){
+      const m=pick(pool), r=TX_MODES[m].nom, ph=rnd(3);
+      return {emp:"tx-ec-"+m+"-"+ph,
+        consigne:["Écoute l'extrait : quelle <b>texture</b> entends-tu&nbsp;?","Comment les voix s'organisent-elles dans cet extrait&nbsp;?","Tends l'oreille : de quelle texture s'agit-il&nbsp;?"][ph],
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",texture:{mode:m,n:3,decal:4,temps:m==="canon"?20:16}},
+        champ:selListe(noms,r),verif:v=>norm(v)===norm(r),
+        solution:"C'était <b>"+r+"</b>&nbsp;: "+TX_MODES[m].def,rejouable:true};
+    }
+    if(t==="schema"){
+      const m=pick(pool), r=TX_MODES[m].nom;
+      return {emp:"tx-sch-"+m,
+        consigne:"Sur ce schéma, chaque ligne est une voix et chaque barre une note. Quelle texture montre-t-il&nbsp;?<div class=\"tx-q-schema\">"+txSchemaSVG(m,true)+"</div>",
+        champ:selListe(noms,r),verif:v=>norm(v)===norm(r),
+        solution:"C'est <b>"+r+"</b>&nbsp;: "+TX_MODES[m].def};
+    }
+    if(t==="compte"){
+      const n=pick([2,3,4]), r=n+" voix";
+      return {emp:"tx-cpt-"+n,
+        consigne:"Ce <b>canon</b> fait entrer les voix l'une après l'autre. Combien de voix entends-tu à la fin&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",texture:{mode:"canon",n:n,decal:4,temps:4*n+8}},
+        champ:selListe(["2 voix","3 voix","4 voix"],r),verif:v=>norm(v)===norm(r),
+        solution:"Il y avait <b>"+r+"</b>, entrées l'une après l'autre (une mesure d'écart).",rejouable:true};
+    }
+    if(t==="homopoly"){
+      const h=Math.random()<0.5, m=h?"homophonie":"polyphonie", r=h?"Homophonie : même rythme pour toutes":"Polyphonie : chacune son rythme";
+      return {emp:"tx-hp-"+m,
+        consigne:"Les voix avancent-elles <b>ensemble</b>, sur le même rythme, ou chacune <b>avec son propre rythme</b>&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",texture:{mode:m,temps:16}},
+        champ:selListe(["Homophonie : même rythme pour toutes","Polyphonie : chacune son rythme"],r),verif:v=>norm(v)===norm(r),
+        solution:"C'était une <b>"+TX_MODES[m].nom.toLowerCase()+"</b>&nbsp;: "+TX_MODES[m].def,rejouable:true};
+    }
+    const banque=TX_QUESTIONS[niv], i=rnd(banque.length), it=banque[i];
+    return {emp:"tx-q-"+niv+"-"+i,consigne:it.q,champ:selListe(it.o,it.r),verif:v=>norm(v)===norm(it.r),solution:"Réponse : <b>"+it.r+"</b>."};
+  }),
+
+  /* Thème et variations : entendre ce qui a changé entre le thème et sa variation,
+     majeur ou mineur, et du vocabulaire (VA_NIV, VA_QUESTIONS, vaExtrait : avec la leçon). */
+  "variations":()=>mapEx(nbQuestions,()=>{
+    const niv=(difficulte===1||difficulte===3)?difficulte:2, pool=VA_NIV[niv];
+    const t=pick(niv===1?["ecoute","ecoute","vocab","vocab","vocab"]:["ecoute","ecoute","majmin","vocab","vocab","vocab"]);
+    if(t==="ecoute"){
+      const k=pick(pool), p=vaParam(k), v=pick(p.opts.filter(function(o){ return o[0]!==VA_DEFAUT[k]; }))[0], ch={}, r=p.nom;
+      ch[k]=v;
+      return {emp:"va-ec-"+k,consigne:"Écoute le thème, puis sa variation. <b>Qu'est-ce qui a changé&nbsp;?</b>",
+        sonBtn:{label:"<i class='ph ph-play'></i> Le thème, puis la variation",variation:{changes:ch}},
+        champ:selListe(pool.map(function(x){ return vaParam(x).nom; }),r),verif:v=>norm(v)===norm(r),
+        solution:"C'était <b>"+r.toLowerCase()+"</b>&nbsp;: "+vaLib(k,VA_DEFAUT[k])+" → "+vaLib(k,v)+".",rejouable:true};
+    }
+    if(t==="majmin"){
+      const mi=Math.random()<0.5, r=mi?"en mineur":"en majeur";
+      return {emp:"va-mm-"+(mi?"mi":"ma"),consigne:"Cette version du thème est-elle <b>en majeur</b> (lumineuse) ou <b>en mineur</b> (plus sombre)&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",variation:{changes:{mode:mi?"mineur":"majeur",timbre:pick(["piano","flute","cordes"])},seule:true}},
+        champ:selListe(["en majeur","en mineur"],r),verif:v=>norm(v)===norm(r),
+        solution:"Elle était <b>"+r+"</b>."+(mi?" Le Mi est devenu Mi♭ et le La, La♭&nbsp;: la couleur s'assombrit.":" Ce sont les notes du thème, en Do majeur."),rejouable:true};
+    }
+    const banque=VA_QUESTIONS[niv], i=rnd(banque.length), it=banque[i];
+    return {emp:"va-q-"+niv+"-"+i,consigne:it.q,champ:selListe(it.o,it.r),verif:v=>norm(v)===norm(it.r),solution:"Réponse : <b>"+it.r+"</b>."};
+  }),
+
   "blues":()=>mapEx(nbQuestions,()=>{
     const types=["degre","degre","degreI","ligne","ligne","tonaliteDeGrille","tonaliteDeGrille","complete","complete",
                  "mesures","troisDegres","pasQueBlues","grilleHarmo","transpo","transpo",
@@ -2891,143 +3195,123 @@ const GEN={
       solution:`Réponse&nbsp;: <b>${it.r}</b>.`};}),
 
   "voc-ecoute":()=>mapEx(nbQuestions,()=>{
-    // notions tirées du programme cycle 4. Difficulté croissante : on ajoute des notions plus fines.
-    const facile=["monodie-poly","accompagnement","ostinato","sens","vitesse","force"];
-    const inter=["monodie-poly","accompagnement","ostinato","canon","bourdon","sens","vitesse","force"];
-    const diff=["monodie-poly","accompagnement","ostinato","bourdon","canon","compter","compter","sens"];
-    const liste=difficulte===1?facile:difficulte===2?inter:diff;
-    const t=pick(liste);
+    /* Les mots de l'écoute, du plus audible au plus fin. Le son vient du laboratoire des mots
+       (l'Hymne à la joie, transformée mot par mot) ou des textures (Frère Jacques à plusieurs voix). */
+    const types=difficulte===1?["tempo","nuance","registre","acc","monodie-poly","sens"]
+      :difficulte===2?["tempo","nuance","registre","artic","mode","evolT","evolN","acc","monodie-poly","ostinato","bourdon","canon"]
+      :["tempo","artic","mode","evolT","evolN","conjoint","sens","monodie-poly","ostinato","bourdon","canon","compter"];
+    const t=pick(types), tim=pick(["piano","flute","cordes","anche"]);
+    const ecoute=function(cfg,lab){ return {label:"<i class='ph ph-play'></i> "+(lab||"Écouter"),vocab:cfg}; };
+    const qcm=function(o,opts,r){ return Object.assign({champ:selListe(opts,r),verif:function(v){ return norm(v)===norm(r); },rejouable:true},o); };
 
-    if(t==="vitesse"){
-      const vite=Math.random()<0.5;const base=MIDI_BASE["Do"];const suite=[0,2,4,5,7];
-      const r=vite?"un tempo rapide":"un tempo lent";
-      const ph=pick([0,1,2]);
-      const phr=["Écoute&nbsp;: le tempo (la vitesse) est-il plutôt rapide ou lent&nbsp;?",
-        "Cette mélodie est-elle jouée vite ou lentement&nbsp;?",
-        "Le mouvement est-il vif ou posé&nbsp;?"][ph];
-      return {emp:"ve-vit-"+vite+"p"+ph,consigne:phr,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",midis:suite.map(x=>base+x),sequence:true,ecart:vite?0.22:0.62},
-        champ:selListe(["un tempo rapide","un tempo lent"]),verif:v=>norm(v)===norm(r),
-        solution:`C'était <b>${r}</b>.`,rejouable:true};
+    if(t==="tempo"){
+      const vals=difficulte===1?["lent","rapide"]:["lent","modere","rapide"], v=pick(vals);
+      const lib={lent:"lent",modere:"modéré",rapide:"rapide"};
+      return qcm({emp:"ve-tempo-"+v,groupe:"ve-tempo",consigne:"Écoute la pulsation. Le <b>tempo</b> (la vitesse) est-il "+(difficulte===1?"lent ou rapide":"lent, modéré ou rapide")+"&nbsp;?",
+        sonBtn:ecoute({tempo:v,timbre:tim,court:true}),
+        solution:"Le tempo était <b>"+lib[v]+"</b>"+{lent:" (comme un Adagio).",modere:" (comme un Moderato).",rapide:" (comme un Allegro)."}[v]},
+        vals.map(function(x){ return lib[x]; }),lib[v]);
     }
-    if(t==="force"){
-      const fort=Math.random()<0.5;const base=MIDI_BASE["Do"];const suite=[0,2,4,5];
-      const r=fort?"fort (forte)":"doux (piano)";
-      const ph=pick([0,1,2]);
-      const phr=["Écoute&nbsp;: la nuance est-elle plutôt forte ou douce&nbsp;?",
-        "Cet extrait est-il joué fort ou doucement&nbsp;?",
-        "Le son est-il puissant (forte) ou léger (piano)&nbsp;?"][ph];
-      return {emp:"ve-force-"+fort+"p"+ph,consigne:phr,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",midis:suite.map(x=>base+x),sequence:true,ecart:0.4,gain:fort?0.32:0.08},
-        champ:selListe(["fort (forte)","doux (piano)"]),verif:v=>norm(v)===norm(r),
-        solution:`C'était <b>${r}</b>.`,rejouable:true};
+    if(t==="nuance"){
+      const fort=Math.random()<0.5, b=difficulte===1?(fort?"ff":"pp"):(fort?"f":"p");
+      const r=fort?"plus fort (forte)":"plus doux (piano)";
+      return qcm({emp:"ve-nu-"+b,groupe:"ve-nuance",consigne:"La même phrase est jouée <b>deux fois</b>. La 2ᵉ fois, la <b>nuance</b> est-elle plus forte ou plus douce&nbsp;?",
+        sonBtn:ecoute({deux:[{nuance:"mf",court:true,timbre:tim},{nuance:b,court:true,timbre:tim}]},"Écouter les deux versions"),
+        solution:"La 2ᵉ fois était <b>"+r+"</b>. En italien : <i>piano</i> = doux, <i>forte</i> = fort."},
+        ["plus fort (forte)","plus doux (piano)"],r);
     }
-
-    if(t==="sens"){
-      const monte=Math.random()<0.5;
-      const r=monte?"elle monte (vers l'aigu)":"elle descend (vers le grave)";
-      const ph=pick([0,1,2]);
-      const phr=["Écoute la mélodie&nbsp;: globalement, monte-t-elle ou descend-elle&nbsp;?",
-        "Cette mélodie va-t-elle plutôt vers l'aigu ou vers le grave&nbsp;?",
-        "Le mouvement mélodique est-il ascendant ou descendant&nbsp;?"][ph];
-      // mélodie générée : gamme montante ou descendante depuis Do
-      const base=MIDI_BASE["Do"];const suite=monte?[0,2,4,5,7,9]:[9,7,5,4,2,0];
-      return {emp:"ve-sens-"+monte+"p"+ph,
-        consigne:phr,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",midis:suite.map(x=>base+x),sequence:true,ecart:0.4},
-        champ:selListe(["elle monte (vers l'aigu)","elle descend (vers le grave)"]),
-        verif:v=>norm(v)===norm(r),
-        solution:`<b>${r}</b>.`,rejouable:true};
+    if(t==="registre"){
+      const vals=difficulte===1?["grave","aigu"]:["grave","medium","aigu"], v=pick(vals), lib={grave:"grave",medium:"médium",aigu:"aigu"};
+      return qcm({emp:"ve-reg-"+v,groupe:"ve-registre",consigne:"Dans quel <b>registre</b> (quelle hauteur) la mélodie est-elle jouée&nbsp;?",
+        sonBtn:ecoute({registre:v,timbre:pick(["piano","cordes"]),court:true}),
+        solution:"C'était le registre <b>"+lib[v]+"</b>"+(v==="grave"?" : des sons bas, comme une voix d'homme ou une contrebasse.":v==="aigu"?" : des sons hauts, comme une flûte piccolo ou une voix d'enfant.":" : la hauteur moyenne, celle de la voix parlée.")},
+        vals.map(function(x){ return lib[x]; }),lib[v]);
     }
-
-    if(t==="compter"){
-      const n=pick([1,2,3,4]); // 1 voix = monodie, sinon polyphonie à n voix
-      const fig=n===1?"monodie":"poly"+n;
-      const r=n===1?"1 voix":n+" voix";
-      const ph=pick([0,1,2]);
-      const phr=["Écoute attentivement&nbsp;: combien de voix différentes entends-tu jouer <b>en même temps</b>&nbsp;?",
-        "Combien de voix se superposent dans cet extrait&nbsp;?",
-        "Tends l'oreille&nbsp;: combien de lignes mélodiques jouent ensemble&nbsp;?"][ph];
-      return {emp:"ve-cpt-"+n+"p"+ph,
-        consigne:phr,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",figure:fig},
-        champ:selListe(["1 voix","2 voix","3 voix","4 voix"]),
-        verif:v=>norm(v)===norm(r),
-        solution:`Il y avait <b>${r}</b>. ${n===1?"Une seule voix, c'est une <b>monodie</b>.":"Plusieurs voix superposées, c'est une <b>polyphonie</b> à "+n+" voix."}`,rejouable:true};
+    if(t==="artic"){
+      const st=Math.random()<0.5, r=st?"piquées (staccato)":"liées (legato)";
+      return qcm({emp:"ve-art-"+st,groupe:"ve-artic",consigne:"Écoute l'<b>articulation</b> : les notes sont-elles liées les unes aux autres, ou piquées (détachées)&nbsp;?",
+        sonBtn:ecoute({artic:st?"staccato":"legato",timbre:tim,tempo:"lent",court:true}),
+        solution:"Les notes étaient <b>"+r+"</b>. <i>Legato</i> : les sons s'enchaînent sans silence ; <i>staccato</i> : chaque son est court, détaché du suivant."},
+        ["liées (legato)","piquées (staccato)"],r);
     }
-
-    if(t==="canon"){
-      const can=Math.random()<0.5;
-      const r=can?"oui, c'est un canon":"non, ce n'est pas un canon";
-      const ph=pick([0,1,2]);
-      const phr=["Un <b>canon</b>&nbsp;: une 2ᵉ voix reprend la <b>même mélodie</b> que la 1ʳᵉ, mais en <b>retard</b>. Est-ce le cas ici&nbsp;?",
-        "Entends-tu un <b>canon</b> (une voix qui imite l'autre en décalé) dans cet extrait&nbsp;?",
-        "Les deux voix jouent-elles la même mélodie en décalé (un <b>canon</b>)&nbsp;?"][ph];
-      return {emp:"ve-canon-"+can+"p"+ph,
-        consigne:phr,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",figure:can?"canon":"monodie"},
-        champ:selListe(["oui, c'est un canon","non, ce n'est pas un canon"]),
-        verif:v=>norm(v)===norm(r),
-        solution:`Réponse&nbsp;: <b>${r}</b>. Dans un canon, les voix chantent la même mélodie en décalé (comme «&nbsp;Frère Jacques&nbsp;»)&nbsp;: c'est un départ en <b>imitation</b>.`,rejouable:true};
+    if(t==="mode"){
+      const mi=Math.random()<0.5, r=mi?"mineur (plus sombre)":"majeur (plus lumineux)";
+      return qcm({emp:"ve-mode-"+mi,groupe:"ve-mode",consigne:"Cette version de l'Hymne à la joie est-elle en <b>majeur</b> ou en <b>mineur</b>&nbsp;?",
+        sonBtn:ecoute({mode:mi?"mineur":"majeur",timbre:tim,court:true}),
+        solution:"Elle était en <b>"+r+"</b>. Beethoven l'a écrite en majeur ; en mineur, une seule note change (le fa dièse devient fa), et toute la couleur s'assombrit."},
+        ["majeur (plus lumineux)","mineur (plus sombre)"],r);
     }
-
+    if(t==="evolT"){
+      const vals=difficulte===2?["accel","rall"]:["accel","rall","stable"], v=pick(vals);
+      const lib={accel:"de plus en plus vite",rall:"de plus en plus lent",stable:"toujours la même vitesse"};
+      return qcm({emp:"ve-evt-"+v,groupe:"ve-evolT",consigne:"Écoute bien la pulsation du début à la fin. Comment le <b>tempo</b> évolue-t-il&nbsp;?",
+        sonBtn:ecoute(v==="stable"?{tempo:"modere",long:true,timbre:tim}:{tempo:v,timbre:tim}),
+        solution:v==="accel"?"De plus en plus vite : c'est un <b>accelerando</b>.":v==="rall"?"De plus en plus lent : c'est un <b>rallentando</b> (ou <i>ritardando</i>).":"La pulsation restait <b>régulière</b> : ni accelerando, ni rallentando."},
+        vals.map(function(x){ return lib[x]; }),lib[v]);
+    }
+    if(t==="evolN"){
+      const vals=difficulte===2?["cresc","decresc"]:["cresc","decresc","stable"], v=pick(vals);
+      const lib={cresc:"de plus en plus fort",decresc:"de plus en plus doux",stable:"toujours la même force"};
+      return qcm({emp:"ve-evn-"+v,groupe:"ve-evolN",consigne:"Du début à la fin de l'extrait, comment la <b>nuance</b> (la force) évolue-t-elle&nbsp;?",
+        sonBtn:ecoute(v==="stable"?{nuance:"mf",long:true,timbre:tim}:{nuance:v,timbre:tim}),
+        solution:v==="cresc"?"De plus en plus fort : c'est un <b>crescendo</b> (signe &lt;).":v==="decresc"?"De plus en plus doux : c'est un <b>decrescendo</b> (signe &gt;).":"La nuance ne changeait pas : ni crescendo, ni decrescendo."},
+        vals.map(function(x){ return lib[x]; }),lib[v]);
+    }
+    if(t==="acc"){
+      const a=Math.random()<0.5, r=a?"une mélodie accompagnée":"une mélodie seule";
+      return qcm({emp:"ve-acc-"+a,groupe:"ve-acc",consigne:"Entends-tu seulement la mélodie, ou aussi un <b>accompagnement</b> (basse et accords) dessous&nbsp;?",
+        sonBtn:ecoute({texture:a?"accords":"seule",timbre:pick(["flute","cordes","anche"]),court:true}),
+        solution:"C'était <b>"+r+"</b>. "+(a?"Dessous, une basse et des accords soutiennent la mélodie.":"Une seule ligne, sans rien dessous : c'est une <b>monodie</b>.")},
+        ["une mélodie seule","une mélodie accompagnée"],r);
+    }
+    if(t==="bourdon"){
+      const bd=Math.random()<0.5, autre=difficulte===2?"seule":"accords", r=bd?"oui, un bourdon":"non, pas de bourdon";
+      return qcm({emp:"ve-bd-"+bd,groupe:"ve-bourdon",consigne:"Un <b>bourdon</b> est une note grave (ou deux) tenue tout du long, sous la mélodie. En entends-tu un&nbsp;?",
+        sonBtn:ecoute({texture:bd?"bourdon":autre,timbre:pick(["flute","anche"]),court:true}),
+        solution:bd?"Oui : deux notes graves restent tenues du début à la fin, comme à la cornemuse.":"Non : "+(autre==="seule"?"la mélodie était seule.":"la basse et les accords changent sous la mélodie, rien n'est tenu.")},
+        ["oui, un bourdon","non, pas de bourdon"],r);
+    }
     if(t==="monodie-poly"){
-      const poly=Math.random()<0.5;
-      const r=poly?"une polyphonie (plusieurs voix)":"une monodie (une seule voix)";
-      const ph=pick([0,1,2,3]);
-      const phr=["Écoute cet extrait. Entends-tu une seule voix ou plusieurs voix superposées&nbsp;?",
-        "Cet extrait est-il une monodie (une voix) ou une polyphonie (plusieurs)&nbsp;?",
-        "Une seule ligne mélodique, ou plusieurs en même temps&nbsp;?",
-        "S'agit-il d'une seule voix (monodie) ou de plusieurs voix ensemble (polyphonie)&nbsp;?"][ph];
-      return {emp:"ve-mono-"+poly+"p"+ph,
-        consigne:phr,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",figure:poly?"polyphonie":"monodie"},
-        champ:selListe(["une monodie (une seule voix)","une polyphonie (plusieurs voix)"]),
-        verif:v=>norm(v)===norm(r),
-        solution:`C'était <b>${r}</b>. Une <b>monodie</b> n'a qu'une ligne mélodique&nbsp;; une <b>polyphonie</b> superpose plusieurs voix.`,rejouable:true};
-    }
-    if(t==="accompagnement"){
-      const acc=Math.random()<0.5;
-      const r=acc?"une mélodie accompagnée":"une mélodie seule";
-      const ph=pick([0,1,2,3]);
-      const phr=["Écoute&nbsp;: la mélodie est-elle seule, ou soutenue par un accompagnement&nbsp;?",
-        "Y a-t-il un accompagnement sous la mélodie, ou la mélodie est-elle seule&nbsp;?",
-        "La mélodie est-elle accompagnée (par des accords) ou nue&nbsp;?",
-        "Entends-tu seulement la mélodie, ou aussi un accompagnement dessous&nbsp;?"][ph];
-      return {emp:"ve-acc-"+acc+"p"+ph,
-        consigne:phr,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",figure:acc?"accompagnement":"monodie"},
-        champ:selListe(["une mélodie seule","une mélodie accompagnée"]),
-        verif:v=>norm(v)===norm(r),
-        solution:`C'était <b>${r}</b>. L'accompagnement (ici des accords) soutient la mélodie principale.`,rejouable:true};
+      const poly=Math.random()<0.5, r=poly?"une polyphonie (plusieurs voix)":"une monodie (une seule voix)";
+      return qcm({emp:"ve-mono-"+poly,groupe:"ve-mono",consigne:"Entends-tu une seule voix, ou plusieurs voix différentes en même temps&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",texture:{mode:poly?"polyphonie":"monodie",temps:16}},
+        solution:"C'était <b>"+r+"</b>. "+(poly?"Trois lignes différentes se superposent (une mélodie, un contre-chant, une basse).":"Une seule ligne mélodique, sans rien d'autre.")},
+        ["une monodie (une seule voix)","une polyphonie (plusieurs voix)"],r);
     }
     if(t==="ostinato"){
-      const osti=Math.random()<0.5;
-      const r=osti?"oui, il y a un ostinato":"non, pas d'ostinato";
-      const ph=pick([0,1,2]);
-      const phr=["Un <b>ostinato</b> est un motif court répété sans cesse. En entends-tu un dans cet extrait&nbsp;?",
-        "Repères-tu un motif obstinément répété (un <b>ostinato</b>) ici&nbsp;?",
-        "Y a-t-il une petite formule qui revient en boucle (un <b>ostinato</b>)&nbsp;?"][ph];
-      return {emp:"ve-osti-"+osti+"p"+ph,
-        consigne:phr,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",figure:osti?"ostinato":"monodie"},
-        champ:selListe(["oui, il y a un ostinato","non, pas d'ostinato"]),
-        verif:v=>norm(v)===norm(r),
-        solution:`Réponse&nbsp;: <b>${r}</b>. L'ostinato est une formule rythmique ou mélodique obstinément répétée.`,rejouable:true};
+      const os=Math.random()<0.5, autre=difficulte===2?"monodie":pick(["monodie","polyphonie"]), r=os?"oui, un ostinato":"non, pas d'ostinato";
+      return qcm({emp:"ve-osti-"+os,groupe:"ve-ostinato",consigne:"Un <b>ostinato</b> est un motif court répété en boucle, sans changer. En entends-tu un&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",texture:{mode:os?"ostinato":autre,temps:16}},
+        solution:os?"Oui : sous la mélodie, la même petite formule revient en boucle.":"Non : rien ne se répète en boucle sous la mélodie."},
+        ["oui, un ostinato","non, pas d'ostinato"],r);
     }
-    // bourdon
-    const bd=Math.random()<0.5;
-    const r=bd?"oui, il y a un bourdon":"non, pas de bourdon";
-    const phB=pick([0,1,2]);
-    const phrB=["Un <b>bourdon</b> est une note grave tenue pendant que la mélodie se déroule. En entends-tu un&nbsp;?",
-      "Entends-tu une note grave tenue en continu (un <b>bourdon</b>) sous la mélodie&nbsp;?",
-      "Une note grave reste-t-elle tenue tout du long (un <b>bourdon</b>, comme à la cornemuse)&nbsp;?"][phB];
-    return {emp:"ve-bd-"+bd+"p"+phB,
-      consigne:phrB,
-      sonBtn:{label:"<i class='ph ph-play'></i> Écouter",figure:bd?"bourdon":"monodie"},
-      champ:selListe(["oui, il y a un bourdon","non, pas de bourdon"]),
-      verif:v=>norm(v)===norm(r),
-      solution:`Réponse&nbsp;: <b>${r}</b>. Le bourdon (comme à la cornemuse) est une note continue qui sert de socle.`,rejouable:true};}),
+    if(t==="canon"){
+      const can=Math.random()<0.5, autre=difficulte===2?"monodie":"polyphonie", r=can?"oui, un canon":"non, pas de canon";
+      return qcm({emp:"ve-canon-"+can,groupe:"ve-canon",consigne:"Dans un <b>canon</b>, une 2ᵉ voix reprend la <b>même mélodie</b> que la 1ʳᵉ, mais en retard. Est-ce le cas ici&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",texture:can?{mode:"canon",n:2,decal:4,temps:20}:{mode:autre,temps:16}},
+        solution:can?"Oui : la 2ᵉ voix entre 4 temps plus tard avec la même mélodie (Frère Jacques en canon).":(autre==="monodie"?"Non : une seule voix, personne ne l'imite.":"Non : plusieurs voix, mais elles jouent des mélodies <b>différentes</b> (polyphonie), pas la même en décalé.")},
+        ["oui, un canon","non, pas de canon"],r);
+    }
+    if(t==="compter"){
+      const n=pick([1,2,3,4]), r=n+" voix";
+      return qcm({emp:"ve-cpt-"+n,groupe:"ve-compter",consigne:"Écoute jusqu'au bout : à la fin, combien de voix chantent <b>en même temps</b>&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",texture:n===1?{mode:"monodie",temps:16}:{mode:"canon",n:n,decal:4,temps:4*n+8}},
+        solution:"Il y avait <b>"+r+"</b>. "+(n===1?"Une seule voix : une <b>monodie</b>.":"Les voix entrent l'une après l'autre en canon : à la fin, "+n+" voix se superposent.")},
+        ["1 voix","2 voix","3 voix","4 voix"],r);
+    }
+    if(t==="conjoint"){
+      const cj=Math.random()<0.5, tr=pick([-2,0,3]), r=cj?"par notes voisines (conjoint)":"par grands sauts (disjoint)";
+      return qcm({emp:"ve-cj-"+cj,groupe:"ve-conjoint",consigne:"Cette mélodie avance-t-elle par <b>notes voisines</b> ou par <b>grands sauts</b>&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",melodie:VE_MOUV[cj?"conjoint":"disjoint"].map(function(x){ return [x[0]+tr,x[1]]; }),spb:0.42},
+        solution:"Elle avançait <b>"+r+"</b>. "+(cj?"Chaque note est voisine de la précédente : mouvement <b>conjoint</b>.":"Elle saute d'une note éloignée à l'autre : mouvement <b>disjoint</b>.")},
+        ["par notes voisines (conjoint)","par grands sauts (disjoint)"],r);
+    }
+    /* sens : la mélodie monte ou descend */
+    const monte=Math.random()<0.5, tr=pick([-3,0,2]), r=monte?"elle monte (vers l'aigu)":"elle descend (vers le grave)";
+    return qcm({emp:"ve-sens-"+monte,groupe:"ve-sens",consigne:"Écoute la mélodie : globalement, <b>monte</b>-t-elle ou <b>descend</b>-elle&nbsp;?",
+      sonBtn:{label:"<i class='ph ph-play'></i> Écouter",melodie:VE_MOUV[monte?"monte":"descend"].map(function(x){ return [x[0]+tr,x[1]]; }),spb:0.4},
+      solution:"<b>"+cap(r)+"</b> : c'est un mouvement mélodique <b>"+(monte?"ascendant":"descendant")+"</b>."},
+      ["elle monte (vers l'aigu)","elle descend (vers le grave)"],r);}),
 
   "ecoute":()=>mapEx(nbQuestions,()=>{
     const types=difficulte===1?["sens","nuance","tempo","accord","contour"]:difficulte===2?["sens","nuance","tempo","accord","contour"]
@@ -3172,8 +3456,14 @@ const GEN={
       "la durée":["une note tenue très longtemps puis une très courte","un son bref comme un claquement de doigts","une ronde comparée à une croche","une cloche qui résonne longtemps","des notes piquées très courtes (staccato)","un point d'orgue qui prolonge une note","un silence qui dure plusieurs temps","une sonnerie brève de téléphone"],
       "l'intensité":["on joue d'abord doucement puis très fort","un orchestre qui passe de piano à forte","un murmure puis un cri","un crescendo qui enfle peu à peu","la musique baisse jusqu'au silence (decrescendo)","frapper un tambour doucement puis violemment","une radio dont on monte le volume","un passage tout en douceur (pianissimo)"],
       "le timbre":["la même note jouée au violon puis à la flûte","reconnaître une trompette parmi d'autres instruments","la couleur particulière d'une voix","distinguer un piano d'une guitare les yeux fermés","le son nasillard d'un hautbois","reconnaître la voix d'un ami au téléphone","une même mélodie au xylophone puis au violoncelle","le grain rauque d'une voix"]};
-    const types=difficulte===1?["desc","exemple","exemple","contraire","compte"]:["desc","exemple","exemple","liste","compte","contraire"];
+    const types=difficulte===1?["desc","exemple","exemple","contraire","compte","ecoute","ecoute"]:["desc","exemple","exemple","liste","compte","contraire","ecoute","ecoute"];
     const t=pick(types);
+    /* à l'oreille : deux sons, un seul paramètre change (le laboratoire du son) */
+    if(t==="ecoute"){ const T=psTirage(difficulte===1?1:difficulte===2?2:3), r=PS_PARAMS[T.p];
+      return {emp:"ps-ec-"+T.p,consigne:"Écoute deux sons : un seul paramètre change entre le premier et le second. Lequel&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter les deux sons",param:{A:T.A,B:T.B}},
+        champ:selListe(["la hauteur","la durée","l'intensité","le timbre"],r),verif:v=>norm(v)===norm(r),
+        solution:"C'était <b>"+r+"</b>. "+psDiffTexte(T),rejouable:true}; }
 
     if(t==="exemple"){const ex=pick(EXP[p.nom]);
       return {emp:"par-ex-"+norm(ex).slice(0,18),consigne:`Quel paramètre du son change ici&nbsp;: «&nbsp;${ex}&nbsp;»&nbsp;?`,
@@ -3635,22 +3925,22 @@ const GEN={
       const optsC=shuffle([it.c,...shuffle(compos).slice(0,nbOpt-1)]);
       if(typM==="compo")return {emp:"melc-"+it.t, groupe:"mel-"+it.t,
         consigne:`Écoute cette mélodie très célèbre. <b>Qui l'a composée</b>&nbsp;?`,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter la mélodie",melodie:it.m},
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter la mélodie",oeuvre:it.t},
         champ:selListe(optsC,it.c), verif:v=>norm(v)===norm(it.c),
-        solution:`C'est <b>${it.t}</b>, de <b>${it.c}</b>.`};
+        solution:`C'est <b>${it.t}</b>, de <b>${it.c}</b> (${it.an}).`};
       return {emp:"melt-"+it.t, groupe:"mel-"+it.t,
         consigne:`Qui a composé «&nbsp;<b>${it.t}</b>&nbsp;»&nbsp;?`,
         champ:selListe(optsC,it.c), verif:v=>norm(v)===norm(it.c),
-        solution:`«&nbsp;${it.t}&nbsp;» est de <b>${it.c}</b>.`};
+        solution:`«&nbsp;${it.t}&nbsp;» est de <b>${it.c}</b> (${it.an}).`};
     }
     const distr=shuffle(MELODIES.filter(x=>x.t!==it.t)).slice(0,nbOpt-1).map(x=>x.t);
     const opts=shuffle([it.t,...distr]);
     return {emp:"mel-"+it.t, groupe:"mel-"+it.t,
       consigne:`Écoute cette mélodie très célèbre. De quelle œuvre s'agit-il&nbsp;?`,
-      sonBtn:{label:"<i class='ph ph-play'></i> Écouter la mélodie",melodie:it.m},
+      sonBtn:{label:"<i class='ph ph-play'></i> Écouter la mélodie",oeuvre:it.t},
       champ:selListe(opts),
       verif:v=>norm(v)===norm(it.t),
-      solution:`C'est <b>${it.t}</b> : ${it.c}.`};}),
+      solution:`C'est <b>${it.t}</b>, de ${it.c} (${it.an}).`};}),
 
   /* VOIX : 6e-5e = description -> voix. 4e = + classer aigu/grave, homme/femme.
      3e = + comparer deux voix, + voix la plus aiguë/grave. */
@@ -3726,18 +4016,13 @@ const GEN={
       :difficulte===2?["desc","descInv","schema","parties","strophVsRefr","ecouteForme","exemple"]
       :["desc","descInv","schema","parties","strophVsRefr","ecouteForme","ecouteForme","exemple"];
     const t=pick(types);
-    if(t==="ecouteForme"){ // reconnaître à l'oreille une forme simple (ABA, AB, AAB) jouée
-      const base=pick([55,57,59,60,62,64,65]);
-      const A=[0,2,4,5].map(x=>base+x), B=[7,5,9,7].map(x=>base+x);
-      const cas=pick([
-        {nom:"ABA",seq:[...A,...B,...A]},
-        {nom:"AB",seq:[...A,...B]},
-        {nom:"AAB",seq:[...A,...A,...B]},
-      ]);
-      return {emp:"f-ec-"+cas.nom+base,consigne:`Écoute cette petite pièce. Quelle est sa <b>forme</b> (A = 1ᵉʳ thème, B = 2ᵉ thème)&nbsp;?`,
-        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",midis:cas.seq,sequence:true,ecart:0.34},
-        champ:selListe(["ABA","AB","AAB"]),
-        verif:v=>norm(v)===norm(cas.nom),solution:`C'était la forme <b>${cas.nom}</b>.`,rejouable:true};}
+    if(t==="ecouteForme"){ // reconnaître à l'oreille une forme jouée avec les blocs de l'atelier des formes
+      const pool=difficulte===1?["ABA","AB","AAB"]:difficulte===2?["ABA","AB","AAB","ABAB","AAA"]:["ABA","AB","AAB","ABAB","AAA","ABACA","AABA"];
+      const nom=pick(pool), lib=nom.split("").join(" ");
+      return {emp:"f-ec-"+nom,consigne:`Écoute cette petite pièce. Quelle est sa <b>forme</b> (même lettre = même musique)&nbsp;?`,
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",forme:nom},
+        champ:selListe(pool.map(x=>x.split("").join(" ")),lib),
+        verif:v=>norm(v)===norm(lib),solution:`C'était la forme <b>${lib}</b>&nbsp;: ${fmNomForme(nom.split(""))}.`,rejouable:true};}
     if(t==="exemple"){const ex=pick([
         {q:"Un menuet classique, avec un thème, une partie centrale, puis le retour du thème, illustre la forme…",r:"Forme ternaire ABA"},
         {q:"Un refrain qui revient entre des couplets différents (A B A C A) est typique du…",r:"Rondo"},
@@ -3811,7 +4096,10 @@ function modPorteeSVG(notes,armure,legendes){
   const W=xNotes+notes.length*pas+8, H=legendes.length?150:128;
   const yP=p=>base-p*(e/2);
   const yLigne=n=>top+(4-n)*e;
-  let s='<svg class="mod-portee" viewBox="0 0 '+W+' '+H+'" style="max-width:'+W+'px" role="img">';
+  const nomP=function(p,alt){ return ["Mi","Fa","Sol","La","Si","Do","Ré"][((p%7)+7)%7]+(alt==="#"?"♯":alt==="b"?"♭":""); };
+  const arm=armure.length?", armure de "+armure.length+" "+(armure[0].alt==="#"?"dièse":"bémol")+(armure.length>1?"s":"")+" ("+armure.map(function(a){ return nomP(a.p,a.alt); }).join(", ")+")":"";
+  const lab="Portée en clé de sol"+arm+" : "+notes.map(function(n,i){ return legendes[i]||nomP(n.p,n.alt); }).join(", ");
+  let s='<svg class="mod-portee" viewBox="0 0 '+W+' '+H+'" style="max-width:'+W+'px" role="img" aria-label="'+lab+'">';
   for(let i=0;i<5;i++){ const y=top+i*e; s+='<line x1="'+x0+'" y1="'+y+'" x2="'+(W-4)+'" y2="'+y+'" stroke="#1f2440" stroke-width="1.3"/>'; }
   s+=cleSVG("sol",e,yLigne).replace('x="22"','x="'+xCle+'"');
   const glyphe=function(alt,x,p,taille){ const c=alt==="#"?"♯":"♭";
@@ -3835,7 +4123,11 @@ function modClavierSVG(marques){
   marques=marques||{};
   const blanches=[0,2,4,5,7,9,11], noms=["Do","Ré","Mi","Fa","Sol","La","Si"];
   const L=26, H=104, hN=64, lN=16, n=15;
-  let s='<svg class="mod-clavier" viewBox="0 0 '+(n*L+2)+' '+(H+22)+'" role="img">', noires="";
+  /* nom accessible : les touches marquées, dans l'ordre (n = nom d'une touche noire marquée d'un degré) */
+  const nomT=["Do","Do♯","Ré","Ré♯","Mi","Fa","Fa♯","Sol","Sol♯","La","La♯","Si"];
+  const desc=Object.keys(marques).map(Number).sort(function(a,b){ return a-b; }).map(function(m){ const mq=marques[m], nom=mq.n||nomT[m%12];
+    return /^(Do|Ré|Mi|Fa|Sol|La|Si)/.test(mq.t)?mq.t:nom+(mq.t?" ("+mq.t+")":""); });
+  let s='<svg class="mod-clavier" viewBox="0 0 '+(n*L+2)+' '+(H+22)+'" role="img" aria-label="Clavier de deux octaves à partir de Do'+(desc.length?", touches marquées : "+desc.join(", "):"")+'">', noires="";
   for(let i=0;i<n;i++){
     const oct=Math.floor(i/7), m=60+12*oct+blanches[i%7], mq=marques[m];
     s+='<rect x="'+(1+i*L)+'" y="1" width="'+L+'" height="'+H+'" rx="3" fill="'+(mq?mq.c:"#fff")+'" stroke="#1f2440" stroke-width="1"/>';
@@ -4461,11 +4753,11 @@ function rbVerifier(garderMsg){
 }
 /* note de piano (même timbre que jouerFreq) mais ÉTOUFFÉE à la fin de sa durée,
    comme quand on relâche la touche : on entend qu'une blanche dure deux fois une noire */
-function rbPiano(freq,debut,duree,vol){
+function rbPiano(freq,debut,duree,vol,dest){
   const ctx=audio(), t=ctx.currentTime+debut, fin=t+duree, v=vol||0.3;
   const sortie=ctx.createGain();
   sortie.gain.setValueAtTime(v,t); sortie.gain.setValueAtTime(v,Math.max(t+0.03,fin-0.05)); sortie.gain.linearRampToValueAtTime(0.0001,fin+0.05);
-  sortie.connect(ctx.destination);
+  sortie.connect(dest||ctx.destination);
   const filtre=ctx.createBiquadFilter(); filtre.type="lowpass";
   filtre.frequency.setValueAtTime(Math.min(8500,freq*7+2000),t); filtre.frequency.exponentialRampToValueAtTime(Math.max(600,freq*1.6),t+2.6);
   filtre.connect(sortie);
@@ -4519,7 +4811,1675 @@ function rbEcouter(){
   _rb.lecture=minuteurs;
 }
 
+/* =====================================================================
+   VOIX SUPERPOSÉES (08/10/2026) : monodie, unisson, canon, polyphonie,
+   homophonie, mélodie accompagnée, bourdon, ostinato (le « successif et
+   simultané » du programme). Une TABLE DE MIXAGE : chaque voix a sa piste
+   colorée où ses notes défilent en barres (hauteur = place dans la piste),
+   une tête de lecture montre ce qui sonne, on coupe (M) ou isole (S) une
+   voix, on règle le canon (nombre de voix, décalage). Jeu « Devine la
+   texture » (pistes cachées). Matériau : « Frère Jacques » (traditionnel)
+   et un contre-chant, une basse, des accords écrits pour lui.
+   Sons synthétisés (piano, flûte, cordes, basson), rien à charger.
+   ===================================================================== */
+const TX_FJ=[[0,1,60],[1,1,62],[2,1,64],[3,1,60],[4,1,60],[5,1,62],[6,1,64],[7,1,60],
+  [8,1,64],[9,1,65],[10,2,67],[12,1,64],[13,1,65],[14,2,67],
+  [16,.5,67],[16.5,.5,69],[17,.5,67],[17.5,.5,65],[18,1,64],[19,1,60],
+  [20,.5,67],[20.5,.5,69],[21,.5,67],[21.5,.5,65],[22,1,64],[23,1,60],
+  [24,1,60],[25,1,55],[26,2,60],[28,1,60],[29,1,55],[30,2,60]];
+const TX_LONG=32;
+/* contre-chant et basse écrits pour « Frère Jacques » (polyphonie : autres mélodies, autres rythmes) */
+const TX_CONTRE=[[0,4,72],[4,4,76],[8,2,72],[10,2,76],[12,1,79],[13,1,77],[14,2,76],[16,4,72],[20,2,77],[22,2,76],
+  [24,1,76],[25,1,74],[26,2,72],[28,1,74],[29,1,71],[30,2,72]];
+const TX_BASSE=[[0,2,48],[2,2,55],[4,2,48],[6,2,55],[8,4,48],[12,4,43],[16,2,48],[18,2,52],[20,2,53],[22,2,55],
+  [24,2,48],[26,2,43],[28,2,48],[30,2,48]];
+/* accompagnement : un accord par demi-mesure, joué en arpège (fondamentale, quinte, tierce, quinte) */
+const TX_GRILLE=["C","C","C","C","C","C","C","C","F","C","F","C","C","C","C","C"];
+const TX_ARP={C:[48,55,52,55],F:[53,60,57,60]};
+/* couleurs des pistes (charte) : or, bleu, sarcelle, brique ; texte lisible sur chaque pastille */
+const TX_COUL=[{c:"var(--or)",t:"#16233a",s:"#a87700"},{c:"#2374b0",t:"#fff",s:"#1b5f92"},
+  {c:"var(--dom-ecoute)",t:"#fff",s:"var(--dom-ecoute)"},{c:"var(--dom-rythme)",t:"#fff",s:"var(--dom-rythme)"}];
+const TX_TIMBRES={piano:"piano",flute:"flûte",cordes:"cordes",basson:"basson"};
+const TX_MODES={
+  monodie:{nom:"Monodie",ic:"ph-user",fam:1,def:"Une seule mélodie, chantée ou jouée seule.",ex:"le chant grégorien, une berceuse fredonnée"},
+  unisson:{nom:"Unisson",ic:"ph-users",fam:1,def:"Plusieurs voix chantent la même mélodie en même temps (parfois une octave plus haut) : on n'entend toujours qu'une seule ligne.",ex:"un stade qui chante l'hymne, une chorale à l'unisson"},
+  canon:{nom:"Canon",ic:"ph-stairs",fam:2,def:"La même mélodie, reprise par chaque voix l'une après l'autre, en décalé.",ex:"« Frère Jacques » à plusieurs groupes, le Canon de Pachelbel"},
+  polyphonie:{nom:"Polyphonie",ic:"ph-git-branch",fam:3,def:"Plusieurs mélodies différentes en même temps, chacune avec son propre rythme.",ex:"les chœurs de la Renaissance (Josquin des Prés), les fugues de Bach"},
+  homophonie:{nom:"Homophonie",ic:"ph-rows",fam:3,def:"Toutes les voix avancent avec le même rythme : on entend une suite d'accords, la mélodie est en haut.",ex:"un choral, les « Hallelujah ! » de Haendel"},
+  accompagnee:{nom:"Mélodie accompagnée",ic:"ph-piano-keys",fam:3,def:"Une mélodie au premier plan, et derrière un accompagnement (accords, arpèges).",ex:"la plupart des chansons : une voix et une guitare ou un piano"},
+  bourdon:{nom:"Bourdon",ic:"ph-wave-sine",fam:3,def:"Une ou deux notes graves tenues tout du long, sous la mélodie.",ex:"la cornemuse, la vielle à roue"},
+  ostinato:{nom:"Ostinato",ic:"ph-repeat",fam:3,def:"Un motif court répété en boucle, sous la mélodie.",ex:"le Boléro de Ravel (la caisse claire)"}
+};
+const TX_FAMILLES=[["Une seule ligne",["monodie","unisson"]],["La même mélodie, en décalé",["canon"]],
+  ["Des lignes différentes",["polyphonie","homophonie","accompagnee","bourdon","ostinato"]]];
+const TX_TEMPOS={lent:84,moyen:108,rapide:132};
+let _tx={mode:"canon",n:4,decal:8,tempo:"moyen",boucle:false,muet:[false,false,false,false],solo:-1,
+  session:false,timer:null,raf:null,notes:[],idx:0,t0:0,spb:0.55,total:32,bus:null,pistes:[],devine:null,serie:0};
+
+/* ---------- le matériau ---------- */
+function txDecale(notes,dt,tr){ return notes.map(function(n){ return [n[0]+dt,n[1],n[2]+(tr||0)]; }); }
+function txBoucle(notes,fois,dt,tr){ let r=[]; for(let k=0;k<fois;k++)r=r.concat(txDecale(notes,(dt||0)+k*TX_LONG,tr)); return r; }
+function txAccordDe(m){ const pc=((m%12)+12)%12; if(pc===2||pc===5||pc===11)return [7,11,2,5]; if(pc===9)return [5,9,0]; return [0,4,7]; }
+function txSous(m,acc){ for(let x=m-1;x>m-13;x--)if(acc.indexOf(((x%12)+12)%12)>=0)return x; return m-12; }
+/* les pistes d'une texture : [{lib, sous, k (couleur), timbre, vol, notes}], et la durée totale en temps */
+function txPistesDe(mode,o){
+  o=o||{}; const n=Math.max(2,Math.min(4,o.n||3)), dec=o.decal||8;
+  const P=function(lib,k,timbre,notes,vol,sous){ return {lib:lib,k:k,timbre:timbre,notes:notes,vol:vol||0.2,sous:sous||""}; };
+  if(mode==="monodie")return {total:32,pistes:[P("Mélodie",0,"flute",TX_FJ,0.24)]};
+  if(mode==="unisson")return {total:32,pistes:[P("Voix 1",0,"piano",TX_FJ),P("Voix 2 (octave)",1,"flute",txDecale(TX_FJ,0,12),0.16),P("Voix 3",2,"cordes",TX_FJ,0.18)]};
+  if(mode==="canon"){
+    const T=["piano","flute","cordes","basson"], TR=[0,12,0,-12], l=[];
+    for(let i=0;i<n;i++)l.push(P("Voix "+(i+1),i,T[i],txBoucle(TX_FJ,2,i*dec,TR[i]),i===1?0.15:0.19,i?"entre après "+(i*dec/4)+" mes.":"commence"));
+    return {total:2*TX_LONG+(n-1)*dec,pistes:l};
+  }
+  if(mode==="polyphonie")return {total:32,pistes:[P("Mélodie",0,"piano",TX_FJ),P("Contre-chant",1,"flute",TX_CONTRE,0.15),P("Basse",3,"basson",TX_BASSE,0.2)]};
+  if(mode==="homophonie"){
+    const a=[],b=[],c=[];
+    TX_FJ.forEach(function(x){ const acc=txAccordDe(x[2]), v2=txSous(x[2],acc), v3=txSous(v2,acc);
+      let ba=36+acc[0]; while(ba+12<v3)ba+=12; if(ba>=v3)ba-=12;
+      a.push([x[0],x[1],v2]); b.push([x[0],x[1],v3]); c.push([x[0],x[1],ba]); });
+    return {total:32,pistes:[P("Soprano (mélodie)",0,"flute",TX_FJ,0.2),P("Alto",1,"cordes",a,0.13),P("Ténor",2,"cordes",b,0.13),P("Basse",3,"basson",c,0.17)]};
+  }
+  if(mode==="accompagnee"){
+    const ac=[]; TX_GRILLE.forEach(function(x,h){ TX_ARP[x].forEach(function(m,k){ ac.push([h*2+k*0.5,0.5,m]); }); });
+    return {total:32,pistes:[P("Mélodie",0,"flute",txDecale(TX_FJ,0,12),0.22),P("Accompagnement",1,"piano",ac,0.13)]};
+  }
+  if(mode==="bourdon")return {total:32,pistes:[P("Mélodie",0,"flute",txDecale(TX_FJ,0,12),0.22),P("Bourdon",2,"cordes",[[0,32,48],[0,32,55]],0.12)]};
+  if(mode==="ostinato"){
+    const os=[]; for(let m=0;m<8;m++)[[0,1,48],[1,0.5,55],[1.5,0.5,55],[2,1,57],[3,1,55]].forEach(function(x){ os.push([m*4+x[0],x[1],x[2]]); });
+    return {total:32,pistes:[P("Mélodie",0,"flute",txDecale(TX_FJ,0,12),0.22),P("Ostinato",3,"basson",os,0.17)]};
+  }
+  return txPistesDe("monodie");
+}
+function txCourant(){ return txPistesDe(_tx.mode,{n:_tx.n,decal:_tx.decal}); }
+
+/* ---------- les sons ---------- */
+/* un canal qu'on coupe à l'arrêt : sans lui, une note déjà programmée (le bourdon, ~30 s) continuait */
+function txCanal(){ const ctx=audio(), g=ctx.createGain(); g.gain.value=1; g.connect(txBus()); return g; }
+function txCanalCouper(g){
+  if(!g)return; const ctx=audio(), now=ctx.currentTime;
+  try{ g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value,now); g.gain.linearRampToValueAtTime(0,now+0.05); }catch(e){}
+  setTimeout(function(){ try{ g.disconnect(); }catch(e){} },120);
+}
+function txBus(){
+  const ctx=audio();
+  if(!_tx.bus||_tx.bus.context!==ctx){
+    const c=ctx.createDynamicsCompressor(), g=ctx.createGain();
+    c.threshold.value=-14; c.knee.value=6; c.ratio.value=4; c.attack.value=0.004; c.release.value=0.2;
+    g.gain.value=1.5; c.connect(g); g.connect(ctx.destination); _tx.bus=c;
+  }
+  return _tx.bus;
+}
+/* une note (t : heure audio, d : durée en secondes) avec le timbre de sa voix */
+function txSon(t,m,d,timbre,vol,dest){
+  const ctx=audio(), f=440*Math.pow(2,(m-69)/12), fin=t+Math.max(0.12,d);
+  let v=vol||0.2, att=0.03, rel=0.1;
+  if(timbre==="piano"){ rbPiano(f,Math.max(0,t-ctx.currentTime),Math.max(0.3,d),v*1.1,dest); return; }
+  const g=ctx.createGain(), src=[];
+  if(timbre==="flute"){
+    const o=ctx.createOscillator(), o2=ctx.createOscillator(), g2=ctx.createGain(), lfo=ctx.createOscillator(), lg=ctx.createGain();
+    o.type="sine"; o.frequency.value=f; o2.type="sine"; o2.frequency.value=f*2; g2.gain.value=0.14;
+    lfo.frequency.value=5.2; lg.gain.value=f*0.005; lfo.connect(lg); lg.connect(o.frequency);
+    o.connect(g); o2.connect(g2); g2.connect(g); src.push(o,o2,lfo); att=0.05; rel=0.09;
+  }else if(timbre==="cordes"){
+    const o=ctx.createOscillator(), o2=ctx.createOscillator(), fl=ctx.createBiquadFilter();
+    o.type="sawtooth"; o2.type="sawtooth"; o.frequency.value=f; o2.frequency.value=f*1.005;
+    fl.type="lowpass"; fl.frequency.value=Math.min(2600,f*5); fl.Q.value=0.6;
+    o.connect(fl); o2.connect(fl); fl.connect(g); src.push(o,o2); att=0.08; rel=0.16; v*=0.5;
+  }else if(timbre==="orgue"){
+    /* jeux de fonds : fondamentale, octave et quinte, sans attaque ni déclin */
+    [[1,1],[2,0.5],[3,0.18],[4,0.22]].forEach(function(h){ const o=ctx.createOscillator(), gh=ctx.createGain();
+      o.type="sine"; o.frequency.value=f*h[0]; gh.gain.value=h[1]; o.connect(gh); gh.connect(g); src.push(o); });
+    att=0.03; rel=0.07; v*=0.55;
+  }else if(timbre==="cuivre"){
+    /* trompette : dents de scie dont le filtre s'ouvre à l'attaque (le « cuivré ») */
+    const o=ctx.createOscillator(), o2=ctx.createOscillator(), fl=ctx.createBiquadFilter();
+    o.type="sawtooth"; o2.type="sawtooth"; o.frequency.value=f; o2.frequency.value=f*1.004;
+    fl.type="lowpass"; fl.Q.value=1.2;
+    fl.frequency.setValueAtTime(Math.min(1200,f*1.5),t); fl.frequency.linearRampToValueAtTime(Math.min(5200,f*7),t+0.06); fl.frequency.linearRampToValueAtTime(Math.min(4200,f*4.5),t+0.25);
+    o.connect(fl); o2.connect(fl); fl.connect(g); src.push(o,o2); att=0.04; rel=0.09; v*=0.42;
+  }else if(timbre==="anche"){
+    /* hautbois, cor anglais : carré filtré serré (nasillard) avec un léger vibrato */
+    const o=ctx.createOscillator(), fl=ctx.createBiquadFilter(), lfo=ctx.createOscillator(), lg=ctx.createGain();
+    o.type="square"; o.frequency.value=f; fl.type="bandpass"; fl.frequency.value=Math.min(3000,f*3); fl.Q.value=1.1;
+    lfo.frequency.value=5; lg.gain.value=f*0.004; lfo.connect(lg); lg.connect(o.frequency);
+    o.connect(fl); fl.connect(g); src.push(o,lfo); att=0.05; rel=0.1; v*=0.75;
+  }else{
+    const o=ctx.createOscillator(), fl=ctx.createBiquadFilter();
+    o.type="square"; o.frequency.value=f; fl.type="lowpass"; fl.frequency.value=Math.min(1900,f*4); fl.Q.value=1;
+    o.connect(fl); fl.connect(g); src.push(o); att=0.025; rel=0.08; v*=0.45;
+  }
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+att);
+  g.gain.setValueAtTime(v,Math.max(t+att,fin-rel)); g.gain.linearRampToValueAtTime(0.0001,fin);
+  g.connect(dest||txBus());
+  src.forEach(function(s){ s.start(t); s.stop(fin+0.05); });
+}
+/* extrait court pour les exercices (bouton « Écouter ») : rien à afficher, on joue */
+function txExtrait(cfg){
+  try{ audio().resume(); }catch(e){}
+  const X=txPistesDe(cfg.mode,{n:cfg.n||3,decal:cfg.decal||4}), spb=60/(cfg.bpm||112), lim=cfg.temps||16, t0=audio().currentTime+0.12;
+  const canal=sonBtnCanal(txBus());
+  X.pistes.forEach(function(p){ p.notes.forEach(function(x){ if(x[0]<lim)txSon(t0+x[0]*spb,x[2],Math.min(x[1],lim-x[0])*spb*0.95,p.timbre,p.vol,canal); }); });
+}
+
+/* ---------- le dessin ---------- */
+/* une piste en barres : x = temps, y = hauteur dans la piste (fenêtre [0, total]) */
+function txBarresSVG(p,total,cls,mini){
+  const H=mini?12:56, P=mini?1.5:5;
+  let lo=200,hi=0; p.notes.forEach(function(x){ if(x[2]<lo)lo=x[2]; if(x[2]>hi)hi=x[2]; });
+  if(hi-lo<6){ const mil=(hi+lo)/2; lo=mil-3; hi=mil+3; }
+  const h=mini?3.4:Math.max(7,Math.min(11,(H-2*P)/(hi-lo+1)*1.4)), C=TX_COUL[p.k];
+  let s='<svg class="'+cls+'" viewBox="0 0 1000 '+H+'" preserveAspectRatio="none" aria-hidden="true">';
+  p.notes.forEach(function(x,i){
+    if(x[0]>=total)return;
+    const xx=x[0]/total*1000, w=Math.max(mini?6:4,Math.min(x[1],total-x[0])/total*1000-(mini?4:3)), y=P+(hi-x[2])/(hi-lo||1)*(H-2*P-h);
+    s+='<rect data-i="'+i+'" x="'+xx.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="'+(mini?1:2)+'" style="fill:'+C.c+';stroke:'+C.s+'"/>';
+  });
+  return s+'</svg>';
+}
+/* petit schéma d'une texture (vignettes, tableau, questions) : 3 voix, début du morceau */
+function txSchemaSVG(mode,grand){
+  const X=txPistesDe(mode,{n:3,decal:4}), T=mode==="canon"?14:12;
+  return '<span class="tx-schema'+(grand?" grand":"")+'" role="img" aria-label="Schéma : '+(grand?"texture à reconnaître":TX_MODES[mode].nom)+'">'
+    +X.pistes.slice(0,4).map(function(p){ return txBarresSVG(p,T,"tx-mini",true); }).join("")+'</span>';
+}
+
+/* ---------- l'atelier (table de mixage) ---------- */
+function txAtelierHTML(){
+  return '<div class="tx-atelier" id="txAtelier"><div class="tx-chargement">Chargement de la table de mixage…</div></div>';
+}
+function txInit(){ txStop(); _tx.devine=null; _tx.muet=[false,false,false,false]; _tx.solo=-1; txRendreTout(); }
+function txRendreTout(){
+  const z=document.getElementById("txAtelier"); if(!z)return;
+  const M=TX_MODES[_tx.mode], d=_tx.devine;
+  z.innerHTML='<div class="tx-tete-at"><span class="tx-titre"><i class="ph-fill ph-sliders-horizontal"></i> La table de mixage</span>'
+      +'<button type="button" class="tx-devine-b'+(d?" on":"")+'" onclick="txDevine()"><i class="ph-fill ph-question"></i> Devine la texture</button></div>'
+    +'<div class="tx-modes">'+TX_FAMILLES.map(function(f){
+        return '<div class="tx-fam"><span>'+f[0]+'</span><div>'+f[1].map(function(k){
+          const on=!d&&k===_tx.mode;
+          return '<button type="button" class="tx-mode'+(on?" on":"")+'" aria-pressed="'+on+'" onclick="txChoisir(\''+k+'\')"'+(d?' disabled':'')+'>'+txSchemaSVG(k)+'<b>'+TX_MODES[k].nom+'</b></button>'; }).join("")+'</div></div>'; }).join("")+'</div>'
+    +(d?'<div class="tx-devine" id="txDevineZone">'+txDevineHTML()+'</div>'
+      :'<div class="tx-def"><b><i class="ph-fill '+M.ic+'"></i> '+M.nom+'</b><span>'+M.def+'</span><small>Par exemple : '+M.ex+'.</small></div>')
+    +(_tx.mode==="canon"&&!d?'<div class="tx-opts-canon"><div><span>Nombre de voix</span>'+txSeg("n",[[2,"2"],[3,"3"],[4,"4"]])+'</div>'
+      +'<div><span>Chaque voix entre après</span>'+txSeg("decal",[[4,"1 mesure"],[8,"2 mesures"],[16,"4 mesures"]])+'</div></div>':'')
+    +'<div class="tx-pistes" id="txPistes"></div>'
+    +'<div class="tx-bas"><button type="button" class="cm-play tx-play" id="txPlay" onclick="txJouer()"><i class="ph-fill ph-play"></i> Écouter</button>'
+    +'<div class="tx-etat" aria-live="polite"><b id="txNb">0</b><span id="txNbLib">voix en même temps</span></div></div>'
+    +'<div class="cm-options"><div><span>Tempo</span>'+txSeg("tempo",[["lent","Lent"],["moyen","Moyen"],["rapide","Rapide"]])+'</div>'
+    +'<label class="cm-case"><input type="checkbox" '+(_tx.boucle?"checked":"")+' onchange="_tx.boucle=this.checked"> En boucle</label></div>'
+    +'<p class="tx-aide"><i class="ph ph-info"></i> <b>M</b> coupe une voix, <b>S</b> l\'écoute seule. Pendant l\'écoute, la ligne rouge montre ce qui sonne.</p>';
+  txRendrePistes();
+}
+function txSeg(cle,opts){
+  return '<div class="cm-seg" role="group">'+opts.map(function(o){ const on=String(_tx[cle])===String(o[0]);
+    return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="txReglage(\''+cle+'\','+(typeof o[0]==="number"?o[0]:'\''+o[0]+'\'')+')">'+o[1]+'</button>'; }).join("")+'</div>';
+}
+function txReglage(cle,val){ const joue=_tx.session; txStop(); _tx[cle]=val; txRendreTout(); if(joue)txJouer(); }
+function txChoisir(k){ const joue=_tx.session; txStop(); _tx.mode=k; _tx.muet=[false,false,false,false]; _tx.solo=-1; txRendreTout(); if(joue)txJouer(); }
+/* depuis le texte de la leçon : choisir une texture et l'écouter dans la table */
+function txEcouterMode(k){
+  const z=document.getElementById("txAtelier"); if(!z)return;
+  txStop(); _tx.devine=null; _tx.mode=k; _tx.muet=[false,false,false,false]; _tx.solo=-1; txRendreTout();
+  z.scrollIntoView({block:"start",behavior:"smooth"}); txJouer();
+}
+function txRendrePistes(){
+  const z=document.getElementById("txPistes"); if(!z)return;
+  const X=txCourant(), cache=!!(_tx.devine&&!_tx.devine.repondu);
+  _tx.pistes=X.pistes; _tx.total=X.total;
+  z.classList.toggle("cache",cache);
+  /* jeu « Devine » : rien à voir (ni le nombre de voix, ni leurs entrées), seulement à entendre */
+  if(cache){ z.innerHTML='<div class="tx-cache"><i class="ph-fill ph-eye-slash"></i> Pistes cachées : fie-toi à ton oreille !</div>'; return; }
+  z.innerHTML=X.pistes.map(function(p,i){
+    const C=TX_COUL[p.k], m=_tx.muet[i], s=_tx.solo===i;
+    return '<div class="tx-piste'+(m?" muet":"")+(_tx.solo>=0&&!s?" eteinte":"")+'" data-i="'+i+'">'
+      +'<div class="tx-pt"><span class="tx-lib" style="background:'+C.c+';color:'+C.t+'">'+(cache?"?":p.lib)+'</span>'
+      +'<small>'+TX_TIMBRES[p.timbre]+(p.sous?" · "+p.sous:"")+'</small>'
+      +'<span class="tx-ms"><button type="button" class="'+(m?"on":"")+'" aria-pressed="'+m+'" onclick="txMuet('+i+')" title="Couper cette voix" aria-label="Couper '+(cache?"la voix "+(i+1):p.lib)+'">M</button>'
+      +'<button type="button" class="'+(s?"on":"")+'" aria-pressed="'+s+'" onclick="txSolo('+i+')" title="Écouter cette voix seule" aria-label="Écouter seule '+(cache?"la voix "+(i+1):p.lib)+'">S</button></span></div>'
+      +'<div class="tx-pc">'+txBarresSVG(p,X.total,"tx-svg",false)+'</div></div>';
+  }).join("");
+  z.style.setProperty("--pos","0");
+}
+function txAudible(i){ return _tx.solo>=0?_tx.solo===i:!_tx.muet[i]; }
+function txMajPistes(){
+  document.querySelectorAll("#txPistes .tx-piste").forEach(function(el){
+    const i=+el.getAttribute("data-i"), m=_tx.muet[i], s=_tx.solo===i;
+    el.classList.toggle("muet",m); el.classList.toggle("eteinte",_tx.solo>=0&&!s);
+    const b=el.querySelectorAll(".tx-ms button");
+    if(b[0]){ b[0].classList.toggle("on",m); b[0].setAttribute("aria-pressed",m); }
+    if(b[1]){ b[1].classList.toggle("on",s); b[1].setAttribute("aria-pressed",s); }
+  });
+}
+function txMuet(i){ _tx.muet[i]=!_tx.muet[i]; if(_tx.solo===i)_tx.solo=-1; txMajPistes(); }
+function txSolo(i){ _tx.solo=_tx.solo===i?-1:i; txMajPistes(); }
+
+/* ---------- lecture ---------- */
+function txMajBouton(){
+  const b=document.getElementById("txPlay"); if(!b)return;
+  b.classList.toggle("stop",_tx.session);
+  b.innerHTML=_tx.session?'<i class="ph-fill ph-stop"></i> Arrêter':'<i class="ph-fill ph-play"></i> '+(_tx.devine&&!_tx.devine.repondu?"Réécouter":"Écouter");
+}
+function txJouer(){
+  if(_tx.session){ txStop(); return; }
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  if(!_tx.pistes.length)txRendrePistes();
+  _tx.notes=[];
+  _tx.pistes.forEach(function(p,i){ p.notes.forEach(function(x){ _tx.notes.push({b:x[0],d:x[1],m:x[2],i:i,timbre:p.timbre,vol:p.vol}); }); });
+  _tx.notes.sort(function(a,b){ return a.b-b.b; });
+  _tx.idx=0; _tx.spb=60/TX_TEMPOS[_tx.tempo]; _tx.t0=ctx.currentTime+0.15; _tx.session=true; _tx.canal=txCanal();
+  _tx.timer=setInterval(txPlanifier,25); txPlanifier();
+  _tx.raf=requestAnimationFrame(txAnimer);
+  txMajBouton();
+}
+function txStop(){
+  if(_tx.timer){ clearInterval(_tx.timer); _tx.timer=null; }
+  if(_tx.raf){ cancelAnimationFrame(_tx.raf); _tx.raf=null; }
+  const etait=_tx.session; _tx.session=false;
+  txCanalCouper(_tx.canal); _tx.canal=null;
+  if(!etait)return;
+  document.querySelectorAll("#txPistes rect.on,#txPistes .tx-piste.chante").forEach(function(x){ x.classList.remove("on","chante"); });
+  const z=document.getElementById("txPistes"); if(z)z.style.setProperty("--pos","0");
+  const nb=document.getElementById("txNb"); if(nb)nb.textContent="0";
+  txMajBouton();
+}
+function txPlanifier(){
+  if(!document.getElementById("txAtelier")){ txStop(); return; }
+  const ctx=audio(), lim=ctx.currentTime+0.2, fin=_tx.t0+_tx.total*_tx.spb;
+  while(_tx.idx<_tx.notes.length){
+    const x=_tx.notes[_tx.idx], t=_tx.t0+x.b*_tx.spb; if(t>lim)break;
+    if(txAudible(x.i))txSon(t,x.m,x.d*_tx.spb*0.95,x.timbre,x.vol,_tx.canal);
+    _tx.idx++;
+  }
+  if(_tx.idx>=_tx.notes.length&&_tx.boucle&&ctx.currentTime>fin-0.2){ _tx.t0=fin; _tx.idx=0; }
+}
+function txAnimer(){
+  if(!document.getElementById("txAtelier")){ txStop(); return; }
+  const ctx=audio(), b=(ctx.currentTime-_tx.t0)/_tx.spb, z=document.getElementById("txPistes");
+  if(!_tx.boucle&&b>_tx.total+0.3){ txStop(); return; }
+  if(z)z.style.setProperty("--pos",String(Math.max(0,Math.min(1,b/_tx.total))));
+  let nb=0;
+  document.querySelectorAll("#txPistes .tx-piste").forEach(function(el){
+    const i=+el.getAttribute("data-i"), p=_tx.pistes[i]; if(!p)return;
+    let chante=false;
+    el.querySelectorAll("rect").forEach(function(r){ const x=p.notes[+r.getAttribute("data-i")]; const on=!!x&&b>=x[0]&&b<x[0]+x[1]; r.classList.toggle("on",on); if(on)chante=true; });
+    const ok=chante&&txAudible(i); el.classList.toggle("chante",ok); if(ok)nb++;
+  });
+  const n=document.getElementById("txNb"), l=document.getElementById("txNbLib");
+  if(_tx.devine&&!_tx.devine.repondu){ if(n)n.textContent="?"; }
+  else if(n&&n.textContent!==String(nb)){ n.textContent=nb; if(l)l.textContent=nb>1?"voix en même temps":"voix en ce moment"; }
+  _tx.raf=requestAnimationFrame(txAnimer);
+}
+
+/* ---------- « Devine la texture » : pistes cachées, 4 réponses ---------- */
+function txDevine(){
+  txStop();
+  if(_tx.devine&&!_tx.devine.repondu){ _tx.devine=null; txRendreTout(); return; }   /* re-cliquer : on quitte le jeu */
+  const l=Object.keys(TX_MODES), prec=_tx.devine&&_tx.devine.mode;
+  let m=pick(l); for(let k=0;k<4&&m===prec;k++)m=pick(l);
+  const autres=shuffle(l.filter(function(x){ return x!==m; })).slice(0,3);
+  _tx.devine={mode:m,choix:shuffle([m].concat(autres)),repondu:null};
+  _tx.mode=m; if(m==="canon"){ _tx.n=pick([2,3,4]); _tx.decal=pick([4,8]); }
+  _tx.muet=[false,false,false,false]; _tx.solo=-1;
+  txRendreTout(); txJouer();
+}
+function txDevineHTML(){
+  const d=_tx.devine; if(!d)return "";
+  if(!d.repondu)return '<p><i class="ph-fill ph-ear"></i> Écoute bien : <b>quelle texture</b> entends-tu ?</p><div class="tx-choix">'
+    +d.choix.map(function(k){ return '<button type="button" onclick="txRepondre(\''+k+'\')">'+TX_MODES[k].nom+'</button>'; }).join("")+'</div>';
+  const ok=d.repondu===d.mode, M=TX_MODES[d.mode];
+  return '<p class="tx-verdict '+(ok?"ok":"ko")+'"><i class="ph-fill '+(ok?"ph-check-circle":"ph-x-circle")+'"></i> '
+    +(ok?"Bravo, c'est bien <b>"+M.nom+"</b> !":"C'était <b>"+M.nom+"</b> (pas "+TX_MODES[d.repondu].nom.toLowerCase()+").")
+    +(_tx.serie>1?' <span class="tx-serie"><i class="ph-fill ph-fire"></i> '+_tx.serie+' d\'affilée</span>':'')+'</p>'
+    +'<p class="tx-def-d">'+M.def+' Regarde les pistes, maintenant visibles.</p>'
+    +'<div class="tx-choix"><button type="button" class="tx-encore" onclick="txDevine()"><i class="ph-fill ph-arrow-clockwise"></i> Une autre</button>'
+    +'<button type="button" onclick="_tx.devine=null;txStop();txRendreTout()">Revenir à la table</button></div>';
+}
+function txRepondre(k){
+  const d=_tx.devine; if(!d||d.repondu)return;
+  d.repondu=k; _tx.serie=(k===d.mode)?_tx.serie+1:0;
+  try{ jouerEffet(k===d.mode?"bon":"mauvais"); }catch(e){}
+  const z=document.getElementById("txDevineZone"); if(z)z.innerHTML=txDevineHTML();
+  txRendrePistes();   /* les pistes se dévoilent, la lecture continue */
+  txMajBouton();
+}
+document.addEventListener("visibilitychange",function(){ if(document.hidden&&_tx.session)txStop(); });
+function txDevineDepuisTexte(){
+  const z=document.getElementById("txAtelier"); if(!z)return;
+  z.scrollIntoView({block:"start",behavior:"smooth"}); _tx.devine=null; txDevine();
+}
+
+/* exercices « Voix superposées » : textures à reconnaître par niveau, et questions de vocabulaire */
+const TX_NIV={1:["monodie","canon","accompagnee","bourdon"],
+  2:["monodie","canon","polyphonie","homophonie","accompagnee","bourdon","ostinato"],
+  3:["monodie","unisson","canon","polyphonie","homophonie","accompagnee","bourdon","ostinato"]};
+const TX_QUESTIONS={
+ 1:[
+  {q:"Une seule mélodie, sans rien d'autre, c'est…",r:"une monodie",o:["une monodie","une polyphonie","un canon","un ostinato"]},
+  {q:"Dans un canon, les voix chantent…",r:"la même mélodie, en décalé",o:["la même mélodie, en décalé","des mélodies toutes différentes","la même mélodie, en même temps","une seule note tenue"]},
+  {q:"« Frère Jacques » chanté par plusieurs groupes qui partent l'un après l'autre, c'est…",r:"un canon",o:["un canon","une monodie","un bourdon","un solo"]},
+  {q:"Une note grave tenue tout du long sous la mélodie s'appelle…",r:"un bourdon",o:["un bourdon","un ostinato","un refrain","un canon"]},
+  {q:"Quel instrument fait entendre un bourdon sous sa mélodie ?",r:"la cornemuse",o:["la cornemuse","le triangle","le xylophone","les castagnettes"]},
+  {q:"Un motif court répété en boucle s'appelle…",r:"un ostinato",o:["un ostinato","un bourdon","une monodie","un unisson"]},
+  {q:"Une chanteuse et une guitare qui joue des accords derrière elle, c'est…",r:"une mélodie accompagnée",o:["une mélodie accompagnée","un canon à deux voix","une monodie","un bourdon"]},
+  {q:"Le mot grec « poly » veut dire…",r:"plusieurs",o:["plusieurs","un seul","grave","rapide"]},
+  {q:"Le mot grec « mono » veut dire…",r:"un seul",o:["un seul","plusieurs","aigu","lent"]},
+  {q:"Plusieurs voix superposées, chacune avec sa mélodie, c'est…",r:"une polyphonie",o:["une polyphonie","une monodie","un unisson","un solo"]},
+  {q:"Dans un canon, la deuxième voix commence…",r:"après la première",o:["après la première","en même temps que la première","à la fin du morceau","avant la première"]},
+  {q:"Pour chanter « Frère Jacques » en canon à 4, il faut…",r:"4 groupes qui entrent l'un après l'autre",o:["4 groupes qui entrent l'un après l'autre","4 groupes qui chantent ensemble","un seul groupe très fort","4 chansons différentes"]},
+  {q:"Une berceuse fredonnée seule, sans instrument, c'est…",r:"une monodie",o:["une monodie","une homophonie","un canon","une polyphonie"]},
+  {q:"Dans une mélodie accompagnée, ce qu'on entend le plus, c'est…",r:"la mélodie",o:["la mélodie","l'accompagnement","le silence","le bourdon"]},
+  {q:"Le bourdon de la cornemuse est une note…",r:"grave et tenue",o:["grave et tenue","aiguë et très courte","qui change sans arrêt","jouée une seule fois"]}
+ ],
+ 2:[
+  {q:"Toutes les voix ont le même rythme et forment des accords : c'est…",r:"une homophonie",o:["une homophonie","une polyphonie","un canon","une monodie"]},
+  {q:"Dans une homophonie, la mélodie est le plus souvent…",r:"à la voix la plus aiguë",o:["à la voix la plus aiguë","à la voix la plus grave","dans aucune voix","à chaque voix tour à tour"]},
+  {q:"Le Boléro de Ravel est construit sur…",r:"un ostinato de caisse claire",o:["un ostinato de caisse claire","un canon à quatre voix","un bourdon de cornemuse","une monodie de flûte"]},
+  {q:"Dans le Canon de Pachelbel, les violons…",r:"jouent la même mélodie en décalé",o:["jouent la même mélodie en décalé","jouent tous des mélodies différentes","jouent tous ensemble, sans décalage","ne jouent qu'une note tenue"]},
+  {q:"Chanter tous la même mélodie au même moment, c'est chanter…",r:"à l'unisson",o:["à l'unisson","en canon","en polyphonie","en bourdon"]},
+  {q:"Des hommes et des femmes chantent la même mélodie à une octave d'écart. On entend…",r:"une seule ligne mélodique",o:["une seule ligne mélodique","deux mélodies différentes","un canon à deux voix","un ostinato"]},
+  {q:"Dans une polyphonie, chaque voix a…",r:"sa mélodie et son rythme",o:["sa mélodie et son rythme","le même rythme que les autres","la même mélodie, en retard","une seule note tenue"]},
+  {q:"Combien de voix faut-il au minimum pour une polyphonie ?",r:"2",o:["2","1","4","10"]},
+  {q:"Une voix qui reprend la mélodie d'une autre voix, un peu plus tard, fait une…",r:"imitation",o:["imitation","modulation","nuance","cadence"]},
+  {q:"Un choral de Bach chanté à 4 voix, toutes avec le même rythme, est…",r:"homophonique",o:["homophonique","monodique","en canon","un ostinato"]},
+  {q:"Une deuxième mélodie chantée en même temps que la mélodie principale s'appelle…",r:"un contre-chant",o:["un contre-chant","un refrain","un bourdon","un unisson"]},
+  {q:"Dans un canon, les entrées des voix sont…",r:"successives",o:["successives","simultanées","inexistantes","au hasard"]},
+  {q:"Dans une homophonie, les voix sont…",r:"simultanées, avec le même rythme",o:["simultanées, avec le même rythme","successives, en décalé","toutes à l'unisson","sans aucun rythme"]},
+  {q:"Pour accompagner une chanson, un pianiste qui joue les notes des accords l'une après l'autre fait des…",r:"arpèges",o:["arpèges","bourdons","canons","nuances"]},
+  {q:"Les quatre voix d'un chœur, de la plus aiguë à la plus grave :",r:"soprano, alto, ténor, basse",o:["soprano, alto, ténor, basse","basse, ténor, alto, soprano","alto, soprano, basse, ténor","ténor, basse, soprano, alto"]}
+ ],
+ 3:[
+  {q:"Dans « Frère Jacques » en canon, chaque voix entre…",r:"2 mesures après la précédente",o:["2 mesures après la précédente","1 temps après la précédente","à la toute fin","en même temps que la précédente"]},
+  {q:"L'art de superposer des mélodies indépendantes s'appelle…",r:"le contrepoint",o:["le contrepoint","le tempo","l'unisson","la nuance"]},
+  {q:"Une fugue de Bach commence par…",r:"un thème qui entre voix après voix",o:["un thème qui entre voix après voix","toutes les voix à l'unisson","un long bourdon de basse","un solo de percussions"]},
+  {q:"Quel compositeur de la Renaissance est célèbre pour ses polyphonies ?",r:"Josquin des Prés",o:["Josquin des Prés","Maurice Ravel","Philip Glass","Frédéric Chopin"]},
+  {q:"Le motet « Spem in alium » de Thomas Tallis superpose…",r:"40 voix",o:["40 voix","4 voix","2 voix","400 voix"]},
+  {q:"Hildegarde de Bingen (XIIᵉ siècle) a composé des chants…",r:"monodiques",o:["monodiques","en canon","pour orchestre","homophoniques"]},
+  {q:"Avec toutes les voix sur le même rythme, on comprend mieux les paroles : c'est l'avantage de…",r:"l'homophonie",o:["l'homophonie","la polyphonie","le canon","l'ostinato"]},
+  {q:"La vielle à roue fait entendre son bourdon grâce à…",r:"des cordes qui sonnent sans arrêt",o:["des cordes qui sonnent sans arrêt","une peau tendue frappée","un soufflet de cuir","des tuyaux d'orgue"]},
+  {q:"Un ostinato placé à la basse, répété sous toute une pièce, s'appelle aussi…",r:"une basse obstinée",o:["une basse obstinée","un contre-chant","une cadence","un unisson"]},
+  {q:"Un canon où toutes les voix finissent par revenir au début, en boucle, est un canon…",r:"perpétuel",o:["perpétuel","grégorien","homophonique","monodique"]},
+  {q:"Dans le Boléro de Ravel, qu'est-ce qui change d'un passage à l'autre ?",r:"les instruments qui jouent la mélodie",o:["les instruments qui jouent la mélodie","le rythme de la caisse claire","la mélodie elle-même","le tempo, qui accélère"]},
+  {q:"Pour passer d'une monodie à une polyphonie, il suffit de…",r:"ajouter une voix différente",o:["ajouter une voix différente","chanter plus fort","chanter plus vite","doubler la voix à l'unisson"]},
+  {q:"Au Moyen Âge, les premières polyphonies ajoutent une voix au chant grégorien : c'est…",r:"l'organum",o:["l'organum","l'opéra","la symphonie","le rap"]},
+  {q:"« Successif » s'oppose à…",r:"simultané",o:["simultané","rapide","aigu","répété"]},
+  {q:"Dans un canon à 3 voix, combien de mélodies différentes chante-t-on ?",r:"une seule",o:["une seule","trois","deux","aucune"]}
+ ]
+};
+
+/* =====================================================================
+   THÈME ET VARIATIONS (08/10/2026) : « Ah ! vous dirai-je, maman »
+   (chanson française du XVIIIᵉ siècle, variée par Mozart). L'ATELIER :
+   le thème (piste or) et TA variation (piste bleue), alignés ; on change
+   le mode, la hauteur, le rythme, les ornements, le tempo, le timbre, la
+   nuance, l'articulation, l'accompagnement, et on compare. La « carte
+   d'identité » de la variation dit ce qui a changé. Jeu « Qu'est-ce qui a
+   changé ? » (1, 2 ou 3 changements). Sons : txSon (leçon Voix superposées).
+   ===================================================================== */
+const VA_THEME=[[60,1],[60,1],[67,1],[67,1],[69,1],[69,1],[67,2],[65,1],[65,1],[64,1],[64,1],[62,1],[62,1],[60,2],
+  [67,1],[67,1],[65,1],[65,1],[64,1],[64,1],[62,2],[67,1],[67,1],[65,1],[65,1],[64,1],[64,1],[62,2],
+  [60,1],[60,1],[67,1],[67,1],[69,1],[69,1],[67,2],[65,1],[65,1],[64,1],[64,1],[62,1],[62,1],[60,2]];
+/* un accord par demi-mesure (2 temps), A B A */
+const VA_GRILLE=["C","C","F","C","F","C","G","C","C","G7","C","G","C","G7","C","G","C","C","F","C","F","C","G","C"];
+const VA_ACCORDS={C:[48,52,55],F:[53,57,60],G:[43,47,50],G7:[43,47,53]};
+const VA_DEFAUT={mode:"majeur",registre:"medium",rythme:"noires",orn:"aucun",tempo:"modere",timbre:"piano",nuance:"mf",artic:"lie",acc:"aucun"};
+const VA_PARAMS=[
+  {k:"mode",nom:"Le mode",ic:"ph-sun-horizon",opts:[["majeur","Majeur"],["mineur","Mineur"]]},
+  {k:"registre",nom:"La hauteur",ic:"ph-arrows-down-up",opts:[["grave","Grave"],["medium","Médium"],["aigu","Aigu"]]},
+  {k:"rythme",nom:"Le rythme",ic:"ph-metronome",opts:[["noires","Régulier"],["croches","En croches"],["pointe","Pointé"],["triolets","Triolets"]]},
+  {k:"orn",nom:"Les ornements",ic:"ph-sparkle",opts:[["aucun","Aucun"],["broderies","Broderies"],["passage","Notes de passage"]]},
+  {k:"tempo",nom:"Le tempo",ic:"ph-timer",opts:[["lent","Lent"],["modere","Modéré"],["rapide","Rapide"]]},
+  {k:"timbre",nom:"Le timbre",ic:"ph-guitar",opts:[["piano","Piano"],["flute","Flûte"],["cordes","Cordes"],["basson","Basson"]]},
+  {k:"nuance",nom:"La nuance",ic:"ph-speaker-high",opts:[["p","Piano (doux)"],["mf","Mezzo forte"],["f","Forte"]]},
+  {k:"artic",nom:"L'articulation",ic:"ph-dots-three",opts:[["lie","Lié"],["pique","Piqué"]]},
+  {k:"acc",nom:"L'accompagnement",ic:"ph-piano-keys",opts:[["aucun","Aucun"],["accords","Accords"],["alberti","Basse d'Alberti"],["bourdon","Bourdon"]]}
+];
+/* les familles du jeu « Qu'est-ce qui a changé ? », par niveau (les plus audibles d'abord) */
+const VA_NIV={1:["registre","tempo","timbre","nuance","acc"],2:["mode","registre","rythme","tempo","timbre","nuance","acc"],
+  3:["mode","registre","rythme","orn","tempo","timbre","nuance","artic","acc"]};
+let _va={P:Object.assign({},VA_DEFAUT),session:false,timer:null,raf:null,notes:[],idx:0,pistes:[],fin:0,jeu:null,serie:0,niv:1};
+
+function vaParam(k){ return VA_PARAMS.filter(function(p){ return p.k===k; })[0]; }
+function vaLib(k,v){ const p=vaParam(k), o=p&&p.opts.filter(function(x){ return x[0]===v; })[0]; return o?o[1]:v; }
+function vaGamme(P){ return P.mode==="mineur"?[0,2,3,5,7,8,10]:[0,2,4,5,7,9,11]; }
+/* note voisine dans la gamme (sens +1 en montant, -1 en descendant) */
+function vaVoisine(m,sens,P){
+  const g=vaGamme(P); let x=m+sens;
+  while(g.indexOf(((x%12)+12)%12)<0)x+=sens;
+  return x;
+}
+function vaMineur(m){ const pc=((m%12)+12)%12; return (pc===4||pc===9||pc===11)?m-1:m; }
+/* construit la mélodie et l'accompagnement d'après les réglages P ; court = la 1re phrase (4 mesures) */
+function vaConstruire(P,court){
+  const lim=court?16:48;
+  let mel=[], b=0;
+  VA_THEME.forEach(function(n){ if(b<lim)mel.push([b,n[1],n[0]]); b+=n[1]; });
+  if(P.mode==="mineur")mel=mel.map(function(n){ return [n[0],n[1],vaMineur(n[2])]; });
+  /* le rythme : la même mélodie, découpée autrement */
+  const decoupe=function(n,parts){ const r=[]; let t=n[0]; parts.forEach(function(d){ r.push([t,d,n[2]]); t+=d; }); return r; };
+  if(P.rythme!=="noires"){
+    let r=[];
+    mel.forEach(function(n){
+      const d=n[1];
+      if(P.rythme==="croches")r=r.concat(decoupe(n,Array(Math.round(d*2)).fill(0.5)));
+      else if(P.rythme==="pointe")r=r.concat(decoupe(n,[d*0.75,d*0.25]));
+      else r=r.concat(decoupe(n,Array(3).fill(d/3)));
+    });
+    mel=r;
+  }
+  /* les ornements, sur les notes assez longues */
+  if(P.orn!=="aucun"){
+    let r=[];
+    mel.forEach(function(n,i){
+      const d=n[1], s=mel[i+1];
+      if(d<0.75){ r.push(n); return; }
+      if(P.orn==="broderies"){ const q=d/4; r=r.concat([[n[0],q,n[2]],[n[0]+q,q,vaVoisine(n[2],1,P)],[n[0]+2*q,q,n[2]],[n[0]+3*q,q,vaVoisine(n[2],-1,P)]]); return; }
+      /* notes de passage : on garde la moitié, puis on glisse vers la note suivante par degrés */
+      if(!s||s[2]===n[2]){ r.push(n); return; }
+      const sens=s[2]>n[2]?1:-1, pas=[]; let x=vaVoisine(n[2],sens,P);
+      while((sens>0?x<s[2]:x>s[2])&&pas.length<3){ pas.push(x); x=vaVoisine(x,sens,P); }
+      if(!pas.length){ r.push(n); return; }
+      const h=d/2, q=h/pas.length;
+      r.push([n[0],h,n[2]]); pas.forEach(function(m,k){ r.push([n[0]+h+k*q,q,m]); });
+    });
+    mel=r;
+  }
+  const tr=P.registre==="grave"?-12:(P.registre==="aigu"?12:0);
+  if(tr)mel=mel.map(function(n){ return [n[0],n[1],n[2]+tr]; });
+  /* l'accompagnement (un accord par demi-mesure) */
+  const acc=[], nb=lim/2, base=P.registre==="grave"?-12:0;
+  const accord=function(h){ const a=VA_ACCORDS[VA_GRILLE[h]]; return (P.mode==="mineur"?a.map(vaMineur):a).map(function(m){ return m+base; }); };
+  if(P.acc==="accords")for(let h=0;h<nb;h++)accord(h).forEach(function(m){ acc.push([h*2,2,m]); });
+  else if(P.acc==="alberti")for(let h=0;h<nb;h++){ const a=accord(h); [a[0],a[2],a[1],a[2]].forEach(function(m,k){ acc.push([h*2+k*0.5,0.5,m]); }); }
+  else if(P.acc==="bourdon"){ acc.push([0,lim,48+base]); acc.push([0,lim,55+base]); }
+  const spb=60/({lent:72,modere:100,rapide:144}[P.tempo]||100), vol={p:0.1,mf:0.19,f:0.32}[P.nuance]||0.19;
+  return {mel:mel,acc:acc,accType:P.acc,total:lim,spb:spb,vol:vol,timbre:P.timbre,artic:P.artic==="pique"?0.42:0.96};
+}
+/* ce qui diffère du thème */
+function vaDiff(P){ return VA_PARAMS.filter(function(p){ return P[p.k]!==VA_DEFAUT[p.k]; }).map(function(p){ return p.k; }); }
+
+/* ---------- lecture (comme la table de mixage : planification courte, arrêt immédiat) ---------- */
+/* plan : [{X (vaConstruire), debut (s), lanes:[indices des pistes]}] */
+function vaPlan(quoi,court){
+  const T=vaConstruire(VA_DEFAUT,court), V=vaConstruire(_va.P,court);
+  if(quoi==="theme")return [{X:T,debut:0,piste:0}];
+  if(quoi==="variation")return [{X:V,debut:0,piste:1}];
+  return [{X:T,debut:0,piste:0},{X:V,debut:T.total*T.spb+0.8,piste:1}];
+}
+function vaNotesDe(plan,t0){
+  const l=[];
+  plan.forEach(function(e){
+    const X=e.X, d0=t0+e.debut;
+    X.mel.forEach(function(n){ l.push({t:d0+n[0]*X.spb,d:n[1]*X.spb*X.artic,m:n[2],timbre:X.timbre,vol:X.vol}); });
+    X.acc.forEach(function(n){ l.push({t:d0+n[0]*X.spb,d:n[1]*X.spb*0.96,m:n[2],timbre:X.accType==="bourdon"?"cordes":"piano",vol:X.vol*(X.accType==="bourdon"?0.45:0.55)}); });
+  });
+  return l.sort(function(a,b){ return a.t-b.t; });
+}
+function vaJouer(quoi){
+  const etait=_va.session&&_va.quoi===quoi; vaStop(); if(etait)return;
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  _va.quoi=quoi; _va.t0=ctx.currentTime+0.15;
+  const court=!!(_va.jeu&&!_va.jeu.fini);
+  _va.plan=vaPlan(quoi,court); _va.notes=vaNotesDe(_va.plan,_va.t0); _va.idx=0;
+  const der=_va.plan[_va.plan.length-1]; _va.fin=_va.t0+der.debut+der.X.total*der.X.spb;
+  _va.session=true; _va.canal=txCanal(); _va.timer=setInterval(vaPlanifier,25); vaPlanifier();
+  _va.raf=requestAnimationFrame(vaAnimer); vaMajBoutons();
+}
+function vaStop(){
+  if(_va.timer){ clearInterval(_va.timer); _va.timer=null; }
+  if(_va.raf){ cancelAnimationFrame(_va.raf); _va.raf=null; }
+  const etait=_va.session; _va.session=false;
+  txCanalCouper(_va.canal); _va.canal=null;
+  if(!etait)return;
+  document.querySelectorAll("#vaPistes rect.on,#vaPistes .tx-piste.chante").forEach(function(x){ x.classList.remove("on","chante"); });
+  document.querySelectorAll("#vaPistes .tx-piste").forEach(function(x){ x.style.setProperty("--pos","0"); });
+  vaMajBoutons();
+}
+function vaPlanifier(){
+  if(!document.getElementById("vaAtelier")){ vaStop(); return; }
+  const ctx=audio(), lim=ctx.currentTime+0.2;
+  while(_va.idx<_va.notes.length&&_va.notes[_va.idx].t<=lim){ const n=_va.notes[_va.idx]; txSon(n.t,n.m,n.d,n.timbre,n.vol,_va.canal); _va.idx++; }
+}
+function vaAnimer(){
+  if(!document.getElementById("vaAtelier")){ vaStop(); return; }
+  const now=audio().currentTime;
+  if(now>_va.fin+0.4){ vaStop(); return; }
+  (_va.plan||[]).forEach(function(e){
+    const X=e.X, b=(now-_va.t0-e.debut)/X.spb;
+    [e.piste].concat(X.acc.length&&e.piste===1?[2]:[]).forEach(function(pi){
+      const el=document.querySelector('#vaPistes .tx-piste[data-i="'+pi+'"]'); if(!el)return;
+      if(b<0||b>X.total){ el.classList.remove("chante"); return; }
+      el.style.setProperty("--pos",String(Math.max(0,Math.min(1,b/X.total))));
+      const notes=pi===2?X.acc:X.mel; let ch=false;
+      el.querySelectorAll("rect").forEach(function(r){ const n=notes[+r.getAttribute("data-i")]; const on=!!n&&b>=n[0]&&b<n[0]+n[1]; r.classList.toggle("on",on); if(on)ch=true; });
+      el.classList.toggle("chante",ch);
+    });
+  });
+  _va.raf=requestAnimationFrame(vaAnimer);
+}
+/* extrait pour les exercices : le thème puis la variation (1re phrase) */
+function vaExtrait(cfg){
+  try{ audio().resume(); }catch(e){}
+  const P=Object.assign({},VA_DEFAUT,cfg.changes||{});
+  const T=vaConstruire(VA_DEFAUT,true), V=vaConstruire(P,true), plan=cfg.seule?[{X:V,debut:0}]:[{X:T,debut:0},{X:V,debut:T.total*T.spb+0.8}];
+  const canal=sonBtnCanal(txBus());
+  vaNotesDe(plan,audio().currentTime+0.12).forEach(function(n){ txSon(n.t,n.m,n.d,n.timbre,n.vol,canal); });
+}
+
+/* ---------- l'atelier ---------- */
+function vaAtelierHTML(){ return '<div class="tx-atelier va-atelier" id="vaAtelier"><div class="tx-chargement">Chargement de l\'atelier des variations…</div></div>'; }
+function vaInit(){ vaStop(); _va.jeu=null; vaRendreTout(); }
+function vaRendreTout(){
+  const z=document.getElementById("vaAtelier"); if(!z)return;
+  const j=_va.jeu;
+  z.innerHTML='<div class="tx-tete-at"><span class="tx-titre"><i class="ph-fill ph-magic-wand"></i> L\'atelier des variations</span>'
+      +'<button type="button" class="tx-devine-b'+(j?" on":"")+'" onclick="vaJeu()"><i class="ph-fill ph-question"></i> Qu\'est-ce qui a changé ?</button></div>'
+    +(j?'<div class="tx-devine" id="vaJeuZone">'+vaJeuHTML()+'</div>':'')
+    +'<div class="tx-pistes" id="vaPistes"></div>'
+    +'<div class="va-ecoute"><button type="button" class="btn-son" id="vaB-theme" onclick="vaJouer(\'theme\')"><i class="ph ph-play"></i> Le thème</button>'
+    +'<button type="button" class="btn-son" id="vaB-variation" onclick="vaJouer(\'variation\')"'+(j&&!j.fini?' disabled':'')+'><i class="ph ph-play"></i> Ta variation</button>'
+    +'<button type="button" class="cm-play va-play" id="vaB-les2" onclick="vaJouer(\'les2\')"><i class="ph-fill ph-play"></i> '+(j&&!j.fini?"Le thème, puis la variation mystère":"Le thème, puis ta variation")+'</button></div>'
+    +(j&&!j.fini?'':'<div class="va-carte" id="vaCarte">'+vaCarteHTML()+'</div>'
+      +'<div class="va-reglages">'+VA_PARAMS.map(function(p){
+        return '<div class="va-reg"><span><i class="ph '+p.ic+'"></i> '+p.nom+'</span><div class="cm-seg" role="group" aria-label="'+escapeHtml(p.nom)+'">'
+          +p.opts.map(function(o){ const on=_va.P[p.k]===o[0]; return '<button type="button" class="'+(on?"on":"")+(o[0]===VA_DEFAUT[p.k]?" theme":"")+'" aria-pressed="'+on+'" onclick="vaRegler(\''+p.k+'\',\''+o[0]+'\')">'+o[1]+'</button>'; }).join("")
+          +'</div></div>'; }).join("")+'</div>'
+      +'<p class="tx-aide"><i class="ph ph-info"></i> Les boutons marqués d\'un point sont les réglages du thème. <button type="button" class="va-raz" onclick="vaRaz()"><i class="ph ph-arrow-counter-clockwise"></i> Revenir au thème</button> <button type="button" class="va-raz" onclick="vaHasard()"><i class="ph ph-dice-five"></i> Variation au hasard</button></p>');
+  vaRendrePistes();
+}
+function vaRendrePistes(){
+  const z=document.getElementById("vaPistes"); if(!z)return;
+  const cache=!!(_va.jeu&&!_va.jeu.fini), T=vaConstruire(VA_DEFAUT,cache), V=vaConstruire(_va.P,cache);
+  const ligne=function(i,lib,sous,notes,k,total){
+    return '<div class="tx-piste" data-i="'+i+'"><div class="tx-pt"><span class="tx-lib" style="background:'+TX_COUL[k].c+';color:'+TX_COUL[k].t+'">'+lib+'</span><small>'+sous+'</small></div>'
+      +'<div class="tx-pc">'+(notes?txBarresSVG({notes:notes,k:k},total,"tx-svg",false):'<div class="va-mystere"><i class="ph-fill ph-question"></i> mystère</div>')+'</div></div>';
+  };
+  z.innerHTML=ligne(0,"Thème","piano, comme Mozart",T.mel,0,T.total)
+    +ligne(1,cache?"Variation":"Ta variation",cache?"à écouter":vaLib("timbre",_va.P.timbre).toLowerCase(),cache?null:V.mel,1,V.total)
+    +(!cache&&V.acc.length?ligne(2,"Accompagnement",vaLib("acc",_va.P.acc).toLowerCase(),V.acc,2,V.total):'');
+}
+function vaCarteHTML(){
+  const d=vaDiff(_va.P);
+  if(!d.length)return '<b><i class="ph-fill ph-identification-card"></i> Carte d\'identité</b><span class="va-vide">Ta variation est identique au thème : change un réglage ci-dessous !</span>';
+  return '<b><i class="ph-fill ph-identification-card"></i> Carte d\'identité de ta variation</b><span class="va-chips">'
+    +d.map(function(k){ return '<span class="va-chip"><i class="ph '+vaParam(k).ic+'"></i> '+vaParam(k).nom.replace(/^(Le |La |Les |L')/,"")+' : <b>'+vaLib(k,_va.P[k])+'</b></span>'; }).join("")+'</span>'
+    +'<small>'+(d.length>=4?"Une variation très riche : le thème est-il encore reconnaissable ?":"Le thème reste reconnaissable : c'est le principe de la variation.")+'</small>';
+}
+function vaRegler(k,v){ const joue=_va.session?_va.quoi:null; vaStop(); _va.P[k]=v; vaRendreTout(); if(joue)vaJouer(joue); }
+function vaRaz(){ vaStop(); _va.P=Object.assign({},VA_DEFAUT); vaRendreTout(); }
+/* une variation au hasard : 3 réglages changés */
+function vaHasard(){
+  vaStop(); _va.P=Object.assign({},VA_DEFAUT);
+  shuffle(VA_PARAMS.slice()).slice(0,3).forEach(function(p){ _va.P[p.k]=pick(p.opts.filter(function(o){ return o[0]!==VA_DEFAUT[p.k]; }))[0]; });
+  vaRendreTout(); vaJouer("variation");
+}
+/* depuis le texte de la leçon : appliquer une variation toute prête et l'écouter */
+function vaExemple(changes){
+  const z=document.getElementById("vaAtelier"); if(!z)return;
+  vaStop(); _va.jeu=null; _va.P=Object.assign({},VA_DEFAUT,changes||{}); vaRendreTout();
+  z.scrollIntoView({block:"start",behavior:"smooth"}); vaJouer("les2");
+}
+
+/* ---------- jeu « Qu'est-ce qui a changé ? » ---------- */
+function vaJeu(){
+  vaStop();
+  if(_va.jeu&&!_va.jeu.fini){ _va.jeu=null; _va.P=Object.assign({},VA_DEFAUT); vaRendreTout(); return; }
+  const pool=VA_NIV[_va.niv], n=_va.niv, choisis=shuffle(pool.slice()).slice(0,n), P=Object.assign({},VA_DEFAUT);
+  choisis.forEach(function(k){ const p=vaParam(k); P[k]=pick(p.opts.filter(function(o){ return o[0]!==VA_DEFAUT[k]; }))[0]; });
+  _va.P=P; _va.jeu={vrais:choisis,coches:[],fini:false};
+  vaRendreTout(); vaJouer("les2");
+}
+function vaJeuHTML(){
+  const j=_va.jeu; if(!j)return "";
+  const pool=VA_NIV[_va.niv];
+  const niv='<div class="va-niv"><span>Changements :</span>'+[1,2,3].map(function(n){ return '<button type="button" class="'+(_va.niv===n?"on":"")+'" aria-pressed="'+(_va.niv===n)+'" onclick="_va.niv='+n+';_va.jeu=null;vaJeu()">'+n+'</button>'; }).join("")+'</div>';
+  if(!j.fini)return niv+'<p><i class="ph-fill ph-ear"></i> Écoute le thème, puis la variation mystère. <b>'+(j.vrais.length>1?j.vrais.length+" choses ont changé":"Une seule chose a changé")+'</b> : lesquelles ?</p>'
+    +'<div class="tx-choix va-coches">'+pool.map(function(k){ const on=j.coches.indexOf(k)>=0; return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="vaCocher(\''+k+'\')"><i class="ph '+vaParam(k).ic+'"></i> '+vaParam(k).nom+'</button>'; }).join("")+'</div>'
+    +'<div class="tx-choix"><button type="button" class="tx-encore" onclick="vaValider()"'+(j.coches.length?'':' disabled')+'><i class="ph-fill ph-check"></i> Valider</button></div>';
+  const ok=j.vrais.every(function(k){ return j.coches.indexOf(k)>=0; })&&j.coches.length===j.vrais.length;
+  return niv+'<p class="tx-verdict '+(ok?"ok":"ko")+'"><i class="ph-fill '+(ok?"ph-check-circle":"ph-x-circle")+'"></i> '+(ok?"Bravo, tu as tout entendu !":"Pas tout à fait…")
+    +(_va.serie>1?' <span class="tx-serie"><i class="ph-fill ph-fire"></i> '+_va.serie+' d\'affilée</span>':'')+'</p>'
+    +'<p class="tx-def-d">Ce qui avait changé : '+j.vrais.map(function(k){ return '<b>'+vaParam(k).nom.toLowerCase()+'</b> ('+vaLib(k,VA_DEFAUT[k])+' → '+vaLib(k,_va.P[k])+')'; }).join(", ")+'.</p>'
+    +'<div class="tx-choix"><button type="button" class="tx-encore" onclick="vaJeu()"><i class="ph-fill ph-arrow-clockwise"></i> Une autre</button>'
+    +'<button type="button" onclick="_va.jeu=null;vaStop();vaRendreTout()">Revenir à l\'atelier</button></div>';
+}
+function vaCocher(k){
+  const j=_va.jeu; if(!j||j.fini)return;
+  const i=j.coches.indexOf(k); if(i>=0)j.coches.splice(i,1); else j.coches.push(k);
+  const z=document.getElementById("vaJeuZone"); if(z)z.innerHTML=vaJeuHTML();
+}
+function vaValider(){
+  const j=_va.jeu; if(!j||j.fini||!j.coches.length)return;
+  j.fini=true;
+  const ok=j.vrais.every(function(k){ return j.coches.indexOf(k)>=0; })&&j.coches.length===j.vrais.length;
+  _va.serie=ok?_va.serie+1:0;
+  try{ jouerEffet(ok?"bon":"mauvais"); }catch(e){}
+  vaStop(); vaRendreTout();
+}
+function vaJeuDepuisTexte(){
+  const z=document.getElementById("vaAtelier"); if(!z)return;
+  z.scrollIntoView({block:"start",behavior:"smooth"}); _va.jeu=null; vaJeu();
+}
+function vaMajBoutons(){
+  ["theme","variation","les2"].forEach(function(q){
+    const b=document.getElementById("vaB-"+q); if(!b)return;
+    const on=_va.session&&_va.quoi===q;
+    b.classList.toggle("stop",on);
+    const lib={theme:"Le thème",variation:"Ta variation",les2:(_va.jeu&&!_va.jeu.fini)?"Le thème, puis la variation mystère":"Le thème, puis ta variation"}[q];
+    b.innerHTML=on?'<i class="ph-fill ph-stop"></i> Arrêter':'<i class="ph'+(q==="les2"?"-fill":"")+' ph-play"></i> '+lib;
+  });
+}
+document.addEventListener("visibilitychange",function(){ if(document.hidden&&_va.session)vaStop(); });
+
+/* exercices « Thème et variations » : vocabulaire et culture, par niveau */
+const VA_QUESTIONS={
+ 1:[
+  {q:"Dans « thème et variations », le thème est…",r:"la mélodie de départ",o:["la mélodie de départ","la dernière variation","l'accompagnement","le titre du morceau"]},
+  {q:"Une variation, c'est…",r:"le thème transformé",o:["le thème transformé","une mélodie toute nouvelle","un silence","le thème joué à l'identique"]},
+  {q:"Dans une variation, le thème reste…",r:"reconnaissable",o:["reconnaissable","totalement caché","toujours plus lent","toujours au piano"]},
+  {q:"Quel compositeur a écrit 12 variations sur « Ah ! vous dirai-je, maman » ?",r:"Mozart",o:["Mozart","Ravel","Glass","Beethoven"]},
+  {q:"Jouer le thème plus vite, c'est changer…",r:"le tempo",o:["le tempo","le timbre","la nuance","le mode"]},
+  {q:"Jouer le thème à la flûte au lieu du piano, c'est changer…",r:"le timbre",o:["le timbre","le tempo","le rythme","le mode"]},
+  {q:"Jouer le thème plus fort, c'est changer…",r:"la nuance",o:["la nuance","le timbre","la hauteur","le tempo"]},
+  {q:"Jouer le thème une octave plus haut, c'est changer…",r:"la hauteur",o:["la hauteur","le tempo","la nuance","le timbre"]},
+  {q:"« Ah ! vous dirai-je, maman » est la même mélodie que…",r:"« Twinkle, twinkle »",o:["« Twinkle, twinkle »","« Frère Jacques »","« Au clair de la lune »","« Jingle Bells »"]},
+  {q:"« Forte » veut dire…",r:"fort",o:["fort","doux","vite","lent"]},
+  {q:"« Piano », comme nuance, veut dire…",r:"doux",o:["doux","fort","grave","aigu"]},
+  {q:"Ajouter des accords sous la mélodie, c'est changer…",r:"l'accompagnement",o:["l'accompagnement","le tempo du morceau","la mélodie du thème","le titre de l'œuvre"]}
+ ],
+ 2:[
+  {q:"Passer du mode majeur au mode mineur donne souvent un caractère…",r:"plus sombre, plus triste",o:["plus sombre, plus triste","plus rapide et plus joyeux","plus fort et plus éclatant","plus aigu et plus brillant"]},
+  {q:"Dans les variations de Mozart sur « Ah ! vous dirai-je, maman », la 8ᵉ variation est…",r:"en mineur",o:["en mineur","sans aucune note","pour grand orchestre","chantée par un chœur"]},
+  {q:"Un rythme « pointé » alterne…",r:"une note longue et une note courte",o:["une note longue et une note courte","deux notes égales, sans changement","trois notes égales dans un seul temps","une note puis un long silence"]},
+  {q:"Un triolet, c'est…",r:"trois notes égales dans un temps",o:["trois notes égales dans un temps","trois temps dans une seule note","trois mesures de silence complet","trois instruments qui jouent ensemble"]},
+  {q:"Jouer « piqué » (staccato), c'est jouer les notes…",r:"courtes et détachées",o:["courtes et détachées","longues et bien liées","très fort, en accent","très lentement, en rêvant"]},
+  {q:"La « basse d'Alberti » est un accompagnement qui joue les notes de l'accord…",r:"l'une après l'autre, en boucle",o:["l'une après l'autre, en boucle","toutes en même temps, en bloc","une seule fois, au début du morceau","au hasard, sans aucun ordre"]},
+  {q:"Dans une variation, qu'est-ce qui reste en général ?",r:"la mélodie ou les accords du thème",o:["la mélodie ou les accords du thème","l'instrument, qui ne change jamais","le tempo, toujours exactement le même","rien, tout est remplacé"]},
+  {q:"Les variations de Mozart sur « Ah ! vous dirai-je, maman » sont écrites pour…",r:"le piano seul",o:["le piano seul","un grand orchestre","un chœur","la guitare"]},
+  {q:"Changer l'ordre des couplets d'une chanson, est-ce une variation ?",r:"non, le thème n'est pas transformé",o:["non, le thème n'est pas transformé","oui, c'est forcément une variation","oui, si on la chante en mineur","oui, si on la chante plus fort"]},
+  {q:"Une note de passage relie…",r:"deux notes, en passant par celles du milieu",o:["deux notes, en passant par celles du milieu","deux morceaux différents, l'un après l'autre","deux silences placés au milieu d'une mesure","deux instruments qui jouent à l'unisson"]},
+  {q:"Un musicien de jazz qui improvise sur un thème connu fait…",r:"des variations sur ce thème",o:["des variations sur ce thème","un canon à plusieurs voix","une monodie sans accompagnement","un bourdon tenu tout du long"]},
+  {q:"« Ah ! vous dirai-je, maman » est à l'origine…",r:"une chanson française",o:["une chanson française","un opéra italien","un chant de Noël allemand","une chanson anglaise"]}
+ ],
+ 3:[
+  {q:"Une broderie est une note qui…",r:"s'éloigne d'un degré puis revient",o:["s'éloigne d'un degré puis revient","dure toute la mesure sans bouger","se joue sans aucun rythme précis","change le tempo du morceau entier"]},
+  {q:"Les « Variations Goldberg » (30 variations) sont de…",r:"Jean-Sébastien Bach",o:["Jean-Sébastien Bach","Wolfgang Amadeus Mozart","Maurice Ravel","Philip Glass"]},
+  {q:"La « Rhapsodie sur un thème de Paganini » de Rachmaninov est…",r:"une suite de variations",o:["une suite de variations","un canon à quatre voix","une monodie grégorienne","un opéra en trois actes"]},
+  {q:"Beethoven a écrit 33 variations sur une valse de…",r:"Diabelli",o:["Diabelli","Mozart","Chopin","Vivaldi"]},
+  {q:"Varier en ajoutant beaucoup de petites notes autour du thème, c'est une variation…",r:"ornementale",o:["ornementale","rythmique","de timbre","d'orchestration"]},
+  {q:"Dans une chaconne ou une passacaille, les variations se font au-dessus…",r:"d'une basse qui se répète",o:["d'une basse qui se répète","d'un long silence immobile","d'un chœur chantant à l'unisson","d'une seule note aiguë tenue"]},
+  {q:"Passer en mineur garde les noms de notes mais abaisse surtout…",r:"la tierce (Mi devient Mi♭)",o:["la tierce (Mi devient Mi♭)","la tonique (Do devient Si)","toutes les notes d'un ton entier","aucune note : seul le tempo change"]},
+  {q:"Dans le thème de Mozart, combien de parties (A, B, A) ?",r:"3",o:["3","2","4","12"]},
+  {q:"Le thème de Mozart est en 2/4 ; la dernière variation passe en…",r:"3/4",o:["3/4","4/4","6/8","5/4"]},
+  {q:"Changer le timbre d'une variation en la confiant à d'autres instruments s'appelle…",r:"l'orchestration",o:["l'orchestration","la modulation","l'improvisation","la transposition"]},
+  {q:"Quand chaque variation est plus rapide et plus chargée que la précédente, on entend…",r:"une progression vers la fin",o:["une progression vers la fin","un canon à quatre voix égales","un bourdon grave sans fin","une monodie très ancienne"]},
+  {q:"Les 12 variations de Mozart ont été écrites vers…",r:"1781",o:["1781","1881","1681","1981"]}
+ ]
+};
+
+/* =====================================================================
+   L'ATELIER DES FORMES (08/10/2026), dans la leçon « Formes musicales » :
+   5 blocs composés pour s'enchaîner (Intro, A, B, C, Coda ; Do majeur,
+   même tempo, même instrument : on reconnaît les parties à leur MUSIQUE).
+   - Compose ta forme : on aligne des blocs sur une frise, on écoute, et
+     MusEduc nomme la forme (strophique, binaire, ternaire, couplet-refrain,
+     rondo…).
+   - Reconnais la forme : une pièce mystère, des cases « ? » à étiqueter
+     (A, B, C) en écoutant ; la frise montre quelle partie joue.
+   Sons : txSon, via un canal coupé à l'arrêt.
+   ===================================================================== */
+const FM_ACC={C:[48,55,52,55],F:[53,60,57,60],G:[43,50,47,50],Dm:[50,57,53,57],Am:[45,52,48,52],Em:[52,59,55,59],E:[52,59,56,59]};
+const FM_BLOCS={
+  I:{lib:"Intro",c:"var(--dom-eval)",t:"#fff",mel:[],grille:["C","C","G","G"]},
+  A:{lib:"A",c:"var(--or)",t:"#16233a",mel:[[67,1],[64,1],[65,1],[67,1],[69,2],[67,2],[65,1],[64,1],[62,1],[64,1],[60,4]],grille:["C","C","F","C","Dm","G","C","C"]},
+  B:{lib:"B",c:"#2374b0",t:"#fff",mel:[[69,1.5],[72,0.5],[71,1],[69,1],[64,2],[64,1],[65,1],[62,1.5],[65,0.5],[64,1],[62,1],[64,4]],grille:["Am","Am","Em","Em","Dm","Dm","E","E"]},
+  C:{lib:"C",c:"var(--dom-ecoute)",t:"#fff",mel:[[72,.5],[74,.5],[76,.5],[72,.5],[74,.5],[76,.5],[77,.5],[76,.5],[74,1],[71,1],[67,2],[69,.5],[71,.5],[72,.5],[69,.5],[71,.5],[72,.5],[74,.5],[72,.5],[71,2],[67,2]],grille:["C","C","G","G","F","F","G","G"]},
+  Z:{lib:"Coda",c:"var(--dom-culture)",t:"#fff",mel:[[72,1],[67,1],[64,1],[62,1],[60,4]],grille:["G","G","C","C"],fin:true}
+};
+const FM_EXEMPLES=[["A A A","AAA","Strophique"],["A B","AB","Binaire"],["A B A","ABA","Ternaire"],["A B A B","ABAB","Couplet-refrain"],["A B A C A","ABACA","Rondo"],["Chanson","IABABCBZ","Intro, couplets, refrains, pont, coda"]];
+const FM_JEU={1:["AAA","AAB","ABA","ABB"],2:["ABAB","AABA","ABACA","ABABA"],3:["IABABZ","IABACAZ","IAABAZ","IABABCBZ"]};
+const FM_TEMPO=104;
+let _fm={mode:"compose",seq:["A","B","A"],session:false,timer:null,raf:null,notes:[],idx:0,t0:0,spb:60/FM_TEMPO,canal:null,places:[],jeu:null,niv:1,serie:0,fin:0};
+
+/* les notes d'un bloc (en temps, depuis 0) ; court = ses deux premières mesures */
+function fmNotes(k,court){
+  const B=FM_BLOCS[k], lim=court?8:B.grille.length*2, mel=[], acc=[]; let t=0;
+  B.mel.forEach(function(n){ if(t<lim)mel.push([t,Math.min(n[1],lim-t),n[0]]); t+=n[1]; });
+  B.grille.forEach(function(a,h){
+    if(h*2>=lim)return;
+    if(B.fin&&h===B.grille.length-2){ FM_ACC[a].slice(0,3).forEach(function(m){ acc.push([h*2,4,m]); }); return; }
+    if(B.fin&&h===B.grille.length-1)return;
+    FM_ACC[a].forEach(function(m,j){ acc.push([h*2+j*0.5,0.5,m]); });
+  });
+  return {mel:mel,acc:acc,total:lim};
+}
+/* une suite de blocs : notes à plat + place de chaque bloc (début, durée en temps) */
+function fmConstruire(seq,court){
+  const notes=[], places=[]; let t=0;
+  seq.forEach(function(k){
+    const X=fmNotes(k,court);
+    X.mel.forEach(function(n){ notes.push({b:t+n[0],d:n[1],m:n[2],timbre:"piano",vol:0.2}); });
+    X.acc.forEach(function(n){ notes.push({b:t+n[0],d:n[1],m:n[2],timbre:"piano",vol:0.1}); });
+    places.push({k:k,debut:t,duree:X.total}); t+=X.total;
+  });
+  notes.sort(function(a,b){ return a.b-b.b; });
+  return {notes:notes,places:places,total:t};
+}
+/* le nom d'une forme (Intro et Coda à part) */
+function fmNomForme(seq){
+  const s=seq.filter(function(k){ return k!=="I"&&k!=="Z"; }).join("");
+  if(!s)return "";
+  if(/^(A)+$/.test(s))return s.length>1?"une forme strophique : la même musique revient à chaque strophe":"une seule partie : ajoute des blocs !";
+  if(s==="AB")return "une forme binaire : deux parties différentes";
+  if(s==="AAB")return "une forme A A B : la même partie deux fois, puis une nouvelle";
+  if(s==="ABB")return "une forme A B B : une partie, puis une autre jouée deux fois";
+  if(s==="ABA")return "une forme ternaire : une partie, une autre, et le retour de la première";
+  if(/^(AB)+A?$/.test(s)&&s.length>=4)return "une forme couplet-refrain : deux parties qui alternent";
+  if(/^(AB)+(CB)+$/.test(s)||/^(AB)+C(B)+$/.test(s))return "une chanson : couplets (A), refrains (B) et un pont (C)";
+  if(/^A([^A]A){2,}$/.test(s)&&/B/.test(s)&&/C/.test(s))return "un rondo : le thème A revient entre des parties toutes différentes";
+  if(s==="AABA")return "la forme AABA, celle de beaucoup de chansons de jazz et de comédies musicales";
+  return "une forme libre : à toi de lui trouver un nom !";
+}
+/* les lettres dans l'ordre d'apparition (la 1re partie s'appelle toujours A) */
+function fmLettres(seq){ return seq.map(function(k){ return FM_BLOCS[k].lib; }).join(" "); }
+
+/* ---------- lecture ---------- */
+function fmJouer(seq){
+  const etait=_fm.session; fmStop(); if(etait&&!seq)return;
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const S=seq||(_fm.jeu?_fm.jeu.seq:_fm.seq); if(!S.length)return;
+  const X=fmConstruire(S,false);
+  _fm.notes=X.notes; _fm.places=X.places; _fm.idx=0; _fm.spb=60/FM_TEMPO; _fm.t0=ctx.currentTime+0.15; _fm.fin=_fm.t0+X.total*_fm.spb;
+  _fm.canal=txCanal(); _fm.session=true;
+  _fm.timer=setInterval(fmPlanifier,25); fmPlanifier(); _fm.raf=requestAnimationFrame(fmAnimer); fmMajBouton();
+}
+function fmStop(){
+  if(_fm.timer){ clearInterval(_fm.timer); _fm.timer=null; }
+  if(_fm.raf){ cancelAnimationFrame(_fm.raf); _fm.raf=null; }
+  txCanalCouper(_fm.canal); _fm.canal=null;
+  const etait=_fm.session; _fm.session=false;
+  if(!etait)return;
+  document.querySelectorAll("#fmFrise .fm-bloc").forEach(function(b){ b.classList.remove("joue"); b.style.setProperty("--p","0"); });
+  fmMajBouton();
+}
+function fmPlanifier(){
+  if(!document.getElementById("fmAtelier")){ fmStop(); return; }
+  const ctx=audio(), lim=ctx.currentTime+0.2;
+  while(_fm.idx<_fm.notes.length){ const n=_fm.notes[_fm.idx], t=_fm.t0+n.b*_fm.spb; if(t>lim)break; txSon(t,n.m,n.d*_fm.spb*0.95,n.timbre,n.vol,_fm.canal); _fm.idx++; }
+}
+function fmAnimer(){
+  if(!document.getElementById("fmAtelier")){ fmStop(); return; }
+  const now=audio().currentTime, b=(now-_fm.t0)/_fm.spb;
+  if(now>_fm.fin+0.4){ fmStop(); return; }
+  document.querySelectorAll("#fmFrise .fm-bloc").forEach(function(el,i){
+    const P=_fm.places[i]; if(!P)return;
+    const p=Math.max(0,Math.min(1,(b-P.debut)/P.duree));
+    el.style.setProperty("--p",String(p)); el.classList.toggle("joue",b>=P.debut&&b<P.debut+P.duree);
+  });
+  _fm.raf=requestAnimationFrame(fmAnimer);
+}
+function fmMajBouton(){
+  const b=document.getElementById("fmPlay"); if(!b)return;
+  b.classList.toggle("stop",_fm.session);
+  b.innerHTML=_fm.session?'<i class="ph-fill ph-stop"></i> Arrêter':'<i class="ph-fill ph-play"></i> '+(_fm.jeu?"Écouter la pièce mystère":"Écouter ma forme");
+}
+/* extrait des exercices : la forme en blocs courts (2 mesures chacun) */
+function fmExtrait(nom){
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const X=fmConstruire(nom.split(""),true), spb=60/112, t0=ctx.currentTime+0.12, canal=sonBtnCanal(txBus());
+  X.notes.forEach(function(n){ txSon(t0+n.b*spb,n.m,n.d*spb*0.95,n.timbre,n.vol,canal); });
+}
+
+/* ---------- l'atelier ---------- */
+function fmAtelierHTML(){ return '<div class="tx-atelier fm-atelier" id="fmAtelier"><div class="tx-chargement">Chargement de l\'atelier des formes…</div></div>'; }
+function fmInit(){ fmStop(); _fm.jeu=null; _fm.mode="compose"; fmRendre(); }
+function fmRendre(){
+  const z=document.getElementById("fmAtelier"); if(!z)return;
+  const jeu=_fm.mode==="jeu";
+  z.innerHTML='<div class="tx-tete-at"><span class="tx-titre"><i class="ph-fill ph-squares-four"></i> L\'atelier des formes</span>'
+    +'<div class="cm-seg" role="group"><button type="button" class="'+(jeu?"":"on")+'" aria-pressed="'+(!jeu)+'" onclick="fmMode(\'compose\')">Compose ta forme</button>'
+    +'<button type="button" class="'+(jeu?"on":"")+'" aria-pressed="'+jeu+'" onclick="fmMode(\'jeu\')">Reconnais la forme</button></div></div>'
+    +(jeu?fmJeuHTML():fmComposeHTML());
+}
+function fmMode(m){ fmStop(); _fm.mode=m; if(m==="jeu"&&!_fm.jeu)fmNouveauJeu(); if(m==="compose")_fm.jeu=null; fmRendre(); }
+function fmBlocHTML(k,i,opts){
+  const B=FM_BLOCS[k]||{lib:"?",c:"var(--papier-fonce)",t:"var(--encre)"}, d=(FM_BLOCS[k]?FM_BLOCS[k].grille.length:8);
+  const long=String((opts&&opts.lettre)||B.lib).length>2;
+  return '<div class="fm-bloc'+(opts&&opts.cls?" "+opts.cls:"")+(long?" long":"")+(opts&&opts.suppr?" avec-x":"")+'" style="--c:'+B.c+';--t:'+B.t+';flex-grow:'+d+'">'
+    +(opts&&opts.btn?opts.btn:'<b>'+(opts&&opts.lettre?opts.lettre:B.lib)+'</b>')
+    +(opts&&opts.suppr?'<button type="button" class="fm-x" onclick="fmRetirer('+i+')" aria-label="Retirer ce bloc"><i class="ph ph-x"></i></button>':'')
+    +'<span class="fm-barre"></span></div>';
+}
+function fmComposeHTML(){
+  const nom=fmNomForme(_fm.seq);
+  return '<p class="tx-aide fm-consigne"><i class="ph ph-info"></i> Touche les blocs pour construire ta pièce, puis écoute-la. Chaque lettre est une musique différente ; la même lettre, c\'est la même musique.</p>'
+    +'<div class="fm-palette" role="group" aria-label="Blocs à ajouter">'+["I","A","B","C","Z"].map(function(k){ const B=FM_BLOCS[k];
+      return '<button type="button" class="fm-p" style="--c:'+B.c+';--t:'+B.t+'" onclick="fmAjouter(\''+k+'\')"><b>'+B.lib+'</b><small>'+({I:"pour commencer",A:"le thème",B:"un contraste",C:"un autre contraste",Z:"pour finir"})[k]+'</small></button>'; }).join("")+'</div>'
+    +'<div class="fm-frise" id="fmFrise" role="group" aria-label="Ta pièce">'+(_fm.seq.length?_fm.seq.map(function(k,i){ return fmBlocHTML(k,i,{suppr:true}); }).join(""):'<span class="fm-vide">Ta frise est vide : touche un bloc ci-dessus.</span>')+'</div>'
+    +'<div class="va-carte fm-nom"><b><i class="ph-fill ph-identification-card"></i> '+(_fm.seq.length?fmLettres(_fm.seq):"…")+'</b><span>'+(nom?"C'est "+nom+".":"")+'</span></div>'
+    +'<div class="tx-bas"><button type="button" class="cm-play tx-play" id="fmPlay" onclick="fmJouer()"><i class="ph-fill ph-play"></i> Écouter ma forme</button>'
+    +'<button type="button" class="va-raz" onclick="fmStop();_fm.seq=[];fmRendre()"><i class="ph ph-eraser"></i> Effacer</button></div>'
+    +'<div class="fm-exemples"><span>Exemples :</span>'+FM_EXEMPLES.map(function(e){ return '<button type="button" class="va-raz" onclick="fmExemple(\''+e[1]+'\')" title="'+escapeHtml(e[2])+'">'+e[0]+'</button>'; }).join("")+'</div>';
+}
+function fmAjouter(k){
+  if(_fm.seq.length>=8){ try{ toast("8 blocs au maximum : retire-en un d'abord."); }catch(e){} return; }
+  fmStop(); _fm.seq.push(k); fmRendre();
+  /* on entend le début du bloc ajouté */
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const X=fmConstruire([k],true), spb=60/FM_TEMPO, t0=ctx.currentTime+0.05; _fm.canal=txCanal();
+  X.notes.filter(function(n){ return n.b<4; }).forEach(function(n){ txSon(t0+n.b*spb,n.m,n.d*spb*0.95,n.timbre,n.vol,_fm.canal); });
+}
+function fmRetirer(i){ fmStop(); _fm.seq.splice(i,1); fmRendre(); }
+function fmExemple(s){ fmStop(); _fm.seq=s.split(""); fmRendre(); fmJouer(); }
+
+/* ---------- jeu « Reconnais la forme » ---------- */
+function fmNouveauJeu(){
+  const l=FM_JEU[_fm.niv], prec=_fm.jeu&&_fm.jeu.nom;
+  let nom=pick(l); for(let k=0;k<4&&nom===prec;k++)nom=pick(l);
+  const seq=nom.split(""), rep=seq.map(function(k,i){ return (k==="I"||k==="Z")?k:null; });
+  const premier=seq.findIndex(function(k){ return k!=="I"&&k!=="Z"; }); rep[premier]="A";   /* la 1re partie s'appelle toujours A */
+  _fm.jeu={nom:nom,seq:seq,rep:rep,fixe:premier,verifie:false};
+}
+function fmJeuHTML(){
+  const J=_fm.jeu; if(!J)return "";
+  const lettres=_fm.niv===1?["A","B"]:["A","B","C"];
+  const niv='<div class="va-niv"><span>Niveau :</span>'+[1,2,3].map(function(n){ return '<button type="button" class="'+(_fm.niv===n?"on":"")+'" aria-pressed="'+(_fm.niv===n)+'" onclick="fmStop();_fm.niv='+n+';fmNouveauJeu();fmRendre()">'+n+'</button>'; }).join("")
+    +'<small>'+({1:"3 parties, A ou B",2:"4 ou 5 parties, A, B ou C",3:"avec intro et coda"})[_fm.niv]+'</small></div>';
+  const frise='<div class="fm-frise" id="fmFrise" role="group" aria-label="La pièce mystère">'+J.seq.map(function(k,i){
+    const r=J.rep[i], fixe=(k==="I"||k==="Z"||i===J.fixe);
+    let cls="", lettre=r||"?";
+    if(J.verifie&&!(k==="I"||k==="Z")){ cls=(r===k?"juste":"faux"); if(r!==k)lettre=(r||"?")+" → "+k; }
+    if(fixe||J.verifie)return fmBlocHTML(r&&FM_BLOCS[r]?r:"?",i,{lettre:lettre,cls:cls+(fixe?" fixe":"")});
+    return fmBlocHTML(r||"?",i,{btn:'<button type="button" class="fm-choisir" onclick="fmCycler('+i+')" aria-label="Partie '+(i+1)+' : '+(r?"lettre "+r:"pas encore choisie")+'. Toucher pour changer">'+(r||"?")+'</button>'});
+  }).join("")+'</div>';
+  let bas;
+  if(!J.verifie)bas='<div class="tx-choix"><button type="button" class="tx-encore" onclick="fmVerifier()"'+(J.rep.every(function(x){ return x; })?'':' disabled')+'><i class="ph-fill ph-check"></i> Vérifier</button></div>';
+  else{
+    const ok=J.seq.every(function(k,i){ return J.rep[i]===k; });
+    bas='<div class="tx-devine"><p class="tx-verdict '+(ok?"ok":"ko")+'"><i class="ph-fill '+(ok?"ph-check-circle":"ph-x-circle")+'"></i> '+(ok?"Bravo, tu as reconnu la forme !":"Pas tout à fait : regarde les corrections sur la frise.")
+      +(_fm.serie>1?' <span class="tx-serie"><i class="ph-fill ph-fire"></i> '+_fm.serie+' d\'affilée</span>':'')+'</p>'
+      +'<p class="tx-def-d">C\'était <b>'+fmLettres(J.seq)+'</b> : '+fmNomForme(J.seq)+'.</p>'
+      +'<div class="tx-choix"><button type="button" class="tx-encore" onclick="fmStop();fmNouveauJeu();fmRendre();fmJouer()"><i class="ph-fill ph-arrow-clockwise"></i> Une autre pièce</button></div></div>';
+  }
+  return niv+'<p class="tx-aide fm-consigne"><i class="ph-fill ph-ear"></i> Écoute la pièce mystère : la frise montre quelle partie joue. Touche chaque case <b>?</b> pour lui donner une lettre. La même musique revient ? Même lettre !</p>'
+    +frise
+    +'<div class="tx-bas"><button type="button" class="cm-play tx-play" id="fmPlay" onclick="fmJouer()"><i class="ph-fill ph-play"></i> Écouter la pièce mystère</button></div>'+bas;
+}
+function fmCycler(i){
+  const J=_fm.jeu; if(!J||J.verifie)return;
+  const lettres=_fm.niv===1?["A","B"]:["A","B","C"], r=J.rep[i];
+  J.rep[i]=lettres[(lettres.indexOf(r)+1)%lettres.length];
+  const joue=_fm.session; const z=document.getElementById("fmAtelier");
+  if(z){ const f=document.getElementById("fmFrise"), tmp=document.createElement("div"); tmp.innerHTML=fmJeuHTML();
+    const nf=tmp.querySelector("#fmFrise"); if(f&&nf)f.replaceWith(nf);
+    const v=z.querySelector(".tx-choix .tx-encore"); if(v)v.disabled=!J.rep.every(function(x){ return x; }); }
+  if(!joue)return;
+}
+function fmVerifier(){
+  const J=_fm.jeu; if(!J||J.verifie)return;
+  J.verifie=true;
+  const ok=J.seq.every(function(k,i){ return J.rep[i]===k; });
+  _fm.serie=ok?_fm.serie+1:0;
+  try{ ajouterPoints(ok?Math.max(GAIN_EFFORT,_fm.niv*5):GAIN_EFFORT); sauverProfil(profil); if(typeof majEnteteProfil==="function")majEnteteProfil(); }catch(e){}
+  try{ jouerEffet(ok?"bon":"mauvais"); }catch(e){}
+  const joue=_fm.session; fmRendre(); if(joue){ fmMajBouton(); }
+}
+function fmJeuDepuisTexte(){ const z=document.getElementById("fmAtelier"); if(!z)return; z.scrollIntoView({block:"start",behavior:"smooth"}); fmMode("jeu"); }
+
+/* =====================================================================
+   LE LABORATOIRE DU SON (08/10/2026), dans la leçon « Les quatre
+   paramètres du son » : un oscilloscope montre la VAGUE du son.
+   - Hauteur : les vagues se resserrent quand le son monte.
+   - Intensité : elles grandissent quand le son est plus fort.
+   - Durée : la barre de durée s'allonge.
+   - Timbre : la forme de la vague change.
+   Mode « Avec ta voix » (micro analysé sur l'appareil, rien n'est
+   enregistré), et jeu « Quel paramètre a changé ? » (3 niveaux).
+   ===================================================================== */
+const PS_TIMBRES=[{k:"sine",nom:"Son pur",ex:"flûte douce"},{k:"triangle",nom:"Son doux",ex:"ocarina"},{k:"square",nom:"Son creux",ex:"clarinette"},{k:"sawtooth",nom:"Son brillant",ex:"violon, trompette"}];
+const PS_NUANCES=[{nom:"pianissimo",ab:"pp",g:0.05},{nom:"piano",ab:"p",g:0.1},{nom:"mezzo forte",ab:"mf",g:0.2},{nom:"forte",ab:"f",g:0.34},{nom:"fortissimo",ab:"ff",g:0.5}];
+const PS_DUREES=[{nom:"Très court",s:0.15},{nom:"Court",s:0.4},{nom:"Long",s:1.2},{nom:"Très long",s:2.4}];
+const PS_PARAMS={hauteur:"la hauteur",duree:"la durée",intensite:"l'intensité",timbre:"le timbre"};
+let _ps={midi:67,nuance:2,duree:2,timbre:"sine",an:null,raf:null,fin:0,canal:null,micro:null,src:null,buf:null,jeu:null,niv:1,serie:0};
+
+function psFreq(m){ return 440*Math.pow(2,(m-69)/12); }
+function psAnalyseur(){
+  const ctx=audio();
+  if(!_ps.an||_ps.an.context!==ctx){ _ps.an=ctx.createAnalyser(); _ps.an.fftSize=2048; _ps.an.connect(ctx.destination); _ps.buf=new Float32Array(2048); }
+  return _ps.an;
+}
+/* un son selon les réglages (P), à l'heure t ; vers : là où il sort */
+function psSon(P,t,vers){
+  const ctx=audio(), o=ctx.createOscillator(), g=ctx.createGain(), fl=ctx.createBiquadFilter(), d=PS_DUREES[P.duree].s, v=PS_NUANCES[P.nuance].g;
+  o.type=P.timbre; o.frequency.value=psFreq(P.midi);
+  fl.type="lowpass"; fl.frequency.value=P.timbre==="sine"?8000:Math.min(9000,psFreq(P.midi)*10);
+  const att=Math.min(0.02,d/4);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+att); g.gain.setValueAtTime(v,t+Math.max(att,d-0.04)); g.gain.linearRampToValueAtTime(0.0001,t+d);
+  o.connect(fl); fl.connect(g); g.connect(vers); o.start(t); o.stop(t+d+0.05);
+  return d;
+}
+function psJouer(){
+  if(_ps.micro){ psMicroCouper(); psRendreLecture(); }
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  txCanalCouper(_ps.canal); _ps.canal=ctx.createGain(); _ps.canal.connect(psAnalyseur());
+  const t=ctx.currentTime+0.03, d=psSon(_ps,t,_ps.canal);
+  _ps.debut=t; _ps.fin=t+d+0.1;
+  if(!_ps.raf)_ps.raf=requestAnimationFrame(psDessiner);
+}
+
+/* ---------- l'oscilloscope ---------- */
+function psDessiner(){
+  _ps.raf=null;
+  const cv=document.getElementById("psScope"); if(!cv){ psMicroCouper(); return; }
+  const ctx=audio(), now=ctx.currentTime, vivant=!!_ps.micro||now<_ps.fin;
+  const c=cv.getContext("2d"), W=cv.width=cv.clientWidth*2, H=cv.height=cv.clientHeight*2;
+  const st=getComputedStyle(cv);
+  c.clearRect(0,0,W,H);
+  c.strokeStyle=(st.getPropertyValue("--grille")||"").trim()||"rgba(30,58,99,.15)"; c.lineWidth=2;
+  c.beginPath(); c.moveTo(0,H/2); c.lineTo(W,H/2); c.stroke();
+  let pts=null;
+  if(vivant&&_ps.an){
+    _ps.an.getFloatTimeDomainData(_ps.buf);
+    /* départ sur un passage par zéro qui monte : une vague stable à l'écran */
+    let i0=0; for(let i=1;i<1024;i++){ if(_ps.buf[i-1]<0&&_ps.buf[i]>=0){ i0=i; break; } }
+    pts=[]; const n=900; for(let i=0;i<n;i++)pts.push(_ps.buf[i0+i]||0);
+    const gain=_ps.micro?4:1.6; pts=pts.map(function(x){ return Math.max(-1,Math.min(1,x*gain)); });
+  }else{
+    /* au repos : la vague « théorique » des réglages, pour voir chaque changement */
+    const cyc=Math.max(1.5,psFreq(_ps.midi)/900*19), amp=PS_NUANCES[_ps.nuance].g/0.5*0.95; pts=[];
+    for(let i=0;i<900;i++){ const ph=(i/900*cyc)%1; let y;
+      if(_ps.timbre==="sine")y=Math.sin(ph*2*Math.PI);
+      else if(_ps.timbre==="triangle")y=ph<0.25?ph*4:(ph<0.75?2-ph*4:ph*4-4);
+      else if(_ps.timbre==="square")y=ph<0.5?0.8:-0.8;
+      else y=1-2*ph;
+      pts.push(y*amp); }
+  }
+  c.strokeStyle=(st.getPropertyValue("--vague")||"").trim()||"#2374b0"; c.lineWidth=5; c.lineJoin="round"; c.beginPath();
+  pts.forEach(function(y,i){ const x=i/(pts.length-1)*W, yy=H/2-y*H*0.42; if(i)c.lineTo(x,yy); else c.moveTo(x,yy); }); c.stroke();
+  /* la barre de durée */
+  const bar=document.getElementById("psDureeBarre");
+  if(bar){ const D=PS_DUREES[_ps.duree].s; bar.style.width=(vivant&&!_ps.micro?Math.min(100,(now-_ps.debut)/D*100):0)+"%"; }
+  if(_ps.micro)psMicroLire();
+  if(vivant||_ps.micro)_ps.raf=requestAnimationFrame(psDessiner);
+}
+
+/* ---------- avec ta voix ---------- */
+async function psMicro(){
+  if(_ps.micro){ psMicroCouper(); psRendreLecture(); return; }
+  const z=document.getElementById("psMsg");
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ if(z)z.textContent="Ce navigateur ne donne pas accès au micro."; return; }
+  try{
+    const ctx=audio(); try{ await ctx.resume(); }catch(e){}
+    const flux=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    _ps.micro=flux; _ps.src=ctx.createMediaStreamSource(flux);
+    const an=ctx.createAnalyser(); an.fftSize=2048; _ps.src.connect(an); _ps.an=an; _ps.buf=new Float32Array(2048);
+    psRendreLecture(); if(!_ps.raf)_ps.raf=requestAnimationFrame(psDessiner);
+  }catch(e){ if(z)z.textContent="Le micro est refusé : autorise-le dans ton navigateur (le cadenas à gauche de l'adresse)."; }
+}
+function psMicroCouper(){
+  if(!_ps.micro)return;
+  try{ _ps.src.disconnect(); }catch(e){}
+  try{ _ps.micro.getTracks().forEach(function(t){ t.stop(); }); }catch(e){}
+  _ps.micro=null; _ps.src=null; _ps.an=null;
+}
+function psMicroLire(){
+  let rms=0; for(let i=0;i<_ps.buf.length;i++)rms+=_ps.buf[i]*_ps.buf[i]; rms=Math.sqrt(rms/_ps.buf.length);
+  const f=cjHauteur(_ps.buf,audio().sampleRate), n=document.getElementById("psVoixNote"), m=document.getElementById("psVoixFort"), l=document.getElementById("psVoixNuance");
+  if(n)n.textContent=f?cjNom(cjMidi(f),true):"…";
+  const niv=Math.min(1,rms*6); if(m)m.style.width=(niv*100)+"%";
+  if(l)l.textContent=rms<0.012?"silence":(niv<0.2?"pianissimo":niv<0.4?"piano":niv<0.6?"mezzo forte":niv<0.8?"forte":"fortissimo");
+}
+
+/* ---------- l'atelier ---------- */
+function psAtelierHTML(){ return '<div class="tx-atelier ps-atelier" id="psAtelier"><div class="tx-chargement">Chargement du laboratoire…</div></div>'; }
+function psInit(){ psMicroCouper(); _ps.jeu=null; psRendre(); }
+function psRendre(){
+  const z=document.getElementById("psAtelier"); if(!z)return;
+  const j=_ps.jeu;
+  z.innerHTML='<div class="tx-tete-at"><span class="tx-titre"><i class="ph-fill ph-wave-sine"></i> Le laboratoire du son</span>'
+      +'<button type="button" class="tx-devine-b'+(j?" on":"")+'" onclick="psJeu()"><i class="ph-fill ph-question"></i> Quel paramètre a changé ?</button></div>'
+    +'<div class="ps-ecran"><canvas id="psScope" aria-label="Oscilloscope : la vague du son" role="img"></canvas><span class="ps-duree" aria-hidden="true"><span id="psDureeBarre"></span></span></div>'
+    +(j?'<div class="tx-devine" id="psJeuZone">'+psJeuHTML()+'</div>':psReglagesHTML())
+    +(j?'':'<div class="ps-voix" id="psLecture">'+psLectureHTML()+'</div>');
+  if(!_ps.raf)_ps.raf=requestAnimationFrame(psDessiner);
+}
+function psReglagesHTML(){
+  const T=PS_TIMBRES, N=PS_NUANCES[_ps.nuance];
+  return '<div class="ps-regs">'
+    +'<div class="ps-reg"><span><i class="ph ph-arrows-down-up"></i> La hauteur</span><div class="ps-ligne"><small>grave</small><input type="range" min="48" max="84" value="'+_ps.midi+'" oninput="psRegler(\'midi\',+this.value)" aria-label="Hauteur"><small>aigu</small></div><b id="psHauteurVal">'+cjNom(_ps.midi,true)+' · '+Math.round(psFreq(_ps.midi))+' Hz</b></div>'
+    +'<div class="ps-reg"><span><i class="ph ph-speaker-high"></i> L\'intensité</span><div class="ps-ligne"><small>doux</small><input type="range" min="0" max="4" value="'+_ps.nuance+'" oninput="psRegler(\'nuance\',+this.value)" aria-label="Intensité"><small>fort</small></div><b id="psNuanceVal">'+N.nom+' ('+N.ab+')</b></div>'
+    +'<div class="ps-reg"><span><i class="ph ph-timer"></i> La durée</span><div class="cm-seg" role="group">'+PS_DUREES.map(function(d,i){ const on=_ps.duree===i; return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="psRegler(\'duree\','+i+')">'+d.nom+'</button>'; }).join("")+'</div></div>'
+    +'<div class="ps-reg"><span><i class="ph ph-palette"></i> Le timbre</span><div class="cm-seg" role="group">'+T.map(function(t){ const on=_ps.timbre===t.k; return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="psRegler(\'timbre\',\''+t.k+'\')" title="'+t.ex+'">'+t.nom+'</button>'; }).join("")+'</div></div>'
+    +'</div>'
+    +'<div class="tx-bas"><button type="button" class="cm-play tx-play" onclick="psJouer()"><i class="ph-fill ph-play"></i> Écouter ce son</button>'
+    +'<p class="tx-aide ps-explique" id="psExplique">'+psExplication()+'</p></div>';
+}
+function psExplication(){
+  const t=PS_TIMBRES.filter(function(x){ return x.k===_ps.timbre; })[0];
+  return 'Plus le son est <b>aigu</b>, plus les vagues sont <b>serrées</b> ; plus il est <b>fort</b>, plus elles sont <b>hautes</b>. Ici : un <b>'+t.nom.toLowerCase()+'</b> (comme '+t.ex+').';
+}
+function psRegler(k,v){
+  _ps[k]=v;
+  if(k==="midi"){ const e=document.getElementById("psHauteurVal"); if(e)e.textContent=cjNom(v,true)+" · "+Math.round(psFreq(v))+" Hz"; }
+  else if(k==="nuance"){ const e=document.getElementById("psNuanceVal"), N=PS_NUANCES[v]; if(e)e.textContent=N.nom+" ("+N.ab+")"; }
+  else{ const z=document.getElementById("psAtelier"); if(z){ const r=z.querySelector(".ps-regs"), tmp=document.createElement("div"); tmp.innerHTML=psReglagesHTML(); const nr=tmp.querySelector(".ps-regs"); if(r&&nr)r.replaceWith(nr); } }
+  const ex=document.getElementById("psExplique"); if(ex)ex.innerHTML=psExplication();
+  if(!_ps.raf)_ps.raf=requestAnimationFrame(psDessiner);
+}
+function psLectureHTML(){
+  if(!_ps.micro)return '<button type="button" class="cm-dec" onclick="psMicro()"><i class="ph-fill ph-microphone"></i> Avec ta voix</button><span class="tx-aide">Chante, parle, siffle : regarde la vague de ta voix. Le son est analysé sur cet appareil, il n\'est ni enregistré ni envoyé.</span><span class="cj-msg" id="psMsg" aria-live="polite"></span>';
+  return '<button type="button" class="cm-dec" onclick="psMicro()"><i class="ph-fill ph-microphone-slash"></i> Couper le micro</button>'
+    +'<span class="ps-mesure"><small>Hauteur</small><b id="psVoixNote">…</b></span>'
+    +'<span class="ps-mesure ps-fort"><small>Intensité : <span id="psVoixNuance">silence</span></small><span class="ps-jauge"><span id="psVoixFort"></span></span></span>';
+}
+function psRendreLecture(){ const z=document.getElementById("psLecture"); if(z)z.innerHTML=psLectureHTML(); }
+
+/* ---------- jeu « Quel paramètre a changé ? » ---------- */
+function psTirage(niv){
+  const A={midi:pick([57,60,62,64,65,67]),nuance:2,duree:2,timbre:pick(["sine","triangle"])}, B=Object.assign({},A), p=pick(Object.keys(PS_PARAMS));
+  if(p==="hauteur")B.midi=A.midi+(niv===1?pick([-12,12]):niv===2?pick([-5,-4,4,5]):pick([-2,-1,1,2]));
+  else if(p==="intensite"){ A.nuance=niv===1?0:(niv===2?1:2); B.nuance=niv===1?4:3; if(Math.random()<0.5){ const x=A.nuance; A.nuance=B.nuance; B.nuance=x; } }
+  else if(p==="duree"){ A.duree=niv===1?0:1; B.duree=niv===1?3:(niv===2?3:2); if(Math.random()<0.5){ const x=A.duree; A.duree=B.duree; B.duree=x; } }
+  else{ const autres={sine:niv===3?"triangle":"sawtooth",triangle:niv===3?"sine":"square"}; B.timbre=autres[A.timbre]; }
+  return {A:A,B:B,p:p};
+}
+function psJouerPaire(T,vers){
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const t=ctx.currentTime+0.05, d1=psSon(T.A,t,vers), t2=t+Math.max(d1,0.5)+0.6; psSon(T.B,t2,vers);
+  return {debut:t,t2:t2,fin:t2+PS_DUREES[T.B.duree].s};
+}
+function psJeu(){
+  psMicroCouper();
+  if(_ps.jeu&&!_ps.jeu.rep){ _ps.jeu=null; psRendre(); return; }
+  _ps.jeu=Object.assign(psTirage(_ps.niv),{rep:null}); psRendre(); psEcouterPaire();
+}
+function psEcouterPaire(){
+  const J=_ps.jeu; if(!J)return;
+  const ctx=audio(); txCanalCouper(_ps.canal); _ps.canal=ctx.createGain(); _ps.canal.connect(psAnalyseur());
+  const r=psJouerPaire(J,_ps.canal); _ps.debut=r.debut; _ps.fin=r.fin+0.1;
+  if(!_ps.raf)_ps.raf=requestAnimationFrame(psDessiner);
+}
+function psJeuHTML(){
+  const J=_ps.jeu; if(!J)return "";
+  const niv='<div class="va-niv"><span>Niveau :</span>'+[1,2,3].map(function(n){ return '<button type="button" class="'+(_ps.niv===n?"on":"")+'" aria-pressed="'+(_ps.niv===n)+'" onclick="_ps.niv='+n+';_ps.jeu=null;psJeu()">'+n+'</button>'; }).join("")
+    +'<small>'+({1:"de grandes différences",2:"des différences moyennes",3:"des différences fines"})[_ps.niv]+'</small></div>';
+  const choix='<div class="tx-choix">'+Object.keys(PS_PARAMS).map(function(k){ return '<button type="button" onclick="psRepondre(\''+k+'\')"'+(J.rep?' disabled':'')+'>'+PS_PARAMS[k].replace(/^./,function(c){ return c.toUpperCase(); })+'</button>'; }).join("")+'</div>';
+  if(!J.rep)return niv+'<p><i class="ph-fill ph-ear"></i> Écoute deux sons : <b>un seul paramètre</b> a changé entre le premier et le second. Lequel ?</p>'+choix
+    +'<div class="tx-choix"><button type="button" onclick="psEcouterPaire()"><i class="ph ph-arrow-counter-clockwise"></i> Réécouter</button></div>';
+  const ok=J.rep===J.p;
+  return niv+'<p class="tx-verdict '+(ok?"ok":"ko")+'"><i class="ph-fill '+(ok?"ph-check-circle":"ph-x-circle")+'"></i> '+(ok?"Bravo !":"Non :")+' c\'était <b>'+PS_PARAMS[J.p]+'</b>.'
+    +(_ps.serie>1?' <span class="tx-serie"><i class="ph-fill ph-fire"></i> '+_ps.serie+' d\'affilée</span>':'')+'</p>'
+    +'<p class="tx-def-d">'+psDiffTexte(J)+'</p>'
+    +'<div class="tx-choix"><button type="button" class="tx-encore" onclick="_ps.jeu=null;psJeu()"><i class="ph-fill ph-arrow-clockwise"></i> Une autre paire</button>'
+    +'<button type="button" onclick="psEcouterPaire()"><i class="ph ph-arrow-counter-clockwise"></i> Réécouter</button>'
+    +'<button type="button" onclick="_ps.jeu=null;psRendre()">Revenir au laboratoire</button></div>';
+}
+function psDiffTexte(J){
+  if(J.p==="hauteur")return "Le premier son : "+cjNom(J.A.midi,true)+", le second : "+cjNom(J.B.midi,true)+" ("+(J.B.midi>J.A.midi?"plus aigu":"plus grave")+").";
+  if(J.p==="intensite")return "Le premier son : "+PS_NUANCES[J.A.nuance].nom+", le second : "+PS_NUANCES[J.B.nuance].nom+".";
+  if(J.p==="duree")return "Le premier son : "+PS_DUREES[J.A.duree].nom.toLowerCase()+", le second : "+PS_DUREES[J.B.duree].nom.toLowerCase()+".";
+  const n=function(k){ return PS_TIMBRES.filter(function(t){ return t.k===k; })[0].nom.toLowerCase(); };
+  return "Le premier : un "+n(J.A.timbre)+", le second : un "+n(J.B.timbre)+" (même note, même force, même durée).";
+}
+function psRepondre(k){
+  const J=_ps.jeu; if(!J||J.rep)return;
+  J.rep=k; const ok=k===J.p; _ps.serie=ok?_ps.serie+1:0;
+  try{ jouerEffet(ok?"bon":"mauvais"); }catch(e){}
+  const z=document.getElementById("psJeuZone"); if(z)z.innerHTML=psJeuHTML();
+}
+/* extrait des exercices : deux sons, un paramètre change */
+function psExtrait(cfg){
+  const T={A:Object.assign({midi:60,nuance:2,duree:2,timbre:"sine"},cfg.A),B:Object.assign({midi:60,nuance:2,duree:2,timbre:"sine"},cfg.B)};
+  psJouerPaire(T,sonBtnCanal(audio().destination));
+}
+document.addEventListener("visibilitychange",function(){ if(document.hidden&&_ps.micro){ psMicroCouper(); psRendreLecture(); } });
+
+/* =====================================================================
+   LA JAM DU BLUES (08/10/2026), dans la leçon « La grille de blues » :
+   un groupe virtuel joue la grille de 12 mesures en boucle (batterie en
+   shuffle, basse « boogie », piano sur les temps 2 et 4) ; la case jouée
+   s'allume (I en or, IV en bleu, V en sarcelle). L'élève IMPROVISE sur
+   la gamme blues (6 touches : toutes sonnent bien), et relève le défi
+   « Suis la grille » : à chaque mesure, taper l'accord (I, IV ou V).
+   Sons : btSon (batterie), txSon (basse, piano), dans un canal coupé à l'arrêt.
+   ===================================================================== */
+const BJ_GRILLE=["I","I","I","I","IV","IV","I","I","V","IV","I","V"];
+const BJ_TONS={"Do":48,"Ré":50,"Mi":52,"Sol":43,"La":45};
+const BJ_DEG={I:0,IV:5,V:7};
+const BJ_COUL={I:{c:"var(--or)",t:"#16233a"},IV:{c:"#2374b0",t:"#fff"},V:{c:"var(--dom-ecoute)",t:"#fff"}};
+const BJ_GAMME=[0,3,5,6,7,10,12];      /* la gamme blues : 1, ♭3, 4, ♭5, 5, ♭7, 8 */
+const BJ_BOOGIE=[0,4,7,9,10,9,7,4];   /* la basse : une note par croche (shuffle) */
+let _bj={ton:"Do",tempo:96,muet:{bat:false,basse:false,piano:false},session:false,timer:null,raf:null,prochain:0,croche:0,mesure:0,evts:[],canal:null,defi:null,serie:0};
+
+function bjNomAccord(deg){ const r=(BJ_TONS[_bj.ton]+BJ_DEG[deg])%12; return CHROMA[r]+"7"; }
+/* la gamme blues s'écrit avec des bémols (Mi♭, Si♭), sauf la « blue note » Fa♯ */
+const BJ_NOMS=["Do","Ré♭","Ré","Mi♭","Mi","Fa","Fa♯","Sol","La♭","La","Si♭","Si"];
+function bjNote(n){ return BJ_NOMS[((n%12)+12)%12]; }
+
+/* ---------- lecture ---------- */
+function bjJouer(){
+  if(_bj.session){ bjStop(); return; }
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  _bj.session=true; _bj.croche=0; _bj.mesure=0; _bj.evts=[]; _bj.prochain=ctx.currentTime+0.15; _bj.canal=txCanal();
+  if(_bj.defi){ _bj.defi={rep:{},justes:0,faux:0,tour:0,fini:false}; }
+  _bj.timer=setInterval(bjPlanifier,25); bjPlanifier(); _bj.raf=requestAnimationFrame(bjAnimer); bjMajBoutons();
+}
+function bjStop(){
+  if(_bj.timer){ clearInterval(_bj.timer); _bj.timer=null; }
+  if(_bj.raf){ cancelAnimationFrame(_bj.raf); _bj.raf=null; }
+  txCanalCouper(_bj.canal); _bj.canal=null;
+  const etait=_bj.session; _bj.session=false;
+  if(!etait)return;
+  document.querySelectorAll("#bjGrille .bj-case").forEach(function(c){ c.classList.remove("joue"); c.style.setProperty("--p","0"); });
+  bjMajBoutons();
+}
+function bjPlanifier(){
+  if(!document.getElementById("bjAtelier")){ bjStop(); return; }
+  const ctx=audio(), noire=60/_bj.tempo, base=BJ_TONS[_bj.ton];
+  while(_bj.session&&_bj.prochain<ctx.currentTime+0.15){
+    const c=_bj.croche, temps=Math.floor(c/2), demi=c%2, m=_bj.mesure, deg=BJ_GRILLE[m];
+    /* shuffle : la 2e croche de chaque temps tombe aux 2/3 du temps */
+    const t=_bj.prochain+(demi?noire*2/3:0), r=base+BJ_DEG[deg];
+    if(!_bj.muet.bat){
+      if(demi===0&&(temps===0||temps===2))btSon("gc",t,0.9);
+      if(demi===0&&(temps===1||temps===3))btSon("cc",t,0.8);
+      btSon("hh",t,demi?0.5:0.7);
+    }
+    if(!_bj.muet.basse)txSon(t,r+BJ_BOOGIE[c],noire*(demi?1/3:2/3)*0.95,"cordes",0.22,_bj.canal);
+    if(!_bj.muet.piano&&demi===0&&(temps===1||temps===3))[4,7,10].forEach(function(i){ txSon(t,r+12+i,noire*0.45,"piano",0.08,_bj.canal); });
+    if(c===0)_bj.evts.push({t:t,m:m});
+    _bj.croche++; if(demi===1)_bj.prochain+=noire;
+    if(_bj.croche>=8){ _bj.croche=0; _bj.mesure=(m+1)%12; if(_bj.mesure===0&&_bj.defi)_bj.defi.tour++; }
+  }
+}
+function bjAnimer(){
+  if(!document.getElementById("bjAtelier")){ bjStop(); return; }
+  const now=audio().currentTime, mes=4*60/_bj.tempo;
+  while(_bj.evts.length&&_bj.evts[0].t<=now){ const e=_bj.evts.shift(); _bj.cour=e; bjMesure(e.m); }
+  if(_bj.cour){ const p=Math.min(1,(now-_bj.cour.t)/mes); const el=document.querySelector('#bjGrille .bj-case[data-m="'+_bj.cour.m+'"]'); if(el)el.style.setProperty("--p",String(p)); }
+  _bj.raf=requestAnimationFrame(bjAnimer);
+}
+function bjMesure(m){
+  document.querySelectorAll("#bjGrille .bj-case").forEach(function(c){ const on=+c.getAttribute("data-m")===m; c.classList.toggle("joue",on); if(!on)c.style.setProperty("--p","0"); });
+  const D=_bj.defi;
+  if(D&&!D.fini){
+    /* la mesure précédente sans réponse compte comme manquée */
+    const prec=(m+11)%12; if(_bj.session&&D.attendu!=null&&D.rep[D.cle]==null){ D.faux++; bjMarquer(prec,false,null); }
+    D.attendu=BJ_GRILLE[m]; D.cle=D.tour+"-"+m; bjMajDefi();
+    if(D.tour>=2){ D.fini=true; bjStop(); bjFinDefi(); }
+  }
+}
+
+/* ---------- l'atelier ---------- */
+function bjAtelierHTML(){ return '<div class="tx-atelier bj-atelier" id="bjAtelier"><div class="tx-chargement">Chargement de la jam…</div></div>'; }
+function bjInit(){ bjStop(); _bj.defi=null; bjRendre(); }
+function bjRendre(){
+  const z=document.getElementById("bjAtelier"); if(!z)return;
+  const D=_bj.defi, cache=!!D;
+  z.innerHTML='<div class="tx-tete-at"><span class="tx-titre"><i class="ph-fill ph-guitar"></i> La jam du blues</span>'
+      +'<button type="button" class="tx-devine-b'+(D?" on":"")+'" onclick="bjDefi()"><i class="ph-fill ph-target"></i> Défi : suis la grille</button></div>'
+    +'<div class="bj-grille" id="bjGrille" role="group" aria-label="La grille de 12 mesures">'+BJ_GRILLE.map(function(d,m){ const C=BJ_COUL[d];
+      return '<div class="bj-case'+(cache?" cache":"")+'" data-m="'+m+'" style="--c:'+C.c+';--t:'+C.t+'"><small>'+(m+1)+'</small><b>'+(cache?"?":d)+'</b><span>'+(cache?"":bjNomAccord(d))+'</span><i class="bj-barre"></i></div>'; }).join("")+'</div>'
+    +(D?'<div class="tx-devine" id="bjDefiZone">'+bjDefiHTML()+'</div>':'')
+    +'<div class="tx-bas"><button type="button" class="cm-play tx-play" id="bjPlay" onclick="bjJouer()"><i class="ph-fill ph-play"></i> '+(D?"Commencer le défi":"Lancer le groupe")+'</button>'
+    +'<label class="bt-tempo"><span>Tempo <b id="bjTempoVal">'+_bj.tempo+'</b></span><input type="range" min="70" max="140" step="2" value="'+_bj.tempo+'" oninput="_bj.tempo=+this.value;document.getElementById(\'bjTempoVal\').textContent=this.value" aria-label="Tempo"></label></div>'
+    +'<div class="cm-options"><div><span>Tonalité</span><div class="cm-seg" role="group">'+Object.keys(BJ_TONS).map(function(k){ const on=_bj.ton===k; return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="bjTon(\''+k+'\')">'+k+'</button>'; }).join("")+'</div></div>'
+    +'<div><span>Le groupe</span><div class="cm-seg" role="group">'+[["bat","Batterie"],["basse","Basse"],["piano","Piano"]].map(function(x){ const on=!_bj.muet[x[0]]; return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="bjMuet(\''+x[0]+'\',this)">'+x[1]+'</button>'; }).join("")+'</div></div></div>'
+    +(D?'':'<div class="bj-impro"><b><i class="ph-fill ph-music-notes"></i> Improvise sur la gamme blues de '+_bj.ton+'</b><span class="tx-aide">Pendant que le groupe joue, touche les notes (ou les touches A S D F G H J du clavier) : avec cette gamme, tout sonne bien !</span>'
+      +'<div class="bj-touches">'+BJ_GAMME.map(function(i,k){ const n=BJ_TONS[_bj.ton]+24+i;
+        return '<button type="button" class="bj-t" data-k="'+k+'" onpointerdown="bjToucher('+k+',event)" aria-label="Note '+bjNote(n)+'"><b>'+bjNote(n)+'</b><small>'+"ASDFGHJ"[k]+'</small></button>'; }).join("")+'</div></div>');
+}
+function bjTon(k){ const joue=_bj.session; bjStop(); _bj.ton=k; bjRendre(); if(joue)bjJouer(); }
+function bjMuet(k,b){ _bj.muet[k]=!_bj.muet[k]; b.classList.toggle("on",!_bj.muet[k]); b.setAttribute("aria-pressed",!_bj.muet[k]); }
+function bjToucher(k,e){
+  if(e&&e.preventDefault)e.preventDefault();
+  const ctx=audio(); try{ ctx.resume(); }catch(x){}
+  const n=BJ_TONS[_bj.ton]+24+BJ_GAMME[k];
+  if(!_bj.canal||!_bj.session)_bj.canalSolo=_bj.canalSolo&&_bj.canalSolo.context===ctx?_bj.canalSolo:txCanal();
+  txSon(ctx.currentTime+0.005,n,0.5,"piano",0.26,_bj.session?_bj.canal:_bj.canalSolo);
+  const b=document.querySelector('.bj-t[data-k="'+k+'"]'); if(b)cmFlash(b,"tape",160);
+}
+document.addEventListener("keydown",function(e){
+  if(!document.getElementById("bjAtelier")||_bj.defi)return;
+  const tg=e.target; if(tg&&(tg.tagName==="INPUT"||tg.tagName==="TEXTAREA"||tg.isContentEditable))return;
+  const k="asdfghj".indexOf((e.key||"").toLowerCase()); if(k<0||e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;
+  e.preventDefault(); bjToucher(k,null);
+});
+
+/* ---------- défi « Suis la grille » ---------- */
+function bjDefi(){
+  bjStop();
+  if(_bj.defi&&!_bj.defi.fini){ _bj.defi=null; bjRendre(); return; }
+  _bj.defi={rep:{},justes:0,faux:0,tour:0,fini:false}; bjRendre();
+}
+function bjDefiHTML(){
+  const D=_bj.defi; if(!D)return "";
+  if(D.fini){
+    const tot=D.justes+D.faux, pct=tot?Math.round(D.justes/tot*100):0;
+    return '<p class="tx-verdict '+(pct>=75?"ok":"ko")+'"><i class="ph-fill '+(pct>=75?"ph-check-circle":"ph-x-circle")+'"></i> '+D.justes+' mesure'+(D.justes>1?"s":"")+' sur '+tot+' : '+(pct>=90?"tu connais la grille par cœur !":pct>=75?"très bien !":"réessaie en suivant la couleur des accords dans ta tête.")+'</p>'
+      +(D.gain?'<p class="tx-def-d">+'+D.gain+' points</p>':'')
+      +'<div class="tx-choix"><button type="button" class="tx-encore" onclick="_bj.defi={rep:{},justes:0,faux:0,tour:0,fini:false};bjRendre();bjJouer()"><i class="ph-fill ph-arrow-clockwise"></i> Rejouer</button>'
+      +'<button type="button" onclick="_bj.defi=null;bjRendre()">Revenir à la jam</button></div>';
+  }
+  return '<p><i class="ph-fill ph-ear"></i> La grille est cachée. Le groupe joue <b>deux tours</b> : à chaque mesure, touche l\'accord que tu entends, <b>I</b>, <b>IV</b> ou <b>V</b>. Astuce : compte « 1, 2, 3, 4 » à chaque mesure.</p>'
+    +'<div class="tx-choix bj-choix">'+["I","IV","V"].map(function(d){ const C=BJ_COUL[d]; return '<button type="button" class="bj-acc" style="--c:'+C.c+';--t:'+C.t+'" onclick="bjRepondre(\''+d+'\')"'+(_bj.session?'':' disabled')+'><b>'+d+'</b><small>'+bjNomAccord(d)+'</small></button>'; }).join("")+'</div>'
+    +'<p class="tx-def-d" id="bjScore">'+D.justes+' juste'+(D.justes>1?"s":"")+' · '+D.faux+' raté'+(D.faux>1?"s":"")+'</p>';
+}
+function bjMajDefi(){ const s=document.getElementById("bjScore"), D=_bj.defi; if(s&&D)s.textContent=D.justes+" juste"+(D.justes>1?"s":"")+" · "+D.faux+" raté"+(D.faux>1?"s":""); document.querySelectorAll(".bj-acc").forEach(function(b){ b.disabled=!_bj.session; }); }
+function bjRepondre(d){
+  const D=_bj.defi; if(!D||D.fini||!_bj.session||D.attendu==null)return;
+  if(D.rep[D.cle]!=null)return;   /* une seule réponse par mesure */
+  D.rep[D.cle]=d; const ok=d===D.attendu; if(ok)D.justes++; else D.faux++;
+  bjMarquer(_bj.cour?_bj.cour.m:0,ok,d); bjMajDefi();
+}
+function bjMarquer(m,ok,d){
+  const c=document.querySelector('#bjGrille .bj-case[data-m="'+m+'"]'); if(!c)return;
+  const deg=BJ_GRILLE[m];
+  c.classList.remove("cache"); c.classList.add(ok?"juste":"faux");
+  c.querySelector("b").textContent=deg; c.querySelector("span").textContent=bjNomAccord(deg);
+}
+function bjFinDefi(){
+  const D=_bj.defi; const tot=D.justes+D.faux, pct=tot?D.justes/tot:0;
+  _bj.serie=pct>=0.75?_bj.serie+1:0;
+  try{ D.gain=ajouterPoints(Math.max(GAIN_EFFORT,Math.round(pct*15))); sauverProfil(profil); if(typeof majEnteteProfil==="function")majEnteteProfil(); }catch(e){}
+  try{ jouerEffet(pct>=0.75?"bon":"mauvais"); }catch(e){}
+  const z=document.getElementById("bjDefiZone"); if(z)z.innerHTML=bjDefiHTML();
+}
+function bjMajBoutons(){
+  const b=document.getElementById("bjPlay"); if(b){ b.classList.toggle("stop",_bj.session); b.innerHTML=_bj.session?'<i class="ph-fill ph-stop"></i> Arrêter':'<i class="ph-fill ph-play"></i> '+(_bj.defi?"Commencer le défi":"Lancer le groupe"); }
+  document.querySelectorAll(".bj-acc").forEach(function(x){ x.disabled=!_bj.session; });
+}
+document.addEventListener("visibilitychange",function(){ if(document.hidden&&_bj.session)bjStop(); });
+
+/* ============ LE VOCABULAIRE DE L'ÉCOUTE : le laboratoire des mots (ve*) ============
+   Une phrase connue (l'Hymne à la joie, en ré majeur, harmonisée sur I et V) jouée selon les
+   mots choisis : tempo, nuance, hauteur, articulation, mode, texture, timbre. Les évolutions
+   (accelerando, rallentando, crescendo, decrescendo) déforment le temps ou le volume au fil
+   de la phrase. La frise dessine ce qu'on entend : espacement des pulsations = tempo,
+   épaisseur des barres = nuance, hauteur = registre, longueur = articulation. */
+const VE_MEL=[[66,1],[66,1],[67,1],[69,1],[69,1],[67,1],[66,1],[64,1],[62,1],[62,1],[64,1],[66,1],[66,1.5],[64,0.5],[64,2],
+  [66,1],[66,1],[67,1],[69,1],[69,1],[67,1],[66,1],[64,1],[62,1],[62,1],[64,1],[66,1],[64,1.5],[62,0.5],[62,2]];
+/* un accord par demi-mesure : I = ré (ré, fa dièse, la), V = la (do dièse, mi, la) */
+const VE_GRILLE=["I","I","V","V","I","I","I","V","I","I","V","V","I","I","V","I"];
+const VE_ACC={I:{basse:38,acc:[50,54,57]},V:{basse:45,acc:[49,52,57]}};
+const VE_FAM=[
+  {k:"tempo",nom:"Le tempo",q:"Quelle vitesse ?",ic:"ph-timer",opts:[["lent","Lent"],["modere","Modéré"],["rapide","Rapide"],["accel","Accelerando"],["rall","Rallentando"]]},
+  {k:"nuance",nom:"La nuance",q:"Quelle force ?",ic:"ph-speaker-high",opts:[["pp","pp"],["p","p"],["mf","mf"],["f","f"],["ff","ff"],["cresc","Crescendo"],["decresc","Decrescendo"]]},
+  {k:"registre",nom:"La hauteur",q:"Grave ou aigu ?",ic:"ph-arrows-down-up",opts:[["grave","Grave"],["medium","Médium"],["aigu","Aigu"]]},
+  {k:"artic",nom:"L'articulation",q:"Lié ou piqué ?",ic:"ph-dots-three",opts:[["legato","Legato"],["staccato","Staccato"]]},
+  {k:"mode",nom:"Le mode",q:"Quelle couleur ?",ic:"ph-sun-horizon",opts:[["majeur","Majeur"],["mineur","Mineur"]]},
+  {k:"texture",nom:"La texture",q:"Seule ou accompagnée ?",ic:"ph-stack",opts:[["seule","Mélodie seule"],["accords","Accompagnée"],["bourdon","Sur un bourdon"]]},
+  {k:"timbre",nom:"Le timbre",q:"Qui joue ?",ic:"ph-guitar",opts:[["piano","Piano"],["flute","Flûte"],["cordes","Cordes"],["anche","Hautbois"],["cuivre","Trompette"],["orgue","Orgue"]]}
+];
+const VE_NOM_NUANCE={pp:"pianissimo",p:"piano",mf:"mezzo forte",f:"forte",ff:"fortissimo"};
+const VE_DEFAUT={tempo:"modere",nuance:"mf",registre:"medium",artic:"legato",mode:"majeur",texture:"accords",timbre:"piano"};
+const VE_BPM={lent:60,modere:96,rapide:150,accel:[64,156],rall:[152,58]};
+const VE_VOL={pp:0.04,p:0.075,mf:0.15,f:0.28,ff:0.42,cresc:[0.035,0.42],decresc:[0.42,0.035]};
+/* le défi : familles et mots en jeu, par niveau */
+const VE_JEU={
+  1:{nb:3,fams:["tempo","nuance","registre"],opts:{tempo:["lent","rapide"],nuance:["p","f"],registre:["grave","aigu"]}},
+  2:{nb:4,fams:["tempo","nuance","registre","artic","mode","texture"],opts:{tempo:["lent","modere","rapide"],nuance:["p","f"],registre:["grave","medium","aigu"],artic:["legato","staccato"],mode:["majeur","mineur"],texture:["seule","accords","bourdon"]}},
+  3:{nb:5,fams:["tempo","nuance","registre","artic","mode","texture"],opts:{tempo:["lent","rapide","accel","rall"],nuance:["p","f","cresc","decresc"],registre:["grave","medium","aigu"],artic:["legato","staccato"],mode:["majeur","mineur"],texture:["seule","accords","bourdon"]}}
+};
+const VE_TOURS=5;
+let _ve={C:Object.assign({},VE_DEFAUT),jeu:null,niv:1,anim:null,jeton:0,lect:null};
+
+/* ---------- la musique ---------- */
+function veFam(k){ for(let i=0;i<VE_FAM.length;i++)if(VE_FAM[i].k===k)return VE_FAM[i]; return null; }
+function veLib(k,v){ const f=veFam(k); if(!f)return v; for(let i=0;i<f.opts.length;i++)if(f.opts[i][0]===v)return f.opts[i][1]; return v; }
+function veEvol(C){ return C.tempo==="accel"||C.tempo==="rall"||C.nuance==="cresc"||C.nuance==="decresc"; }
+function veConstruire(cfg){
+  const C=Object.assign({},VE_DEFAUT,cfg), T=C.court?8:(veEvol(C)||C.long?32:16), tr=C.registre==="grave"?-12:C.registre==="aigu"?12:0, mi=C.mode==="mineur";
+  const notes=[]; let b=0;
+  VE_MEL.forEach(function(n){ if(b<T)notes.push({b:b,d:n[1],m:(mi&&n[0]===66?65:n[0])+tr,mel:true}); b+=n[1]; });
+  const trB=tr<0?0:tr;
+  if(C.texture==="accords")for(let h=0;h<T/2;h++){
+    const A=VE_ACC[VE_GRILLE[h]], acc=A.acc.map(function(m){ return (mi&&m===54?53:m)+tr; });
+    notes.push({b:h*2,d:1,m:A.basse+trB,mel:false});
+    acc.forEach(function(m){ notes.push({b:h*2+1,d:1,m:m,mel:false}); });
+  }else if(C.texture==="bourdon"){ notes.push({b:0,d:T,m:38+trB,mel:false,tenu:true}); notes.push({b:0,d:T,m:45+trB,mel:false,tenu:true}); }
+  return {C:C,T:T,notes:notes};
+}
+/* l'heure (en s) du temps b : tempo fixe, ou qui glisse d'un bout à l'autre de la phrase */
+function veTemps(C,T,b){
+  const v=VE_BPM[C.tempo];
+  if(!Array.isArray(v))return b*60/v;
+  return 60*T/(v[1]-v[0])*Math.log(1+(v[1]-v[0])*b/(v[0]*T));
+}
+function veVolume(C,T,b){ const v=VE_VOL[C.nuance]; return Array.isArray(v)?v[0]*Math.pow(v[1]/v[0],b/T):v; }
+function vePlan(cfg){
+  const X=veConstruire(cfg), C=X.C, T=X.T, stac=C.artic==="staccato";
+  const ev=X.notes.map(function(n){
+    const t0=veTemps(C,T,n.b), t1=veTemps(C,T,n.b+n.d), vol=veVolume(C,T,n.b)*(n.mel?1:(n.tenu?0.42:0.38));
+    let d=t1-t0;
+    if(n.tenu)d*=0.995; else if(stac)d=Math.min(d*0.32,0.2); else d*=0.97;
+    return {t:t0,d:d,m:n.m,vol:vol,mel:n.mel,timbre:n.mel?C.timbre:(n.tenu?"cordes":"piano")};
+  });
+  const beats=[]; for(let i=0;i<T;i++)beats.push(veTemps(C,T,i));
+  return {C:C,T:T,ev:ev,duree:veTemps(C,T,T),beats:beats};
+}
+function veJouerPlan(X,canal,t0){
+  const ctx=audio();
+  X.ev.forEach(function(e){
+    if(e.timbre==="piano")rbPiano(440*Math.pow(2,(e.m-69)/12),Math.max(0,t0+e.t-ctx.currentTime),Math.max(0.09,e.d),e.vol*1.1,canal);
+    else txSon(t0+e.t,e.m,e.d,e.timbre,e.vol,canal);
+  });
+}
+/* bouton « Écouter » des exercices : une version, ou deux versions à comparer (cfg.deux) */
+function veExtrait(cfg){
+  try{ audio().resume(); }catch(e){}
+  const canal=sonBtnCanal(txBus()), t0=audio().currentTime+0.1;
+  if(cfg.deux){ const A=vePlan(cfg.deux[0]), B=vePlan(cfg.deux[1]); veJouerPlan(A,canal,t0); veJouerPlan(B,canal,t0+A.duree+1); return; }
+  veJouerPlan(vePlan(cfg),canal,t0);
+}
+
+/* ---------- les mots : la phrase qui décrit ce qu'on entend ---------- */
+function veDecrire(C){
+  const tex={seule:"Une <b>mélodie seule</b> (monodie)",accords:"Une <b>mélodie accompagnée</b> par des accords",bourdon:"Une mélodie posée sur un <b>bourdon</b> (deux notes graves tenues)"}[C.texture];
+  const tim={piano:"jouée au <b>piano</b>",flute:"jouée à la <b>flûte</b>",cordes:"jouée par les <b>cordes</b>",anche:"jouée au <b>hautbois</b>",cuivre:"jouée à la <b>trompette</b>",orgue:"jouée à l'<b>orgue</b>"}[C.timbre];
+  const reg={grave:"dans le <b>grave</b>",medium:"dans le <b>médium</b>",aigu:"dans l'<b>aigu</b>"}[C.registre];
+  const tem={lent:"au tempo <b>lent</b>",modere:"au tempo <b>modéré</b>",rapide:"au tempo <b>rapide</b>",accel:"de plus en plus vite (<b>accelerando</b>)",rall:"de plus en plus lentement (<b>rallentando</b>)"}[C.tempo];
+  const nua=VE_NOM_NUANCE[C.nuance]?"<b>"+VE_NOM_NUANCE[C.nuance]+"</b> ("+{pp:"très doux",p:"doux",mf:"moyennement fort",f:"fort",ff:"très fort"}[C.nuance]+")"
+    :{cresc:"de plus en plus fort (<b>crescendo</b>)",decresc:"de plus en plus doux (<b>decrescendo</b>)"}[C.nuance];
+  const art=C.artic==="legato"?"aux notes liées (<b>legato</b>)":"aux notes piquées, détachées (<b>staccato</b>)";
+  const mod=C.mode==="majeur"?"en <b>majeur</b> (couleur lumineuse)":"en <b>mineur</b> (couleur sombre)";
+  return tex+", "+tim+", "+reg+", "+tem+", "+nua+", "+art+", "+mod+".";
+}
+
+/* ---------- la frise : le dessin de ce qu'on entend ---------- */
+function veFriseSVG(X){
+  const W=600,H=140,D=X.duree||1,lo=33,hi=86;
+  const y=function(m){ return 10+(hi-m)/(hi-lo)*(H-40); };
+  let s='<svg class="ve-frise" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'
+    +'<rect class="ve-zone" x="0" y="'+y(86).toFixed(1)+'" width="'+W+'" height="'+(y(72)-y(86)).toFixed(1)+'"/>'
+    +'<rect class="ve-zone b" x="0" y="'+y(55).toFixed(1)+'" width="'+W+'" height="'+(y(33)-y(55)).toFixed(1)+'"/>';
+  X.ev.forEach(function(e,i){
+    const x=e.t/D*W, w=Math.max(2.5,e.d/D*W-1), h=e.mel?2.5+e.vol/0.42*12:2+e.vol/0.18*3;
+    s+='<rect class="'+(e.mel?"m":"a")+'" data-t="'+e.t.toFixed(3)+'" x="'+x.toFixed(1)+'" y="'+(y(e.m)-h/2).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="2"/>';
+  });
+  X.beats.forEach(function(t){ s+='<rect class="ve-pulse" data-t="'+t.toFixed(3)+'" x="'+(t/D*W-2.5).toFixed(1)+'" y="'+(H-14)+'" width="5" height="8" rx="2"/>'; });
+  return s+'<line class="ve-tete" x1="0" x2="0" y1="0" y2="'+H+'"/></svg>';
+}
+function veSceneHTML(X,cache){
+  return '<div class="ve-scene'+(cache?" cache":"")+'"><div class="ve-reperes" aria-hidden="true"><span>Aigu</span><span>Médium</span><span>Grave</span></div>'
+    +(cache?'<div class="ve-mystere"><i class="ph ph-question"></i> Le dessin s\'affichera après ta réponse.</div>':veFriseSVG(X))+'</div>'
+    +(cache?'':'<div class="ve-legende" aria-hidden="true"><span><i class="ve-l m"></i> la mélodie (épaisseur = nuance)</span><span><i class="ve-l a"></i> l\'accompagnement</span><span><i class="ve-l p"></i> les pulsations (écart = tempo)</span></div>');
+}
+
+/* ---------- lecture + animation ---------- */
+function veStop(){
+  _ve.jeton++;
+  if(_ve.anim){ clearInterval(_ve.anim); _ve.anim=null; }
+  if(_ve.canal){ txCanalCouper(_ve.canal); _ve.canal=null; }
+  document.querySelectorAll("#veAtelier .ve-frise .on").forEach(function(r){ r.classList.remove("on"); });
+  const tete=document.querySelector("#veAtelier .ve-tete"); if(tete)tete.style.transform="";
+  const b=document.getElementById("vePlay"); if(b){ b.classList.remove("on"); b.innerHTML='<i class="ph-fill ph-play"></i> '+(_ve.jeu?"Écouter l'extrait":"Écouter"); }
+}
+function veLire(cfg){
+  veStop();
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const X=vePlan(cfg), t0=ctx.currentTime+0.12; _ve.canal=txCanal();
+  veJouerPlan(X,_ve.canal,t0);
+  const jeton=_ve.jeton, b=document.getElementById("vePlay");
+  if(b){ b.classList.add("on"); b.innerHTML='<i class="ph-fill ph-stop"></i> Arrêter'; }
+  const svg=document.querySelector("#veAtelier .ve-frise");
+  const els=svg?Array.prototype.slice.call(svg.querySelectorAll("[data-t]")):[], tete=svg&&svg.querySelector(".ve-tete");
+  _ve.anim=setInterval(function(){
+    if(jeton!==_ve.jeton)return;
+    const t=ctx.currentTime-t0;
+    els.forEach(function(r){ r.classList.toggle("on",t>=+r.getAttribute("data-t")); });
+    if(tete&&svg){ tete.style.transform="translateX("+(Math.max(0,Math.min(1,t/X.duree))*600).toFixed(1)+"px)"; }
+    if(t>X.duree+0.4)veStop();
+  },40);
+}
+
+/* ---------- l'atelier ---------- */
+function veAtelierHTML(){ return '<div class="tx-atelier ve-atelier" id="veAtelier"><div class="tx-chargement">Chargement du laboratoire des mots…</div></div>'; }
+function veInit(){ veStop(); _ve.jeu=null; veRendre(); }
+function veRendre(){
+  const z=document.getElementById("veAtelier"); if(!z)return;
+  const J=_ve.jeu;
+  let h='<div class="tx-tete-at"><span class="tx-titre"><i class="ph-fill ph-flask"></i> '+(J?"Le portrait de l'extrait":"Le laboratoire des mots")+'</span>'
+    +'<button type="button" class="tx-devine-b'+(J?" on":"")+'" onclick="veBasculerJeu()"><i class="ph-fill ph-'+(J?"flask":"target")+'"></i> '+(J?"Retour au laboratoire":"Défi : le portrait de l'extrait")+'</button></div>';
+  if(!J){
+    const X=vePlan(_ve.C);
+    h+='<p class="tx-aide ve-regle">Choisis un mot dans chaque famille, écoute, puis change <b>un seul mot</b> et réécoute : c\'est la meilleure façon d\'apprendre ce que chaque mot veut dire.</p>'
+      +'<div class="ve-familles">'+VE_FAM.map(function(f){
+        return '<div class="ve-fam"><span class="ve-fam-nom"><i class="ph '+f.ic+'"></i> '+f.nom+' <small>'+f.q+'</small></span>'
+          +'<div class="cm-seg ve-seg" role="group" aria-label="'+f.nom+'">'+f.opts.map(function(o){ const on=_ve.C[f.k]===o[0];
+            return '<button type="button" class="'+(on?"on":"")+(f.k==="nuance"&&VE_NOM_NUANCE[o[0]]?" ve-nu":"")+'" aria-pressed="'+on+'"'+(VE_NOM_NUANCE[o[0]]&&f.k==="nuance"?' aria-label="'+VE_NOM_NUANCE[o[0]]+'"':'')+' onclick="veChoisir(\''+f.k+'\',\''+o[0]+'\')">'+o[1]+'</button>'; }).join("")+'</div></div>';
+      }).join("")+'</div>'
+      +veSceneHTML(X,false)
+      +'<p class="ve-phrase"><i class="ph-fill ph-quotes"></i> '+veDecrire(X.C)+'</p>'
+      +'<div class="tx-bas"><button type="button" class="cm-play tx-play" id="vePlay" onclick="veJouerLabo()"><i class="ph-fill ph-play"></i> Écouter</button>'
+      +'<button type="button" class="tx-devine-b" onclick="veReinit()"><i class="ph ph-arrow-counter-clockwise"></i> Tout remettre au départ</button></div>';
+  }else if(J.fini){
+    const max=J.tours.length*J.nb, r=J.score/max;
+    h+='<div class="me-fin"><div class="me-fin-score"><b>'+J.score+'</b><span>/ '+max+'</span></div>'
+      +'<p>'+(r>=0.8?"Bravo : tu décris la musique comme un vrai musicien !":r>=0.5?"Pas mal ! Retourne au laboratoire pour réentendre les mots qui t'ont piégé.":"Entraîne-toi au laboratoire : change un mot à la fois et écoute la différence, puis reviens.")+'</p></div>'
+      +'<div class="tx-bas"><button type="button" class="cm-play tx-play" onclick="veJeuDemarrer()"><i class="ph ph-arrow-counter-clockwise"></i> Rejouer</button></div>';
+  }else if(!J.tours){
+    h+='<p class="tx-aide ve-regle">MusEduc joue un extrait mystère. À toi de remplir sa <b>fiche d\'écoute</b> : un mot par famille. Chaque bon mot rapporte un point.</p>'
+      +'<div class="cm-options"><div><span>Niveau</span><div class="cm-seg" role="group" aria-label="Niveau du défi">'+[[1,"Facile"],[2,"Moyen"],[3,"Expert"]].map(function(x){ const on=_ve.niv===x[0];
+        return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="_ve.niv='+x[0]+';veRendre()">'+x[1]+'</button>'; }).join("")+'</div></div></div>'
+      +'<p class="ve-niv-detail">'+VE_JEU[_ve.niv].fams.map(function(k){ return veFam(k).nom.replace(/^(Le |La |L')/,""); }).join(" · ")+' <small>('+VE_JEU[_ve.niv].nb+' familles à chaque extrait)</small></p>'
+      +'<div class="tx-bas"><button type="button" class="cm-play tx-play" onclick="veJeuDemarrer()"><i class="ph-fill ph-play"></i> Commencer</button></div>';
+  }else{
+    const T=J.tours[J.i], fin=J.verifie;
+    h+='<div class="ve-jeu-tete"><span class="me-score">Extrait '+(J.i+1)+' / '+J.tours.length+' · <b>'+J.score+'</b> pt'+(J.score>1?"s":"")+'</span></div>'
+      +veSceneHTML(vePlan(T.cfg),!fin)
+      +'<div class="ve-familles">'+T.fams.map(function(k){ const f=veFam(k), rep=J.rep[k], bon=T.cfg[k];
+        return '<div class="ve-fam'+(fin?(rep===bon?" ok":" ko"):"")+'"><span class="ve-fam-nom"><i class="ph '+f.ic+'"></i> '+f.nom+' <small>'+f.q+'</small>'
+          +(fin?(rep===bon?' <i class="ph-fill ph-check-circle ve-marque"></i>':' <i class="ph-fill ph-x-circle ve-marque"></i>'):'')+'</span>'
+          +'<div class="cm-seg ve-seg" role="group" aria-label="'+f.nom+'">'+VE_JEU[J.niv].opts[k].map(function(v){
+            const on=rep===v, cls=(on?"on":"")+(fin&&v===bon?" bon":"")+(fin&&on&&v!==bon?" faux":"");
+            return '<button type="button" class="'+cls+'" aria-pressed="'+on+'"'+(fin?" disabled":"")+(f.k==="nuance"&&VE_NOM_NUANCE[v]?' aria-label="'+VE_NOM_NUANCE[v]+'"':'')+' onclick="veJeuChoisir(\''+k+'\',\''+v+'\')">'+veLib(k,v)+'</button>'; }).join("")+'</div></div>';
+      }).join("")+'</div>';
+    if(fin)h+='<p class="ve-phrase"><i class="ph-fill ph-quotes"></i> '+veDecrire(vePlan(T.cfg).C)+'</p>';
+    const pret=T.fams.every(function(k){ return J.rep[k]; });
+    h+='<div class="tx-bas"><button type="button" class="cm-play tx-play" id="vePlay" onclick="veJeuEcouter()"><i class="ph-fill ph-play"></i> Écouter l\'extrait</button>'
+      +(fin?'<button type="button" class="tx-devine-b ve-suivant" onclick="veJeuSuivant()">'+(J.i+1<J.tours.length?"Extrait suivant":"Voir mon score")+' <i class="ph ph-arrow-right"></i></button>'
+        :'<button type="button" class="tx-devine-b" onclick="veJeuVerifier()"'+(pret?"":" disabled")+'><i class="ph ph-check"></i> Vérifier ma fiche</button>')+'</div>';
+  }
+  h+='<div class="me-annonce" role="status" aria-live="polite">'+(J&&J.msg?J.msg:"")+'</div>';
+  z.innerHTML=h;
+}
+function veChoisir(k,v){ const joue=!!_ve.anim; _ve.C[k]=v; veRendre(); if(joue)veLire(_ve.C); }
+function veReinit(){ veStop(); _ve.C=Object.assign({},VE_DEFAUT); veRendre(); }
+function veJouerLabo(){ if(_ve.anim){ veStop(); return; } veLire(_ve.C); }
+function veBasculerJeu(){ veStop(); _ve.jeu=_ve.jeu?null:{}; veRendre(); }
+function veJeuDemarrer(){
+  veStop();
+  const N=VE_JEU[_ve.niv], tours=[];
+  for(let i=0;i<VE_TOURS;i++){
+    const fams=shuffle(N.fams).slice(0,N.nb), cfg=Object.assign({},VE_DEFAUT);
+    fams.forEach(function(k){ cfg[k]=pick(N.opts[k]); });
+    /* le timbre ne change pas pendant le défi : on varie l'instrument d'un extrait à l'autre pour le plaisir */
+    cfg.timbre=pick(["piano","flute","cordes","anche"]);
+    tours.push({cfg:cfg,fams:N.fams.filter(function(k){ return fams.indexOf(k)>=0; })});
+  }
+  _ve.jeu={tours:tours,i:0,score:0,nb:N.nb,niv:_ve.niv,rep:{},verifie:false,msg:""};
+  veRendre();
+}
+function veJeuEcouter(){ const J=_ve.jeu; if(!J||!J.tours)return; if(_ve.anim){ veStop(); return; } veLire(J.tours[J.i].cfg); }
+function veJeuChoisir(k,v){ const J=_ve.jeu; if(!J||J.verifie)return; J.rep[k]=v; const joue=!!_ve.anim; veRendre(); if(joue){ /* on laisse jouer */ const b=document.getElementById("vePlay"); if(b){ b.classList.add("on"); b.innerHTML='<i class="ph-fill ph-stop"></i> Arrêter'; } } }
+function veJeuVerifier(){
+  const J=_ve.jeu; if(!J||J.verifie)return;
+  const T=J.tours[J.i]; let n=0;
+  T.fams.forEach(function(k){ if(J.rep[k]===T.cfg[k])n++; });
+  J.score+=n; J.verifie=true;
+  J.msg=n===T.fams.length?"Parfait : "+n+" mot"+(n>1?"s":"")+" juste"+(n>1?"s":"")+" sur "+T.fams.length+" !":n+" mot"+(n>1?"s":"")+" juste"+(n>1?"s":"")+" sur "+T.fams.length+". Réécoute en regardant le dessin.";
+  jouerEffet(n===T.fams.length?"bon":"mauvais");
+  veStop(); veRendre();
+  const b=document.querySelector("#veAtelier .ve-suivant"); if(b)b.focus();
+}
+function veJeuSuivant(){
+  const J=_ve.jeu; if(!J)return;
+  veStop(); J.i++; J.rep={}; J.verifie=false; J.msg="";
+  if(J.i>=J.tours.length){ J.fini=true; if(J.score>=J.tours.length*J.nb*0.8)jouerEffet("victoire"); }
+  veRendre();
+  const b=document.querySelector("#veAtelier .tx-play"); if(b)b.focus();
+}
+
+/* ---------- les boutons de la leçon ---------- */
+function veEcouterMot(k,v){ const c={}; c[k]=v; if(["accel","rall","cresc","decresc"].indexOf(v)<0)c.court=true; jouerSonBtn({vocab:c}); }
+/* le mouvement de la mélodie : quatre petites phrases en ré majeur */
+const VE_MOUV={
+  monte:[[62,1],[64,0.5],[66,0.5],[67,1],[69,1],[71,0.5],[73,0.5],[74,2]],
+  descend:[[74,1],[73,0.5],[71,0.5],[69,1],[67,1],[66,0.5],[64,0.5],[62,2]],
+  conjoint:[[62,1],[64,1],[66,1],[64,1],[66,0.5],[67,0.5],[69,1],[67,1],[66,2]],
+  disjoint:[[62,1],[69,1],[66,1],[74,1],[69,0.5],[62,0.5],[78,1],[74,1],[69,2]]
+};
+function veMouvement(k,tr){ jouerSonBtn({melodie:VE_MOUV[k].map(function(n){ return [n[0]+(tr||0),n[1]]; }),spb:0.4}); }
+/* trois vraies œuvres décrites avec les mots de la leçon (la carte d'écoute vient des « grandes mélodies ») */
+const VE_OEUVRES=[
+  ["Canon en ré","Les <b>cordes</b> jouent une <b>mélodie accompagnée</b> : en dessous, une basse de huit notes revient sans cesse, c'est un <b>ostinato</b> (on dit aussi « basse obstinée »). Le tempo est <b>lent</b>, le mode <b>majeur</b>, les notes <b>liées</b> (legato) ; la mélodie <b>descend</b> par <b>notes voisines</b> (mouvement conjoint)."],
+  ["Marche funèbre","Au <b>piano</b>, dans le <b>grave</b> : un tempo <b>lent</b> de marche, en <b>mineur</b>. La mélodie répète la même note sur un rythme pointé, au-dessus de deux accords graves qui alternent comme un balancement : c'est une <b>mélodie accompagnée</b>."],
+  ["Prélude de Carmen","Un tempo <b>rapide</b>, en <b>majeur</b>, dans l'<b>aigu</b> : des notes répétées et des rebonds, sur un accompagnement « boum-tchac » qui marque la pulsation. Une <b>mélodie accompagnée</b> très rythmée : dans l'opéra, c'est tout l'orchestre (le <b>tutti</b>) qui joue."]
+];
+function veOeuvresHTML(){
+  return '<div class="ve-oeuvres">'+VE_OEUVRES.map(function(o){
+    let i=-1; MELODIES.forEach(function(it,k){ if(it.t===o[0])i=k; });
+    return i<0?'':'<div class="ve-oeuvre">'+meCarteHTML(i)+'<p>'+o[1]+'</p></div>';
+  }).join("")+'</div>';
+}
 const LECONS={
+ "variations":{titre:"Thème et variations : transformer une mélodie",html:`
+  <p>Un <b>thème</b>, c'est une mélodie qu'on reconnaît. Une <b>variation</b>, c'est ce même thème <b>transformé</b>&nbsp;: plus vite, en mineur, orné de petites notes, joué par un autre instrument… Le compositeur joue avec le thème, mais on doit toujours pouvoir le <b>reconnaître</b>. Une œuvre en «&nbsp;thème et variations&nbsp;» enchaîne le thème puis plusieurs variations.</p>
+
+  </div><div class="carte">
+  <h3>1. Le thème&nbsp;: «&nbsp;Ah&nbsp;! vous dirai-je, maman&nbsp;»</h3>
+  <p>Cette chanson française du XVIIIᵉ siècle est connue dans le monde entier&nbsp;: les anglophones la chantent sous le nom de «&nbsp;Twinkle, twinkle, little star&nbsp;». Elle a trois parties&nbsp;: <b>A</b> (Do Do Sol Sol La La Sol…), <b>B</b> (Sol Sol Fa Fa Mi Mi Ré…), puis <b>A</b> à nouveau.</p>
+  <p><button class="btn-son" onclick="vaExemple({})"><i class="ph ph-play"></i> Écouter le thème</button></p>
+  <div class="cle">Ce qui fait qu'on reconnaît un thème&nbsp;: sa <b>mélodie</b> (la suite des hauteurs) et ses <b>accords</b>. Tant qu'on les entend encore, même transformés, on reconnaît le thème.</div>
+
+  </div><div class="carte">
+  <h3>2. L'atelier des variations</h3>
+  <p>En haut, la piste <b>or</b> montre le thème&nbsp;; en dessous, la piste <b>bleue</b> montre <b>ta variation</b>. Change les réglages et écoute&nbsp;: la <b>carte d'identité</b> de ta variation dit tout ce qui a changé.</p>
+  ${vaAtelierHTML()}
+  <p><b>Quatre expériences à faire&nbsp;:</b></p>
+  <ol>
+  <li>Choisis <b>Mineur</b> et écoute «&nbsp;le thème, puis ta variation&nbsp;»&nbsp;: c'est la même mélodie, mais la couleur devient sombre.</li>
+  <li>Choisis le rythme <b>Triolets</b>, puis les ornements <b>Broderies</b>&nbsp;: regarde les barres se multiplier autour des notes du thème.</li>
+  <li>Change le <b>timbre</b>, le <b>tempo</b> et la <b>nuance</b> en même temps&nbsp;: reconnais-tu encore le thème&nbsp;?</li>
+  <li>Ajoute une <b>basse d'Alberti</b>&nbsp;: c'est l'accompagnement préféré des compositeurs de l'époque de Mozart.</li>
+  </ol>
+
+  </div><div class="carte">
+  <h3>3. Ce qu'on peut transformer</h3>
+  <p>Chaque ligne est un <b>paramètre du son</b> que le compositeur peut changer. Touche «&nbsp;Écouter&nbsp;» pour entendre le thème, puis la variation.</p>
+  <table class="gr va-table va-params"><tr><th>On change…</th><th>Par exemple</th><th>Écouter</th></tr>
+  <tr><td><b>le mode</b></td><td>majeur → <b>mineur</b>&nbsp;: plus sombre</td><td><button class="btn-son" aria-label="Écouter : le mode" onclick="vaExemple({mode:'mineur'})"><i class="ph ph-play"></i></button></td></tr>
+  <tr><td><b>la hauteur</b></td><td>une octave plus <b>aiguë</b> ou plus <b>grave</b></td><td><button class="btn-son" aria-label="Écouter : la hauteur" onclick="vaExemple({registre:'aigu'})"><i class="ph ph-play"></i></button></td></tr>
+  <tr><td><b>le rythme</b></td><td>notes <b>pointées</b>, en <b>croches</b>, en <b>triolets</b></td><td><button class="btn-son" aria-label="Écouter : le rythme" onclick="vaExemple({rythme:'pointe'})"><i class="ph ph-play"></i></button></td></tr>
+  <tr><td><b>les ornements</b></td><td><b>broderies</b>, <b>notes de passage</b> autour du thème</td><td><button class="btn-son" aria-label="Écouter : les ornements" onclick="vaExemple({orn:'broderies'})"><i class="ph ph-play"></i></button></td></tr>
+  <tr><td><b>le tempo</b></td><td>plus <b>lent</b> ou plus <b>rapide</b></td><td><button class="btn-son" aria-label="Écouter : le tempo" onclick="vaExemple({tempo:'rapide'})"><i class="ph ph-play"></i></button></td></tr>
+  <tr><td><b>le timbre</b></td><td>un autre <b>instrument</b></td><td><button class="btn-son" aria-label="Écouter : le timbre" onclick="vaExemple({timbre:'flute'})"><i class="ph ph-play"></i></button></td></tr>
+  <tr><td><b>la nuance</b></td><td><b>piano</b> (doux) ou <b>forte</b> (fort)</td><td><button class="btn-son" aria-label="Écouter : la nuance" onclick="vaExemple({nuance:'f'})"><i class="ph ph-play"></i></button></td></tr>
+  <tr><td><b>l'articulation</b></td><td><b>lié</b> ou <b>piqué</b> (notes courtes)</td><td><button class="btn-son" aria-label="Écouter : l'articulation" onclick="vaExemple({artic:'pique'})"><i class="ph ph-play"></i></button></td></tr>
+  <tr><td><b>l'accompagnement</b></td><td><b>accords</b>, <b>basse d'Alberti</b>, <b>bourdon</b></td><td><button class="btn-son" aria-label="Écouter : l'accompagnement" onclick="vaExemple({acc:'alberti'})"><i class="ph ph-play"></i></button></td></tr>
+  </table>
+
+  </div><div class="carte">
+  <h3>4. Mozart et ses 12 variations</h3>
+  <p>Vers <b>1781</b>, à 25 ans environ, <b>Mozart</b> écrit pour le piano <b>douze variations</b> sur «&nbsp;Ah&nbsp;! vous dirai-je, maman&nbsp;». Quelques repères pour l'écoute&nbsp;:</p>
+  <ul>
+  <li><b>Variation 1</b>&nbsp;: la main droite déroule des notes rapides <b>autour</b> du thème (des ornements).</li>
+  <li><b>Variation 2</b>&nbsp;: c'est la <b>main gauche</b> qui s'agite à son tour.</li>
+  <li><b>Variation 3</b>&nbsp;: des <b>triolets</b>.</li>
+  <li><b>Variation 8</b>&nbsp;: la seule en <b>mineur</b>, plus grave et plus sérieuse.</li>
+  <li><b>Variation 11</b>&nbsp;: très <b>lente</b> (Adagio), comme une méditation.</li>
+  <li><b>Variation 12</b>&nbsp;: la mesure change (à <b>trois temps</b>), pour un final brillant.</li>
+  </ul>
+  <div class="compo-yt-grille"><div class="ce-yt" data-yt="yHRQ8nIAiqw" data-lib="12 variations sur « Ah ! vous dirai-je, maman » · Mozart (Rudolf Buchbinder, piano)"></div></div>
+
+  </div><div class="carte">
+  <h3>5. D'autres variations célèbres</h3>
+  <table class="gr va-table"><tr><th>Œuvre</th><th>Compositeur</th><th>L'idée</th></tr>
+  <tr><td><i>Variations Goldberg</i> (1741)</td><td>Jean-Sébastien Bach</td><td>un air, puis <b>30 variations</b>, dont des canons</td></tr>
+  <tr><td><i>Variations Diabelli</i> (1823)</td><td>Ludwig van Beethoven</td><td><b>33 variations</b> sur une petite valse d'Anton Diabelli</td></tr>
+  <tr><td><i>Variations Enigma</i> (1899)</td><td>Edward Elgar</td><td>chaque variation fait le <b>portrait</b> d'un ami du compositeur</td></tr>
+  <tr><td><i>Rhapsodie sur un thème de Paganini</i> (1934)</td><td>Sergueï Rachmaninov</td><td><b>24 variations</b> sur un caprice pour violon de Paganini</td></tr>
+  <tr><td>Le jazz</td><td>tous les improvisateurs</td><td>improviser sur un thème connu, c'est inventer des variations en direct</td></tr>
+  </table>
+  <p>Le <b>Canon de Pachelbel</b>, que tu as peut-être entendu dans la leçon sur les voix superposées, est aussi une suite de variations&nbsp;: au-dessus d'une <b>basse qui se répète</b>, les violons inventent sans cesse de nouvelles mélodies.</p>
+
+  </div><div class="carte">
+  <h3>6. À toi&nbsp;: «&nbsp;Qu'est-ce qui a changé&nbsp;?&nbsp;»</h3>
+  <p>Dans l'atelier, touche <b>Qu'est-ce qui a changé&nbsp;?</b>&nbsp;: tu entends le thème, puis une variation mystère. Retrouve le ou les paramètres modifiés (choisis 1, 2 ou 3 changements).</p>
+  <p><button class="btn-son" onclick="vaJeuDepuisTexte()"><i class="ph ph-question"></i> Jouer à « Qu'est-ce qui a changé ? »</button></p>
+  <div class="astuce"><b>En classe&nbsp;:</b> chantez le thème tous ensemble, puis inventez des variations sans instrument&nbsp;: chantez-le en <b>chuchotant</b> (nuance), <b>très lentement</b> (tempo), en <b>rythme pointé</b> (rythme), sur «&nbsp;la&nbsp;» puis sur «&nbsp;dou&nbsp;» (timbre). Les autres devinent ce qui a changé.</div>
+  <div class="cle"><b>À retenir&nbsp;:</b> une <b>variation</b> transforme un <b>thème</b> en gardant ce qui le rend reconnaissable. On peut changer le <b>mode</b>, la <b>hauteur</b>, le <b>rythme</b>, les <b>ornements</b>, le <b>tempo</b>, le <b>timbre</b>, la <b>nuance</b>, l'<b>articulation</b> ou l'<b>accompagnement</b>. Mozart a écrit 12 variations sur «&nbsp;Ah&nbsp;! vous dirai-je, maman&nbsp;».</div>
+ `},
+ "textures":{titre:"Voix superposées : monodie, canon, polyphonie",html:`
+  <p>Quand plusieurs musiciens jouent ensemble, que font-ils&nbsp;? Ils peuvent jouer <b>la même chose</b>, <b>la même chose en décalé</b>, ou <b>des choses différentes</b>. La façon dont les voix se superposent s'appelle la <b>texture</b>. Dans cette leçon, une vraie <b>table de mixage</b> te permet de voir et d'entendre chaque voix séparément.</p>
+  <div class="cle">Les sons qui viennent <b>l'un après l'autre</b> sont <b>successifs</b>&nbsp;; ceux qui sonnent <b>en même temps</b> sont <b>simultanés</b>. La texture décrit ce qui est <b>simultané</b>&nbsp;: combien de voix, et ce que fait chacune.</div>
+
+  </div><div class="carte">
+  <h3>1. Une voix, ou plusieurs voix&nbsp;?</h3>
+  <div class="tx-def-lecon">${txSchemaSVG("monodie")}<p><b>Monodie</b> (du grec <i>mono</i>, «&nbsp;un seul&nbsp;»)&nbsp;: <b>une seule mélodie</b>, chantée ou jouée seule. C'est la plus ancienne façon de faire de la musique&nbsp;: le <b>chant grégorien</b> du Moyen Âge, une berceuse fredonnée, un air sifflé.</p></div>
+  <div class="tx-def-lecon">${txSchemaSVG("unisson")}<p><b>Unisson</b>&nbsp;: plusieurs voix chantent <b>la même mélodie au même moment</b>. Même si les hommes chantent une octave plus bas que les femmes, on n'entend <b>qu'une seule ligne</b>&nbsp;: c'est encore une monodie.</p></div>
+  <div class="tx-def-lecon">${txSchemaSVG("polyphonie")}<p><b>Polyphonie</b> (du grec <i>poly</i>, «&nbsp;plusieurs&nbsp;»)&nbsp;: <b>plusieurs voix différentes</b> en même temps. Il en existe plusieurs sortes, que tu vas découvrir&nbsp;: le canon, le contrepoint, l'homophonie…</p></div>
+  <p><button class="btn-son" onclick="txEcouterMode('monodie')"><i class="ph ph-play"></i> Écouter la monodie</button> <button class="btn-son" onclick="txEcouterMode('unisson')"><i class="ph ph-play"></i> Écouter l'unisson</button></p>
+  <p>Écoute une monodie du XIIᵉ siècle, composée par une religieuse, <b>Hildegarde de Bingen</b>&nbsp;: une seule voix, très libre, sans accompagnement.</p>
+  <div class="compo-yt-grille"><div class="ce-yt" data-yt="9eFPJa95qQE" data-lib="O vis eternitatis · Hildegarde de Bingen (monodie, XIIᵉ siècle)"></div></div>
+
+  </div><div class="carte">
+  <h3>2. La table de mixage</h3>
+  <p>Chaque <b>voix</b> a sa piste et sa couleur. Les <b>barres</b> sont ses notes&nbsp;: plus une barre est haute, plus la note est aiguë, et plus elle est longue, plus la note dure. Pendant l'écoute, la <b>ligne rouge</b> avance et les notes qui sonnent s'allument.</p>
+  ${txAtelierHTML()}
+  <p><b>Quatre expériences à faire&nbsp;:</b></p>
+  <ol>
+  <li>Choisis <b>Canon</b> et écoute&nbsp;: les voix entrent une à une, en escalier. Change le <b>nombre de voix</b> et le <b>décalage</b>.</li>
+  <li>Touche <b>S</b> sur la voix 3&nbsp;: tu l'entends seule. Elle chante <b>exactement la même mélodie</b> que la voix 1, juste plus tard.</li>
+  <li>Compare <b>Polyphonie</b> et <b>Homophonie</b>&nbsp;: en homophonie, toutes les barres commencent <b>au même moment</b>&nbsp;; en polyphonie, chaque voix a son rythme.</li>
+  <li>En <b>Mélodie accompagnée</b>, coupe la mélodie avec <b>M</b>&nbsp;: il ne reste que l'accompagnement. Sans mélodie, on reconnaît beaucoup moins la chanson&nbsp;!</li>
+  </ol>
+
+  </div><div class="carte">
+  <h3>3. Le canon&nbsp;: la même mélodie, en décalé</h3>
+  <div class="tx-def-lecon">${txSchemaSVG("canon")}<p>Dans un <b>canon</b>, une première voix commence la mélodie. Une deuxième voix entre un peu plus tard avec <b>exactement la même mélodie</b>, puis une troisième, et ainsi de suite. On dit que les voix s'<b>imitent</b>&nbsp;: le canon est la forme la plus stricte de l'<b>imitation</b>.</p></div>
+  <p>«&nbsp;Frère Jacques&nbsp;» est un canon&nbsp;: chaque groupe entre <b>deux mesures</b> après le précédent. Comme la mélodie est écrite pour aller avec elle-même, toutes les entrées sonnent bien ensemble.</p>
+  <p><button class="btn-son" onclick="txEcouterMode('canon')"><i class="ph ph-play"></i> Écouter le canon dans la table</button></p>
+  <p>Le célèbre <b>Canon de Pachelbel</b> (vers 1680) fait entrer trois violons en canon, au-dessus d'une basse qui répète sans arrêt les mêmes huit notes.</p>
+  <div class="compo-yt-grille"><div class="ce-yt" data-yt="aQxVE6d3Yj8" data-lib="Canon en ré majeur · Johann Pachelbel (orchestre de chambre Jean-François Paillard)"></div></div>
+  <div class="astuce"><b>En classe&nbsp;:</b> chantez «&nbsp;Frère Jacques&nbsp;» à l'unisson, puis en canon à 2 groupes, à 3, puis à 4. Chaque groupe garde sa mélodie sans écouter les autres&nbsp;: c'est tout le défi&nbsp;!</div>
+
+  </div><div class="carte">
+  <h3>4. Le contrepoint&nbsp;: plusieurs mélodies différentes</h3>
+  <div class="tx-def-lecon">${txSchemaSVG("polyphonie")}<p>Quand les voix chantent des <b>mélodies différentes</b>, chacune avec <b>son propre rythme</b>, on parle de <b>contrepoint</b>. Ici, un <b>contre-chant</b> tient de longues notes quand la mélodie bouge, et bouge quand elle se pose&nbsp;; la <b>basse</b> avance encore autrement.</p></div>
+  <p><button class="btn-son" onclick="txEcouterMode('polyphonie')"><i class="ph ph-play"></i> Écouter la polyphonie</button></p>
+  <p>Au Moyen Âge, les musiciens ajoutent d'abord une voix au chant grégorien (l'<b>organum</b>). À la Renaissance, <b>Josquin des Prés</b> écrit des chœurs où les voix s'imitent et se croisent. Thomas Tallis superpose même <b>40 voix</b> dans <i>Spem in alium</i>&nbsp;! Plus tard, les <b>fugues</b> de Bach font entrer un thème voix après voix, comme un canon, puis le développent.</p>
+  <div class="compo-yt-grille"><div class="ce-yt" data-yt="kyGlFisv7Ng" data-lib="Ave Maria… Virgo serena · Josquin des Prés (polyphonie de la Renaissance)"></div></div>
+
+  </div><div class="carte">
+  <h3>5. L'homophonie&nbsp;: tout le monde sur le même rythme</h3>
+  <div class="tx-def-lecon">${txSchemaSVG("homophonie")}<p>Dans une <b>homophonie</b>, toutes les voix avancent <b>avec le même rythme</b>&nbsp;: à chaque instant, elles forment un <b>accord</b>. La mélodie est le plus souvent à la voix la plus <b>aiguë</b> (la soprano), les autres l'habillent d'harmonie. Avantage&nbsp;: on comprend très bien les paroles.</p></div>
+  <p><button class="btn-son" onclick="txEcouterMode('homophonie')"><i class="ph ph-play"></i> Écouter l'homophonie</button></p>
+  <table class="gr tx-comp"><tr><th></th><th>Polyphonie (contrepoint)</th><th>Homophonie</th></tr>
+  <tr><td><b>Les mélodies</b></td><td>différentes, indépendantes</td><td>une mélodie, les autres voix font les accords</td></tr>
+  <tr><td><b>Le rythme</b></td><td>chaque voix a le sien</td><td>le même pour toutes</td></tr>
+  <tr><td><b>À l'oreille</b></td><td>des lignes qui se croisent</td><td>des blocs d'accords</td></tr></table>
+  <p>Dans l'«&nbsp;Hallelujah&nbsp;» du <i>Messie</i> de Haendel, écoute les grands «&nbsp;Hallelujah&nbsp;!&nbsp;» lancés par tout le chœur en même temps (homophonie), puis les passages où les voix entrent l'une après l'autre (polyphonie).</p>
+  <div class="compo-yt-grille"><div class="ce-yt" data-yt="IUZEtVbJT5c" data-lib="Le Messie, « Hallelujah » · Georg Friedrich Haendel"></div></div>
+
+  </div><div class="carte">
+  <h3>6. Sous la mélodie&nbsp;: accompagnement, bourdon, ostinato</h3>
+  <div class="tx-def-lecon">${txSchemaSVG("accompagnee")}<p><b>Mélodie accompagnée</b>&nbsp;: une mélodie au <b>premier plan</b>, et derrière un <b>accompagnement</b> (des accords, souvent joués en <b>arpèges</b>, note après note). C'est la texture de la plupart des chansons. <button class="btn-son" onclick="txEcouterMode('accompagnee')"><i class="ph ph-play"></i> Écouter</button></p></div>
+  <div class="tx-def-lecon">${txSchemaSVG("bourdon")}<p><b>Bourdon</b>&nbsp;: une ou deux notes <b>graves tenues</b> tout du long. La cornemuse et la vielle à roue ont des tuyaux ou des cordes qui ne font que ça. <button class="btn-son" onclick="txEcouterMode('bourdon')"><i class="ph ph-play"></i> Écouter</button></p></div>
+  <div class="tx-def-lecon">${txSchemaSVG("ostinato")}<p><b>Ostinato</b>&nbsp;: un <b>motif court répété</b> en boucle sous la mélodie (de l'italien <i>ostinato</i>, «&nbsp;obstiné&nbsp;»). Placé à la basse, on l'appelle une <b>basse obstinée</b>. <button class="btn-son" onclick="txEcouterMode('ostinato')"><i class="ph ph-play"></i> Écouter</button></p></div>
+  <p>Dans le <b>Boléro</b> de Ravel, la caisse claire répète le même rythme pendant tout le morceau&nbsp;: un ostinato de près d'un quart d'heure&nbsp;! Ce qui change, ce sont les instruments qui jouent la mélodie, de plus en plus nombreux.</p>
+  <div class="compo-yt-grille"><div class="ce-yt" data-yt="r30D3SW4OVw" data-lib="Boléro · Maurice Ravel (ostinato de caisse claire)"></div>
+  <div class="ce-yt" data-yt="FZe3mXlnfNc" data-lib="Spiegel im Spiegel · Arvo Pärt (mélodie accompagnée d'arpèges)"></div></div>
+
+  </div><div class="carte">
+  <h3>7. Récapitulatif</h3>
+  <table class="gr tx-recap"><tr><th>Texture</th><th>Schéma</th><th>Ce qu'on entend</th><th>Exemple</th></tr>
+  ${Object.keys(TX_MODES).map(function(k){ const M=TX_MODES[k]; return '<tr><td><b>'+M.nom+'</b></td><td>'+txSchemaSVG(k)+'</td><td>'+M.def+'</td><td>'+M.ex+'</td></tr>'; }).join("")}
+  </table>
+  <p>Prêt&nbsp;? Dans la table de mixage, touche <b>Devine la texture</b>&nbsp;: les pistes se cachent, et c'est ton oreille qui doit trouver.</p>
+  <p><button class="btn-son" onclick="txDevineDepuisTexte()"><i class="ph ph-question"></i> Jouer à « Devine la texture »</button></p>
+  <div class="cle"><b>À retenir&nbsp;:</b> une seule voix, c'est une <b>monodie</b>&nbsp;; plusieurs voix, une <b>polyphonie</b>. La même mélodie en décalé, c'est un <b>canon</b>&nbsp;; des mélodies différentes, du <b>contrepoint</b>&nbsp;; toutes les voix sur le même rythme, une <b>homophonie</b>. Sous une mélodie, on peut trouver un <b>accompagnement</b>, un <b>bourdon</b> ou un <b>ostinato</b>.</div>
+ `},
  "notes-sol":{titre:"Lire les notes en clé de Sol",html:`
   <p>Bienvenue dans la toute première grande compétence du musicien&nbsp;: <b>savoir lire les notes</b>. C'est comme apprendre à lire des lettres avant de lire des livres. Au début, on déchiffre lentement&nbsp;; très vite, avec un peu d'entraînement, on reconnaît les notes d'un seul coup d'œil. Cette leçon t'explique tout, étape par étape&nbsp;: prends ton temps et lis chaque partie dans l'ordre.</p>
 
@@ -5085,7 +7045,7 @@ const LECONS={
   <tr><td><b>En Fa majeur</b></td><td><b>Fa</b></td><td>Sol</td><td>La</td><td><b style="color:var(--faux)">Si♭</b></td><td><b>Do</b></td><td>Ré</td><td>Mi</td></tr></table>
   <p>Donc, en Fa majeur&nbsp;: <b>I = Fa</b>, <b>IV = Si♭</b> et <b>V = Do</b>. L'ancienne tonique (Do) est devenue la dominante&nbsp;!</p>
   <p><b>Mais pourquoi un Si♭&nbsp;?</b> Appliquons la recette T – T – ½ depuis Fa&nbsp;: Fa → Sol = un ton, Sol → La = un ton, puis il faut <b>un demi-ton</b>. Or La → Si fait un ton entier&nbsp;: trop grand&nbsp;! On baisse donc le Si d'un demi-ton&nbsp;: <b>Si♭</b>. Regarde le clavier&nbsp;: la gamme de Fa majeur utilise <b>une touche noire</b>.</p>
-  <div class="mod-fig">${modClavierSVG({65:{t:"I",c:"#2374b0"},67:{t:"II",c:"#2374b0"},69:{t:"III",c:"#2374b0"},70:{t:"IV",c:"#c0392b"},72:{t:"V",c:"#2374b0"},74:{t:"VI",c:"#2374b0"},76:{t:"VII",c:"#2374b0"},77:{t:"I",c:"#2374b0"}})}</div>
+  <div class="mod-fig">${modClavierSVG({65:{t:"I",c:"#2374b0"},67:{t:"II",c:"#2374b0"},69:{t:"III",c:"#2374b0"},70:{t:"IV",c:"#c0392b",n:"Si♭"},72:{t:"V",c:"#2374b0"},74:{t:"VI",c:"#2374b0"},76:{t:"VII",c:"#2374b0"},77:{t:"I",c:"#2374b0"}})}</div>
   <p><b>Comment y aller&nbsp;?</b> Par la dominante de Fa, qui est… Do&nbsp;! On ajoute simplement un Si♭ à l'accord de Do&nbsp;: <b>Do – Mi – Sol – Si♭</b> (on l'appelle <b>Do7</b>). Ce Si♭ fait basculer l'oreille, et l'accord de Fa arrive comme une évidence.</p>
   <div class="mod-ecoute"><button class="btn-son" onclick="jouerModul('vers-fa')"><i class="ph ph-play"></i> Do → Do7 → Fa</button></div>
   <p style="font-size:.92rem;color:var(--encre-doux)"><i class="ph ph-piano-keys"></i> Tu pourras le vérifier toi-même sur le <b>piano interactif</b> un peu plus bas.</p>
@@ -5201,7 +7161,17 @@ const LECONS={
   <h3>5. Bien plus que le blues</h3>
   <p>Cette petite grille de 12 mesures a eu un destin immense. Elle est à l'origine d'une <b>grande partie de la musique moderne</b>&nbsp;: on la retrouve presque telle quelle dans le <b>rock'n'roll</b> des années 1950, dans énormément de <b>jazz</b>, dans le <b>gospel</b>, la <b>soul</b>, le rhythm and blues… Des centaines de tubes que tu connais sans le savoir reposent dessus.</p>
   <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><p>Trois morceaux, une même grille : essaie de sentir le retour au début de la grille toutes les 12 mesures, et le passage sur l'accord IV (5ᵉ mesure).</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="aXTQeNIoiwo" data-lib="Sweet Home Chicago · Robert Johnson (blues, 1936)"></div><div class="ce-yt" data-yt="-Hlbn3O7Rpo" data-lib="Rock Around the Clock · Bill Haley (rock'n'roll, 1954)"></div><div class="ce-yt" data-yt="Y-9Y4CCIWnM" data-lib="Johnny B. Goode · Chuck Berry (rock'n'roll, 1958)"></div></div></div>
-  <div class="cle">Connaître la grille de blues, c'est posséder un véritable «&nbsp;passeport musical&nbsp;»&nbsp;: il te permet de jouer et d'improviser avec d'autres musiciens partout dans le monde. Peu de notions sont aussi rentables à apprendre&nbsp;!</div>`},
+  <div class="cle">Connaître la grille de blues, c'est posséder un véritable «&nbsp;passeport musical&nbsp;»&nbsp;: il te permet de jouer et d'improviser avec d'autres musiciens partout dans le monde. Peu de notions sont aussi rentables à apprendre&nbsp;!</div>
+  </div><div class="carte">
+  <h3>6. La jam du blues</h3>
+  <p>Un petit groupe joue la grille pour toi, en boucle&nbsp;: la batterie en <b>shuffle</b> (le balancement du blues), la basse «&nbsp;boogie&nbsp;» et le piano. La case jouée s'allume&nbsp;: <b>I</b> en or, <b>IV</b> en bleu, <b>V</b> en sarcelle.</p>
+  ${bjAtelierHTML()}
+  <ol>
+  <li>Lance le groupe et suis les cases des yeux&nbsp;: entends-tu le changement quand on passe au <b>IV</b>, puis au <b>V</b>&nbsp;?</li>
+  <li>Improvise avec les touches de la <b>gamme blues</b>&nbsp;: commence par deux ou trois notes, laisse des silences, réponds au groupe.</li>
+  <li>Relève le <b>défi</b>&nbsp;: la grille se cache, à toi de reconnaître l'accord à chaque mesure.</li>
+  </ol>
+ `},
 
  "dictee-note":{titre:"Reconnaître une note à l'oreille",html:`
   <p>Tu sais reconnaître les notes <b>à l'œil</b> sur une partition&nbsp;: excellent&nbsp;! Mais les reconnaître <b>à l'oreille</b>, juste en les entendant, c'est une compétence différente et passionnante. C'est le rêve de beaucoup de musiciens&nbsp;: entendre une mélodie et savoir la rejouer ou l'écrire. La <b>dictée de notes</b> est l'entraînement qui y mène. Sois patient avec toi-même&nbsp;: cette oreille-là se construit petit à petit.</p>
@@ -5326,35 +7296,53 @@ const LECONS={
   <div class="astuce"><b>Ferme les yeux</b> pendant l'écoute&nbsp;: privé de la vue, ton cerveau consacre toute son attention au son, et tu perçois bien mieux les détails. Concentre-toi sur <b>une seule</b> caractéristique à la fois (d'abord&nbsp;: gai ou triste&nbsp;? puis&nbsp;: ça monte ou ça descend&nbsp;?). Et comme toujours pour l'oreille&nbsp;: un entraînement régulier, même court, vaut bien mieux que de longues séances espacées.</div>`},
 
  "voc-ecoute":{titre:"Le vocabulaire de l'écoute",html:`
-  <p>Quand on écoute de la musique, on ressent beaucoup de choses… mais sait-on les <b>nommer</b>&nbsp;? Dire «&nbsp;j'aime bien, il y a plein de sons&nbsp;» ne suffit pas pour décrire ce qu'on entend. Un bon musicien, comme un bon critique, possède un <b>vocabulaire précis</b> qui lui permet de dire exactement ce qui se passe dans une musique&nbsp;: combien de voix, comment elles se superposent, quels procédés reviennent. C'est ce vocabulaire que tu vas apprendre ici, avec à chaque fois un <b>exemple sonore</b> à écouter (clique sur <i class="ph ph-play"></i>). Prends ton temps&nbsp;: écoute vraiment chaque exemple, c'est ainsi que les mots prendront tout leur sens.</p>
-  <div class="cle">Le mot-clé de cette leçon est <b>texture</b>&nbsp;: c'est la manière dont les sons d'une musique sont <b>agencés et superposés</b>. Une musique peut être «&nbsp;mince&nbsp;» (une seule voix) ou «&nbsp;épaisse&nbsp;» (beaucoup de voix entremêlées). Apprendre à décrire la texture, c'est apprendre à écouter en profondeur.</div>
-  <h3>Combien de voix&nbsp;?</h3>
-  <table class="gr"><tr><th>Mot</th><th>Définition</th><th>Écouter</th></tr>
-  <tr><td><b>Monodie</b></td><td>Une seule ligne mélodique, sans accompagnement (du grec <i>monos</i>, «&nbsp;seul&nbsp;»).</td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('monodie')"><i class="ph ph-play"></i></button></td></tr>
-  <tr><td><b>Polyphonie</b></td><td>Plusieurs voix qui sonnent en même temps (du grec <i>poly</i>, «&nbsp;plusieurs&nbsp;»).</td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('polyphonie')"><i class="ph ph-play"></i></button></td></tr>
-  <tr><td><b>Mélodie accompagnée</b></td><td>Une mélodie principale soutenue par un accompagnement (souvent des accords).</td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('accompagnement')"><i class="ph ph-play"></i></button></td></tr>
-  </table>
-  <p>Dans une polyphonie, on peut chercher à <b>compter le nombre de voix</b> qui chantent en même temps. Ce n'est pas toujours facile&nbsp;! Entraîne ton oreille avec ces exemples à 2, 3 et 4 voix (chaque voix joue une mélodie différente, dans un registre différent)&nbsp;:</p>
-  <table class="gr"><tr><th>Nombre de voix</th><th>Écouter</th></tr>
-  <tr><td><b>2 voix</b></td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('poly2')"><i class="ph ph-play"></i></button></td></tr>
-  <tr><td><b>3 voix</b></td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('poly3')"><i class="ph ph-play"></i></button></td></tr>
-  <tr><td><b>4 voix</b></td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('poly4')"><i class="ph ph-play"></i></button></td></tr>
-  </table>
-  <p style="color:var(--encre-doux);font-size:.92rem">Astuce&nbsp;: concentre-toi sur les <b>registres</b> (grave, médium, aigu). Chaque voix occupe en général sa propre hauteur, ce qui aide à les compter.</p>
-  <h3>Des procédés à reconnaître</h3>
-  <table class="gr"><tr><th>Mot</th><th>Définition</th><th>Écouter</th></tr>
-  <tr><td><b>Ostinato</b></td><td>Un motif court (rythmique ou mélodique) répété obstinément, sans changer.</td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('ostinato')"><i class="ph ph-play"></i></button></td></tr>
-  <tr><td><b>Bourdon</b></td><td>Une note grave tenue en continu pendant que la mélodie se déroule (comme à la cornemuse).</td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('bourdon')"><i class="ph ph-play"></i></button></td></tr>
-  </table>
-  <h3>Le canon et l'imitation</h3>
-  <p>Une façon très répandue de construire une polyphonie est l'<b>imitation</b>&nbsp;: une voix commence (on l'appelle le <b>meneur</b>), puis une autre voix reprend <b>la même mélodie</b> un peu plus tard (le <b>suiveur</b>). Quand une voix reproduit fidèlement et entièrement la mélodie de l'autre, en décalé, on parle de <b>canon</b>.</p>
-  <table class="gr"><tr><th>Mot</th><th>Définition</th><th>Écouter</th></tr>
-  <tr><td><b>Canon</b></td><td>Deux voix (ou plus) chantent la <b>même</b> mélodie, mais l'une <b>en retard</b> sur l'autre. La chanson «&nbsp;Frère Jacques&nbsp;» se chante souvent en canon.</td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('canon')"><i class="ph ph-play"></i></button></td></tr>
-  <tr><td><b>Départ en imitation</b></td><td>Une voix «&nbsp;imite&nbsp;» ce que vient de faire l'autre. Le canon est le cas le plus strict de l'imitation.</td><td><button class="btn-son mini" aria-label="Écouter l'exemple" title="Écouter l'exemple" onclick="jouerFigure('canon')"><i class="ph ph-play"></i></button></td></tr>
-  </table>
-  <p>Écoute bien l'exemple&nbsp;: tu entends d'abord la mélodie seule, puis la deuxième voix qui démarre alors que la première n'est pas finie. Les deux se «&nbsp;poursuivent&nbsp;» : c'est tout l'effet du canon&nbsp;!</p>
-  <div class="cle">Ces mots servent à <b>justifier ce qu'on entend</b>&nbsp;: au lieu de dire «&nbsp;il y a plein de sons&nbsp;», on peut dire «&nbsp;c'est une polyphonie en canon&nbsp;». C'est ce vocabulaire précis qui permet de décrire et de comparer les musiques.</div>
-  <div class="astuce">Dans l'exercice, écoute bien et demande-toi d'abord&nbsp;: y a-t-il une ou plusieurs voix&nbsp;? Si oui, jouent-elles la même mélodie en décalé (canon) ou des choses différentes&nbsp;? Y a-t-il un motif qui revient sans cesse, ou une note grave qui ne s'arrête jamais&nbsp;?</div>`},
+  <p>Quand on écoute de la musique, on ressent beaucoup de choses… mais sait-on les <b>nommer</b>&nbsp;? Dire «&nbsp;j'aime bien, il y a plein de sons&nbsp;» ne suffit pas pour décrire ce qu'on entend. Un bon musicien, comme un bon critique, possède un <b>vocabulaire précis</b>&nbsp;: la vitesse, la force, la hauteur, la manière de jouer, la couleur, le nombre de voix… Chaque famille a ses mots, et ces mots servent partout, du rap à la symphonie.</p>
+  <div class="cle">Pour décrire une musique, pose-toi toujours les mêmes questions, celles de la <b>fiche d'écoute</b>&nbsp;: <b>qui joue</b>&nbsp;? <b>combien de voix</b>&nbsp;? <b>quelle vitesse</b>&nbsp;? <b>quelle force</b>&nbsp;? <b>grave ou aigu</b>&nbsp;? <b>lié ou piqué</b>&nbsp;? <b>quelle couleur</b>&nbsp;? À chaque question, son mot précis.</div>
+
+  </div><div class="carte">
+  <h3>1. Les mots, famille par famille</h3>
+  <p>Chaque bouton joue la <b>même phrase</b> (le début de l'Hymne à la joie) en ne changeant <b>qu'une seule chose</b>&nbsp;: écoute bien la différence.</p>
+  <div class="ve-fms">
+  <div class="ve-fm"><h4>Le tempo <small>la vitesse de la pulsation</small></h4><p><b>lent</b> (Adagio), <b>modéré</b> (Moderato), <b>rapide</b> (Allegro, Presto)</p><div class="ve-mots"><button type="button" class="ve-mot" onclick="veEcouterMot('tempo','lent')"><i class="ph-fill ph-play"></i> lent</button><button type="button" class="ve-mot" onclick="veEcouterMot('tempo','modere')"><i class="ph-fill ph-play"></i> modéré</button><button type="button" class="ve-mot" onclick="veEcouterMot('tempo','rapide')"><i class="ph-fill ph-play"></i> rapide</button></div></div>
+  <div class="ve-fm"><h4>Le tempo qui change</h4><p><b>accelerando</b>&nbsp;: de plus en plus vite<br><b>rallentando</b>&nbsp;: de plus en plus lent</p><div class="ve-mots"><button type="button" class="ve-mot" onclick="veEcouterMot('tempo','accel')"><i class="ph-fill ph-play"></i> accelerando</button><button type="button" class="ve-mot" onclick="veEcouterMot('tempo','rall')"><i class="ph-fill ph-play"></i> rallentando</button></div></div>
+  <div class="ve-fm"><h4>Les nuances <small>la force du son</small></h4><p><b><i>pp</i></b> pianissimo (très doux), <b><i>p</i></b> piano (doux), <b><i>mf</i></b> mezzo forte (moyennement fort), <b><i>f</i></b> forte (fort), <b><i>ff</i></b> fortissimo (très fort)</p><div class="ve-mots"><button type="button" class="ve-mot nu" onclick="veEcouterMot('nuance','pp')"><i class="ph-fill ph-play"></i> <b>pp</b></button><button type="button" class="ve-mot nu" onclick="veEcouterMot('nuance','p')"><i class="ph-fill ph-play"></i> <b>p</b></button><button type="button" class="ve-mot nu" onclick="veEcouterMot('nuance','mf')"><i class="ph-fill ph-play"></i> <b>mf</b></button><button type="button" class="ve-mot nu" onclick="veEcouterMot('nuance','f')"><i class="ph-fill ph-play"></i> <b>f</b></button><button type="button" class="ve-mot nu" onclick="veEcouterMot('nuance','ff')"><i class="ph-fill ph-play"></i> <b>ff</b></button></div></div>
+  <div class="ve-fm"><h4>La nuance qui change</h4><p><b>crescendo</b> (&lt;)&nbsp;: de plus en plus fort<br><b>decrescendo</b> (&gt;)&nbsp;: de plus en plus doux</p><div class="ve-mots"><button type="button" class="ve-mot" onclick="veEcouterMot('nuance','cresc')"><i class="ph-fill ph-play"></i> crescendo</button><button type="button" class="ve-mot" onclick="veEcouterMot('nuance','decresc')"><i class="ph-fill ph-play"></i> decrescendo</button></div></div>
+  <div class="ve-fm"><h4>La hauteur <small>le registre</small></h4><p><b>grave</b> (sons bas), <b>médium</b>, <b>aigu</b> (sons hauts)</p><div class="ve-mots"><button type="button" class="ve-mot" onclick="veEcouterMot('registre','grave')"><i class="ph-fill ph-play"></i> grave</button><button type="button" class="ve-mot" onclick="veEcouterMot('registre','medium')"><i class="ph-fill ph-play"></i> médium</button><button type="button" class="ve-mot" onclick="veEcouterMot('registre','aigu')"><i class="ph-fill ph-play"></i> aigu</button></div></div>
+  <div class="ve-fm"><h4>L'articulation <small>la manière d'enchaîner les notes</small></h4><p><b>legato</b>&nbsp;: lié, les sons s'enchaînent<br><b>staccato</b>&nbsp;: piqué, chaque son est court et détaché</p><div class="ve-mots"><button type="button" class="ve-mot" onclick="veEcouterMot('artic','legato')"><i class="ph-fill ph-play"></i> legato</button><button type="button" class="ve-mot" onclick="veEcouterMot('artic','staccato')"><i class="ph-fill ph-play"></i> staccato</button></div></div>
+  <div class="ve-fm"><h4>Le mode <small>la couleur</small></h4><p><b>majeur</b>&nbsp;: plutôt lumineux, joyeux<br><b>mineur</b>&nbsp;: plutôt sombre, mélancolique</p><div class="ve-mots"><button type="button" class="ve-mot" onclick="veEcouterMot('mode','majeur')"><i class="ph-fill ph-play"></i> majeur</button><button type="button" class="ve-mot" onclick="veEcouterMot('mode','mineur')"><i class="ph-fill ph-play"></i> mineur</button></div></div>
+  <div class="ve-fm"><h4>Le timbre <small>qui joue&nbsp;?</small></h4><p>L'instrument ou la voix, reconnaissable à sa «&nbsp;couleur de son&nbsp;»&nbsp;: piano, flûte, cordes, hautbois, trompette, orgue…</p><div class="ve-mots"><button type="button" class="ve-mot" onclick="veEcouterMot('timbre','flute')"><i class="ph-fill ph-play"></i> flûte</button><button type="button" class="ve-mot" onclick="veEcouterMot('timbre','anche')"><i class="ph-fill ph-play"></i> hautbois</button><button type="button" class="ve-mot" onclick="veEcouterMot('timbre','cuivre')"><i class="ph-fill ph-play"></i> trompette</button><button type="button" class="ve-mot" onclick="veEcouterMot('timbre','orgue')"><i class="ph-fill ph-play"></i> orgue</button></div></div>
+  </div>
+  <p class="tx-aide">Attention aux pièges&nbsp;: <b>fort</b> ne veut pas dire <b>rapide</b>, et <b>aigu</b> ne veut pas dire <b>fort</b>. Chaque famille se règle indépendamment des autres.</p>
+
+  </div><div class="carte">
+  <h3>2. Le mouvement de la mélodie</h3>
+  <p>Une mélodie peut <b>monter</b> vers l'aigu (mouvement <b>ascendant</b>) ou <b>descendre</b> vers le grave (mouvement <b>descendant</b>). Elle peut avancer par <b>notes voisines</b> (mouvement <b>conjoint</b>, comme l'Hymne à la joie) ou par <b>grands sauts</b> (mouvement <b>disjoint</b>, comme le début d'Ainsi parlait Zarathoustra&nbsp;: do, sol, do).</p>
+  <div class="ve-mots"><button type="button" class="ve-mot" onclick="veMouvement('monte')"><i class="ph-fill ph-play"></i> ascendant</button><button type="button" class="ve-mot" onclick="veMouvement('descend')"><i class="ph-fill ph-play"></i> descendant</button><button type="button" class="ve-mot" onclick="veMouvement('conjoint')"><i class="ph-fill ph-play"></i> conjoint</button><button type="button" class="ve-mot" onclick="veMouvement('disjoint')"><i class="ph-fill ph-play"></i> disjoint</button></div>
+
+  </div><div class="carte">
+  <h3>3. La texture&nbsp;: combien de voix&nbsp;?</h3>
+  <p>La <b>texture</b>, c'est la manière dont les sons se <b>superposent</b>. Une musique peut être «&nbsp;mince&nbsp;» (une seule voix) ou «&nbsp;épaisse&nbsp;» (beaucoup de voix entremêlées). Les exemples suivants jouent tous la chanson «&nbsp;Frère Jacques&nbsp;».</p>
+  <div class="ve-fms">
+  <div class="ve-fm"><h4>Monodie</h4><p>Une seule ligne mélodique, sans accompagnement (du grec <i>monos</i>, «&nbsp;seul&nbsp;»).</p><div class="ve-mots"><button type="button" class="ve-mot" aria-label="Écouter un exemple : Monodie" onclick="jouerSonBtn({texture:{mode:'monodie',temps:16}})"><i class="ph-fill ph-play"></i> écouter</button></div></div>
+  <div class="ve-fm"><h4>Mélodie accompagnée</h4><p>Une mélodie au premier plan, soutenue par un accompagnement (accords, arpèges).</p><div class="ve-mots"><button type="button" class="ve-mot" aria-label="Écouter un exemple : Mélodie accompagnée" onclick="jouerSonBtn({texture:{mode:'accompagnee',temps:16}})"><i class="ph-fill ph-play"></i> écouter</button></div></div>
+  <div class="ve-fm"><h4>Polyphonie</h4><p>Plusieurs mélodies <b>différentes</b> en même temps (du grec <i>poly</i>, «&nbsp;plusieurs&nbsp;»).</p><div class="ve-mots"><button type="button" class="ve-mot" aria-label="Écouter un exemple : Polyphonie" onclick="jouerSonBtn({texture:{mode:'polyphonie',temps:16}})"><i class="ph-fill ph-play"></i> écouter</button></div></div>
+  <div class="ve-fm"><h4>Canon</h4><p>La <b>même</b> mélodie, reprise par une 2ᵉ voix en retard&nbsp;: une voix <b>imite</b> l'autre.</p><div class="ve-mots"><button type="button" class="ve-mot" aria-label="Écouter un exemple : Canon" onclick="jouerSonBtn({texture:{mode:'canon',temps:20,n:2,decal:4}})"><i class="ph-fill ph-play"></i> écouter</button></div></div>
+  <div class="ve-fm"><h4>Bourdon</h4><p>Une ou deux notes graves tenues tout du long, sous la mélodie (comme à la cornemuse).</p><div class="ve-mots"><button type="button" class="ve-mot" aria-label="Écouter un exemple : Bourdon" onclick="jouerSonBtn({texture:{mode:'bourdon',temps:16}})"><i class="ph-fill ph-play"></i> écouter</button></div></div>
+  <div class="ve-fm"><h4>Ostinato</h4><p>Un motif court (rythmique ou mélodique) répété en boucle, sans changer.</p><div class="ve-mots"><button type="button" class="ve-mot" aria-label="Écouter un exemple : Ostinato" onclick="jouerSonBtn({texture:{mode:'ostinato',temps:16}})"><i class="ph-fill ph-play"></i> écouter</button></div></div>
+  </div>
+  <p class="tx-aide">Pour aller plus loin (unisson, homophonie, compter les voix)&nbsp;: la leçon <button type="button" class="ve-lien" onclick="afficherLecon('textures')">Voix superposées</button>.</p>
+
+  </div><div class="carte">
+  <h3>4. Le laboratoire des mots</h3>
+  <p>À toi de jouer&nbsp;: compose ta propre version de la phrase avec les mots de ton choix. Le <b>dessin</b> montre ce que tu entends, et MusEduc écrit la <b>phrase de description</b>, comme dans une vraie fiche d'écoute. Puis relève le <b>défi</b>&nbsp;: retrouve les mots d'un extrait mystère.</p>
+  ${veAtelierHTML()}
+
+  </div><div class="carte">
+  <h3>5. Décrire une vraie œuvre</h3>
+  <p>Avec ces mots, on peut décrire n'importe quelle musique. Écoute chaque extrait, puis lis sa description&nbsp;: retrouves-tu chaque mot à l'oreille&nbsp;?</p>
+  ${veOeuvresHTML()}
+  <div class="cle">Ces mots servent à <b>justifier ce qu'on entend</b>&nbsp;: au lieu de dire «&nbsp;c'est triste&nbsp;», on dit «&nbsp;c'est lent, en mineur, joué piano et legato&nbsp;». C'est ce vocabulaire précis qui permet de décrire et de comparer les musiques.</div>
+  <div class="astuce">Dans l'exercice, écoute une famille à la fois&nbsp;: d'abord la pulsation (le tempo), puis la force (la nuance), puis la hauteur… Une seule question par écoute&nbsp;: tu peux réécouter autant que tu veux.</div>`},
 
  "ouie":{titre:"Protéger son ouïe",html:`
   <p>La musique est l'un des plus grands plaisirs de la vie… mais à une condition&nbsp;: préserver l'outil qui permet de l'écouter, ton <b>oreille</b>. Voici une vérité que tout musicien doit connaître&nbsp;: l'audition est <b>fragile</b>, et contrairement à une coupure qui cicatrise, les dégâts causés par le bruit sont presque toujours <b>définitifs</b>. Cette leçon t'explique comment fonctionne ton oreille et comment en prendre soin toute ta vie. C'est sans doute le cours le plus important pour ton avenir de mélomane&nbsp;!</p>
@@ -5527,7 +7515,18 @@ const LECONS={
   <div class="cle">Petit récapitulatif des correspondances&nbsp;: la <b>hauteur</b> renvoie aux notes, la <b>durée</b> au rythme, l'<b>intensité</b> aux nuances, et le <b>timbre</b> aux instruments. Les quatre paramètres recoupent donc toutes les grandes notions de la musique&nbsp;!</div>
 
   </div><div class="carte">
-  <h3>3. Un outil pour toute ta vie de musicien</h3>
+  <h3>3. Le laboratoire du son</h3>
+  <p>Un son est une <b>vibration</b> de l'air. L'<b>oscilloscope</b> la dessine comme une vague. Change un paramètre à la fois et regarde ce qui se passe&nbsp;: c'est la meilleure façon de comprendre les quatre.</p>
+  ${psAtelierHTML()}
+  <ol>
+  <li>Monte la <b>hauteur</b>&nbsp;: les vagues se <b>resserrent</b> (elles vibrent plus vite).</li>
+  <li>Monte l'<b>intensité</b>&nbsp;: les vagues deviennent plus <b>hautes</b>, sans se resserrer.</li>
+  <li>Change le <b>timbre</b>&nbsp;: même note, même force, mais la <b>forme</b> de la vague change… et le son aussi&nbsp;!</li>
+  <li>Avec <b>ta voix</b>&nbsp;: chante un «&nbsp;ou&nbsp;» puis un «&nbsp;i&nbsp;» sur la même note, et compare les vagues.</li>
+  </ol>
+
+  </div><div class="carte">
+  <h3>4. Un outil pour toute ta vie de musicien</h3>
   <div class="astuce">La prochaine fois que tu écoutes une musique, amuse-toi à la décrire avec ces quatre paramètres&nbsp;: les sons sont-ils plutôt aigus ou graves&nbsp;? les notes longues ou courtes&nbsp;? l'ensemble fort ou doux&nbsp;? quels timbres reconnais-tu (guitare, batterie, voix…)&nbsp;? C'est exactement ce que font les musiciens professionnels pour analyser un morceau. Avec ces quatre questions, tu as déjà une méthode d'écoute complète&nbsp;!</div>`},
 
  "instruments":{titre:"Les familles d'instruments",html:`
@@ -6122,12 +8121,30 @@ const LECONS={
   <div class="astuce">Astuce&nbsp;: retiens d'abord <b>l'ordre des époques</b>, puis <b>2 ou 3 compositeurs phares par époque</b> (ex. Bach = baroque, Mozart = classique, Chopin = romantique). Le reste se déduit&nbsp;!</div>`},
 
  "melodies":{titre:"Les grandes mélodies à reconnaître",html:`
-  <p>Il existe une poignée de <b>mélodies classiques</b> que presque tout le monde a déjà entendues : dans un film, une publicité, un dessin animé, une sonnerie… Les connaître, c'est se constituer une <b>culture musicale commune</b> et pouvoir dire «&nbsp;ça, je sais ce que c'est&nbsp;!&nbsp;». Cette page réunit une <b>quarantaine de thèmes incontournables</b>&nbsp;: écoute-les, réécoute-les, puis teste ton oreille dans les exercices.</p>
-  <div class="cle">Chaque bouton <b><i class="ph ph-play"></i></b> joue le <b>motif d'ouverture</b> de l'œuvre, au piano. Concentre-toi sur le <b>début</b>&nbsp;: c'est presque toujours lui qu'on reconnaît en premier. Astuce&nbsp;: essaie de <b>chantonner</b> la mélodie après l'avoir entendue, ça la grave dans ta mémoire.</div>
+  <p>Il existe une poignée de <b>mélodies classiques</b> que presque tout le monde a déjà entendues : dans un film, une publicité, un dessin animé, une sonnerie… Les connaître, c'est se constituer une <b>culture musicale commune</b> et pouvoir dire «&nbsp;ça, je sais ce que c'est&nbsp;!&nbsp;». Cette page réunit <b>${MELODIES.length} thèmes incontournables</b>&nbsp;: écoute-les, réécoute-les, joue au blind test, puis teste ton oreille dans les exercices.</p>
+  <div class="cle">Chaque bouton <b><i class="ph-fill ph-play"></i></b> joue le <b>début</b> de l'œuvre, d'après sa partition, avec son accompagnement. Concentre-toi sur les premières notes&nbsp;: ce sont presque toujours elles qu'on reconnaît en premier. Astuce&nbsp;: essaie de <b>chantonner</b> la mélodie après l'avoir entendue, ça la grave dans ta mémoire.</div>
 
   </div><div class="carte">
-  <h3><i class="ph ph-headphones"></i> Écoute la collection</h3>
+  <h3>1. Comment reconnaît-on une mélodie&nbsp;?</h3>
+  <p>Ton cerveau n'a besoin que de quelques notes. Il repère&nbsp;:</p>
+  <ul>
+  <li><b>Le dessin</b> de la mélodie&nbsp;: elle monte, elle descend, elle reste sur place. Les barres de chaque carte le montrent&nbsp;: plus une barre est haute, plus la note est aiguë&nbsp;; plus elle est longue, plus la note dure.</li>
+  <li><b>Le rythme</b>&nbsp;: des notes brèves, longues, répétées. Pense aux quatre notes de la 5ᵉ Symphonie&nbsp;!</li>
+  <li><b>Les intervalles</b>&nbsp;: des notes voisines (l'Hymne à la joie) ou de grands sauts (le début d'Ainsi parlait Zarathoustra).</li>
+  <li><b>Le caractère</b>&nbsp;: majeur ou mineur, lent ou rapide, et l'instrument qui joue.</li>
+  </ul>
+  <div class="me-duo">${meCarteHTML(0)}${meCarteHTML(1)}</div>
+  <p class="tx-aide">Écoute les deux et regarde les barres s'allumer&nbsp;: la première se reconnaît à son <b>rythme</b> (court, court, court, long), la seconde à son <b>dessin</b> en notes voisines.</p>
+
+  </div><div class="carte">
+  <h3><i class="ph ph-headphones"></i> 2. Écoute la collection</h3>
+  <p>${MELODIES.length} œuvres du XVIIᵉ au début du XXᵉ siècle, rangées de la plus connue à la plus rare. Touche <b><i class="ph-fill ph-play"></i></b> pour écouter, touche encore pour arrêter.</p>
   ${galerieMelodiesHTML()}
+
+  </div><div class="carte">
+  <h3>3. Le blind test des premières notes</h3>
+  <p>Reconnaîtras-tu une mélodie en <b>trois notes</b>&nbsp;? Moins tu as besoin de notes, plus tu marques de points.</p>
+  ${meJeuHTML()}
 
   </div><div class="carte">
   <h3>Comment se joue le quiz</h3>
@@ -6136,7 +8153,7 @@ const LECONS={
   <li><i class="ph-fill ph-circle" style="color:#EBAA27"></i> <b>Intermédiaire</b> : des mélodies un peu moins évidentes, parmi <b>4</b> propositions.</li>
   <li><i class="ph-fill ph-circle" style="color:#e0483b"></i> <b>Difficile</b> : les thèmes les plus fins à repérer, parmi <b>6</b> propositions.</li>
   </ul>
-  <div class="astuce">Ce ne sont que les <b>premières notes</b>, jouées simplement au piano&nbsp;: le vrai orchestre est bien plus riche&nbsp;! Le but est de reconnaître la <b>ligne mélodique</b>, pas l'instrument.</div>`},
+  <div class="astuce">Ce sont les <b>premières mesures</b> de chaque œuvre, jouées par un petit orchestre de synthèse&nbsp;: le vrai orchestre est bien plus riche&nbsp;! Le but est de reconnaître la <b>mélodie</b>, pas l'interprétation.</div>`},
 
  "voix":{titre:"Les voix (les tessitures)",html:`
   <p>Le tout premier instrument de musique de l'humanité, c'est la <b>voix</b>&nbsp;! Bien avant de fabriquer la moindre flûte ou le moindre tambour, les êtres humains chantaient. Mais tu l'as sûrement remarqué&nbsp;: toutes les voix ne se ressemblent pas. Certaines personnes montent facilement dans les aigus, d'autres ont une voix naturellement grave et profonde. Cette leçon t'apprend à <b>classer et nommer</b> les voix : un savoir essentiel pour comprendre le chant et les chorales.</p>
@@ -6219,7 +8236,18 @@ const LECONS={
   <h3>4. Quelques autres formes classiques</h3>
   <p>La <b>forme binaire</b> enchaîne deux parties différentes (<b>A B</b>). La <b>forme ternaire</b> ajoute le retour de la première&nbsp;: <b>A B A</b>, comme partir, explorer ailleurs, puis revenir à la maison. Le <b>rondo</b> fait revenir un même thème (comme un refrain) entre des couplets différents&nbsp;: <b>A B A C A</b>.</p>
   <div class="cle">Il existe aussi des formes plus savantes&nbsp;: le <b>canon</b> (une même mélodie chantée en décalé par plusieurs voix, comme «&nbsp;Frère Jacques&nbsp;»), le <b>thème et variations</b> (un thème répété mais transformé à chaque fois), l'<b>ostinato</b> (un court motif répété sans cesse) ou la <b>fugue</b> (un thème imité tour à tour par plusieurs voix qui se superposent).</div>
-  <div class="astuce">La prochaine fois que tu écoutes ta chanson préférée, amuse-toi à noter sa forme avec des lettres&nbsp;: repère l'intro, les couplets (A), le refrain (B), peut-être un pont. Tu découvriras que tu «&nbsp;lis&nbsp;» déjà l'architecture de la musique&nbsp;!</div>`},
+  <div class="astuce">La prochaine fois que tu écoutes ta chanson préférée, amuse-toi à noter sa forme avec des lettres&nbsp;: repère l'intro, les couplets (A), le refrain (B), peut-être un pont. Tu découvriras que tu «&nbsp;lis&nbsp;» déjà l'architecture de la musique&nbsp;!</div>
+  </div><div class="carte">
+  <h3>5. L'atelier des formes</h3>
+  <p>Voici cinq blocs de musique composés pour s'enchaîner&nbsp;: une <b>intro</b>, trois parties <b>A</b>, <b>B</b> et <b>C</b>, et une <b>coda</b>. Ils sont joués par le même instrument&nbsp;: pour les reconnaître, il faut écouter leur <b>mélodie</b>.</p>
+  ${fmAtelierHTML()}
+  <p><b>À essayer&nbsp;:</b></p>
+  <ol>
+  <li>Touche les exemples <b>A B A</b> puis <b>A B A C A</b>&nbsp;: entends-tu le thème A revenir&nbsp;?</li>
+  <li>Construis une chanson&nbsp;: Intro, A, B, A, B, C, B, Coda. MusEduc reconnaît la forme.</li>
+  <li>Passe à <b>Reconnais la forme</b>&nbsp;: écoute la pièce mystère et donne une lettre à chaque partie.</li>
+  </ol>
+ `},
 
  "epoques":{titre:"Les grandes époques de la musique",html:`
   <p>La musique occidentale a une histoire longue de plus de mille ans&nbsp;! Pour s'y retrouver, on la découpe en grandes <b>périodes</b>, un peu comme on découpe l'Histoire en Antiquité, Moyen Âge, époque moderne… Chaque période musicale a son style, ses instruments favoris et ses compositeurs célèbres. Cette leçon te donne les repères pour <b>situer une œuvre dans le temps</b> et comprendre son langage : un vrai savoir de culture générale&nbsp;!</p>
@@ -6476,6 +8504,7 @@ const LECONS={
   <h3>Le reggae dans le monde et en France</h3>
   <p>Le reggae a inspiré le punk (The Clash), le rock (The Police), le rap et la musique électronique. Dans les années 1980 naît le <b>dancehall</b>, plus rapide et électronique. En Afrique, <b>Alpha Blondy</b> («&nbsp;Jerusalem&nbsp;») et <b>Tiken Jah Fakoly</b>, tous deux de Côte d'Ivoire, chantent contre les injustices. En France, <b>Serge Gainsbourg</b> enregistre à Kingston une version reggae de «&nbsp;La Marseillaise&nbsp;» (<i>Aux armes et cætera</i>, 1979)&nbsp;; puis viennent <b>Sinsemilia</b> («&nbsp;Tout le bonheur du monde&nbsp;»), <b>Tryo</b>, Danakil ou Pierpoljak.</p>
   <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="WcqK9Ls7Eos" data-lib="Jerusalem · Alpha Blondy"></div><div class="ce-yt" data-yt="qxcorFVVSmc" data-lib="Aux armes et cætera · Serge Gainsbourg (en concert, 1988)"></div></div></div>
+  <p class="bt-lien"><button class="btn-son" onclick="ecranBatterie('reggae')"><i class="ph ph-equalizer"></i> Essayer ce rythme dans la boîte à rythmes</button></p>
   <div class="cle">À retenir&nbsp;: le reggae naît à la fin des <b>années 1960</b> à <b>Kingston</b>, en <b>Jamaïque</b>, après le <b>ska</b> et le <b>rocksteady</b>. Ses marques&nbsp;: un tempo <b>lent et balancé</b>, la guitare sur les <b>contretemps</b>, une <b>basse</b> très présente, l'accent de batterie sur le <b>3ᵉ temps</b>. Il est lié au mouvement <b>rastafari</b> et porte des messages de paix et de justice. Sa grande star&nbsp;: <b>Bob Marley</b> et les Wailers.</div>`},
  "film":{titre:"La musique de film",html:`
   <p>Depuis les débuts du cinéma, la musique accompagne les images. Elle ne raconte pas l'histoire à la place du film&nbsp;: elle fait ressentir des <b>émotions</b>, crée une <b>ambiance</b>, soutient l'<b>action</b>, annonce un danger ou relie les scènes entre elles. Essaie de regarder une scène de poursuite ou de peur sans le son&nbsp;: elle perd presque toute sa force.</p>
@@ -6598,6 +8627,7 @@ const LECONS={
   <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="GdH30r1IZzs" data-lib="Souvenirs souvenirs · Johnny Hallyday (1960)"></div><div class="ce-yt" data-yt="xqnZPHo6qx4" data-lib="Un autre monde · Téléphone"></div></div></div>
   <h3>Plus qu'une musique</h3>
   <p>Le rock a été la musique de la <b>révolte de la jeunesse</b>&nbsp;: les parents trouvaient ce bruit scandaleux, les jeunes s'y reconnaissaient. Il a changé la mode, la danse, la façon de faire des concerts (les grands <b>festivals</b> en plein air) et a influencé presque toute la musique populaire qui a suivi.</p>
+  <p class="bt-lien"><button class="btn-son" onclick="ecranBatterie('rock')"><i class="ph ph-equalizer"></i> Essayer ce rythme dans la boîte à rythmes</button></p>
   <div class="cle">À retenir&nbsp;: le rock naît aux <b>États-Unis</b> vers <b>1955</b>, du mélange du <b>blues</b>/rhythm and blues et de la <b>country</b>. Ses instruments&nbsp;: <b>guitare électrique</b>, <b>basse</b>, <b>batterie</b> (backbeat sur les temps 2 et 4) et chant. Ses pionniers&nbsp;: <b>Chuck Berry</b>, <b>Little Richard</b>, <b>Elvis Presley</b>. Puis viennent les <b>Beatles</b> et les <b>Rolling Stones</b> (années 1960), et de nombreuses familles&nbsp;: <b>hard rock</b>, <b>punk</b>, <b>metal</b>, <b>grunge</b>. En France&nbsp;: <b>Johnny Hallyday</b> et les yé-yé.</div>`},
  "rap":{titre:"Le rap et le hip-hop",html:`
   <p>Le <b>rap</b> est né au début des <b>années 1970</b> à <b>New York</b>, dans le quartier pauvre du <b>Bronx</b>, au sein des communautés afro-américaines et latino-américaines. Il fait partie d'une culture plus large, le <b>hip-hop</b>, qui réunit quatre disciplines&nbsp;:</p>
@@ -6645,6 +8675,7 @@ const LECONS={
   <figure class="lec-portrait"><img src="images/rap-ntm.webp" alt="Le groupe NTM" loading="lazy"><figcaption><b>NTM</b>&nbsp;: JoeyStarr et Kool Shen, de Seine-Saint-Denis.</figcaption></figure>
   </div>
   <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="MNYsmMDZfiA" data-lib="Bouge de là · MC Solaar (1990)"></div><div class="ce-yt" data-yt="7ceNf9qJjgc" data-lib="Je danse le Mia · IAM"></div><div class="ce-yt" data-yt="rXF1Si3LEEU" data-lib="La Quête · Orelsan"></div></div></div>
+  <p class="bt-lien"><button class="btn-son" onclick="ecranBatterie('rap')"><i class="ph ph-equalizer"></i> Essayer ce rythme dans la boîte à rythmes</button></p>
   <div class="cle">À retenir&nbsp;: le rap naît au début des <b>années 1970</b> dans le <b>Bronx</b> (New York). Il fait partie du <b>hip-hop</b>, avec le <b>DJing</b>, le <b>breakdance</b> et le <b>graffiti</b>. Le père du hip-hop est <b>DJ Kool Herc</b> (1973). Le rappeur (MC) pose un <b>flow</b> sur un <b>beat</b>, avec des rimes, des samples et des scratchs. En France&nbsp;: <b>MC Solaar</b>, <b>IAM</b> et <b>NTM</b> ouvrent la voie au début des années 1990.</div>`},
  "electro":{titre:"La musique électronique",html:`
   <p>La <b>musique électronique</b> (ou «&nbsp;<b>électro</b>&nbsp;») est une musique fabriquée avec des <b>machines</b>&nbsp;: synthétiseurs, boîtes à rythmes, samplers et ordinateurs. Ses racines remontent au début du <b>XXᵉ siècle</b>, mais elle devient une grande musique populaire, faite pour <b>danser</b>, à partir des années 1970 et 1980.</p>
@@ -6675,6 +8706,7 @@ const LECONS={
   <h3>La French Touch</h3>
   <p>À la fin des années 1990, des artistes français font danser le monde entier&nbsp;: c'est la <b>French Touch</b>. <b>Daft Punk</b>, le duo aux casques de robots («&nbsp;Around the World&nbsp;», «&nbsp;One More Time&nbsp;», Grammy de l'album de l'année en 2014), <b>Air</b> (<i>Moon Safari</i>), <b>Cassius</b>, <b>Bob Sinclar</b>, le DJ techno <b>Laurent Garnier</b>, puis <b>Justice</b>, <b>David Guetta</b> («&nbsp;Titanium&nbsp;») et <b>DJ Snake</b>. Aujourd'hui, l'électro est partout&nbsp;: dans la pop, le rap, les jeux vidéo, les publicités et les musiques de film.</p>
   <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="K0HSD_i2DvA" data-lib="Around the World · Daft Punk (1997)"></div><div class="ce-yt" data-yt="YUX8fUrKRNU" data-lib="La Femme d'argent · Air (Moon Safari, 1998)"></div><div class="ce-yt" data-yt="JRfuAukYTKg" data-lib="Titanium · David Guetta et Sia (2011)"></div></div></div>
+  <p class="bt-lien"><button class="btn-son" onclick="ecranBatterie('electro')"><i class="ph ph-equalizer"></i> Essayer ce rythme dans la boîte à rythmes</button></p>
   <div class="cle">À retenir&nbsp;: la musique <b>électronique</b> se fabrique avec des <b>machines</b> (synthétiseurs, boîtes à rythmes, ordinateurs). Ses ancêtres&nbsp;: le <b>thérémine</b>, les <b>ondes Martenot</b> et la <b>musique concrète</b> de Pierre Schaeffer (1948). Ses pionniers&nbsp;: <b>Kraftwerk</b> et <b>Jean-Michel Jarre</b>. La <b>house</b> naît à <b>Chicago</b> et la <b>techno</b> à <b>Detroit</b> dans les années 1980. En France, la <b>French Touch</b> (<b>Daft Punk</b>, Air, David Guetta) conquiert le monde.</div>`},
  "jeuxvideo":{titre:"La musique de jeux vidéo",html:`
   <p>Dans un jeu vidéo, la musique n'est pas un simple fond sonore&nbsp;: elle <b>plonge le joueur dans l'aventure</b>, lui donne des indices (un danger approche, un combat commence, un secret est découvert) et accompagne ses réussites et ses échecs. En cinquante ans, elle est passée de quelques <b>bips</b> à de véritables partitions pour <b>orchestre symphonique</b>, jouées aujourd'hui en concert dans le monde entier.</p>
@@ -7769,9 +9801,39 @@ function remonter(){
 function indexDe(el){const card=el.closest(".ex");return parseInt(card.id.replace("ex",""));}
 function jouerSon(i){const s=exercices[i].sonBtn;try{audio().resume();}catch(e){}
   jouerSonBtn(s);}
-/* lecture d'un sonBtn : gère séquence (avec écart personnalisable) et volume (nuance) */
+/* Les boutons « Écouter » des exercices : chaque lecture passe par son propre
+   canal (un gain), qu'on coupe net quand on rejoue (avant, deux clics
+   superposaient deux lectures) ou quand on quitte la question. */
+let _sonBtn={canaux:[],ancre:null,veille:null,dest:null};
+function sonBtnCouper(){
+  const ctx=audio(), now=ctx.currentTime;
+  _sonBtn.canaux.forEach(function(g){
+    try{ g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value,now); g.gain.linearRampToValueAtTime(0,now+0.04); }catch(e){}
+    setTimeout(function(){ try{ g.disconnect(); }catch(e){} },120);
+  });
+  _sonBtn.canaux=[];
+  if(_sonBtn.veille){ clearInterval(_sonBtn.veille); _sonBtn.veille=null; }
+  if(typeof meArret==="function")meArret();
+}
+function sonBtnCanal(vers){ const ctx=audio(), g=ctx.createGain(); g.gain.value=1; g.connect(vers||ctx.destination); _sonBtn.canaux.push(g); return g; }
 function jouerSonBtn(s){
-  if(s.figure){jouerFigure(s.figure);return;}
+  sonBtnCouper();
+  const z=document.getElementById("zone"), debut=Date.now(); _sonBtn.ancre=z&&z.firstElementChild;
+  _sonBtn.dest=sonBtnCanal();
+  try{ jouerSonBtnInterne(s); }finally{ _sonBtn.dest=null; }
+  /* la question a disparu (suivante, autre écran) : on coupe ; au-delà d'une minute, on arrête de surveiller */
+  _sonBtn.veille=setInterval(function(){
+    if((_sonBtn.ancre&&!_sonBtn.ancre.isConnected)||Date.now()-debut>60000){ if(Date.now()-debut>60000){ clearInterval(_sonBtn.veille); _sonBtn.veille=null; } else sonBtnCouper(); }
+  },250);
+}
+/* lecture d'un sonBtn : gère séquence (avec écart personnalisable) et volume (nuance) */
+function jouerSonBtnInterne(s){
+  if(s.texture){txExtrait(s.texture);return;}
+  if(s.variation){vaExtrait(s.variation);return;}
+  if(s.forme){fmExtrait(s.forme);return;}
+  if(s.param){psExtrait(s.param);return;}
+  if(s.oeuvre){meExtrait(s.oeuvre,s.limite);return;}
+  if(s.vocab){veExtrait(s.vocab);return;}
   /* suite d'accords : [[midis], durée en secondes] */
   if(s.accords){let t=0;s.accords.forEach(a=>{(a[0]||[]).forEach(m=>jouerMidi(m,t,(a[1]||1)*0.92,0.14));t+=(a[1]||1);});return;}
   if(s.rythme){jouerRythme(s.rythme,s.secTemps);return;}
@@ -7781,62 +9843,6 @@ function jouerSonBtn(s){
   const vol=s.gain!==undefined?s.gain:0.25;
   if(s.sequence){const ec=s.ecart||0.7;s.midis.forEach((m,k)=>jouerMidi(m,k*ec,Math.min(0.6,ec*0.9),vol));}
   else s.midis.forEach(m=>jouerMidi(m,0,0.8,vol));}
-
-/* Figures sonores pour le vocabulaire de l'écoute (monodie, polyphonie, ostinato, etc.) */
-/* Banque de mélodies variées (degrés en demi-tons depuis Do) pour ne pas lasser l'oreille. */
-const MELODIES_VOC=[
-  [0,2,4,5,4,2,0],        // gamme aller-retour
-  [0,4,7,4,0],            // arpège majeur
-  [7,5,4,2,0],            // descente
-  [0,0,7,7,9,9,7],        // "Ah vous dirai-je maman"
-  [4,4,5,7,7,5,4,2],      // "Ode à la joie"
-  [0,2,4,0,0,2,4,0],      // "Frère Jacques"
-  [7,7,7,3,10,7,3,10],    // motif rythmé (clin d'œil)
-  [0,5,4,2,0,2,4,5,4],    // ondulation
-  [12,11,9,7,5,4,2,0],    // descente longue
-  [0,4,5,7,5,4,0],        // vague majeure
-  [9,7,5,4,2,4,5,7],      // tournoiement
-  [0,7,5,4,2,0],          // saut puis descente
-];
-const OSTINATOS=[[0,7,0,7],[0,3,5,3],[0,0,7,5],[7,5,7,5],[0,4,0,4],[0,5,3,5]];
-const GRILLES=[
-  [[0,4,7],[5,9,12],[7,11,14],[0,4,7]],
-  [[0,4,7],[7,11,14],[9,12,16],[5,9,12]],
-  [[0,3,7],[5,8,12],[7,10,14],[0,3,7]],
-  [[0,4,7],[9,12,16],[5,9,12],[7,11,14]],
-];
-function jouerFigure(type){
-  try{audio().resume();}catch(e){}
-  const D=MIDI_BASE["Do"], pas=0.42;
-  const mel=pick(MELODIES_VOC);
-  if(type==="monodie"){            // une seule voix (mélodie seule)
-    mel.forEach((d,k)=>jouerMidi(D+d,k*pas,pas*0.9,0.25));
-  } else if(type==="polyphonie"){  // deux voix mélodiques superposées (canon décalé)
-    mel.forEach((d,k)=>jouerMidi(D+d,k*pas,pas*0.9,0.22));
-    mel.forEach((d,k)=>jouerMidi(D+12+d,(k+1)*pas,pas*0.9,0.18)); // 2e voix, octave + décalée
-  } else if(type==="accompagnement"){ // mélodie + accords d'accompagnement
-    const grille=pick(GRILLES);
-    mel.forEach((d,k)=>jouerMidi(D+12+d,k*pas,pas*0.9,0.22));
-    grille.forEach((ac,k)=>ac.forEach(n=>jouerMidi(D+n,k*pas*2,pas*1.8,0.12)));
-  } else if(type==="ostinato"){    // motif court répété en boucle (varié)
-    const motif=pick(OSTINATOS);for(let r=0;r<4;r++)motif.forEach((d,k)=>jouerMidi(D+d,(r*motif.length+k)*0.28,0.26,0.2));
-  } else if(type==="bourdon"){     // note grave tenue + mélodie par-dessus
-    jouerMidi(D-12,0,mel.length*pas,0.16); // bourdon tenu
-    mel.forEach((d,k)=>jouerMidi(D+d,k*pas,pas*0.9,0.24));
-  } else if(type==="canon"){       // canon : 2 voix jouent la MÊME mélodie, départ décalé
-    const retard=2; // la 2e voix entre 2 notes après la 1re
-    mel.forEach((d,k)=>jouerMidi(D+d,k*pas,pas*0.9,0.22));                 // voix 1 (meneur)
-    mel.forEach((d,k)=>jouerMidi(D+d,(k+retard)*pas,pas*0.9,0.20));        // voix 2 (suiveur), même hauteur, en retard
-  } else if(/^poly[234]$/.test(type)){ // polyphonie à N voix, chacune une mélodie DIFFÉRENTE à une octave distincte
-    const n=parseInt(type.slice(4));
-    const octaves=[-12,0,12,24];          // registres bien séparés pour distinguer les voix
-    const vol=[0.20,0.22,0.18,0.16];
-    const choisies=shuffle(MELODIES_VOC).slice(0,n); // n mélodies différentes
-    for(let v=0;v<n;v++){const m=choisies[v];
-      m.forEach((d,k)=>jouerMidi(D+octaves[v]+d,(k+v*0.5)*pas,pas*0.9,vol[v])); // léger décalage d'entrée par voix
-    }
-  }
-}
 
 /* Démos audio appelables depuis les leçons (boutons <i class='ph ph-play'></i>).
    sens = +1 (ascendant, défaut) ou -1 (descendant). */
@@ -7862,7 +9868,7 @@ function jouerRythme(figs,secTemps){
     g.gain.setValueAtTime(0,t0);
     g.gain.linearRampToValueAtTime(fort?0.3:0.22,t0+0.005);
     g.gain.exponentialRampToValueAtTime(0.001,t0+0.13);
-    osc.connect(g).connect(ctx.destination);
+    osc.connect(g).connect(_sonBtn.dest||ctx.destination);
     osc.start(t0);osc.stop(t0+0.16);
   };
   figs.forEach(d=>{clic(t,d>=2);t+=d*secTemps;}); // accent sur les valeurs longues
@@ -7967,6 +9973,7 @@ async function corriger(){
     }
   }
   serieCorrigee=true;
+  try{ sonBtnCouper(); }catch(e){} // on corrige : la mélodie de la dernière question s'arrête
   document.querySelectorAll("#zone .ex.sans-rep").forEach(function(x){ x.classList.remove("sans-rep"); });
   // figer les réponses : on désactive tous les champs pour empêcher de modifier après coup
   const zoneEx=document.getElementById("zone");
@@ -8253,7 +10260,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-06h";
+const VERSION_APP="2026-10-10f";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -8679,6 +10686,15 @@ function afficherLecon(id){
   if(document.getElementById("onde8"))onde8Monter();
   if(document.getElementById("pmPiano")&&typeof pmMaj==="function"){ _pm={ton:"Do",mel:[],dec:0}; pmMaj(); }
   if(document.getElementById("plAtelier"))plAjuster();
+  if(document.getElementById("txAtelier"))txInit();
+  if(document.getElementById("vaAtelier"))vaInit();
+  if(document.getElementById("fmAtelier"))fmInit();
+  if(document.getElementById("psAtelier"))psInit();
+  if(document.getElementById("bjAtelier"))bjInit();
+  if(document.getElementById("meJeu"))meInit();
+  if(document.getElementById("veAtelier"))veInit();
+  /* les tableaux larges défilent : on doit pouvoir les atteindre au clavier pour les faire défiler */
+  document.querySelectorAll(".lecon table.gr").forEach(function(t){ t.tabIndex=0; });
   remonter();
 }
 
@@ -9053,7 +11069,7 @@ document.addEventListener("visibilitychange",function(){
   }catch(e){}
 });
 
-let jeuTimer=null, jeuPoll=null, jeuPollOn=false, jeuRole=null, hostGame=null, joueur=null;
+let jeuTimer=null, jeuRole=null, hostGame=null, joueur=null;
 /* arrête tous les minuteurs/animations propres au joueur (compte à rebours, chrono,
    réflexe, rebond physique, effet écran cassé) -> appelé à chaque changement d'écran. */
 function stopperEffetsJoueur(){if(!joueur)return;
@@ -9063,31 +11079,18 @@ function stopperEffetsJoueur(){if(!joueur)return;
   if(joueur.progTimer){clearInterval(joueur.progTimer);joueur.progTimer=null;}
   if(joueur.chronoTimer){clearInterval(joueur.chronoTimer);joueur.chronoTimer=null;}
   if(joueur.casseTimer){clearTimeout(joueur.casseTimer);joueur.casseTimer=null;}
+  if(joueur.chaisesTimer){clearInterval(joueur.chaisesTimer);joueur.chaisesTimer=null;}
   if(joueur.rebondRAF){cancelAnimationFrame(joueur.rebondRAF);joueur.rebondRAF=null;}
   if(joueur.rebondReadTimeout){clearTimeout(joueur.rebondReadTimeout);joueur.rebondReadTimeout=null;}
 }
-function jeuArreter(){rtdbLacher("jeu");if(jeuTimer){clearInterval(jeuTimer);jeuTimer=null;}jeuPollOn=false;if(jeuPoll){clearTimeout(jeuPoll);jeuPoll=null;}
+function jeuArreter(){rtdbLacher("jeu");if(jeuTimer){clearInterval(jeuTimer);jeuTimer=null;}
   try{if(hostGame&&hostGame.fbBase)hostGame.fbBase.off();}catch(e){}
   try{if(joueur&&joueur.fbBase)joueur.fbBase.off();}catch(e){}
   stopperEffetsJoueur();}
 /* sondage adaptatif : relance dès que la réponse précédente est revenue (+ petit délai),
    au lieu d'un intervalle fixe -> fraîcheur maximale sans empiler les requêtes. */
-function lancerBoucle(fn,gap){jeuPollOn=true;const step=()=>{if(!jeuPollOn)return;
-  Promise.resolve().then(fn).catch(()=>{}).finally(()=>{if(jeuPollOn)jeuPoll=setTimeout(step,gap);});};step();}
 function genPin(){return ""+Math.floor(1000+Math.random()*9000);}
 
-/* ---- réseau (réutilise l'URL du Google Sheet du classement) ---- */
-function jeuPost(charge){try{return envoyerCharge(charge).catch(()=>{});}catch(e){return Promise.resolve();}}
-function jeuGet(params){const url=lireUrlSheet();if(!url)return Promise.reject(new Error("Aucun lien serveur configuré (voir le tableau de bord prof)."));
-  return fetch(url+(url.indexOf("?")>=0?"&":"?")+params+"&t="+Date.now(),{redirect:"follow"})
-    .then(r=>r.text()).then(t=>{try{return JSON.parse(t);}catch(e){const err=new Error("NONJSON");err.raw=t;throw err;}});}
-
-/* petit identifiant du serveur actif, pour vérifier que le prof et les élèves
-   visent bien le MÊME déploiement (sinon chacun voit l'autre "absent"). */
-function serveurCourtHTML(){
-  if(fbPret())return `<span class="jeu-serveur"><i class="ph ph-lightning"></i> Firebase temps réel</span>`;
-  const u=lireUrlSheet()||"";const m=u.match(/\/s\/([^\/]+)/);const id=m?m[1]:u;
-  return `<span class="jeu-serveur"><i class="ph ph-link"></i> serveur&nbsp;···${(id||"?").slice(-10)}</span>`;}
 
 /* ---- capture d'une question QCM (texte) depuis un exercice généré ---- */
 function captureQCM(ex){
@@ -9133,30 +11136,136 @@ function jeuThemesDisponibles(){
     if(GEN[it.id]&&jeuCatQCM(it.id))out.push({id:it.id,nom:propre(it.nom),groupe:g.groupe});});});
   Object.keys(QUIZ_COMPO).forEach(function(cid){if(GEN["compo-"+cid]&&jeuCatQCM("compo-"+cid))out.push({id:"compo-"+cid,nom:propre(QUIZ_COMPO[cid].nom),groupe:"Compositeurs"});});
   /* cours de collège (banque de l'évaluation) : pour un jeu de fin de séquence.
-     Réservés aux parties lancées par le prof (voir jeuPickerHTML) : les sélecteurs
+     Réservés aux parties lancées par le prof (voir lpGroupes) : les sélecteurs
      des jeux en solo passent par themesParDomaine, qui ne les liste pas. */
   if(typeof EVALCOURS_DEF!=="undefined")Object.keys(EVALCOURS_DEF).forEach(function(k){ const id="evalcours-"+k;
     if(GEN[id]&&COURS_DEF[k]&&jeuCatQCM(id))out.push({id:id,nom:propre(COURS_DEF[k].titre),groupe:"Cours de collège",cours:true}); });
   jeuThemesCache=out;return out;
 }
-/* ===== Options "piment" du prof : chacune utilisable 1 SEULE fois par partie ===== */
+/* ===== Surprises du prof (refaites le 07/10/2026) =====
+   Le prof touche une surprise : elle s'appliquera à la PROCHAINE question ; la
+   toucher encore l'annule. Chacune sert une fois par partie (elle est « jouée »
+   quand la question part). Familles : « ecran » (ce que voient les élèves) et
+   « temps » : une seule à la fois ; « points » et « aide » : cumulables.
+   Mode « au hasard » : avant certaines questions, le dé en tire une. */
+const JEU_ENSEMBLE=300;              // « Tous ensemble » : points pour chacun si 2 élèves sur 3 trouvent
 const JEU_PIMENTS=[
-  {k:"rebond",ic:"<i class='ph ph-basketball'></i>",nom:"Rebond",desc:"les réponses rebondissent partout sur l'écran comme des balles, sur la prochaine question"},
-  {k:"double",ic:"<i class='ph ph-star'></i>",nom:"×2 points",desc:"la prochaine question rapporte le double"},
-  {k:"rapide",ic:"<i class='ph ph-lightning'></i>",nom:"Éclair",desc:"temps réduit de moitié sur la prochaine question"},
-  {k:"progressif",ic:"<i class='ph ph-brain'></i>",nom:"Réflexe",desc:"la question puis les réponses défilent une par une : clique la bonne à temps !"},
-  {k:"vote",ic:"<i class='ph ph-check-square'></i>",nom:"Vote",desc:"les élèves peuvent voter pour changer la prochaine question si elle est trop dure"},
-  {k:"casse",ic:"<i class='ph ph-cell-signal-slash'></i>",nom:"Écran cassé",desc:"l'écran des élèves grésille par moments comme un faux contact, sur la prochaine question"}
+  {k:"double",ic:"ph-star",nom:"×2 points",court:"Points doublés",fam:"points",coul:"#c98a00",
+   annonce:"cette question rapporte le double de points"},
+  {k:"ensemble",ic:"ph-hands-clapping",nom:"Tous ensemble",court:"Défi de toute la classe",fam:"points",coul:"#1f7a46",
+   annonce:"si 2 élèves sur 3 trouvent, +"+JEU_ENSEMBLE+" points pour tous ceux qui ont répondu",
+   eleve:"Tous ensemble : si 2 élèves sur 3 trouvent, +"+JEU_ENSEMBLE+" pour tous&nbsp;!"},
+  {k:"pouce",ic:"ph-hand-heart",nom:"Coup de pouce",court:"Des réponses en moins",fam:"aide",coul:"#0f7a66",
+   annonce:"des mauvaises réponses ont disparu",eleve:"Coup de pouce : des mauvaises réponses ont disparu"},
+  {k:"rapide",ic:"ph-lightning",nom:"Éclair",court:"Moitié du temps",fam:"temps",coul:"#2f6db0",
+   annonce:"moitié moins de temps pour répondre"},
+  {k:"zen",ic:"ph-hourglass-medium",nom:"Prends ton temps",court:"30 s, sans course",fam:"temps",coul:"#5e6d80",
+   annonce:"30 secondes, et la vitesse ne compte pas",eleve:"Prends ton temps : 30 secondes, la vitesse ne compte pas"},
+  {k:"miroir",ic:"ph-flip-horizontal",nom:"Miroir",court:"Écrit à l'envers",fam:"ecran",coul:"#8e44ad",
+   annonce:"les réponses sont écrites en miroir",eleve:"Miroir : les réponses sont écrites à l'envers"},
+  {k:"brouillard",ic:"ph-cloud-fog",nom:"Brouillard",court:"Le flou se lève",fam:"ecran",coul:"#546e7a",
+   annonce:"les réponses sont floues, puis le brouillard se lève",eleve:"Brouillard : attends qu'il se lève… ou tente ta chance&nbsp;!"},
+  {k:"chaises",ic:"ph-shuffle",nom:"Chaises musicales",court:"Ça change de place",fam:"ecran",coul:"#b85410",
+   annonce:"sur les téléphones, les réponses changent de place",eleve:"Chaises musicales : les réponses changent de place&nbsp;!"},
+  {k:"torche",ic:"ph-flashlight",nom:"Lampe torche",court:"Chercher dans le noir",fam:"ecran",coul:"#1e3a63",
+   annonce:"les téléphones sont dans le noir : on cherche avec le doigt",eleve:"Lampe torche : glisse ton doigt pour éclairer les réponses"},
+  {k:"tableau",ic:"ph-presentation",nom:"Yeux au tableau",court:"Formes seulement",fam:"ecran",coul:"#2374b0",
+   annonce:"les téléphones n'affichent que les formes : on lit au tableau",eleve:"Yeux au tableau : lis les réponses au tableau, touche la bonne forme"},
+  {k:"rebond",ic:"ph-basketball",nom:"Rebond",court:"Réponses en balles",fam:"ecran",coul:"#a44f40",
+   annonce:"sur les téléphones, les réponses rebondissent"},
+  {k:"progressif",ic:"ph-brain",nom:"Réflexe",court:"Une réponse à la fois",fam:"ecran",coul:"#765ba4",
+   annonce:"les réponses défilent une par une"},
+  {k:"casse",ic:"ph-cell-signal-slash",nom:"Écran cassé",court:"Ça grésille",fam:"ecran",coul:"#37485c",
+   annonce:"l'écran des élèves grésille"},
+  {k:"vote",ic:"ph-check-square",nom:"Vote",court:"Garder ou changer",fam:"vote",coul:"#307e46",auto:false,
+   annonce:"les élèves votent pour garder ou changer la question"}
 ];
+function jeuPiment(k){ return JEU_PIMENTS.filter(function(p){ return p.k===k; })[0]||null; }
+/* une question peut-elle recevoir cette surprise ? (Coup de pouce : au moins 3 réponses) */
+function surpriseCompatible(k,q){ if(k==="pouce")return !!(q&&q.options&&q.options.length>=3); return true; }
+/* points d'une bonne réponse (série comprise) ; « Prends ton temps » : vitesse neutre */
+function jeuPtsBon(q,a,serie){
+  const vit=q&&q.zen?Math.round(JEU_VITESSE/2):Math.round(JEU_VITESSE*(1-Math.min(1,(a.tempsMs||JEU_DUREE)/JEU_DUREE)));
+  let st=JEU_BASE+vit+Math.min(serie-1,5)*JEU_SERIE;
+  if(q&&q.bonus)st*=2;
+  return st;
+}
+/* « Tous ensemble » : réussi si au moins 2 élèves sur 3 ont trouvé */
+function jeuEnsemble(qi){
+  const g=hostGame, q=g&&g.questions[qi]; if(!q||!q.ensemble)return null;
+  const ans=g.answers[qi]||{}, uids=Object.keys(g.players), n=uids.length;
+  const justes=uids.filter(function(u){ return ans[u]&&ans[u].choix===q.correct; }).length;
+  return {ok:n>0&&justes>=Math.ceil(n*2/3), justes:justes, n:n, faut:Math.ceil(n*2/3)};
+}
 function pimentBarHTML(){if(!hostGame)return "";
-  return `<div class="jeu-piments"><div class="jeu-piments-titre"><i class="ph ph-dice-five"></i> Options surprise (1 fois chacune, sur la <b>prochaine</b> question)</div><div class="jeu-piments-row">`+
-    JEU_PIMENTS.map(function(p){const used=hostGame.pimentUtilise&&hostGame.pimentUtilise[p.k];const arme=hostGame.pimentArme&&hostGame.pimentArme[p.k];
-      return `<button class="jeu-piment${used?' used':''}${arme?' arme':''}" ${used?'disabled':''} onclick="armerPiment('${p.k}')" title="${escapeHtml(p.desc)}"><span class="jp-ic">${p.ic}</span><span class="jp-nom">${p.nom}</span></button>`;}).join("")+
-    `</div></div>`;}
-function armerPiment(k){if(!hostGame||(hostGame.pimentUtilise&&hostGame.pimentUtilise[k]))return;
-  hostGame.pimentUtilise[k]=true;hostGame.pimentArme[k]=true;
-  const w=document.getElementById("jeuPimentsWrap");if(w)w.innerHTML=pimentBarHTML();
-  if(typeof jouerEffet==="function")jouerEffet("valider");}
+  const g=hostGame, arme=g.pimentArme||{}, used=g.pimentUtilise||{};
+  const prevues=JEU_PIMENTS.filter(function(p){ return arme[p.k]; });
+  const prochaine=prevues.length
+    ?'<i class="ph-fill ph-gift"></i> Prochaine question&nbsp;: '+prevues.map(function(p){ return '<b>'+p.nom+'</b>'; }).join(" + ")
+    :(g.surpriseAuto?'<i class="ph ph-dice-five"></i> Rien de choisi&nbsp;: le dé ajoutera peut-être une surprise.':'Aucune surprise prévue pour la prochaine question.');
+  return '<div class="jeu-piments">'
+    +'<div class="jsp-tete"><div class="jsp-titre"><i class="ph-fill ph-gift"></i><b>Surprises</b><span>facultatif</span></div>'
+    +'<label class="lp-interrupteur jsp-auto"><input type="checkbox"'+(g.surpriseAuto?' checked':'')+' onchange="surpriseAutoBascule(this.checked)"><span></span><em><i class="ph ph-dice-five"></i> Au hasard</em></label></div>'
+    +'<p class="jsp-aide">Touchez une surprise pour l\'ajouter à la <b>prochaine question</b>. Touchez-la encore pour l\'annuler.</p>'
+    +'<div class="jsp-grille">'+JEU_PIMENTS.map(function(p){
+      const a=!!arme[p.k], u=!!used[p.k]&&!a;
+      return '<button type="button" class="jeu-piment'+(a?' arme':'')+(u?' used':'')+'" style="--c:'+p.coul+'" aria-pressed="'+a+'"'+(u?' disabled':'')
+        +' onclick="armerPiment(\''+p.k+'\')" title="'+escapeHtml(p.nom+" : "+p.annonce)+'">'
+        +'<span class="jp-ic"><i class="ph-fill '+p.ic+'"></i></span><span class="jp-nom">'+p.nom+'</span>'
+        +'<span class="jp-court">'+(a?'<i class="ph-fill ph-check-circle"></i> Prévue':(u?'Déjà jouée':p.court))+'</span></button>';
+    }).join("")+'</div>'
+    +'<div class="jsp-prochaine'+(prevues.length?' on':'')+'">'+prochaine+'</div></div>';
+}
+function armerPiment(k){
+  const g=hostGame, p=jeuPiment(k); if(!g||!p)return;
+  g.pimentArme=g.pimentArme||{}; g.pimentUtilise=g.pimentUtilise||{};
+  if(g.pimentArme[k])delete g.pimentArme[k];
+  else{
+    if(g.pimentUtilise[k])return;
+    /* une seule surprise d'écran (et une seule de temps) à la fois : la nouvelle remplace l'ancienne */
+    if(p.fam==="ecran"||p.fam==="temps")JEU_PIMENTS.forEach(function(x){ if(x.fam===p.fam)delete g.pimentArme[x.k]; });
+    g.pimentArme[k]=true;
+  }
+  const w=document.getElementById("jeuPimentsWrap"); if(w)w.innerHTML=pimentBarHTML();
+  if(typeof jouerEffet==="function")jouerEffet("valider");
+}
+function surpriseAutoBascule(on){
+  if(!hostGame)return; hostGame.surpriseAuto=!!on;
+  profil.jeuSurpriseAuto=!!on; try{ sauverProfil(profil); }catch(e){}
+  const w=document.getElementById("jeuPimentsWrap"); if(w)w.innerHTML=pimentBarHTML();
+}
+/* mode « au hasard » : avant une question (jamais la 1re, jamais deux de suite), le dé
+   tire parfois une surprise, si le prof n'en a pas déjà choisi une */
+function surpriseAuto(i){
+  const g=hostGame; if(!g||!g.surpriseAuto||i<1)return;
+  if(Object.keys(g.pimentArme||{}).length)return;
+  if(g.autoDerniere===i-1)return;
+  if(Math.random()>0.45)return;
+  const q=g.questions[i], derniere=i>=g.total-1, deja=g.pimentUtilise||{};
+  const ok=function(p){ return p.auto!==false&&!(derniere&&p.k==="double")&&surpriseCompatible(p.k,q); };
+  let l=JEU_PIMENTS.filter(function(p){ return ok(p)&&!deja[p.k]; });
+  if(!l.length)l=JEU_PIMENTS.filter(function(p){ return ok(p)&&p.k!==g.autoDernierK; });   // toutes jouées : on recommence
+  if(!l.length)return;
+  const p=l[Math.floor(Math.random()*l.length)];
+  g.pimentArme={}; g.pimentArme[p.k]=true; g.autoDerniere=i; g.autoDernierK=p.k; g.autoQ=i;
+}
+/* surprises d'une question, pour les annonces (compte à rebours, bandeaux) */
+function surprisesDe(q){ return ((q&&q.surprises)||[]).map(jeuPiment).filter(Boolean); }
+function surpriseAnnonceHTML(q,cote){
+  const l=surprisesDe(q); if(!l.length)return "";
+  return '<div class="jeu-surprise"><div class="jsu-titre"><i class="ph-fill ph-gift"></i> Surprise'+(l.length>1?"s":"")+'&nbsp;!'
+    +(q.hasard?' <small><i class="ph ph-dice-five"></i> tirée au hasard</small>':'')+'</div>'
+    +l.map(function(p){ return '<div class="jsu-item" style="--c:'+p.coul+'"><span><i class="ph-fill '+p.ic+'"></i></span><b>'+p.nom+'</b><small>'
+      +(cote==="eleve"&&p.eleve?p.eleve.replace(/^[^:]*:\s*/,""):p.annonce)+'</small></div>'; }).join("")+'</div>';
+}
+/* bandeaux pendant la question : au tableau (« annonce ») ou sur le téléphone (« eleve ») */
+function surpriseBandeauxHTML(q,cote){
+  return surprisesDe(q).filter(function(p){ return cote==="eleve"?!!p.eleve:["double","rapide","vote"].indexOf(p.k)<0; })
+    .map(function(p){ return '<div class="jeu-bonus-banner jeu-surprise-ban'+(cote==="eleve"?" petit":"")+'" style="--c:'+p.coul+'"><i class="ph-fill '+p.ic+'"></i> '
+      +(cote==="eleve"?p.eleve:'<b>'+p.nom.toUpperCase()+'</b>&nbsp;: '+p.annonce)+'</div>'; }).join("");
+}
+/* « Brouillard » : le flou se lève sur 40 % du temps (7 s au plus) */
+function jeuBrume(duree){ return Math.round(Math.min(7000,(duree||JEU_DUREE)*0.4)); }
 function stopBtnHTML(){
   const enCours=hostGame&&hostGame.qIndex>=0&&hostGame.phase!=="ended";
   return `<div class="mj-stop-bar">${enCours?'<button class="jeu-stop fin" onclick="hostTerminer()"><i class="ph ph-flag-checkered"></i> Terminer et voir le podium</button>':''}<button class="jeu-stop" onclick="hostArreter()"><i class="ph ph-stop"></i> Arrêter le quiz</button></div>`;}
@@ -9169,22 +11278,42 @@ async function hostTerminer(){
   if(hostGame.phase==="vote"){ try{ if(hostGame.fbBase)hostGame.fbBase.child("votes").off(); }catch(e){} }
   hostFin();
 }
-async function hostArreter(){if(!await dlgConfirmer("Arrêter le quiz et revenir au menu « Créer une partie » ?\n\n(Pour garder la cérémonie des récompenses, utilise plutôt « Terminer et voir le podium ».)"))return;
+async function hostArreter(){if(!await dlgConfirmer("Arrêter le quiz et revenir aux réglages de la partie ?\n\n(Pour garder la cérémonie des récompenses, utilise plutôt « Terminer et voir le podium ».)"))return;
   /* on prévient d'abord les téléphones, puis on efface la partie quelques secondes plus tard */
   try{ if(hostGame){ hostGame.phase="arrete"; pushEtatHost(); const b=hostGame.fbBase; if(b)setTimeout(function(){ try{b.remove();}catch(e){} },5000); } }catch(e){}
-  jeuArreter();hostGame=null;ecranJeuHost();}
-function appliquerPiments(i){const a=hostGame.pimentArme||{};const q=hostGame.questions[i];
-  if(a.double)q.bonus=true;
-  if(a.rebond){q.rebond=true;q.rebondReadMs=4000;q.duree=q.rebondReadMs+11000;} // 4 s pour lire, 11 s pour cliquer la bonne balle
-  if(a.casse)q.casse=true;
-  if(a.progressif){q.progressif=true;q.seq=shuffle(q.options.map(function(_,j){return j;}));q.readMs=3500;q.stepMs=2200;q.duree=q.readMs+q.seq.length*q.stepMs;}
-  /* Éclair en dernier : il divise le temps de RÉPONSE de ce qui a été armé avant
-     (avant, Rebond ou Réflexe écrasaient la durée et l'éclair disparaissait) */
+  jeuArreter();hostGame=null;ecranLancerPartie("quiz",true);}
+function appliquerPiments(i){
+  const g=hostGame, a=g.pimentArme||{}, q=g.questions[i];
+  g.pimentUtilise=g.pimentUtilise||{};
+  q.surprises=[];
+  const jouer=function(k){ q.surprises.push(k); g.pimentUtilise[k]=true; };
+  /* Coup de pouce d'abord : il retire des mauvaises réponses (Réflexe et Rebond partent de la liste réduite) */
+  if(a.pouce&&surpriseCompatible("pouce",q)){
+    const retirer=q.options.length>=4?2:1;
+    const faux=shuffle(q.options.map(function(_,j){ return j; }).filter(function(j){ return j!==q.correct; })).slice(0,retirer);
+    q.correct-=faux.filter(function(j){ return j<q.correct; }).length;
+    q.options=q.options.filter(function(_,j){ return faux.indexOf(j)<0; });
+    q.pouce=true; jouer("pouce");
+  }
+  if(a.double){q.bonus=true;jouer("double");}
+  if(a.ensemble){q.ensemble=true;jouer("ensemble");}
+  if(a.rebond){q.rebond=true;q.rebondReadMs=4000;q.duree=q.rebondReadMs+11000;jouer("rebond");} // 4 s pour lire, 11 s pour cliquer la bonne balle
+  if(a.casse){q.casse=true;jouer("casse");}
+  ["miroir","brouillard","chaises","torche","tableau"].forEach(function(k){ if(a[k]){ q[k]=true; jouer(k); } });
+  if(a.progressif){q.progressif=true;q.seq=shuffle(q.options.map(function(_,j){return j;}));q.readMs=3500;q.stepMs=2200;q.duree=q.readMs+q.seq.length*q.stepMs;jouer("progressif");}
+  /* le temps en dernier : il s'applique à ce qui a été armé avant (Rebond, Réflexe) */
+  if(a.zen){q.zen=true;
+    if(q.progressif){q.stepMs=3200;q.duree=q.readMs+q.seq.length*q.stepMs;}
+    else if(q.rebond)q.duree=q.rebondReadMs+16000;
+    else q.duree=30000;
+    jouer("zen");}
   if(a.rapide){q.rapide=true;
     if(q.progressif){q.stepMs=Math.round(q.stepMs*0.6);q.duree=q.readMs+q.seq.length*q.stepMs;}
     else if(q.rebond)q.duree=q.rebondReadMs+5500;
-    else q.duree=Math.round(JEU_DUREE*0.5);}
-  hostGame.pimentArme={};}
+    else q.duree=Math.round(JEU_DUREE*0.5);
+    jouer("rapide");}
+  q.hasard=(g.autoQ===i&&q.surprises.length>0);
+  g.pimentArme={};}
 function genererQuestionRemplacement(i){const dejaUsed={};hostGame.questions.forEach(function(qq){dejaUsed[norm(qq.consigne)]=1;});
   const oldD=difficulte,oldNb=nbQuestions;difficulte=hostGame.diff;nbQuestions=1;let res=null;
   try{for(let k=0;k<50&&!res;k++){let lot;try{lot=GEN[hostGame.cat]();}catch(e){break;}const q=captureQCM(lot&&lot[0]);if(q&&!dejaUsed[norm(q.consigne)])res=q;}}
@@ -9328,7 +11457,6 @@ function vueHostLobby(){
           <div class="mj-note-info"><i class="ph ph-users-three"></i><span>Chaque pupitre marque la <b>moyenne</b> des points de ses musiciens&nbsp;: un pupitre de 5 vaut un pupitre de 7. Si tout le pupitre trouve, les points sont doublés.</span></div>
           <div id="jeuPimentsWrap">${pimentBarHTML()}</div>
           ${actions}
-          <div class="mj-serveur">${serveurCourtHTML()}</div>
         </div>
       </div></div>`;
   }else{
@@ -9340,7 +11468,6 @@ function vueHostLobby(){
           <div class="mj-pin"><small>Code de la partie</small><b>${g.pin}</b></div>
           <ol class="mj-etapes"><li><span>1</span>Ouvre MusEduc sur ton appareil</li><li><span>2</span><b>Jouer → Multijoueur → Rejoindre</b></li><li><span>3</span>Tape le code, choisis ton avatar</li></ol>
           ${chips}
-          <div class="mj-serveur">${serveurCourtHTML()}</div>
         </div>
         <div class="mj-corps">
           <div class="mj-compte"><b id="jhCount">0</b><div><strong>élèves connectés</strong><span>Chaque élève sera une note sur la portée de la course</span></div></div>
@@ -9385,7 +11512,7 @@ function vueHostQuestion(){
        <span class="mj-chrono" id="jhChrono">${Math.ceil((g.dureeCourante||JEU_DUREE)/1000)}</span>
      </div>
      ${q.bonus?'<div class="jeu-bonus-banner"><i class="ph ph-star"></i> QUESTION BONUS : points doublés&nbsp;×2&nbsp;!</div>':''}${eclair}
-     ${q.rebond?'<div class="jeu-bonus-banner" style="background:linear-gradient(90deg,#8e44ad,#e67322)"><i class="ph ph-basketball"></i> REBOND : les réponses bougent sur le téléphone des élèves&nbsp;!</div>':''}${q.casse?'<div class="jeu-bonus-banner" style="background:linear-gradient(90deg,#37485c,#0b2237)"><i class="ph ph-cell-signal-slash"></i> ÉCRAN CASSÉ : l\'écran des élèves grésille&nbsp;!</div>':''}
+     ${surpriseBandeauxHTML(q,"hote")}
      <div class="mj-q-carte"><div class="jeu-question">${q.consigne}</div>${optionsHostHTML(q,false)}</div>
      <div class="jeu-progress"><div id="jhBar"></div></div>
      ${pup?mjRepPupitresHTML():mjPisteHTML(null,mjScores(g.qIndex-1),g.answers[g.qIndex]||{},0,g.qIndex)}
@@ -9419,7 +11546,10 @@ function vueHostReveal(){
   const dernier=g.qIndex+1>=g.total, uids=mjUids();
   const justes=uids.filter(function(u){ return g.players[u].bon; }).length;
   const pctClasse=uids.length?Math.round(justes/uids.length*100):0;
-  const ci=q.correct;
+  const ci=q.correct, ens=q.ensemble?jeuEnsemble(g.qIndex):null;
+  const ensHTML=ens?'<div class="jeu-ensemble'+(ens.ok?' ok':'')+'"><i class="ph-fill ph-hands-clapping"></i><span>'
+    +(ens.ok?'<b>Tous ensemble&nbsp;: défi réussi&nbsp;!</b> '+ens.justes+' sur '+ens.n+(ens.justes>1?' ont':' a')+' trouvé&nbsp;: +'+JEU_ENSEMBLE+' points pour tous ceux qui ont répondu.'
+      :'<b>Tous ensemble&nbsp;: pas cette fois.</b> '+ens.justes+' sur '+ens.n+(ens.justes>1?' ont':' a')+' trouvé (il en fallait '+ens.faut+').')+'</span></div>':'';
   const bonneRep=`<span class="mj-bonne"><span class="mj-forme" style="background:${JEU_COUL[ci%6]}">${JEU_FORME[ci%6]}</span>C'était <b>${q.options[ci]}</b></span>`;
   const opts=`<div class="jeu-reveal-opts mj-opts">${q.options.map(function(o,i){const bon=i===ci;return `<div class="jeu-reveal-opt ${bon?'bon':'mauvais'}"><span class="jeu-forme">${JEU_FORME[i%6]}</span><span class="jro-txt">${o}</span><span class="jro-count">${counts[i]} <i class="ph ph-hand"></i></span>${bon?'<span class="jro-check">✓</span>':''}</div>`;}).join("")}</div>`;
   const suite=`${dernier?'':'<div id="jeuPimentsWrap">'+pimentBarHTML()+'</div>'}
@@ -9435,6 +11565,7 @@ function vueHostReveal(){
     document.getElementById("zone").innerHTML=`
      <div class="jeu-host mj-scene">
        <div class="mj-bandeau"><span class="mj-qnum">Question <b>${g.qIndex+1}</b> / ${g.total}</span>${bonneRep}<span class="mj-rep">La classe&nbsp;: <b>${pctClasse}&nbsp;%</b> de bonnes réponses</span></div>
+       ${ensHTML}
        <div class="mj-res-pup">
          <div class="mj-cadre-blanc">${mjBarresHTML(eqAv,eq)}</div>
          <div class="mj-cote">
@@ -9458,6 +11589,7 @@ function vueHostReveal(){
   document.getElementById("zone").innerHTML=`
    <div class="jeu-host mj-scene">
      <div class="mj-bandeau"><span class="mj-qnum">Question <b>${g.qIndex+1}</b> / ${g.total}${q.bonus?' <span class="jeu-bonus-tag"><i class="ph ph-star"></i>×2</span>':''}</span>${bonneRep}<span class="mj-rep"><b>${justes}</b> élève${justes>1?"s":""} avance${justes>1?"nt":""}</span></div>
+     ${ensHTML}
      ${mjPisteHTML(avant,apres,null,g.qIndex,g.qIndex+1)}
      <div class="mj-trio">
        <div class="mj-info or"><small><i class="ph-fill ph-lightning"></i> Plus rapide</small><b>${rapide?nomAv(rapide.u)+" · "+String((rapide.t/1000).toFixed(1)).replace(".",",")+" s":"Personne"}</b></div>
@@ -9568,120 +11700,227 @@ function mjChoisirPup(btn){
   profil.mjNbEq=+btn.getAttribute("data-n"); try{ sauverProfil(profil); }catch(e){}
 }
 
-function mjModesHTML(){
-  const pup=profil.mjMode==="pupitres", nb=[2,3,4].indexOf(profil.mjNbEq)>=0?profil.mjNbEq:4;
-  return '<div><label style="font-weight:600">Mode de jeu</label><div class="mj-modes" id="jhMode">'
-    +'<button type="button" class="mj-mode'+(pup?"":" on")+'" data-m="solo" onclick="mjChoisirMode(\'solo\')"><b><i class="ph ph-music-notes"></i> Chacun pour soi</b><span>La course sur la portée&nbsp;: chaque élève est une note qui avance.</span></button>'
-    +'<button type="button" class="mj-mode'+(pup?" on":"")+'" data-m="pupitres" onclick="mjChoisirMode(\'pupitres\')"><b><i class="ph ph-users-three"></i> En pupitres</b><span>L\'orchestre de la classe&nbsp;: des équipes équilibrées, aucun nom au tableau.</span></button></div></div>'
-    +'<div id="jhPupWrap"'+(pup?"":" hidden")+'><label style="font-weight:600">Nombre de pupitres</label><br><span class="seg" id="jhPup">'
-    +[2,3,4].map(function(n){ return '<button type="button" data-n="'+n+'" class="'+(nb===n?"on":"")+'" onclick="mjChoisirPup(this)">'+n+'</button>'; }).join("")+'</span></div>';
-}
-
 /* ============================ CÔTÉ PROF (hôte) ============================ */
-/* Sélecteur de thème des parties lancées par le prof : un champ caché (idChamp)
-   garde la valeur lue par creerPartie / sqCreer ; au-dessus, une recherche, des
-   onglets par domaine (Cours de collège d'abord) et une grille de boutons. Le
-   dernier thème choisi est retenu (profil.jeuTheme). */
-let _jpGroupe=null;
-function jpGroupes(){
+/* =====================================================================
+   LANCER UNE PARTIE EN CLASSE (07/10/2026) : un assistant en 3 étapes,
+   une seule décision par écran :
+     1. Quel jeu ?  (Quiz de classe, Calmar Musical, symphonie des bougies)
+     2. Quel thème ? (domaines en couleur, puis leurs thèmes ; rien d'imposé)
+     3. Réglages    (résumé + quelques gros boutons + « Lancer la partie »)
+   Les champs gardent les identifiants lus par creerPartie() et sqCreer().
+   ===================================================================== */
+const LP_JEUX={
+  quiz:{nom:"Quiz de classe", ic:"ph-users-three", coul:"var(--bandeau)",
+    accroche:"Toute la classe répond aux mêmes questions, en direct.",
+    puces:[["ph-music-notes","Course sur la portée ou en pupitres"],["ph-lightning","Bonus de rapidité et de série"],["ph-trophy","Podium et récompenses à la fin"]]},
+  squid:{nom:"Le Calmar Musical", ic:"ph-fish", coul:"var(--dom-ecoute)",
+    accroche:"On mise des points : une erreur, et c'est l'élimination.",
+    puces:[["ph-coins","Chacun mise avant de commencer"],["ph-x-circle","Une erreur : éliminé"],["ph-crown","Le dernier en jeu gagne la cagnotte"]]},
+  bougies:{nom:"La symphonie des bougies", ic:"ph-fire-simple", coul:"var(--dom-rythme)",
+    accroche:"Une erreur souffle ta bougie, le chœur peut la rallumer.",
+    puces:[["ph-fire-simple","Chaque élève est une bougie"],["ph-music-notes","Les bougies éteintes continuent en chœur"],["ph-sparkle","Le meilleur du chœur se rallume"]]}
+};
+/* icône et couleur de chaque domaine de thèmes */
+const LP_DOMAINES={
+  "Cours de collège":{ic:"ph-chalkboard-simple",c:"var(--bandeau)"},
+  "Lire la musique":{ic:"ph-music-notes",c:"var(--dom-lire)"},
+  "Rythme":{ic:"ph-metronome",c:"var(--dom-rythme)"},
+  "Écoute (avec son)":{ic:"ph-ear",c:"var(--dom-ecoute)"},
+  "Vocabulaire & culture":{ic:"ph-book-open-text",c:"var(--dom-culture)"},
+  "Théorie":{ic:"ph-graduation-cap",c:"var(--dom-theorie)"},
+  "Styles de musique":{ic:"ph-guitar",c:"var(--dom-styles)"},
+  "Pour aller plus loin (hors collège)":{ic:"ph-rocket-launch",c:"var(--dom-loin)"},
+  "Compositeurs":{ic:"ph-user-circle",c:"var(--dom-perso)"}
+};
+let _lp={jeu:null, theme:null, domaine:null, recherche:"", etape:1, diff:1, nb:10};
+
+function lpThemeDe(id){ return jeuThemesDisponibles().filter(function(t){ return t.id===id; })[0]||null; }
+function lpGroupes(){
   const l=jeuThemesDisponibles(), gr=[], idx={};
   const ajouter=function(nom){ if(idx[nom]==null){ idx[nom]=gr.length; gr.push({nom:nom,items:[]}); } return gr[idx[nom]]; };
   ajouter("Cours de collège");
   l.forEach(function(t){ ajouter(t.groupe).items.push(t); });
   return gr.filter(function(g){ return g.items.length; });
 }
-function jeuPickerHTML(idChamp){
-  const l=jeuThemesDisponibles(); if(!l.length)return '<p>Aucun thème disponible.</p>';
-  let def=profil.jeuTheme; if(!l.some(function(t){ return t.id===def; }))def=(l.filter(function(t){ return t.id==="notes-sol"; })[0]||l[0]).id;
-  const t=l.filter(function(x){ return x.id===def; })[0];
-  if(!_jpGroupe||!jpGroupes().some(function(g){ return g.nom===_jpGroupe; }))_jpGroupe=t.groupe;
-  return '<input type="hidden" id="'+idChamp+'" value="'+def+'">'
-    +'<div class="jp" data-champ="'+idChamp+'">'
-    +'<div class="jp-choisi"><i class="ph-fill ph-check-circle"></i> Thème choisi&nbsp;: <b id="'+idChamp+'Lib">'+echapH(t.nom)+'</b></div>'
-    +'<div class="jp-cherche"><i class="ph ph-magnifying-glass"></i><input type="search" placeholder="Rechercher un thème (ex : rythme, Mozart, répétition…)" oninput="jpRendre(\''+idChamp+'\',this.value)"></div>'
-    +'<div class="jp-onglets" id="'+idChamp+'Ong"></div><div class="jp-grille" id="'+idChamp+'Gr"></div></div>';
-}
-function jpRendre(idChamp,recherche){
-  const ong=document.getElementById(idChamp+"Ong"), gr=document.getElementById(idChamp+"Gr"); if(!ong||!gr)return;
-  const sel=(document.getElementById(idChamp)||{}).value, q=norm(String(recherche||"").trim());
-  const groupes=jpGroupes();
-  ong.innerHTML=q?'':groupes.map(function(g){
-    return '<button type="button" class="'+(g.nom===_jpGroupe?"on":"")+(g.nom==="Cours de collège"?" cours":"")+'" onclick="_jpGroupe=this.dataset.g;jpRendre(\''+idChamp+'\')" data-g="'+escapeHtml(g.nom)+'">'
-      +(g.nom==="Cours de collège"?'<i class="ph-fill ph-chalkboard-simple"></i> ':'')+echapH(g.nom)+' <span>'+g.items.length+'</span></button>'; }).join("");
-  let items=[];
-  if(q)groupes.forEach(function(g){ g.items.forEach(function(t){ if(norm(t.nom).indexOf(q)>=0||norm(g.nom).indexOf(q)>=0)items.push(t); }); });
-  else items=(groupes.filter(function(g){ return g.nom===_jpGroupe; })[0]||groupes[0]).items;
-  gr.innerHTML=items.length?items.map(function(t){
-    return '<button type="button" class="'+(t.id===sel?"on":"")+(t.cours?" cours":"")+'" onclick="jpChoisir(\''+idChamp+'\',\''+t.id+'\')">'+(t.cours?'<i class="ph-fill ph-chalkboard-simple"></i>':(t.groupe==="Compositeurs"?'<i class="ph-fill ph-user-circle"></i>':'<i class="ph-fill ph-music-note"></i>'))+'<span>'+echapH(t.nom)+(q?'<small>'+echapH(t.groupe)+'</small>':'')+'</span></button>'; }).join("")
-    :'<p class="jp-vide">Aucun thème ne correspond.</p>';
-}
-function jpChoisir(idChamp,id){
-  const c=document.getElementById(idChamp); if(!c)return;
-  c.value=id; profil.jeuTheme=id; try{ sauverProfil(profil); }catch(e){}
-  const t=jeuThemesDisponibles().filter(function(x){ return x.id===id; })[0];
-  const lib=document.getElementById(idChamp+"Lib"); if(lib&&t)lib.textContent=t.nom;
-  if(t)_jpGroupe=t.groupe;
-  const rech=document.querySelector('.jp[data-champ="'+idChamp+'"] .jp-cherche input');
-  jpRendre(idChamp,rech?rech.value:"");
-}
-function jeuReglesHTML(l){
-  return '<div class="jh-regles">'+l.map(function(r){ return '<div><i class="ph-fill '+r[0]+'"></i><span>'+r[1]+'</span></div>'; }).join("")+'</div>';
-}
-function jeuEtapeHTML(n,titre,contenu){
-  return '<section class="jh-etape"><div class="jh-etape-t"><span>'+n+'</span><b>'+titre+'</b></div>'+contenu+'</section>';
-}
-function ecranJeuHost(){
-  fermerMenu();masquerInterfaceNormale();majRetour(accueil,"Accueil");
-  /* réservé au professeur (ou à un collègue) : un élève ne doit pas pouvoir ouvrir une partie de classe */
-  if(typeof peutAnimer==="function" && !peutAnimer()){
-    document.getElementById("titre").innerHTML='<i class="ph ph-lock"></i> Réservé au professeur';
-    document.getElementById("intro").textContent="";
-    document.getElementById("zone").innerHTML=`<div class="accueil" style="max-width:520px"><div class="ex">
-      <p>Seul un <b>enseignant connecté</b> peut créer une partie de classe.</p>
-      <p style="color:var(--encre-doux)">Demande à ton professeur de lancer la partie, puis rejoins-la avec le code affiché au tableau.</p>
-      <button class="action btn-corr" onclick="ecranJeuJoin()"><i class="ph ph-device-mobile"></i> Rejoindre une partie</button>
-      </div></div>`;
+/* Entrée : sans jeu, on commence par le choix du jeu ; avec un jeu, par le thème ;
+   avec « garder », on revient aux réglages (relancer la même partie). */
+function ecranLancerPartie(jeu,garder){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale();
+  const t=document.getElementById("titre"), i=document.getElementById("intro");
+  if(t){ t.textContent="Lancer une partie"; t.style.display="none"; }
+  if(i){ i.textContent=""; i.style.display="none"; }
+  if(typeof peutAnimer==="function"&&!peutAnimer()){
+    majRetour(ecranJouer,"Jouer");
+    document.getElementById("zone").innerHTML='<div class="accueil" style="max-width:520px"><div class="ex">'
+      +'<p>Seul un <b>enseignant connecté</b> peut lancer une partie de classe.</p>'
+      +'<p style="color:var(--encre-doux)">Demande à ton professeur de lancer la partie, puis rejoins-la avec le code affiché au tableau.</p>'
+      +'<button class="action btn-corr" onclick="ecranJeuJoin()"><i class="ph ph-device-mobile"></i> Rejoindre une partie</button></div></div>';
     return;
   }
-  document.getElementById("titre").innerHTML='<i class="ph ph-game-controller"></i> Créer une partie en classe';
-  document.getElementById("intro").textContent="Choisis un thème, puis projette le code au tableau : les élèves rejoignent depuis leur appareil.";
-  if(!fbPret()&&!lireUrlSheet()){document.getElementById("zone").innerHTML=`<div class="ex"><p style="color:var(--faux);font-weight:600"><i class="ph ph-warning"></i> Aucun serveur configuré pour le mode classe. Renseigne la config <b>Firebase</b> (recommandé, temps réel) dans le fichier, ou un lien Google Sheet dans le tableau de bord.</p></div>`;return;}
-  document.getElementById("titre").innerHTML='<i class="ph ph-users-three"></i> Quiz de classe';
-  document.getElementById("intro").textContent="";
-  majRetour(ecranJouer,"Jouer");
-  document.getElementById("zone").innerHTML=`
-   <div class="accueil jh" style="max-width:880px">
-     ${jeuBanniereHTML("quiz","Vous lancez la partie au tableau ; les élèves la rejoignent avec le code affiché.")}
-     ${jeuReglesHTML([["ph-projector-screen-chart","Projetez votre écran : le code s'affiche en grand."],["ph-device-mobile","Chaque élève rejoint avec son appareil et choisit un avatar."],["ph-trophy","Tout le monde répond aux mêmes questions ; podium à la fin (dernière question à double points)."]])}
-     ${jeuEtapeHTML(1,"Le thème des questions",jeuPickerHTML("jhCat"))}
-     ${jeuEtapeHTML(2,"Les réglages",`<div class="jh-mode">${mjModesHTML()}</div>
-       <div class="jhc">
-         <div class="jhc-item"><span class="jhc-lib"><i class="ph ph-gauge"></i> Difficulté</span><span class="seg jhc-seg" id="jhSeg"><button data-d="1" class="on">Facile</button><button data-d="2">Moyen</button><button data-d="3">Difficile</button></span></div>
-         <label class="jhc-item"><span class="jhc-lib"><i class="ph ph-list-numbers"></i> Questions</span><select class="jhc-num" id="jhNb"><option>8</option><option selected>10</option><option>15</option><option>20</option></select></label>
-       </div>`)}
-     <div class="jh-lancer"><button class="rm-cta" onclick="creerPartie()"><i class="ph-fill ph-play"></i> Créer la partie et afficher le code</button>
-       <p id="jhMsg">La partie s'affiche sur votre écran : gardez-le visible pour toute la classe.</p></div>
-     <details class="jh-serveur"><summary><i class="ph ph-plug"></i> Serveur du jeu&nbsp;: ${fbPret()?'Firebase (temps réel)':'Google Sheet (avec latence)'}</summary>
-       ${fbPret()?'':'<span style="font-family:monospace;word-break:break-all;font-size:.78rem">'+escapeHtml(lireUrlSheet()||"(aucun)")+'</span><br>'}
-       <button class="action btn-nouv" style="margin-top:8px" onclick="testerServeurJeu()"><i class="ph ph-plug"></i> Tester le serveur du jeu</button>
-       <div id="jhTest" style="margin-top:6px"></div></details>
-   </div>`;
-  jpRendre("jhCat");
-  document.getElementById("jhSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
-    document.querySelectorAll("#jhSeg button").forEach(x=>x.classList.remove("on"));b.classList.add("on");});
+  if(!fbPret()){
+    majRetour(accueil,"Accueil");
+    document.getElementById("zone").innerHTML='<div class="ex"><p style="color:var(--faux);font-weight:600"><i class="ph ph-warning"></i> Le service des jeux en direct n\'est pas disponible pour le moment. Vérifie la connexion Internet, puis réessaie.</p></div>';
+    return;
+  }
+  if(jeu&&LP_JEUX[jeu])_lp.jeu=jeu; else if(!garder)_lp.jeu=null;
+  if(!garder){ _lp.theme=null; _lp.domaine=null; _lp.recherche=""; }
+  lpAller(jeu&&LP_JEUX[jeu]?((garder&&_lp.theme&&lpThemeDe(_lp.theme))?3:2):1);
 }
+function lpAller(etape){
+  if(etape>=2&&!_lp.jeu)etape=1;
+  if(etape>=3&&!(_lp.theme&&lpThemeDe(_lp.theme)))etape=2;
+  _lp.etape=etape;
+  majRetour(etape===1?accueil:function(){ lpAller(etape-1); }, etape===1?"Accueil":"Retour");
+  const J=_lp.jeu&&LP_JEUX[_lp.jeu], T=_lp.theme&&lpThemeDe(_lp.theme);
+  const pas=function(n,lib,valeur){
+    const etat=n<etape?"fait":(n===etape?"on":"");
+    return '<button type="button" class="lp-pas-b '+etat+'"'+(n<etape?' onclick="lpAller('+n+')"':' disabled')+(n===etape?' aria-current="step"':'')+'>'
+      +'<span class="lp-pas-n">'+(n<etape?'<i class="ph-fill ph-check-circle"></i>':n)+'</span><span class="lp-pas-t"><b>'+lib+'</b>'+(valeur?'<small>'+echapH(valeur)+'</small>':'')+'</span></button>';
+  };
+  let corps="";
+  if(etape===1)corps=lpEtapeJeuHTML();
+  else if(etape===2)corps=lpEtapeThemeHTML();
+  else corps=lpEtapeReglagesHTML();
+  document.getElementById("zone").innerHTML='<div class="lp">'
+    +'<div class="lp-tete"><div class="lp-tete-t"><span class="sv-label"><i class="ph-fill ph-presentation-chart"></i> En classe</span><h2>Lancer une partie</h2></div>'
+    +'<nav class="lp-pas" aria-label="Étapes">'+pas(1,"Le jeu",J&&J.nom)+pas(2,"Le thème",T&&T.nom)+pas(3,"Les réglages","")+'</nav></div>'
+    +'<div class="lp-corps">'+corps+'</div></div>';
+  if(etape===2){ const r=document.getElementById("lpCherche"); if(r&&_lp.recherche){ r.value=_lp.recherche; } }
+  if(typeof remonter==="function")remonter();
+}
+
+/* ---------- 1. le jeu ---------- */
+function lpEtapeJeuHTML(){
+  return '<h3 class="lp-q">À quoi joue-t-on&nbsp;?</h3><div class="lp-jeux">'
+    +Object.keys(LP_JEUX).map(function(k){
+      const J=LP_JEUX[k], img=(k==="squid"&&typeof IMG_CALMAR!=="undefined")?'<img src="'+IMG_CALMAR+'" alt="">':'<i class="ph-fill '+J.ic+'"></i>';
+      return '<button type="button" class="lp-jeu'+(_lp.jeu===k?" on":"")+'" style="--c:'+J.coul+'" onclick="_lp.jeu=\''+k+'\';lpAller(2)">'
+        +'<span class="lp-jeu-ill">'+img+'</span>'
+        +'<span class="lp-jeu-c"><b>'+J.nom+'</b><span class="lp-jeu-a">'+J.accroche+'</span>'
+        +'<span class="lp-jeu-p">'+J.puces.map(function(p){ return '<span><i class="ph '+p[0]+'"></i>'+p[1]+'</span>'; }).join("")+'</span>'
+        +'<span class="lp-jeu-go">Choisir <i class="ph ph-arrow-right"></i></span></span></button>';
+    }).join("")+'</div>'
+    +'<p class="lp-aide"><i class="ph ph-info"></i> Les élèves rejoignent la partie avec leur téléphone ou une tablette, grâce au code affiché au tableau.</p>';
+}
+
+/* ---------- 2. le thème ---------- */
+function lpEtapeThemeHTML(){
+  const dernier=profil.jeuTheme&&lpThemeDe(profil.jeuTheme);
+  let h='<h3 class="lp-q">Sur quel thème&nbsp;?</h3>'
+    +'<div class="lp-outils"><label class="lp-cherche"><i class="ph ph-magnifying-glass"></i><input type="search" id="lpCherche" placeholder="Chercher : rythme, Mozart…" aria-label="Chercher un thème" oninput="lpChercher(this.value)"></label>'
+    +(dernier?'<button type="button" class="lp-reprendre" onclick="lpChoisirTheme(\''+dernier.id+'\')"><i class="ph ph-clock-counter-clockwise"></i> Reprendre&nbsp;: <b>'+echapH(dernier.nom)+'</b></button>':'')+'</div>'
+    +'<div id="lpListe">'+lpListeHTML()+'</div>';
+  return h;
+}
+function lpListeHTML(){
+  const groupes=lpGroupes(), q=norm(String(_lp.recherche||"").trim());
+  const carteTheme=function(t,g){
+    const D=LP_DOMAINES[g||t.groupe]||{ic:"ph-music-note",c:"var(--laiton)"};
+    return '<button type="button" class="lp-theme'+(t.id===_lp.theme?" on":"")+'" style="--c:'+D.c+'" onclick="lpChoisirTheme(\''+t.id+'\')">'
+      +'<i class="ph-fill '+(t.cours?"ph-chalkboard-simple":D.ic)+'"></i><span>'+echapH(t.nom)+(q?'<small>'+echapH(t.groupe)+'</small>':'')+'</span></button>';
+  };
+  if(q){
+    const l=[]; groupes.forEach(function(g){ g.items.forEach(function(t){ if(norm(t.nom).indexOf(q)>=0||norm(g.nom).indexOf(q)>=0)l.push(carteTheme(t,g.nom)); }); });
+    return l.length?'<div class="lp-themes">'+l.join("")+'</div>':'<p class="lp-vide">Aucun thème ne correspond à « '+echapH(_lp.recherche)+' ».</p>';
+  }
+  const g=groupes.filter(function(x){ return x.nom===_lp.domaine; })[0];
+  if(g){
+    const D=LP_DOMAINES[g.nom]||{ic:"ph-music-note",c:"var(--laiton)"};
+    return '<div class="lp-dom-tete" style="--c:'+D.c+'"><button type="button" class="lp-dom-retour" onclick="_lp.domaine=null;lpRafraichirListe()"><i class="ph ph-arrow-left"></i> Domaines</button>'
+      +'<span><i class="ph-fill '+D.ic+'"></i> '+echapH(g.nom)+'</span></div>'
+      +'<div class="lp-themes">'+g.items.map(function(t){ return carteTheme(t,g.nom); }).join("")+'</div>';
+  }
+  return '<div class="lp-domaines">'+groupes.map(function(gr){
+    const D=LP_DOMAINES[gr.nom]||{ic:"ph-music-note",c:"var(--laiton)"};
+    return '<button type="button" class="lp-dom" style="--c:'+D.c+'" onclick="_lp.domaine=this.dataset.g;lpRafraichirListe()" data-g="'+escapeHtml(gr.nom)+'">'
+      +'<i class="ph-fill '+D.ic+'"></i><b>'+echapH(gr.nom)+'</b><small>'+gr.items.length+' thème'+(gr.items.length>1?"s":"")+'</small></button>';
+  }).join("")+'</div>';
+}
+function lpRafraichirListe(){ const z=document.getElementById("lpListe"); if(z)z.innerHTML=lpListeHTML(); }
+function lpChercher(v){ _lp.recherche=v||""; lpRafraichirListe(); }
+function lpChoisirTheme(id){
+  if(!lpThemeDe(id))return;
+  _lp.theme=id; profil.jeuTheme=id; try{ sauverProfil(profil); }catch(e){}
+  lpAller(3);
+}
+
+/* ---------- 3. les réglages ---------- */
+function lpSeg(btn){
+  const p=btn.parentNode; p.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on",b===btn); b.setAttribute("aria-pressed",b===btn?"true":"false"); });
+  if(btn.hasAttribute("data-d"))_lp.diff=+btn.getAttribute("data-d");
+}
+function lpNb(btn){ lpSeg(btn); _lp.nb=+btn.getAttribute("data-n"); const c=document.getElementById("jhNb"); if(c)c.value=_lp.nb; }
+function lpPas(id,d,min,max){
+  const c=document.getElementById(id); if(!c)return;
+  let v=parseInt(c.value,10); if(isNaN(v))v=min;
+  c.value=Math.min(max,Math.max(min,v+d));
+}
+function lpLibInter(c){ const e=c.parentNode.querySelector("em"); if(e)e.textContent=c.checked?"Activé":"Désactivé"; }
+function lpPouvoir(c){
+  const z=document.getElementById("sqSeuilLigne"); if(z)z.hidden=!c.checked;
+  lpLibInter(c);
+}
+/* surprises au hasard (Quiz) : réglage retenu pour les parties suivantes */
+function lpAutoChoisi(){
+  const c=document.getElementById("jhAuto"), on=c?c.checked:!!profil.jeuSurpriseAuto;
+  profil.jeuSurpriseAuto=on; try{ sauverProfil(profil); }catch(e){}
+  return on;
+}
+function lpStepperHTML(id,val,min,max,pas,unite){
+  return '<span class="lp-step"><button type="button" onclick="lpPas(\''+id+'\','+(-pas)+','+min+','+max+')" aria-label="Moins"><i class="ph ph-minus"></i></button>'
+    +'<input id="'+id+'" type="number" min="'+min+'" max="'+max+'" step="'+pas+'" value="'+val+'" aria-label="'+unite+'"><button type="button" onclick="lpPas(\''+id+'\','+pas+','+min+','+max+')" aria-label="Plus"><i class="ph ph-plus"></i></button>'
+    +'<small>'+unite+'</small></span>';
+}
+function lpEtapeReglagesHTML(){
+  const J=LP_JEUX[_lp.jeu], T=lpThemeDe(_lp.theme), quiz=_lp.jeu==="quiz", bougies=_lp.jeu==="bougies";
+  const D=LP_DOMAINES[T.groupe]||{ic:"ph-music-note",c:"var(--laiton)"};
+  const bloc=function(ic,titre,contenu,aide){ return '<div class="lp-reg"><div class="lp-reg-t"><i class="ph '+ic+'"></i><b>'+titre+'</b></div>'+contenu+(aide?'<p class="lp-reg-aide">'+aide+'</p>':'')+'</div>'; };
+  const idSeg=quiz?"jhSeg":"sqSeg";
+  const diff=bloc("ph-gauge","Difficulté",'<div class="lp-choix lp-choix3" id="'+idSeg+'">'
+    +[[1,"Facile","ph-plant"],[2,"Moyen","ph-tree"],[3,"Difficile","ph-mountains"]].map(function(d,i){
+      const on=d[0]===(_lp.diff||1);
+      return '<button type="button" data-d="'+d[0]+'" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="lpSeg(this)"><i class="ph-fill '+d[2]+'"></i>'+d[1]+'</button>'; }).join("")+'</div>');
+  let reglages=diff;
+  if(quiz){
+    const pup=profil.mjMode==="pupitres", nb=[2,3,4].indexOf(profil.mjNbEq)>=0?profil.mjNbEq:4;
+    const nbQ=[8,10,15,20].indexOf(_lp.nb)>=0?_lp.nb:10;
+    reglages+=bloc("ph-list-numbers","Nombre de questions",'<input type="hidden" id="jhNb" value="'+nbQ+'"><div class="lp-choix">'
+        +[8,10,15,20].map(function(n){ return '<button type="button" data-n="'+n+'" class="'+(n===nbQ?"on":"")+'" aria-pressed="'+(n===nbQ)+'" onclick="lpNb(this)">'+n+'</button>'; }).join("")+'</div>')
+      +bloc("ph-users-three","Comment on joue",'<div class="lp-modes" id="jhMode">'
+        +'<button type="button" class="mj-mode lp-mode'+(pup?"":" on")+'" data-m="solo" onclick="mjChoisirMode(\'solo\')"><i class="ph-fill ph-music-notes"></i><b>Chacun pour soi</b><span>Chaque élève est une note qui avance sur la portée.</span></button>'
+        +'<button type="button" class="mj-mode lp-mode'+(pup?" on":"")+'" data-m="pupitres" onclick="mjChoisirMode(\'pupitres\')"><i class="ph-fill ph-users-three"></i><b>En pupitres</b><span>Des équipes équilibrées, aucun nom au tableau.</span></button></div>'
+        +'<div id="jhPupWrap" class="lp-sous"'+(pup?"":" hidden")+'><span>Nombre de pupitres</span><div class="lp-choix lp-petit" id="jhPup">'
+        +[2,3,4].map(function(n){ return '<button type="button" data-n="'+n+'" class="'+(nb===n?"on":"")+'" onclick="mjChoisirPup(this)">'+n+'</button>'; }).join("")+'</div></div>')
+      +bloc("ph-gift","Surprises au hasard",'<label class="lp-interrupteur"><input type="checkbox" id="jhAuto"'+(profil.jeuSurpriseAuto?' checked':'')+' onchange="lpLibInter(this)"><span></span><em>'+(profil.jeuSurpriseAuto?"Activé":"Désactivé")+'</em></label>',
+        "Le dé ajoute parfois une surprise (Miroir, Éclair, Tous ensemble…). Vous pouvez aussi en choisir vous-même pendant la partie.");
+  }else if(bougies){
+    reglages+=bloc("ph-coins","Mise",lpStepperHTML("sqMise",0,0,SQ_MISE_MAX,5,"points"),"0 = sans enjeu. Une bougie soufflée perd sa mise.")
+      +bloc("ph-fire-simple","Rallumage",'<span class="lp-ligne">toutes les '+lpStepperHTML("sqRallume",SQ_RALLUME_DEFAUT,3,10,1,"questions")+'</span>',"Le meilleur du chœur revient en jeu.");
+  }else{
+    reglages+=bloc("ph-coins","Mise de chaque élève",lpStepperHTML("sqMise",SQ_MISE_DEFAUT,SQ_MISE_MIN,SQ_MISE_MAX,5,"points"),"Le dernier en jeu remporte toute la cagnotte.")
+      +bloc("ph-lightning","Pouvoir de série",'<label class="lp-interrupteur"><input type="checkbox" id="sqPouvoir" checked onchange="lpPouvoir(this)"><span></span><em>Activé</em></label>'
+        +'<span class="lp-ligne" id="sqSeuilLigne">après '+lpStepperHTML("sqSeuil",SQ_ELIM_SEUIL,2,8,1,"bonnes réponses")+'</span>',"Après plusieurs bonnes réponses d'affilée, un élève peut éliminer un camarade.");
+  }
+  const lancer=quiz?"creerPartie()":"sqCreer('"+_lp.jeu+"')";
+  return '<div class="lp-resume">'
+      +'<button type="button" class="lp-res" style="--c:'+J.coul+'" onclick="lpAller(1)"><i class="ph-fill '+J.ic+'"></i><span><small>Jeu</small><b>'+J.nom+'</b></span><em>Changer</em></button>'
+      +'<button type="button" class="lp-res" style="--c:'+D.c+'" onclick="lpAller(2)"><i class="ph-fill '+(T.cours?"ph-chalkboard-simple":D.ic)+'"></i><span><small>Thème</small><b>'+echapH(T.nom)+'</b></span><em>Changer</em></button></div>'
+    +'<input type="hidden" id="'+(quiz?"jhCat":"sqCat")+'" value="'+escapeHtml(_lp.theme)+'">'
+    +'<div class="lp-regs">'+reglages+'</div>'
+    +'<div class="lp-lancer"><button type="button" class="lp-cta" onclick="'+lancer+'"><i class="ph-fill ph-play"></i> Lancer la partie</button>'
+    +'<p id="'+(quiz?"jhMsg":"sqMsg")+'" class="lp-msg" aria-live="polite">Le code de la partie s\'affichera en grand : projetez votre écran.</p></div>'
+    +'<details class="lp-test"><summary><i class="ph ph-plug"></i> Tester la connexion avant de lancer</summary>'
+    +'<button class="action btn-nouv" type="button" onclick="testerServeurJeu()"><i class="ph ph-plug"></i> Tester</button><div id="jhTest"></div></details>';
+}
+/* anciens points d'entrée : ils ouvrent l'assistant avec le jeu présélectionné */
+function ecranJeuHost(){ ecranLancerPartie("quiz"); }
 function testerServeurJeu(){const s=document.getElementById("jhTest");if(s){s.style.color="var(--encre-doux)";s.textContent="<i class='ph ph-hourglass-high'></i> Test en cours…";}
   if(fbPret()){const r=firebase.database().ref("jeux/__test__/ping");
-    r.set(Date.now()).then(function(){return r.once("value");}).then(function(){if(s){s.style.color="var(--juste)";s.innerHTML="<i class='ph ph-check-circle'></i> Firebase connecté : temps réel prêt&nbsp;!";}try{r.remove();}catch(e){}})
-      .catch(function(err){if(s){s.style.color="var(--faux)";s.innerHTML="<i class='ph ph-x-circle'></i> Firebase injoignable&nbsp;: "+escapeHtml((((err&&err.message)||"")+"").slice(0,90))+".<br>Vérifie <b>databaseURL</b> et les <b>règles</b> de la Realtime Database (lecture/écriture autorisées).";}});
+    r.set(Date.now()).then(function(){return r.once("value");}).then(function(){if(s){s.style.color="var(--juste)";s.innerHTML="<i class='ph ph-check-circle'></i> Connexion prête pour les jeux en direct&nbsp;!";}try{r.remove();}catch(e){}})
+      .catch(function(){if(s){s.style.color="var(--faux)";s.innerHTML="<i class='ph ph-x-circle'></i> Connexion impossible pour le moment : vérifie Internet, puis réessaie.";}});
     return;}
-  jeuGet("jeu=__test__&host=1").then(r=>{
-    if(r&&typeof r==="object"&&("etat" in r)){if(s){s.style.color="var(--juste)";s.innerHTML="<i class='ph ph-check-circle'></i> Serveur prêt pour le mode classe&nbsp;! Tu peux créer la partie.";}}
-    else if(s){s.style.color="var(--faux)";s.innerHTML='<i class="ph ph-warning"></i> Réponse inattendue du serveur.';}
-  }).catch(err=>{if(!s)return;s.style.color="var(--faux)";
-    if(err&&err.message==="NONJSON"){const raw=escapeHtml((err.raw||"").replace(/\s+/g," ").slice(0,70));
-      s.innerHTML="<i class='ph ph-x-circle'></i> Ce déploiement exécute une <b>ancienne version</b> du script (il répond «&nbsp;"+raw+"&nbsp;»).<br>Va dans Apps Script → <b>Déployer → Gérer les déploiements</b>, ouvre le déploiement dont l'URL correspond à celle ci-dessus, puis <i class='ph ph-pencil'></i> <b>Modifier → Nouvelle version → Déployer</b>. (Ne crée pas un « nouveau déploiement », ça change l'URL.)";}
-    else s.innerHTML="<i class='ph ph-x-circle'></i> Impossible de joindre le serveur. Vérifie ta connexion et que l'URL se termine par <b>/exec</b>.";});
+  if(s){s.style.color="var(--faux)";s.innerHTML="<i class='ph ph-x-circle'></i> Le service des jeux en direct n'est pas disponible.";}
 }
 function creerPartie(){
   const cat=document.getElementById("jhCat").value;
@@ -9691,16 +11930,11 @@ function creerPartie(){
   const qs=genererQuestionsJeu(cat,diff,n);
   if(qs.length<3){if(msg){msg.style.color="var(--faux)";msg.textContent="Impossible de préparer assez de questions pour ce thème.";}return;}
   if(qs.length)qs[qs.length-1].bonus=true; // dernière question = double points (finale)
-  hostGame={pin:genPin(),mode:mjModeChoisi(),nbEq:mjNbEqChoisi(),cat,diff,questions:qs,total:qs.length,qIndex:-1,phase:"lobby",players:{},answers:{},pimentUtilise:{},pimentArme:{}};
+  hostGame={pin:genPin(),mode:mjModeChoisi(),nbEq:mjNbEqChoisi(),cat,diff,questions:qs,total:qs.length,qIndex:-1,phase:"lobby",players:{},answers:{},pimentUtilise:{},pimentArme:{},surpriseAuto:lpAutoChoisi()};
   jeuRole="host";
-  if(fbPret()){
-    hostGame.transport="fb";hostGame.fbBase=firebase.database().ref("jeux/"+hostGame.pin);
-    hostGame.fbBase.remove();          // nettoie une éventuelle partie précédente avec ce code
-    hostFbListen();pushEtatHost();     // écoute joueurs+réponses en temps réel, publie l'état
-  }else{
-    hostGame.transport="sheet";
-    jeuPost({action:"jeu_reset"});pushEtatHost();lancerBoucle(pollHost,650);
-  }
+  hostGame.transport="fb";hostGame.fbBase=firebase.database().ref("jeux/"+hostGame.pin);
+  hostGame.fbBase.remove();          // nettoie une éventuelle partie précédente avec ce code
+  hostFbListen();pushEtatHost();     // écoute joueurs+réponses en temps réel, publie l'état
   vueHostLobby();
 }
 function etatPourJoueurs(){
@@ -9711,20 +11945,20 @@ function etatPourJoueurs(){
   if(g.mode==="pupitres"){const ql=(g.phase==="reveal"||g.phase==="ended")?g.qIndex:g.qIndex-1;
     e.equipes=mjScoresEquipes(ql).map(t=>({k:t.k,score:t.score,rang:t.rang,nb:t.nb,justesQ:t.justesQ,pctQ:t.pctQ,tous:t.tous,pctGlobal:t.pctGlobal}));}
   if(g.phase==="compte")e.bonusProchaine=!!(g.questions[g.qIndex]&&g.questions[g.qIndex].bonus);
-  if(g.phase==="question"||g.phase==="reveal"||g.phase==="vote"){const q=g.questions[g.qIndex];e.question={consigne:q.consigne,options:q.options,bonus:!!q.bonus,rebond:!!q.rebond,rapide:!!q.rapide,casse:!!q.casse,progressif:!!q.progressif,seq:q.seq||null,readMs:q.readMs||0,stepMs:q.stepMs||0};}
+  if(g.phase==="question"||g.phase==="reveal"||g.phase==="vote"){const q=g.questions[g.qIndex];e.question={consigne:q.consigne,options:q.options,bonus:!!q.bonus,rebond:!!q.rebond,rapide:!!q.rapide,casse:!!q.casse,progressif:!!q.progressif,miroir:!!q.miroir,brouillard:!!q.brouillard,chaises:!!q.chaises,torche:!!q.torche,tableau:!!q.tableau,zen:!!q.zen,ensemble:!!q.ensemble,pouce:!!q.pouce,surprises:q.surprises||[],hasard:!!q.hasard,seq:q.seq||null,readMs:q.readMs||0,stepMs:q.stepMs||0};}
   if(g.phase==="question"||g.phase==="reveal"){e.startAt=g.startAt;e.duree=(g.questions[g.qIndex].duree||JEU_DUREE);}
   if(g.phase==="vote"){e.voteFin=g.voteFin;}
   if(g.phase==="reveal"){const q=g.questions[g.qIndex];const counts=q.options.map(()=>0);const a=g.answers[g.qIndex]||{};let rapide=null;
     Object.keys(a).forEach(uid=>{const c=a[uid].choix;if(c>=0&&c<counts.length)counts[c]++;
       if(c===q.correct&&g.players[uid]&&(!rapide||a[uid].tempsMs<rapide.t))rapide={nom:g.players[uid].nom,avatar:g.players[uid].avatar||"<i class='ph ph-headphones'></i>",t:a[uid].tempsMs};});
-    e.reveal={correct:q.correct,correctText:q.options[q.correct],counts,bonus:!!q.bonus};
+    e.reveal={correct:q.correct,correctText:q.options[q.correct],counts,bonus:!!q.bonus};if(q.ensemble)e.reveal.ensemble=jeuEnsemble(g.qIndex);
     if(rapide)e.reveal.plusRapide={nom:rapide.nom,avatar:rapide.avatar};}
   if(g.phase==="ended"){e.podium=scores.slice(0,5);e.mentions=(g.prix&&g.prix.mentions)||[];}
   return e;
 }
 function pushEtatHost(){const etat=JSON.stringify(etatPourJoueurs());
   if(hostGame.transport==="fb"&&hostGame.fbBase){try{return hostGame.fbBase.child("etat").set(etat);}catch(e){return Promise.resolve();}}
-  return jeuPost({action:"jeu_etat",pin:hostGame.pin,etat:etat});}
+  return Promise.resolve();}
 /* Écoute temps réel des joueurs et des réponses (Firebase) : mise à jour instantanée. */
 function hostFbListen(){rtdbTenir("jeu");const base=hostGame.fbBase;
   base.child("joueurs").on("value",function(snap){const v=snap.val()||{};let nouveaux=0;
@@ -9738,43 +11972,27 @@ function hostFbListen(){rtdbTenir("jeu");const base=hostGame.fbBase;
     Object.keys(v).forEach(function(q){const qi=+q;hostGame.answers[qi]={};const rr=v[q]||{};
       Object.keys(rr).forEach(function(uid){hostGame.answers[qi][uid]={choix:+rr[uid].choix,tempsMs:+rr[uid].tempsMs};});});
     if(hostGame.phase==="question")majHostQuestion();});}
-function pollHost(){if(!hostGame)return;
-  return jeuGet("jeu="+hostGame.pin+"&host=1").then(res=>{
-    const inbox=(res&&res.inbox)||[];let nouveaux=0;
-    inbox.forEach(r=>{
-      if(r.kind==="join"){if(!hostGame.players[r.uid]){hostGame.players[r.uid]={nom:String(r.nom||"?").slice(0,40),score:0,avatar:(r.choix?avatarSur(""+r.choix):JEU_AVATARS[Object.keys(hostGame.players).length%JEU_AVATARS.length])};mjAffecter(r.uid);nouveaux++;}else{hostGame.players[r.uid].nom=String(r.nom||"?").slice(0,40);if(r.choix)hostGame.players[r.uid].avatar=avatarSur(""+r.choix);}}
-      else if(r.kind==="answer"){const qi=+r.qIndex;hostGame.answers[qi]=hostGame.answers[qi]||{};if(hostGame.answers[qi][r.uid]===undefined)hostGame.answers[qi][r.uid]={choix:+r.choix,tempsMs:+r.tempsMs};}
-      else if(r.kind==="vote"){hostGame.votes=hostGame.votes||{};hostGame.votes[r.uid]=+r.choix;}
-    });
-    if(nouveaux&&hostGame.phase==="lobby"&&typeof jouerEffet==="function")jouerEffet("valider");
-    if(nouveaux&&mjPupitres())pushEtatHost();
-    if(hostGame.phase==="lobby")majHostLobby();
-    else if(hostGame.phase==="question")majHostQuestion();
-    else if(hostGame.phase==="vote")majHostVote();
-  }).catch(()=>{});
-}
 function calculerScores(){const g=hostGame;
   Object.keys(g.players).forEach(uid=>{const p=g.players[uid];p.score=0;p.gq=[];p.bonnes=0;p.serie=0;p.meilleureSerie=0;p.reponses=0;p.dernier=0;p.dernierBonus=0;p.bon=false;p.dernierRep=false;});
-  for(let q=0;q<=g.qIndex;q++){const ans=g.answers[q]||{};const bonIdx=g.questions[q].correct;
+  for(let q=0;q<=g.qIndex;q++){const ans=g.answers[q]||{};const bonIdx=g.questions[q].correct;const ens=jeuEnsemble(q);
     Object.keys(g.players).forEach(uid=>{const p=g.players[uid];const a=ans[uid];
       let gain=0,bonus=0,bon=false,repondu=false;
       if(a!==undefined){repondu=true;p.reponses++;gain+=JEU_PART;
         if(a.choix===bonIdx){bon=true;p.bonnes++;p.serie++;if(p.serie>p.meilleureSerie)p.meilleureSerie=p.serie;
           bonus=Math.min(p.serie-1,5)*JEU_SERIE;
-          let st=JEU_BASE+Math.round(JEU_VITESSE*(1-Math.min(1,(a.tempsMs||JEU_DUREE)/JEU_DUREE)))+bonus;
-          if(g.questions[q].bonus)st*=2;
-          gain+=st;
+          gain+=jeuPtsBon(g.questions[q],a,p.serie);
         }else p.serie=0;
       }else p.serie=0;
+      if(repondu&&ens&&ens.ok)gain+=JEU_ENSEMBLE;
       p.score+=gain;p.gq[q]={g:gain,b:bon,r:repondu};
       if(q===g.qIndex){p.dernier=gain;p.dernierBonus=bonus;p.bon=bon;p.dernierRep=repondu;}});}
 }
 /* score de chaque joueur tel qu'il était après la question qLimit (pour la « progression ») */
 function scoreSnapshot(qLimit){const g=hostGame;const sc={},se={};
   Object.keys(g.players).forEach(u=>{sc[u]=0;se[u]=0;});
-  for(let q=0;q<=qLimit;q++){const ans=g.answers[q]||{};const bi=g.questions[q].correct;
+  for(let q=0;q<=qLimit;q++){const ans=g.answers[q]||{};const bi=g.questions[q].correct;const ens=jeuEnsemble(q);
     Object.keys(g.players).forEach(u=>{const a=ans[u];let gain=0;
-      if(a!==undefined){gain+=JEU_PART;if(a.choix===bi){se[u]++;let st=JEU_BASE+Math.round(JEU_VITESSE*(1-Math.min(1,(a.tempsMs||JEU_DUREE)/JEU_DUREE)))+Math.min(se[u]-1,5)*JEU_SERIE;if(g.questions[q].bonus)st*=2;gain+=st;}else se[u]=0;}
+      if(a!==undefined){gain+=JEU_PART;if(a.choix===bi){se[u]++;gain+=jeuPtsBon(g.questions[q],a,se[u]);}else se[u]=0;if(ens&&ens.ok)gain+=JEU_ENSEMBLE;}
       else se[u]=0;sc[u]+=gain;});}
   return sc;}
 function classementUids(qLimit){const sc=scoreSnapshot(qLimit);return Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);}
@@ -9801,7 +12019,8 @@ function prixJeu(){const g=hostGame;
 }
 async function hostDemarrer(){if(Object.keys(hostGame.players).length===0){if(!await dlgConfirmer("Aucun élève n'a rejoint pour l'instant. Démarrer quand même ?"))return;}hostPoser(0);}
 function hostPoser(i){
-  if(hostGame.pimentArme&&hostGame.pimentArme.vote){delete hostGame.pimentArme.vote;hostVote(i);return;}
+  surpriseAuto(i);
+  if(hostGame.pimentArme&&hostGame.pimentArme.vote){delete hostGame.pimentArme.vote;hostGame.pimentUtilise=hostGame.pimentUtilise||{};hostGame.pimentUtilise.vote=true;hostVote(i);return;}
   appliquerPiments(i);hostPoserReel(i);
 }
 function hostPoserReel(i){hostGame.qIndex=i;hostGame.phase="question";hostGame.afficheQ=-1;hostGame.collecte=false;hostGame.progStep=null;
@@ -9833,13 +12052,8 @@ function hostProgressifTick(now,q){const el=now-hostGame.startAt;let step;
 function hostFinQuestion(){if(!hostGame||hostGame.phase!=="question"||hostGame.collecte)return;hostGame.collecte=true;
   if(jeuTimer){clearInterval(jeuTimer);jeuTimer=null;}
   vueHostCollecte();
-  if(hostGame.transport==="fb"){
-    // Firebase : les réponses sont déjà là (temps réel), petit délai de sécurité seulement.
-    setTimeout(function(){if(hostGame){hostGame.collecte=false;hostReveler();}},350);
-  }else{
-    // Google Sheet : on laisse ~1,8 s aux réponses "en vol" et on relit une dernière fois.
-    setTimeout(function(){var p=pollHost();(p&&p.finally?p:Promise.resolve()).finally(function(){if(hostGame){hostGame.collecte=false;hostReveler();}});},1800);
-  }
+  // les réponses arrivent en temps réel : petit délai de sécurité seulement
+  setTimeout(function(){if(hostGame){hostGame.collecte=false;hostReveler();}},350);
 }
 function vueHostCollecte(){mjSansTitre();
   document.getElementById("zone").innerHTML='<div class="jeu-host"><div class="jeu-compte"><div class="jeu-compte-num" style="font-size:2.6rem"><i class="ph ph-hourglass-high"></i></div><div class="jeu-compte-aide">On ramasse les dernières réponses…</div></div>'+stopBtnHTML()+'</div>';}
@@ -9850,9 +12064,11 @@ function vueHostCompte(n){var num=document.getElementById("jhCompteNum");
   document.getElementById("zone").innerHTML=`<div class="jeu-host"><div class="jeu-compte">
     <div class="jeu-compte-lib">Question ${hostGame.qIndex+1}/${hostGame.total}${q&&q.bonus?' · <span class="jeu-bonus-tag"><i class="ph ph-star"></i> BONUS ×2</span>':''}</div>
     <div class="jeu-compte-num pop" id="jhCompteNum" data-n="${n}">${n}</div>
-    <div class="jeu-compte-aide">Prépare-toi…</div></div>${stopBtnHTML()}</div>`;
+    <div class="jeu-compte-aide">Prépare-toi…</div>${surpriseAnnonceHTML(q,"hote")}</div>${stopBtnHTML()}</div>`;
 }
-function optionsHostHTML(q,reveal){return `<div class="jeu-grille">`+q.options.map((o,i)=>{
+function optionsHostHTML(q,reveal){
+  const fx=reveal?"":(q.miroir?" miroir":"")+(q.brouillard?" brouillard":"");
+  return `<div class="jeu-grille${fx}"${!reveal&&q.brouillard?' style="--brume:'+jeuBrume(q.duree)+'ms"':''}>`+q.options.map((o,i)=>{
   const cls=reveal?(i===q.correct?"bon":"pale"):"";
   return `<div class="jeu-opt ${cls}" style="--c:${JEU_COUL[i%6]}"><span class="jeu-forme">${JEU_FORME[i%6]}</span><span>${o}</span></div>`;}).join("")+`</div>`;}
 function hostReveler(){if(!hostGame||hostGame.phase!=="question")return;if(jeuTimer){clearInterval(jeuTimer);jeuTimer=null;}
@@ -10003,7 +12219,6 @@ function ecranJeuJoin(pinPre,venu){
      </div>
      <div style="margin-top:16px"><button class="action btn-corr" style="font-size:1rem;padding:12px 22px" onclick="rejoindrePartie()">Rejoindre <i class="ph ph-play"></i></button></div>
      <p id="jjMsg" style="color:var(--faux);font-weight:600;display:none"></p>
-     <div style="margin-top:10px;text-align:center">${serveurCourtHTML()}<br><span style="font-size:.72rem;color:var(--encre-doux)">doit être identique à celui affiché chez le professeur</span></div>
    </div></div>`;
 }
 function rejoindrePartie(verifie){
@@ -10018,17 +12233,12 @@ function rejoindrePartie(verifie){
   }
   joueur={pin,nom,avatar:jeuAvatarChoisi,uid:(profil.uid||uidProfil()),qVue:-2,repondu:{},showAt:0,etat:null,phaseVue:"",revVu:-1};
   jeuRole="joueur";
-  if(fbPret()){
-    rtdbTenir("jeu");
-    joueur.transport="fb";joueur.fbBase=firebase.database().ref("jeux/"+pin);
-    joueur.fbBase.child("joueurs/"+joueur.uid).set({nom:nom,avatar:jeuAvatarChoisi});
-    joueur.fbBase.child("etat").on("value",function(snap){let e=snap.val();if(typeof e==="string"){try{e=JSON.parse(e);}catch(x){e=null;}}
-      if(!e){vueJoueurMsg("<i class='ph ph-hourglass-high'></i> En attente du professeur…");return;}joueur.etat=e;traiterEtatJoueur(e);});
-  }else{
-    joueur.transport="sheet";
-    jeuPost({action:"jeu_push",pin,kind:"join",uid:joueur.uid,nom,choix:jeuAvatarChoisi});
-    lancerBoucle(pollJoueur,400);
-  }
+  if(!fbPret()){ vueJoueurMsg("<i class='ph ph-warning'></i> Le service des jeux en direct n'est pas disponible. Vérifie ta connexion, puis réessaie."); return; }
+  rtdbTenir("jeu");
+  joueur.transport="fb";joueur.fbBase=firebase.database().ref("jeux/"+pin);
+  joueur.fbBase.child("joueurs/"+joueur.uid).set({nom:nom,avatar:jeuAvatarChoisi});
+  joueur.fbBase.child("etat").on("value",function(snap){let e=snap.val();if(typeof e==="string"){try{e=JSON.parse(e);}catch(x){e=null;}}
+    if(!e){vueJoueurMsg("<i class='ph ph-hourglass-high'></i> En attente du professeur…");return;}joueur.etat=e;traiterEtatJoueur(e);});
   vueJoueurMsg("<i class='ph ph-hourglass-high'></i> Connexion à la partie…");
 }
 function traiterEtatJoueur(e){
@@ -10044,20 +12254,6 @@ function traiterEtatJoueur(e){
   else if(e.phase==="arrete"){stopperEffetsJoueur();jeuArreter();
     document.getElementById("zone").innerHTML='<div class="jeu-joueur-msg"><div class="jeu-reveal-icone"><i class="ph ph-stop-circle"></i></div><h2>Le professeur a arrêté la partie</h2><p style="color:var(--encre-doux)">Merci d\'avoir joué&nbsp;!</p><div style="margin-top:16px"><button class="action btn-nouv" onclick="accueil()">Retour à l\'accueil</button></div></div>';}
 }
-function pollJoueur(){if(!joueur)return;
-  return jeuGet("jeu="+joueur.pin).then(res=>{
-    let e=res&&res.etat;if(typeof e==="string"){try{e=JSON.parse(e);}catch(err){e=null;}}
-    if(!e){vueJoueurMsg("<i class='ph ph-hourglass-high'></i> En attente du professeur…");return;}
-    joueur.etat=e;traiterEtatJoueur(e);
-  }).catch(err=>{
-    if(err&&err.message==="NONJSON"){
-      const vieux=/MUSEDUC OK|<html|<!DOCTYPE|script\.google/i.test(err.raw||"");
-      vueJoueurMsg(vieux
-        ? "<i class='ph ph-warning'></i> Le serveur du jeu n'est pas à jour.<br><span style='font-size:.85rem;color:var(--encre-doux)'>Le professeur doit <b>redéployer le script</b> du Google Sheet (version « mode classe »), puis réessaie.</span>"
-        : "<i class='ph ph-warning'></i> Réponse inattendue du serveur.<br><span style='font-size:.85rem;color:var(--encre-doux)'>Le code est-il correct&nbsp;? Le professeur a-t-il bien créé la partie&nbsp;?</span>");
-    } else vueJoueurMsg("<i class='ph ph-warning'></i> Connexion perdue… vérifie ta connexion Internet, puis patiente (nouvelle tentative automatique).");
-  });
-}
 function gererQuestionJoueur(e){
   if(joueur.qVue===e.qIndex)return; // déjà en cours (compte à rebours lancé ou question affichée)
   joueur.qVue=e.qIndex;joueur.qData=e.question;joueur.startAtLocal=e.startAt||maintenant();joueur.affiche=false;
@@ -10071,7 +12267,7 @@ function demarrerCompteJoueur(e){
   const bonus=e.question&&e.question.bonus;
   const tick=()=>{const n=Math.max(0,Math.ceil((joueur.startAtLocal-maintenant())/1000));const val=n>0?n:"<i class='ph ph-eye'></i>";
     var num=document.getElementById("jjCompteNum");
-    if(!num){const z=document.getElementById("zone");if(z)z.innerHTML=`<div class="jeu-joueur"><div class="jeu-compte joueur"><div class="jeu-compte-lib">${bonus?'<span class="jeu-bonus-tag"><i class="ph ph-star"></i> BONUS ×2</span> ':''}Prépare-toi…</div><div class="jeu-compte-num pop" id="jjCompteNum" data-n="${val}">${val}</div></div></div>`;}
+    if(!num){const z=document.getElementById("zone");if(z)z.innerHTML=`<div class="jeu-joueur"><div class="jeu-compte joueur"><div class="jeu-compte-lib">${bonus?'<span class="jeu-bonus-tag"><i class="ph ph-star"></i> BONUS ×2</span> ':''}Prépare-toi…</div><div class="jeu-compte-num pop" id="jjCompteNum" data-n="${val}">${val}</div>${surpriseAnnonceHTML(e.question,"eleve")}</div></div>`;}
     else if(num.getAttribute("data-n")!==String(val)){num.setAttribute("data-n",val);num.textContent=val;num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");}};
   tick();if(joueur.compteTimer)clearInterval(joueur.compteTimer);
   joueur.compteTimer=setInterval(tick,200);
@@ -10085,7 +12281,7 @@ function revelerQuestionJoueur(){
   if(q.progressif){joueurProgressif(q);return;}
   const total=(joueur.etat&&joueur.etat.total)||"?";
   // anti-triche : chaque téléphone reçoit un ordre de réponses tiré au sort pour LUI seul
-  const order=shuffle(q.options.map(function(_,i){return i;}));
+  const order=q.tableau?q.options.map(function(_,i){return i;}):shuffle(q.options.map(function(_,i){return i;}));   // « Yeux au tableau » : mêmes places qu'au tableau
   const dureeTotal=(joueur.etat&&joueur.etat.duree)||JEU_DUREE;
   const readMs=q.rebond?(q.rebondReadMs||4000):0;
   document.getElementById("zone").innerHTML=`
@@ -10095,8 +12291,9 @@ function revelerQuestionJoueur(){
      ${q.bonus?'<div class="jeu-bonus-banner petit"><i class="ph ph-star"></i> Question bonus : points doublés&nbsp;!</div>':''}
      ${q.rapide?'<div class="jeu-bonus-banner petit jeu-eclair"><i class="ph-fill ph-lightning"></i> ÉCLAIR : seulement '+Math.round((dureeTotal-readMs)/1000)+' secondes pour répondre&nbsp;!</div>':''}
      ${q.rebond?'<div class="jeu-prog-aide" id="jjLectureAide"><i class="ph ph-brain"></i> Mémorise la couleur et le symbole de ta réponse : tu pourras cliquer quand les réponses se mettront à <b>rebondir</b>&nbsp;!</div><div class="jeu-lecture-bar"><div id="jjLectureFill" style="animation-duration:'+readMs+'ms"></div></div>':''}
-     <div class="jeu-jq-consigne">${q.consigne}</div>
-     <div class="jeu-grille joueur${q.rebond?' rebond lecture':''}" id="jjGrille">${order.map(function(oi,pos){return `<button class="jeu-opt cliquable entre" ${q.rebond?'disabled':''} style="--c:${JEU_COUL[pos%6]};animation-delay:${pos*70}ms" onclick="joueurRepond(${oi},this)"><span class="jeu-forme">${JEU_FORME[pos%6]}</span><span class="jo-txt">${q.options[oi]}</span></button>`;}).join("")}</div>
+     ${surpriseBandeauxHTML(q,"eleve")}
+     ${q.tableau?'<div class="jeu-jq-consigne jeu-tableau-consigne"><i class="ph-fill ph-presentation"></i> Regarde le tableau&nbsp;!</div>':'<div class="jeu-jq-consigne">'+q.consigne+'</div>'}
+     ${q.torche?'<div class="jeu-torche" id="jjTorche">':''}<div class="jeu-grille joueur${q.rebond?' rebond lecture':''}${q.miroir?' miroir':''}${q.brouillard?' brouillard':''}${q.tableau?' tableau':''}${q.chaises?' chaises':''}" id="jjGrille"${q.brouillard?' style="--brume:'+jeuBrume(dureeTotal)+'ms"':''}>${order.map(function(oi,pos){return `<button class="jeu-opt cliquable entre" ${q.rebond?'disabled':''} data-oi="${oi}" style="--c:${JEU_COUL[pos%6]};animation-delay:${pos*70}ms" onclick="joueurRepond(${oi},this)"><span class="jeu-forme">${JEU_FORME[pos%6]}</span><span class="jo-txt">${q.options[oi]}</span></button>`;}).join("")}</div>${q.torche?'<div class="jeu-torche-noir"></div></div>':''}
      ${q.casse?'<div class="jeu-casse-overlay" id="jjCasse"></div>':''}
    </div>`;
   if(joueur.finTimer)clearTimeout(joueur.finTimer);
@@ -10106,7 +12303,32 @@ function revelerQuestionJoueur(){
   if(q.rebond){if(joueur.rebondReadTimeout)clearTimeout(joueur.rebondReadTimeout);
     joueur.rebondReadTimeout=setTimeout(function(){transformerEnBalles(q);},readMs);}
   if(q.casse)demarrerCasseJoueur();
+  if(q.chaises)demarrerChaisesJoueur(q);
+  if(q.torche)demarrerTorcheJoueur();
   if(typeof jouerEffet==="function")jouerEffet("valider");
+}
+/* « Chaises musicales » : toutes les 2,6 s, les réponses changent de place ; les couleurs
+   et les formes restent sur place, il faut donc relire */
+function demarrerChaisesJoueur(q){
+  if(joueur.chaisesTimer)clearInterval(joueur.chaisesTimer);
+  joueur.chaisesTimer=setInterval(function(){
+    const gr=document.getElementById("jjGrille");
+    if(!gr||!joueur||joueur.repondu[joueur.qVue]!==undefined){ clearInterval(joueur.chaisesTimer); joueur.chaisesTimer=null; return; }
+    const btns=[].slice.call(gr.querySelectorAll(".jeu-opt")), avant=btns.map(function(b){ return +b.getAttribute("data-oi"); });
+    let ordre=avant;
+    for(let t=0;t<5&&ordre.join()===avant.join();t++)ordre=shuffle(avant.slice());
+    btns.forEach(function(b,pos){ const oi=ordre[pos];
+      b.setAttribute("data-oi",oi); b.setAttribute("onclick","joueurRepond("+oi+",this)");
+      const t=b.querySelector(".jo-txt"); if(t)t.innerHTML=q.options[oi];
+      b.classList.remove("entre","saute"); b.style.animationDelay=""; void b.offsetWidth; b.classList.add("saute"); });
+  },2600);
+}
+/* « Lampe torche » : un voile noir, et un rond de lumière qui suit le doigt (ou la souris) */
+function demarrerTorcheJoueur(){
+  const z=document.getElementById("jjTorche"), noir=z&&z.querySelector(".jeu-torche-noir"); if(!noir)return;
+  const placer=function(ev){ const r=z.getBoundingClientRect();
+    noir.style.setProperty("--tx",Math.round(ev.clientX-r.left)+"px"); noir.style.setProperty("--ty",Math.round(ev.clientY-r.top)+"px"); };
+  z.addEventListener("pointermove",placer); z.addEventListener("pointerdown",placer);
 }
 /* petit chrono, visible côté élève, calé sur l'horloge du serveur */
 function demarrerChronoJoueur(){
@@ -10199,7 +12421,6 @@ function vueJoueurVote(e){
 }
 function joueurVote(v){const e=joueur.etat;if(!e||e.phase!=="vote")return;if(joueur.aVote===e.qIndex)return;joueur.aVote=e.qIndex;
   if(joueur.transport==="fb"&&joueur.fbBase){try{joueur.fbBase.child("votes/"+joueur.uid).set(v);}catch(x){}}
-  else{jeuPost({action:"jeu_push",pin:joueur.pin,kind:"vote",uid:joueur.uid,nom:joueur.nom,qIndex:e.qIndex,choix:v});}
   jouerEffet&&jouerEffet("valider");
   vueJoueurMsg("<i class='ph ph-check-square'></i> Vote enregistré&nbsp;! On attend les autres…");}
 function vueJoueurTempsEcoule(){document.getElementById("zone").innerHTML='<div class="jeu-joueur-msg"><div class="jeu-reveal-icone"><i class="ph ph-timer"></i></div><h2>Temps écoulé&nbsp;!</h2><p style="color:var(--encre-doux)">On attend les résultats…</p></div>';}
@@ -10214,11 +12435,12 @@ function joueurRepond(choix,btn){const e=joueur.etat;if(!e||e.phase!=="question"
   if(joueur.rebondRAF){cancelAnimationFrame(joueur.rebondRAF);joueur.rebondRAF=null;} // fige les balles au clic
   if(joueur.rebondReadTimeout){clearTimeout(joueur.rebondReadTimeout);joueur.rebondReadTimeout=null;}
   if(joueur.casseTimer){clearTimeout(joueur.casseTimer);joueur.casseTimer=null;const ov=document.getElementById("jjCasse");if(ov)ov.style.opacity="0";}
+  if(joueur.chaisesTimer){clearInterval(joueur.chaisesTimer);joueur.chaisesTimer=null;}
+  const torche=document.querySelector(".jeu-torche-noir"); if(torche)torche.remove();   // on voit ce qu'on a choisi
   // retour visuel immédiat : la réponse choisie grossit, les autres s'estompent
   const btns=document.querySelectorAll(".jeu-grille.joueur .jeu-opt");
   btns.forEach(function(b){b.classList.remove("entre");b.style.animationDelay="";b.classList.add(b===btn?"choisi":"estompe");b.setAttribute("disabled","disabled");});
   if(joueur.transport==="fb"&&joueur.fbBase){try{joueur.fbBase.child("reponses/"+e.qIndex+"/"+joueur.uid).set({choix:choix,tempsMs:tempsMs});}catch(x){}}
-  else{jeuPost({action:"jeu_push",pin:joueur.pin,kind:"answer",uid:joueur.uid,nom:joueur.nom,qIndex:e.qIndex,choix:choix,tempsMs:tempsMs});}
   jouerEffet&&jouerEffet("valider");
   setTimeout(function(){if(joueur&&joueur.repondu[e.qIndex]!==undefined&&(!joueur.etat||joueur.etat.phase==="question"))vueJoueurEnvoye(choix);},520);}
 function vueJoueurEnvoye(choix){
@@ -10241,6 +12463,7 @@ function vueJoueurReveal(e){const moi=moiDansScores(e);const rang=(e.scores||[])
      <h2>${titre}</h2>
      ${moi&&moi.dernier?`<div class="jeu-pts">+${moi.dernier}</div>`:""}
      <p>${sous}</p>
+     ${e.reveal&&e.reveal.ensemble?'<p class="jeu-ens-j'+(e.reveal.ensemble.ok?' ok':'')+'"><i class="ph-fill ph-hands-clapping"></i> '+(e.reveal.ensemble.ok?'Défi de classe réussi'+(repondu?'&nbsp;: +'+JEU_ENSEMBLE+' pour toi&nbsp;!':'&nbsp;!'):'Défi de classe raté de peu ('+e.reveal.ensemble.justes+' sur '+e.reveal.ensemble.n+')')+'</p>':''}
      <p style="color:var(--encre-doux);font-size:.9rem">Bonne réponse&nbsp;: <b>${e.reveal?e.reveal.correctText:""}</b></p>
      ${mjRevealJoueurHTML(e,moi)}
    </div>`;
@@ -10530,7 +12753,7 @@ function notesComptees(){
       out.push({d:d.echeance||0,note:0,sur:20,lib:(d.titre||"Évaluation")+" (NR*)",type:"eval"}); }); }); }catch(e){} }
   const ch=(profil.notesChant&&profil.notesChant.length)?profil.notesChant:notesChantListe();
   (ch||[]).forEach(function(n){ if(n&&n.note!=null)out.push({d:n.d||0,note:n.note,sur:n.sur||20,lib:n.titre||"Chant",type:"chant"}); });
-  const tvl=(profil.notesTravail&&profil.notesTravail.length)?profil.notesTravail:((typeof tvMienNote==="function"&&tvMienNote())?[tvMienNote()]:[]);
+  const tvl=!TRAVAIL_CLASSE?[]:(profil.notesTravail&&profil.notesTravail.length)?profil.notesTravail.filter(function(n){ return n&&n.nb>0; }):((typeof tvMienNote==="function"&&tvMienNote())?[tvMienNote()]:[]);
   (tvl||[]).forEach(function(n){ if(n&&n.note!=null)out.push({d:n.d||0,note:n.note,sur:n.sur||20,lib:n.lib||n.titre||"Travail en classe",type:"travail"}); });
   out.sort(function(a,b){return (b.d||0)-(a.d||0);});
   return out;
@@ -11040,6 +13263,8 @@ function accueil(){
   </div>`;
   try{ majRangAccueil(); }catch(e){}
   try{ maestroDemarrer(); }catch(e){}
+  try{ if(TRAVAIL_CLASSE&&profil.eleveCode&&profil.classeId&&typeof tvChargerMien==="function"&&Date.now()-_tvMienLu>600000)
+    tvChargerMien().then(function(){ if(typeof majPanneauAccueil==="function")majPanneauAccueil(); }); }catch(e){}
   /* résumé du Mode Histoire (roman visuel) : rendu après coup, re-rendu à
      chaque retour car la progression a pu avancer entre-temps. */
 
@@ -11844,7 +14069,7 @@ function snapshotEleve(){
          ateliers du jour, et les récompenses de chant déjà touchées (sinon elles
          seraient comptées une seconde fois) : rien ne se perd en changeant d'appareil */
       voc:profil.voc||null, histoire:profil.histoire||{}, chantRecomp:profil.chantRecomp||{},
-      clapRec:profil.clapRec||{}, clapMotifs:profil.clapMotifs||[], obj:profil.obj||null, atelierLe:profil.atelierLe||{},
+      clapRec:profil.clapRec||{}, clapMotifs:profil.clapMotifs||[], polyRec:profil.polyRec||{}, batterie:profil.batterie||[], obj:profil.obj||null, atelierLe:profil.atelierLe||{},
       devoirs:profil.devoirs||{} } };
 }
 /* Récupère la progression du serveur si elle est plus avancée que celle de l'appareil.
@@ -11980,14 +14205,16 @@ function activerOuProuverSecret(code,classId,secret){
   const s=fbStore(); if(!s)return Promise.resolve({etat:"erreur"});
   let preuve;
   try{ preuve=elevePreuve(code,secret); }catch(e){ return Promise.resolve({etat:"erreur"}); }
+  let cree=false;
   return s.collection("codeSecret").doc(code).set({h:preuve,cree:Date.now()})
-    .then(function(){
-      /* premier secret : on le signale sur le code pour que le professeur voie
-         d'un coup d'œil quels comptes sont protégés */
-      return s.collection("eleveCodes").doc(code).update({actif:true}).catch(function(){});
-    },function(){ /* secret déjà posé : il ne reste qu'à le prouver */ })
+    .then(function(){ cree=true; },function(){ /* secret déjà posé : il ne reste qu'à le prouver */ })
     .then(function(){ return prouverSecretEleve(code,classId,preuve); })
-    .then(function(ok){ return ok?{etat:"ok",preuve:preuve}:{etat:"faux"}; })
+    .then(function(ok){
+      /* code protégé : on le signale pour que le professeur le voie d'un coup d'œil. Aussi à
+         chaque connexion réussie : ce signal s'était parfois perdu (la clé de remise à zéro
+         n'apparaissait pas alors que l'élève avait bien un mot secret). */
+      if(ok||cree)s.collection("eleveCodes").doc(code).update({actif:true}).catch(function(){});
+      return ok?{etat:"ok",preuve:preuve}:{etat:"faux"}; })
     .catch(function(){ return {etat:"erreur"}; });
 }
 
@@ -12110,7 +14337,7 @@ function restaurerEleve(){
             ["points","exercices","sansFaute","serie","dernierJour","badges","badgesTousVu","best","vus",
              "defisBest","survieBest","survieHist","diffParCat","reussiteParCat","sfDiff","notesEval",
              "evalBonus","entrainOK","niveauMax","serieNiv","evalLibreMois","evalLibreLe","tempsTheme","histEntrain","bonusNiveau","bonusBadge","bonusActuel","bonusNiveauVu","jokersSurvie","refaireVus","defisSemaine","defisAccSemaine","defisEnvoyes","defisHist","echelleV2","jourPts","ptsJour","ajustementsVus","devoirs","cours",
-             "voc","histoire","chantRecomp","clapRec","clapMotifs","obj","atelierLe"]
+             "voc","histoire","chantRecomp","clapRec","clapMotifs","polyRec","batterie","obj","atelierLe"]
               .forEach(function(k){ if(sv[k]!==undefined&&sv[k]!==null)profil[k]=sv[k]; });
             try{ migrerBonus(profil); }catch(e){}   /* données serveur d'avant les 2 emplacements */
             profil.tempsMin=Math.max(profil.tempsMin||0,sv.tempsMin||0);
@@ -13010,7 +15237,7 @@ function reinitChoisir(titre,sousHtml){
       +'<div class="dlg-ic"><i class="ph-fill ph-arrow-counter-clockwise"></i></div>'
       +'<h3 class="dlg-titre">'+echapH(titre)+'</h3>'
       +'<p class="rz-sous">'+sousHtml+'</p>'
-      +'<div class="rz-liste">'+REINIT_PARTS.map(function(p){
+      +'<div class="rz-liste">'+REINIT_PARTS.filter(function(p){ return p.k!=="travail"||TRAVAIL_CLASSE; }).map(function(p){
         return '<label class="rz-opt"><input type="checkbox" data-k="'+p.k+'"'+(p.def?" checked":"")+'><span><b>'+p.lib+'</b><small>'+p.desc+'</small></span></label>'; }).join("")+'</div>'
       +'<p class="rz-conf">Action <b>définitive</b>. Pour confirmer, tapez <b>EFFACER</b> :</p>'
       +'<input class="dlg-champ" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="EFFACER">'
@@ -13268,7 +15495,7 @@ function rosterClasse(classId){
           <td>${p?(p.niveau||1):"-"}</td><td>${p?(p.points||0):"-"}</td><td>${p?(p.badges||0):"-"}</td>
           <td title="Temps actif sur MusEduc (un onglet laissé ouvert sans rien faire ne compte pas)">${p?fmtTemps(p.tempsMin):"-"}</td><td title="Temps passé dans les séries d'entraînement">${p?(p.tempsEntrain!=null?fmtTemps(p.tempsEntrain):"<span style='color:var(--encre-doux)'>-</span>"):"-"}</td><td>${dn?("<b>"+dn.note+"/"+(dn.sur||20)+"</b>"):"-"}</td>
           <td>${p?fmtDate(p.maj):'<span style="color:var(--encre-doux)">jamais</span>'}</td>
-          <td>${p?`<button class="btn-son mini" title="Détail" onclick="detailEleve('${classId}','${code}')"><i class="ph ph-eye"></i></button>`:""}<button class="btn-son mini" title="Ajouter ou retirer des points" onclick="ajusterPoints('${classId}','${code}')"><i class="ph ph-plus-minus"></i></button>${protege[code]?`<button class="btn-son mini" title="Mot secret oublié : le remettre à zéro" onclick="reinitSecret('${classId}','${code}')"><i class="ph ph-key"></i></button>`:""}<button class="btn-son mini" title="Réinitialiser cet élève (notes, points, bonus…)" onclick="reinitEleve('${classId}','${code}')"><i class="ph ph-arrow-counter-clockwise" style="color:var(--faux)"></i></button>${invite[code]?`<button class="btn-son mini" title="Retirer de cette classe (il reste dans sa classe d'origine)" onclick="rosterRetirerMembre('${classId}','${code}')"><i class="ph ph-user-minus" style="color:var(--faux)"></i></button>`:`<button class="btn-son mini" title="Supprimer ce code et cet élève" onclick="supprimerCode('${classId}','${code}')"><i class="ph ph-trash" style="color:var(--faux)"></i></button>`}</td>
+          <td>${p?`<button class="btn-son mini" title="Détail" onclick="detailEleve('${classId}','${code}')"><i class="ph ph-eye"></i></button>`:""}<button class="btn-son mini" title="Ajouter ou retirer des points" onclick="ajusterPoints('${classId}','${code}')"><i class="ph ph-plus-minus"></i></button><button class="btn-son mini" title="${protege[code]?"Mot secret oublié : le remettre à zéro":"Mot secret oublié ou code bloqué : remettre le mot secret à zéro"}" onclick="reinitSecret('${classId}','${code}',${protege[code]?1:0})"><i class="ph ph-key"></i></button><button class="btn-son mini" title="Réinitialiser cet élève (notes, points, bonus…)" onclick="reinitEleve('${classId}','${code}')"><i class="ph ph-arrow-counter-clockwise" style="color:var(--faux)"></i></button>${invite[code]?`<button class="btn-son mini" title="Retirer de cette classe (il reste dans sa classe d'origine)" onclick="rosterRetirerMembre('${classId}','${code}')"><i class="ph ph-user-minus" style="color:var(--faux)"></i></button>`:`<button class="btn-son mini" title="Supprimer ce code et cet élève" onclick="supprimerCode('${classId}','${code}')"><i class="ph ph-trash" style="color:var(--faux)"></i></button>`}</td>
         </tr>`; });
       h+=`</tbody></table></div>`;
     }
@@ -13421,9 +15648,13 @@ const RL_CSS=`.rl-tete{margin-bottom:14px}.rl-titre{font-size:1.4rem;font-weight
   .rl-c{font-weight:800;letter-spacing:1px;color:#1e3a63;white-space:nowrap}
   .rl-vide{color:#999;font-style:italic}
   .rl-pied{margin-top:14px;font-size:.8rem;color:#666}`;
-async function reinitSecret(classId,code){
+async function reinitSecret(classId,code,protege){
   const lab=labelDe(classId,code);
-  if(!await dlgConfirmer("Remettre à zéro le mot secret de "+code+(lab?" ("+lab+")":"")+" ?\n\nÀ sa prochaine connexion, l'élève choisira un nouveau mot secret.\nSa progression et ses notes sont conservées.\n\nAttention : tant qu'il ne l'a pas fait, son code seul suffit à se connecter. Préviens-le tout de suite."))return;
+  /* le signal « protégé » se pose quand l'élève choisit son mot secret ; il a pu se perdre
+     (réseau, ancien compte) : la remise à zéro reste donc toujours possible */
+  if(!await dlgConfirmer("Remettre à zéro le mot secret de "+code+(lab?" ("+lab+")":"")+" ?\n\n"
+    +(protege===0?"MusEduc ne voit pas encore de mot secret pour ce code : en principe, le code seul suffit pour se connecter. Si l'élève est bloqué par un mot secret oublié, cette remise à zéro le débloque.\n\n":"")
+    +"À sa prochaine connexion, l'élève choisira un nouveau mot secret.\nSa progression et ses notes sont conservées.\n\nAttention : tant qu'il ne l'a pas fait, son code seul suffit à se connecter. Préviens-le tout de suite."))return;
   const s=fbStore(); if(!s){svcIndispo();return;}
   s.collection("codeSecret").doc(code).delete()
    .then(function(){ return s.collection("eleveCodes").doc(code).update({actif:false}).catch(function(){}); })
@@ -16075,7 +18306,7 @@ function ecranChantEleve(chantId){
   document.getElementById("intro").textContent="Écoute, apprends, puis enregistre-toi sur le karaoké. Ton professeur t'écoutera et te notera.";
   const z=document.getElementById("zone");
   if(!profil.eleveCode||!profil.classeId){
-    z.innerHTML='<div class="accueil" style="max-width:560px"><div class="ex">'
+    z.innerHTML='<div class="accueil" style="max-width:560px">'+cjBandeauHTML()+'<div class="ex">'
       +'<h3 style="margin-top:0"><i class="ph ph-info"></i> Entre d\'abord ton code</h3>'
       +'<p>Les morceaux sont donnés par ton professeur : il faut être rattaché à une classe pour les voir.</p>'
       +'</div></div>'; remonter(); return;
@@ -16087,11 +18318,11 @@ function ecranChantEleve(chantId){
     /* on ne montre que ce qui s'adresse à cette classe ou à son niveau */
     const l=(tous||[]).filter(chVisiblePourEleve);
     if(!l.length){
-      z.innerHTML='<div class="accueil" style="max-width:560px"><div class="ex">'
+      z.innerHTML='<div class="accueil" style="max-width:560px">'+cjBandeauHTML()+'<div class="ex">'
         +'<p>Ton professeur n\'a pas encore déposé de morceau pour ta classe. Reviens plus tard.</p></div></div>';
       remonter(); return;
     }
-    let h='<div class="accueil" style="max-width:720px">';
+    let h='<div class="accueil" style="max-width:720px">'+cjBandeauHTML();
     l.forEach(function(c){ h+=chCarteEleve(c,!!(chantId&&chantId===c.id)); });
     z.innerHTML=h+'</div>';
     remonter();
@@ -17997,6 +20228,8 @@ function seanceSolutionHTML(x){
   }else if(x.type==="etiquettes"){
     h=`<div class="sc-paires">`+(x.cases||[]).map(function(c){
       return `<div><b>${c.lib}</b> <i class="ph ph-arrow-right"></i> ${c.r}</div>`;}).join("")+`</div>`;
+  }else if(x.type==="accu"){
+    h=`<div class="sc-paires">`+(x.sol||[]).map(function(m,p){ return `<div><b>Partie ${p+1}</b> <i class="ph ph-arrow-right"></i> ${m.split("").join(" + ")}</div>`; }).join("")+`</div>`;
   }else if(x.type==="ordre"){
     h=`<ol class="sc-ordre">`+(x.items||[]).map(function(it){return "<li>"+it+"</li>";}).join("")+`</ol>`;
   }else if(x.type==="calcul"){
@@ -18024,6 +20257,9 @@ function seanceQuestionHTML(x){
     h+=`<div class="sc-etiq">`+(x.mots||[]).map(function(m){return `<span>${m}</span>`;}).join("")+`</div>`;
     h+=`<div class="sc-paires">`+(x.cases||[]).map(function(c){
       return `<div><b>${c.lib}</b> <i class="ph ph-arrow-right"></i> <span class="sc-trou">?</span></div>`;}).join("")+`</div>`;
+  }else if(x.type==="accu"){
+    h+=`<div class="sc-etiq">`+(x.motifs||[]).map(function(k){ return `<span>Motif ${k}</span>`; }).join("")+`</div>`;
+    h+=`<div class="sc-paires">`+(x.sol||[]).map(function(_,p){ return `<div><b>Partie ${p+1}</b> <i class="ph ph-arrow-right"></i> <span class="sc-trou">?</span></div>`; }).join("")+`</div>`;
   }else if(x.type==="ordre"){
     /* Ordre mélangé : sinon l'énoncé donne la réponse. On retire jusqu'à obtenir
        un ordre RÉELLEMENT différent de l'original : un mélange peut retomber sur
@@ -19001,6 +21237,10 @@ function voteVoter(optId){
    recalculée depuis les événements (note de départ + somme amortie, 0–20).
    L'élève lit SON suivi (retour direct). Collections :
    classes/{cid}/travailPlan/config, /travailPeriode/{pid}, /travailEleve/{code}. */
+/* MIS DE CÔTÉ (10/10/2026, à la demande du professeur : « pas utile pour l'instant ») :
+   plus de tuile, plus d'onglet Comportement, plus de note de travail en classe chez l'élève
+   ni dans les moyennes. Le code et les données restent : passer à true pour tout retrouver. */
+const TRAVAIL_CLASSE=false;
 const TV_COMPORT_DEF=[
   {id:"part", ic:"hand-palm",     label:"Participation",       type:"pos", pts:1},
   {id:"aide", ic:"handshake",     label:"Aide un camarade",    type:"pos", pts:1},
@@ -19675,15 +21915,20 @@ function tvChargerMien(){
     const pers=[]; r[1].forEach(function(d){ pers.push(Object.assign({id:d.id},d.data()||{})); });
     const per=pers.filter(function(p){return !p.close;}).sort(function(x,y){return (y.debut||0)-(x.debut||0);})[0]
              || pers.sort(function(x,y){return (y.clotureLe||y.debut||0)-(x.clotureLe||x.debut||0);})[0] || null;
-    /* la note de départ (base) est stockée sur la période, lisible par l'élève */
-    const note=per?tvNoteDe(evs,per.id,(typeof per.base==="number"?per.base:10)):null;
-    _tvMien={events:evs, att:(r[0]&&r[0].exists?((r[0].data()||{}).att||{}):{}), periode:per, note:note};
+    /* la note de départ (base) est stockée sur la période, lisible par l'élève. Pas de note
+       tant que le professeur n'a rien relevé pour cet élève (comme dans son carnet) : avant,
+       une période ouverte donnait 10/20 à tous, et cette note entrait dans la moyenne. */
+    const nbEv=per?evs.filter(function(e){ return e.periodeId===per.id; }).length:0;
+    const note=(per&&nbEv)?tvNoteDe(evs,per.id,(typeof per.base==="number"?per.base:10)):null;
+    _tvMien={events:evs, att:(r[0]&&r[0].exists?((r[0].data()||{}).att||{}):{}), periode:per, note:note, nb:nbEv};
+    _tvMienLu=Date.now();
     try{ profil.notesTravail = tvMienNote()?[tvMienNote()]:[]; sauverProfil(profil); }catch(e){}
     return _tvMien;
   }).catch(function(){ return null; });
 }
 /* Chargé après coup dans le profil : note + retour du travail en classe. */
 function progChargerTravail(){
+  if(!TRAVAIL_CLASSE)return;
   if(typeof tvChargerMien!=="function"||!profil.eleveCode||!profil.classeId)return;
   tvChargerMien().then(function(){
     const z=document.getElementById("progNotes"); if(z&&typeof progNotesHTML==="function")z.innerHTML=progNotesHTML();
@@ -19692,13 +21937,17 @@ function progChargerTravail(){
   }).catch(function(){});
 }
 let _tvMien=null;
-function tvMienNote(){ return (_tvMien&&_tvMien.periode&&typeof _tvMien.note==="number")?{d:(_tvMien.periode.clotureLe||_tvMien.periode.debut||0),note:_tvMien.note,sur:20,titre:"Travail en classe"}:null; }
+let _tvMienLu=0;
+function tvMienNote(){ return (_tvMien&&_tvMien.periode&&typeof _tvMien.note==="number"&&_tvMien.nb>0)?{d:(_tvMien.periode.clotureLe||_tvMien.periode.debut||0),note:_tvMien.note,sur:20,titre:"Travail en classe",nb:_tvMien.nb}:null; }
 function tvFeedbackHTML(){
+  if(!TRAVAIL_CLASSE)return "";
   if(!_tvMien||!_tvMien.periode)return "";
   const evs=(_tvMien.events||[]).filter(function(e){return e.periodeId===_tvMien.periode.id;});
   const n=_tvMien.note;
   let h='<div class="ex" style="margin-bottom:16px"><h3 style="margin-top:0"><i class="ph ph-chalkboard-simple"></i> Ton travail en classe</h3>'
-    +'<p style="margin:0 0 10px"><b style="font-size:1.3rem;color:'+tvCoul(n)+'">'+tvDispNote(n)+' / 20</b> <span style="color:var(--encre-doux)">· '+echapH(_tvMien.periode.nom||"")+'</span></p>';
+    +(typeof n==="number"
+      ?'<p style="margin:0 0 10px"><b style="font-size:1.3rem;color:'+tvCoul(n)+'">'+tvDispNote(n)+' / 20</b> <span style="color:var(--encre-doux)">· '+echapH(_tvMien.periode.nom||"")+'</span></p>'
+      :'<p style="margin:0 0 10px;color:var(--encre-doux)">Pas encore de note · '+echapH(_tvMien.periode.nom||"")+'</p>');
   (function(){ const att=_tvMien.att||{}; let aA=0,aR=0; Object.keys(att).forEach(function(d){ if(att[d]==="A")aA++; else if(att[d]==="R")aR++; });
     if(aA||aR){ h+='<p style="margin:0 0 10px;font-size:.9rem;color:var(--encre-doux)"><i class="ph ph-user-check"></i> '+(aA?aA+" absence"+(aA>1?"s":""):"")+((aA&&aR)?" · ":"")+(aR?aR+" retard"+(aR>1?"s":""):"")+'</p>'; } })();
   if(!evs.length){ h+='<p style="color:var(--encre-doux);margin:0">Rien de relevé pour l\'instant. Participe, sois attentif : ça compte&nbsp;!</p>'; }
@@ -19729,7 +21978,7 @@ const AP_TUILES={
   suivi:[
     ["Élèves et codes","Noms, codes, mots secrets, points","identification-card","lire","ouvrirProf('rosterClasse')"],
     ["Travail en classe","Plan de classe, comportements, notes","chalkboard-simple","theorie","ouvrirProf('ecranTravailProf')"],
-    ["Notes &amp; bulletins","Cours, chant, comportement, bilan et export Pronote","exam","rythme","ouvrirNotes()"],
+    ["Notes &amp; bulletins",TRAVAIL_CLASSE?"Cours, chant, comportement, bilan et export Pronote":"Cours, chant, bilan et export Pronote","exam","rythme","ouvrirNotes()"],
     ["Votes","Faire voter la classe, résultats en direct","chart-bar","culture","ouvrirProf('ecranVotesProf')"],
     ["Classement","Le palmarès d'une classe","trophy","loin","classementProf()"],
     ["Diplômes","Les meilleurs d'une classe ou du collège, à imprimer","certificate","ecoute","ecranDiplomesProf()"]],
@@ -19784,7 +22033,7 @@ function accueilProf(){
           <div class="ac-actions">
             <button class="ac-cta" onclick="ouvrirProf('ecranDevoirsProf')"><i class="ph-fill ph-backpack"></i> Donner du travail</button>
             <button class="ac-cta2" onclick="ouvrirProf('ecranRendus')">Travaux rendus</button>
-            <button class="ac-cta2" onclick="ecranJeuHost()"><i class="ph-fill ph-play"></i> Lancer une partie</button>
+            <button class="ac-cta2" onclick="ecranLancerPartie()"><i class="ph-fill ph-play"></i> Lancer une partie</button>
             ${estAdmin()?'<button class="ac-cta2 ac-admin" onclick="ecranAdmin()"><i class="ph-fill ph-shield-star"></i> Administration</button>':''}
           </div>
         </div>
@@ -19821,7 +22070,7 @@ function accueilProf(){
     <div class="ap-panel">
         <div id="apPanel_suivi"${_accueilVue==="suivi"?"":" hidden"}>
           <div class="ap-panel-t"><i class="ph ph-users-three"></i> Suivi de mes classes</div>
-          ${apTuilesHTML(AP_TUILES.suivi,"lire")}
+          ${apTuilesHTML(AP_TUILES.suivi.filter(function(t){ return TRAVAIL_CLASSE||String(t[4]).indexOf("ecranTravailProf")<0; }),"lire")}
         </div>
         <div id="apPanel_contenus"${_accueilVue==="contenus"?"":" hidden"}>
           <div class="ap-panel-t"><i class="ph ph-pencil-line"></i> Mes contenus</div>
@@ -20913,7 +23162,7 @@ const EVEL_COLS={
   der:  {lib:"Dernière",    val:function(e){return e.der||0;}},
   vig:  {lib:"À vérifier",  val:function(e){return e.vig;}}
 };
-function evVue(v){ _evVue=v; evalsRendre(); evOngletActifVisible(); }
+function evVue(v){ if(v==="comport"&&!TRAVAIL_CLASSE)v="eleves"; _evVue=v; evalsRendre(); evOngletActifVisible(); }
 /* Téléphone : les onglets défilent sur une ligne ; on amène l'onglet actif au centre. */
 function evOngletActifVisible(){
   try{ document.querySelectorAll(".ev-onglets").forEach(function(t){ const on=t.querySelector("button.on"); if(!on||t.scrollWidth<=t.clientWidth)return;
@@ -22862,7 +25111,7 @@ function evalsClasse(classId){
                sorties:0, _chant:true, chantId:v.chantId});
     });
     /* Travail en classe : la note de la période courante devient une note. */
-    (function(){
+    if(TRAVAIL_CLASSE)(function(){
       const pers=[]; (r[3]||{forEach:function(){}}).forEach(function(d){ pers.push(Object.assign({id:d.id},d.data()||{})); });
       const per=pers.filter(function(p){return !p.close;}).sort(function(x,y){return (y.debut||0)-(x.debut||0);})[0]
                || pers.sort(function(x,y){return (y.clotureLe||y.debut||0)-(x.clotureLe||x.debut||0);})[0];
@@ -22946,7 +25195,7 @@ function evBarre(classId){
   const tabs='<div class="ev-onglets-c"><div class="ev-onglets">'
     +'<button class="'+(_evVue==="eleves"?"on":"")+'" onclick="evVue(\'eleves\')"><i class="ph ph-exam"></i> Cours</button>'
     +'<button class="'+(_evVue==="chant"?"on":"")+'" onclick="evVue(\'chant\')"><i class="ph ph-microphone-stage"></i> Chant</button>'
-    +'<button class="'+(_evVue==="comport"?"on":"")+'" onclick="evVue(\'comport\')"><i class="ph ph-chalkboard-simple"></i> Comportement</button>'
+    +(TRAVAIL_CLASSE?'<button class="'+(_evVue==="comport"?"on":"")+'" onclick="evVue(\'comport\')"><i class="ph ph-chalkboard-simple"></i> Comportement</button>':'')
     +'<button class="'+(_evVue==="bilan"?"on":"")+'" onclick="evVue(\'bilan\')"><i class="ph ph-scroll"></i> Bilan</button>'
     +'<button class="'+(_evVue==="vigil"?"on":"")+'" onclick="evVue(\'vigil\')"><i class="ph ph-shield-warning"></i> Vigilance'+(function(){
         try{ const l=_evalsCache[classId]||[], b=evBornesPeriode(evPeriodeCourante(classId),classId);
@@ -23039,7 +25288,7 @@ function evalsRendre(){
   const tete=evRibanHTML(classId);
   const barre=evBarre(classId);
   if(_evVue==="chant"){ z.innerHTML=tete+barre+evChantRendre(classId); return; }
-  if(_evVue==="comport"){ z.innerHTML=tete+barre+evComportRendre(classId); return; }
+  if(_evVue==="comport"&&TRAVAIL_CLASSE){ z.innerHTML=tete+barre+evComportRendre(classId); return; }
   if(_evVue==="bilan"){ z.innerHTML=tete+barre+evBilanRendre(classId); return; }
   if(_evVue==="vigil"){ z.innerHTML=tete+barre+evVigilRendre(classId); return; }
   /* Aucune note ET aucun élève : rien à montrer. Dès qu'il y a des élèves, le
@@ -23882,6 +26131,9 @@ function ecranJouer(){
   const seul=[
     {fam:"seul",ic:"ph-lightning",joueurs:p1,titre:"Survie : l'ascension",txt:"Monte le plus haut possible : chaque erreur te fait redescendre et te coûte une seconde.",go:"Jouer",clic:"ecranModeSurvie()"},
     {fam:"seul",ic:"ph-hands-clapping",joueurs:p1+' · en classe aussi',titre:"Clapping Music",txt:"Le déphasage de Steve Reich : regarde, tape dans tes mains, puis invente ton propre motif.",go:"Jouer",clic:"ecranClapping()"},
+    {fam:"seul",ic:"ph-shapes",joueurs:p1+' · à deux et en classe aussi',titre:"Polyrythmie",txt:"Tape ton rythme pendant qu\u2019un autre se joue : 2 contre 3, 3 contre 4… comme Philip Glass.",go:"Jouer",clic:"ecranPoly()"},
+    {fam:"seul",ic:"ph-equalizer",joueurs:p1+' · en classe aussi',titre:"Boîte à rythmes",txt:"Compose des rythmes de batterie, découvre ceux du rock, du rap ou du reggae, et reproduis le rythme mystère.",go:"Jouer",clic:"ecranBatterie()"},
+    {fam:"seul",ic:"ph-microphone-stage",joueurs:p1+' · échauffement en classe',titre:"Chante juste",txt:"Chante dans le micro : ta voix monte et descend sur l\u2019échelle des notes. Tiens la note juste !",go:"Jouer",clic:"ecranChanteJuste()"},
     {fam:"seul",ic:"ph-shooting-star",joueurs:p1,titre:"Les aventures de Nova",txt:"Une histoire dont tu es le héros, à travers les époques, avec Nova et Maestro.",go:"Continuer l\u2019aventure",clic:"ecranHistoire()"}];
   const deux=[
     {fam:"deux",ic:"ph-sword",joueurs:p2+' · même appareil',titre:"Tir à la corde",txt:"L\u2019appareil posé entre vous deux, la même question en même temps : le plus rapide tire la corde.",go:"Jouer",clic:"ecranDuelLocal()"},
@@ -23928,6 +26180,975 @@ function rappelCodeJeu(){
 }
 
 /* =====================================================================
+   POLYRYTHMIE (07/10/2026) : taper un rythme PENDANT qu'un autre se joue.
+   Deux rythmes partagent le même cycle (un tour d'aiguille) : l'un le coupe
+   en A frappes, l'autre en B. Chaque rythme est une FORME inscrite dans le
+   cercle (2 = trait, 3 = triangle, 4 = carré, 5 = pentagone, 6 = hexagone) :
+   or = toi (anneau intérieur), bleu = l'autre (anneau extérieur). Sur le 1,
+   tout le monde tape ensemble. La grille « Compte avec moi » découpe le cycle
+   en PPCM(A,B) cases : on compte, et on voit où tombe chaque frappe.
+   Trois onglets : Comprendre (écouter, Philip Glass), À toi de taper (noté),
+   À deux ou en classe (deux joueurs sur un appareil, ou deux groupes projetés).
+   Moteur : planification Web Audio comme Clapping Music (claps cmClap).
+   ===================================================================== */
+const PR_NIV={
+  1:{nom:"Facile",sous:"2 contre 3",T:2.2,pts:10,paires:[[3,2],[2,3],[2,4],[4,2]]},
+  2:{nom:"Intermédiaire",sous:"3 contre 4, 6 contre 4",T:2.6,pts:20,paires:[[3,4],[4,3],[6,4],[4,6]]},
+  3:{nom:"Difficile",sous:"contre 5",T:3,pts:30,paires:[[3,5],[5,3],[2,5],[5,2],[4,5],[5,4]]}
+};
+const PR_FORME={2:"le trait",3:"le triangle",4:"le carré",5:"le pentagone",6:"l'hexagone"};
+const PR_VIT={lent:1.35,moyen:1,rapide:0.8};
+/* « Opening » de Glass (notes données par l'enseignant) : la main gauche alterne deux notes
+   (4 par tour), la main droite deux autres (6 par tour) ; parfois une basse tenue.
+   Chaque harmonie dure PR_GLASS_TOURS tours (un tour = deux temps). */
+const PR_GLASS=[
+  {mg:[56,60],md:[65,72],nom:"MG la♭ do · MD fa do"},
+  {mg:[55,58],basse:39,md:[67,72],nom:"basse mi♭ · MG sol si♭ · MD sol do"},
+  {mg:[55,58],basse:34,md:[68,72],nom:"basse si♭ · MG sol si♭ · MD la♭ do"}
+];
+const PR_GLASS_TOURS=4;
+let _pr={niv:1,moi:3,autre:2,onglet:"comprendre",vit:"moyen",metro:"un",guide:true,cycles:8,muet:[false,false],
+  deux:"joueurs",son2:[true,true],piano:false,mode:"",session:false,planif:false,timer:null,raf:null,
+  evts:[],fen:[],prochain:0,pos:null,finT:0,debut:0,cour:null,score:null,total:0,seul:false};
+
+function prPgcd(a,b){ return b?prPgcd(b,a%b):a; }
+function prL(){ return _pr.moi*_pr.autre/prPgcd(_pr.moi,_pr.autre); }
+function prT(){ return PR_NIV[_pr.niv].T*PR_VIT[_pr.vit]*(_pr.piano?0.6:1); }
+function prN(v){ return v?_pr.autre:_pr.moi; }
+/* tolérance d'une frappe : un peu plus du quart de l'écart entre deux frappes de la voix */
+function prTol(v){ const t=Math.min(0.16,Math.max(0.07,prT()/prN(v)*0.28)); return _pr.niv===3?t*0.85:t; }
+function prMoisDispo(){ const l=[]; PR_NIV[_pr.niv].paires.forEach(function(p){ if(l.indexOf(p[0])<0)l.push(p[0]); }); return l.sort(function(a,b){ return a-b; }); }
+function prAutresPour(m){ return PR_NIV[_pr.niv].paires.filter(function(p){ return p[0]===m; }).map(function(p){ return p[1]; }).sort(function(a,b){ return a-b; }); }
+function prValider(){
+  const P=PR_NIV[_pr.niv].paires;
+  if(!P.some(function(p){ return p[0]===_pr.moi&&p[1]===_pr.autre; })){
+    const m=P.filter(function(p){ return p[0]===_pr.moi; })[0]||P[0]; _pr.moi=m[0]; _pr.autre=m[1];
+  }
+}
+/* positions (1 à L) où tombe chaque frappe d'un rythme de n */
+function prFrappes(n){ const L=prL(), r=[]; for(let k=0;k<L;k+=L/n)r.push(k+1); return r; }
+function prEt(l){ return l.length>1?l.slice(0,-1).join(", ")+" et "+l[l.length-1]:String(l[0]); }
+function prLabels(){
+  if(_pr.onglet==="deux")return _pr.deux==="joueurs"?["Joueur or","Joueur bleu"]:["Groupe or","Groupe bleu"];
+  if(_pr.piano)return ["Main droite","Main gauche"];
+  return _pr.onglet==="taper"?["Toi","MusEduc"]:["Toi","L'autre"];
+}
+
+/* ---------- les sons ---------- */
+/* l'autre rythme : un bongo, bien distinct du clap et du métronome, audible sur un petit haut-parleur */
+function prBongo(t,vol){
+  const ctx=audio(), v=vol||1, o=ctx.createOscillator(), o2=ctx.createOscillator(), g=ctx.createGain(), g2=ctx.createGain();
+  o.type="triangle"; o.frequency.setValueAtTime(430,t); o.frequency.exponentialRampToValueAtTime(330,t+0.12);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.95*v,t+0.003); g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+  o2.type="sine"; o2.frequency.setValueAtTime(860,t); g2.gain.setValueAtTime(0.35*v,t); g2.gain.exponentialRampToValueAtTime(0.001,t+0.05);
+  o.connect(g); o2.connect(g2); g.connect(cmSortie()); g2.connect(cmSortie());
+  o.start(t); o.stop(t+0.24); o2.start(t); o2.stop(t+0.06);
+}
+function prMidi(m){ return 440*Math.pow(2,(m-69)/12); }
+function prGlassAccord(c){ return PR_GLASS[Math.floor(Math.max(0,c)/PR_GLASS_TOURS)%PR_GLASS.length]; }
+function prPianoNote(t,c,k,h){
+  const L=prL(), ctx=audio(), T=prT(), off=Math.max(0,t-ctx.currentTime), ac=prGlassAccord(c);
+  if(h[0]&&!_pr.muet[0]){ const i=k/(L/_pr.moi); rbPiano(prMidi(ac.md[i%2]),off,T/_pr.moi*1.6,0.2); }
+  if(h[1]&&!_pr.muet[1]){ const i=k/(L/_pr.autre); rbPiano(prMidi(ac.mg[i%2]),off,T/_pr.autre*1.8,0.26);
+    /* la basse tenue : frappée au début de chaque mesure (deux tours), sinon le piano s'éteint */
+    if(ac.basse&&k===0&&c%2===0)rbPiano(prMidi(ac.basse),off,T*2,0.3); }
+}
+
+/* ---------- l'écran ---------- */
+function ecranPoly(onglet){
+  if(typeof fermerMenu==="function")fermerMenu();
+  prStop(); if(typeof cmStop==="function")cmStop();
+  masquerInterfaceNormale(); majRetour(null);
+  const _t=document.getElementById("titre"), _i=document.getElementById("intro");
+  if(_t){ _t.textContent="Polyrythmie"; _t.style.display="none"; }
+  if(_i){ _i.textContent=""; _i.style.display="none"; }
+  if(onglet&&onglet!==_pr.onglet){ _pr.onglet=onglet; _pr.piano=false; }
+  prValider();
+  const ong=function(id,n,ic,lib){ return '<button type="button" role="tab" aria-selected="'+(_pr.onglet===id)+'" class="'+(_pr.onglet===id?"on":"")+'" onclick="ecranPoly(\''+id+'\')"><span class="cm-on-n">'+n+'</span><i class="ph-fill '+ic+'"></i> '+lib+'</button>'; };
+  const niveaux='<div class="cm-niveaux" role="group" aria-label="Niveau">'
+    +[1,2,3].map(function(n){ return '<button type="button" class="cm-niv'+(_pr.niv===n?" on":"")+'" aria-pressed="'+(_pr.niv===n)+'" onclick="prNiveau('+n+')">'+PR_NIV[n].nom+'<small>'+PR_NIV[n].sous+'</small></button>'; }).join("")+'</div>';
+  document.getElementById("zone").innerHTML='<div class="cm pr" id="prScene">'
+    +'<div class="cm-top">'
+    +'<button class="sv-btn-rond" onclick="prStop();ecranJouer()" aria-label="Retour aux jeux"><i class="ph ph-caret-left"></i></button>'
+    +'<div class="cm-titre"><span class="sv-label"><i class="ph-fill ph-shapes"></i> Jeu solo · à deux · en classe</span><h2>Polyrythmie</h2>'
+    +'<p>Deux rythmes en même temps : tiens le tien pendant que l\'autre joue.</p></div>'
+    +'<button class="sv-btn-rond" onclick="prProjeter()" aria-label="Projeter en plein écran" title="Projeter en classe"><i class="ph ph-arrows-out"></i></button>'
+    +'</div>'
+    +'<div class="cm-onglets" role="tablist">'+ong("comprendre",1,"ph-eye","Comprendre")+ong("taper",2,"ph-hand-tap","À toi de taper")+ong("deux",3,"ph-users-three","À deux, en classe")+'</div>'
+    +niveaux
+    +'<div class="cm-corps">'
+    +'<div class="cm-horloge pr-roue-zone" onpointerdown="if(_pr.onglet===\'taper\')prTap(0,event)"><div id="prRoue">'+prRoueSVG()+'</div><div class="cm-leg" id="prLeg">'+prLegHTML()+'</div></div>'
+    +'<div class="cm-panneau" id="prPanneau">'+prPanneauHTML()+'</div>'
+    +'</div></div>';
+  prApres();
+  if(typeof remonter==="function")remonter();
+}
+function prApres(){ if(_pr.onglet==="comprendre"&&typeof ceMonterYT==="function")ceMonterYT(); }
+function prRafraichir(){
+  const r=document.getElementById("prRoue"), p=document.getElementById("prPanneau"), l=document.getElementById("prLeg");
+  if(r)r.innerHTML=prRoueSVG(); if(l)l.innerHTML=prLegHTML(); if(p)p.innerHTML=prPanneauHTML();
+  prApres();
+}
+function prNiveau(n){ prStop(); _pr.niv=n; _pr.piano=false; prValider(); ecranPoly(); }
+function prChoisirMoi(n){ prStop(); _pr.moi=n; _pr.piano=false; const a=prAutresPour(n); if(a.indexOf(_pr.autre)<0)_pr.autre=a[0]; prRafraichir(); }
+function prChoisirAutre(n){ prStop(); _pr.autre=n; _pr.piano=false; prRafraichir(); }
+function prReglage(cle,val){
+  if(cle==="vit"||cle==="cycles")prStop();          /* changer de tempo en route fausserait l'aiguille et les fenêtres */
+  _pr[cle]=val;
+  if(_pr.session){ prMajSegs(); return; }
+  const p=document.getElementById("prPanneau"); if(p){ p.innerHTML=prPanneauHTML(); prApres(); }
+}
+function prMajSegs(){ document.querySelectorAll("#prPanneau [data-cle]").forEach(function(b){ const on=String(_pr[b.getAttribute("data-cle")])===b.getAttribute("data-val"); b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); }); }
+function prMuet(v){ _pr.muet[v]=!_pr.muet[v]; const b=document.getElementById("prM"+v); if(b){ b.classList.toggle("on",!_pr.muet[v]); b.setAttribute("aria-pressed",!_pr.muet[v]); } }
+function prSon2(v){ _pr.son2[v]=!_pr.son2[v]; const b=document.getElementById("prS"+v); if(b){ b.classList.toggle("on",_pr.son2[v]); b.setAttribute("aria-pressed",_pr.son2[v]); } }
+function prDeux(m){ prStop(); _pr.deux=m; prRafraichir(); }
+function prProjeter(){
+  const el=document.getElementById("prScene"); if(!el)return;
+  try{ if(document.fullscreenElement)document.exitFullscreen(); else if(el.requestFullscreen)el.requestFullscreen(); }catch(e){}
+}
+
+/* une forme (pour les boutons et les pads) */
+function prFormeSVG(n,v,taille){
+  const C=20, R=15, pts=[];
+  for(let i=0;i<n;i++){ const a=i/n*2*Math.PI-Math.PI/2; pts.push((C+R*Math.cos(a)).toFixed(1)+","+(C+R*Math.sin(a)).toFixed(1)); }
+  const f=n===2?'<line class="f" x1="20" y1="5" x2="20" y2="35"/>':'<polygon class="f" points="'+pts.join(" ")+'"/>';
+  return '<svg class="pr-ico v'+(v+1)+'" viewBox="0 0 40 40" width="'+(taille||28)+'" height="'+(taille||28)+'" aria-hidden="true">'+f
+    +pts.map(function(p){ const q=p.split(","); return '<circle cx="'+q[0]+'" cy="'+q[1]+'" r="3.4"/>'; }).join("")+'</svg>';
+}
+/* la roue : deux formes dans deux cercles, des graduations (le compte) et l'aiguille */
+function prRoueSVG(){
+  const A=_pr.moi, B=_pr.autre, L=prL(), C=170, R1=136, R2=88, lab=prLabels();
+  const pt=function(R,f){ const a=f*2*Math.PI-Math.PI/2; return [+(C+R*Math.cos(a)).toFixed(1),+(C+R*Math.sin(a)).toFixed(1)]; };
+  const forme=function(R,n,cls){
+    if(n===2){ const a=pt(R,0), b=pt(R,0.5); return '<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" class="pr-forme '+cls+'"/>'; }
+    const p=[]; for(let i=0;i<n;i++)p.push(pt(R,i/n).join(","));
+    return '<polygon points="'+p.join(" ")+'" class="pr-forme '+cls+'"/>';
+  };
+  let s='<svg class="cm-svg pr-svg" viewBox="0 0 340 340" role="img" aria-label="'+escapeHtml(lab[0]+" : "+A+" frappes par tour, "+PR_FORME[A]+" doré ; "+lab[1]+" : "+B+", "+PR_FORME[B]+" bleu")+'">';
+  s+='<circle cx="'+C+'" cy="'+C+'" r="'+R1+'" class="pr-piste v2"/><circle cx="'+C+'" cy="'+C+'" r="'+R2+'" class="pr-piste v1"/>';
+  for(let k=0;k<L;k++){
+    const a=pt(R1+9,k/L), b=pt(R1+17,k/L);
+    s+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" class="pr-grad" data-k="'+k+'"/>';
+    if(L<=12){ const n=pt(R1+28,k/L); s+='<text x="'+n[0]+'" y="'+n[1]+'" class="cm-num pr-num" data-k="'+k+'">'+(k+1)+'</text>'; }
+  }
+  s+=forme(R1,B,"v2")+forme(R2,A,"v1");
+  s+='<g id="prAiguille" class="cm-aiguille"><line x1="'+C+'" y1="'+(C-30)+'" x2="'+C+'" y2="'+(C-R1-6)+'"/></g>';
+  for(let i=0;i<B;i++){ const p=pt(R1,i/B), r=13;
+    s+='<polygon id="prM1_'+i+'" class="pr-m v2" points="'+p[0]+','+(p[1]-r)+' '+(p[0]+r)+','+p[1]+' '+p[0]+','+(p[1]+r)+' '+(p[0]-r)+','+p[1]+'"/>'; }
+  for(let i=0;i<A;i++){ const p=pt(R2,i/A); s+='<circle id="prM0_'+i+'" class="pr-m v1" cx="'+p[0]+'" cy="'+p[1]+'" r="11"/>'; }
+  s+='<text x="'+C+'" y="'+(C+8)+'" class="cm-c1" id="prC1">'+A+'&#8239;:&#8239;'+B+'</text><text x="'+C+'" y="'+(C+30)+'" class="cm-c2" id="prC2">'+A+' contre '+B+'</text>';
+  return s+'</svg>';
+}
+function prLegHTML(){
+  const lab=prLabels();
+  return '<span><i class="pr-pt v1"></i> '+lab[0]+' : <b>'+_pr.moi+'</b> ('+PR_FORME[_pr.moi]+')</span>'
+    +'<span><i class="pr-pt v2"></i> '+lab[1]+' : <b>'+_pr.autre+'</b> ('+PR_FORME[_pr.autre]+')</span>'
+    +'<span><i class="cm-an pr-aig"></i> un tour d\'aiguille = un cycle</span>';
+}
+/* « Compte avec moi » : le cycle découpé en PPCM cases */
+function prGrilleHTML(){
+  const A=_pr.moi, B=_pr.autre, L=prL(), lab=prLabels(); let num="",r1="",r2="",r3="";
+  for(let k=0;k<L;k++){
+    const a=k%(L/A)===0, b=k%(L/B)===0;
+    num+='<span class="pr-n" data-k="'+k+'">'+(k+1)+'</span>';
+    r1+='<span class="pr-c v1'+(a?" on":"")+'" data-k="'+k+'"></span>';
+    r2+='<span class="pr-c v2'+(b?" on":"")+'" data-k="'+k+'"></span>';
+    r3+='<span class="pr-c ens'+(a&&b?" n2":(a?" a":(b?" b":"")))+'" data-k="'+k+'">'+(a&&b?'<i class="ph-fill ph-hands-clapping"></i>':'')+'</span>';
+  }
+  const st=' style="--n:'+L+'"';
+  return '<div class="pr-grille"><div class="pr-ligne nums"'+st+'><b>Compte</b>'+num+'</div>'
+    +'<div class="pr-ligne"'+st+'><b class="v1">'+lab[0]+'</b>'+r1+'</div>'
+    +'<div class="pr-ligne"'+st+'><b class="v2">'+lab[1]+'</b>'+r2+'</div>'
+    +'<div class="pr-ligne ens"'+st+'><b>Ensemble</b>'+r3+'</div></div>';
+}
+function prChoixHTML(){
+  const lab=prLabels(), b=function(n,on,fn,v){
+    return '<button type="button" class="pr-nb v'+(v+1)+(on?" on":"")+'" aria-pressed="'+on+'" aria-label="'+n+' frappes par tour ('+PR_FORME[n]+')" onclick="'+fn+'('+n+')">'+prFormeSVG(n,v)+'<b>'+n+'</b></button>'; };
+  return '<div class="pr-choix"><div><span class="pr-lab v1">'+lab[0]+'</span><div class="pr-nbs">'+prMoisDispo().map(function(n){ return b(n,n===_pr.moi,"prChoisirMoi",0); }).join("")+'</div></div>'
+    +'<span class="pr-contre">contre</span>'
+    +'<div><span class="pr-lab v2">'+lab[1]+'</span><div class="pr-nbs">'+prAutresPour(_pr.moi).map(function(n){ return b(n,n===_pr.autre,"prChoisirAutre",1); }).join("")+'</div></div></div>';
+}
+function prSeg(cle,opts){
+  return '<div class="cm-seg" role="group">'+opts.map(function(o){ const on=String(_pr[cle])===String(o[0]);
+    return '<button type="button" data-cle="'+cle+'" data-val="'+o[0]+'" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="prReglage(\''+cle+'\','+(typeof o[0]==="number"?o[0]:'\''+o[0]+'\'')+')">'+o[1]+'</button>'; }).join("")+'</div>';
+}
+function prOptionsHTML(tours){
+  return '<div class="cm-options"><div><span>Vitesse</span>'+prSeg("vit",[["lent","Lent"],["moyen","Moyen"],["rapide","Rapide"]])+'</div>'
+    +'<div><span><i class="ph ph-metronome"></i> Métronome</span>'+prSeg("metro",[["non","Non"],["un","Sur le 1"],["compter","Chaque case"]])+'</div>'
+    +(tours?'<div><span>Tours</span>'+prSeg("cycles",[[4,"4"],[8,"8"],[12,"12"]])+'</div>':'')+'</div>';
+}
+function prPanneauHTML(){
+  const A=_pr.moi, B=_pr.autre, L=prL(), lab=prLabels();
+  const compte='<p class="cm-aide">Compte de 1 à '+L+' sans t\'arrêter : '+lab[0].toLowerCase()+' sur <b>'+prEt(prFrappes(A))+'</b>, '+lab[1].toLowerCase()+' sur <b>'+prEt(prFrappes(B))+'</b>.</p>';
+  if(_pr.onglet==="taper"){
+    const rec=(profil.polyRec||{})[_pr.niv+"-"+A+"-"+B];
+    return '<div class="cm-bloc">'
+      +'<h3><i class="ph-fill ph-hand-tap"></i> À toi de taper !</h3>'
+      +prChoixHTML()
+      +'<p class="cm-aide">MusEduc joue <b>'+B+'</b> ('+PR_FORME[B]+' bleu). Toi, tape <b>'+A+'</b> fois par tour, quand l\'aiguille touche un rond <b>doré</b>. Deux clics pour te préparer, un tour pour écouter, puis à toi'+(_pr.niv===3?' ; à la moitié, ta forme s\'efface : <b>tiens seul</b>':'')+'.</p>'
+      +'<button type="button" class="cm-pad" id="prPad" onpointerdown="prTap(0,event)" aria-label="Taper"><i class="ph-fill ph-hands-clapping"></i> CLAP !<small>ou barre d\'espace</small></button>'
+      +'<div class="cm-score" id="prScore">'+prScoreHTML(0)+'</div>'
+      +'<div class="cm-commandes"><button type="button" class="cm-play" id="prPlay" onclick="prJouer()"><i class="ph-fill ph-play"></i> Commencer</button></div>'
+      +prOptionsHTML(true)
+      +'<label class="cm-case"><input type="checkbox" '+(_pr.guide?"checked":"")+' onchange="_pr.guide=this.checked"> Guide : mon rythme est joué doucement</label>'
+      +'<div id="prResultat" aria-live="polite"></div>'
+      +(rec!=null?'<p class="cm-rec"><i class="ph-fill ph-flag-pennant"></i> Ton record avec '+A+' contre '+B+' : <b>'+rec+' %</b></p>':'')
+      +'</div>'
+      +'<div class="cm-bloc"><h3><i class="ph-fill ph-list-numbers"></i> Compte avec moi</h3><div id="prGrille">'+prGrilleHTML()+'</div>'+compte+'</div>';
+  }
+  if(_pr.onglet==="deux"){
+    const j=_pr.deux==="joueurs";
+    const pad=function(v){ const n=prN(v), t=j?'button type="button" onpointerdown="prTap('+v+',event)"':'div';
+      return '<'+t+' class="pr-pad v'+(v+1)+'" id="prPad'+v+'">'+prFormeSVG(n,v,64)+'<b>'+lab[v]+'</b><span>'+n+' par tour'+(j?' · touche '+(v?"J":"F"):'')+'</span></'+(j?"button":"div")+'>'; };
+    return '<div class="cm-bloc">'
+      +'<h3><i class="ph-fill ph-users-three"></i> À deux ou en classe</h3>'
+      +'<div class="cm-voix pr-mode"><button type="button" class="'+(j?"on":"")+'" aria-pressed="'+j+'" onclick="prDeux(\'joueurs\')"><b>Deux joueurs</b><span>sur le même appareil, chacun son rythme</span></button>'
+      +'<button type="button" class="'+(j?"":"on")+'" aria-pressed="'+(!j)+'" onclick="prDeux(\'groupes\')"><b>Deux groupes</b><span>en classe, écran projeté</span></button></div>'
+      +prChoixHTML()
+      +'<div class="pr-pads">'+pad(0)+pad(1)+'</div>'
+      +(j?'<div class="cm-score pr-score2" id="prScore">'+prScoreHTML(0)+prScoreHTML(1)+'</div>':'')
+      +'<div class="cm-commandes"><button type="button" class="cm-play" id="prPlay" onclick="prJouer()"><i class="ph-fill ph-play"></i> '+(j?"Commencer":"Lancer")+'</button>'
+      +'<button type="button" class="cm-dec" onclick="prProjeter()"><i class="ph ph-arrows-out"></i> Projeter</button></div>'
+      +prOptionsHTML(j)
+      +(j?'':'<div class="cm-options"><div><span>MusEduc tape aussi</span><div class="cm-seg"><button type="button" id="prS0" class="'+(_pr.son2[0]?"on":"")+'" aria-pressed="'+_pr.son2[0]+'" onclick="prSon2(0)">Groupe or</button><button type="button" id="prS1" class="'+(_pr.son2[1]?"on":"")+'" aria-pressed="'+_pr.son2[1]+'" onclick="prSon2(1)">Groupe bleu</button></div></div></div>')
+      +'<div id="prResultat" aria-live="polite"></div>'
+      +'<p class="cm-aide"><i class="ph-fill ph-chalkboard-teacher"></i> '+(j
+        ?'Deux clics pour se préparer, un tour pour écouter, puis chacun tape <b>son</b> rythme : joueur or sur la touche <b>F</b> (ou son pad), joueur bleu sur <b>J</b>.'
+        :'Le groupe or tape quand <b>son</b> pad s\'allume, le groupe bleu quand le sien s\'allume. Puis coupez le son de MusEduc : les groupes tiennent seuls.')+'</p>'
+      +'</div>'
+      +'<div class="cm-bloc"><h3><i class="ph-fill ph-list-numbers"></i> Compte avec moi</h3><div id="prGrille">'+prGrilleHTML()+'</div>'+compte+'</div>';
+  }
+  return '<div class="cm-bloc">'
+    +prChoixHTML()
+    +'<p class="cm-aide">'+lab[0]+' : <b>'+A+'</b> frappes par tour ('+PR_FORME[A]+' doré). '+lab[1]+' : <b>'+B+'</b> ('+PR_FORME[B]+' bleu). Sur le <b>1</b>, en haut, tout le monde tape ensemble.</p>'
+    +'<div class="cm-commandes"><button type="button" class="cm-play" id="prPlay" onclick="prJouer()"><i class="ph-fill ph-play"></i> Écouter</button></div>'
+    +prOptionsHTML(false)
+    +'<div class="cm-options"><div><span>J\'entends</span><div class="cm-seg"><button type="button" id="prM0" class="'+(_pr.muet[0]?"":"on")+'" aria-pressed="'+(!_pr.muet[0])+'" onclick="prMuet(0)">'+lab[0]+'</button><button type="button" id="prM1" class="'+(_pr.muet[1]?"":"on")+'" aria-pressed="'+(!_pr.muet[1])+'" onclick="prMuet(1)">'+lab[1]+'</button></div></div></div>'
+    +'</div>'
+    +'<div class="cm-bloc"><h3><i class="ph-fill ph-list-numbers"></i> Compte avec moi</h3><div id="prGrille">'+prGrilleHTML()+'</div>'+compte
+    +'<p class="cm-aide">Commence par compter à voix haute, puis tape seulement sur tes nombres. Ensuite, essaie de taper le tien pendant qu\'un camarade tape l\'autre.</p></div>'
+    +'<div class="cm-bloc pr-glass"><h3><i class="ph-fill ph-piano-keys"></i> Comme Philip Glass</h3>'
+    +'<p class="cm-aide">Dans <b>Opening</b> (<i>Glassworks</i>, 1981), au piano, la <b>main droite</b> joue 3 notes par temps et la <b>main gauche</b> 2. Sur deux temps, cela fait <b>6 contre 4</b> : une polyrythmie 3 contre 2, qui tourne en boucle.</p>'
+    +'<div class="cm-commandes"><button type="button" class="cm-dec" onclick="prGlass()"><i class="ph-fill ph-piano-keys"></i> Voir et entendre 6 contre 4</button></div>'
+    +'<div class="compo-yt-grille"><div class="ce-yt" data-yt="-nBE9U7q1Uc" data-lib="Opening · Philip Glass au piano (vidéo officielle)"></div></div></div>';
+}
+/* l'exemple de Glass : 6 (main droite) contre 4 (main gauche), au piano */
+function prGlass(){
+  prStop(); _pr.niv=2; _pr.moi=6; _pr.autre=4; _pr.onglet="comprendre"; _pr.muet=[false,false];
+  ecranPoly(); _pr.piano=true; prRafraichir(); prJouer();
+  const r=document.querySelector("#prScene .cm-horloge"); if(r)r.scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+
+/* ---------- jouer ---------- */
+function prMajBoutons(joue){
+  const b=document.getElementById("prPlay"); if(!b)return;
+  const lib={comprendre:"Écouter",taper:"Commencer",deux:_pr.deux==="joueurs"?"Commencer":"Lancer"}[_pr.onglet];
+  b.classList.toggle("stop",!!joue);
+  b.innerHTML=joue?'<i class="ph-fill ph-stop"></i> Arrêter':'<i class="ph-fill ph-play"></i> '+lib;
+}
+function prJouer(){
+  if(_pr.session){ prStop(); return; }
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const m=_pr.onglet==="taper"?"taper":(_pr.onglet==="deux"?(_pr.deux==="joueurs"?"duo":"groupes"):"ecoute");
+  const note=(m==="taper"||m==="duo"), r=document.getElementById("prResultat"); if(r)r.innerHTML="";
+  _pr.mode=m; _pr.session=true; _pr.planif=true; _pr.evts=[]; _pr.fen=[]; _pr.finT=0; _pr.cour=null; _pr.debut=0; _pr.seul=false;
+  _pr.pos={c:note?-1:0,k:0,clics:2};
+  _pr.total=note?_pr.cycles:Infinity;
+  _pr.score=m==="taper"?[{j:0,r:0,t:0}]:(m==="duo"?[{j:0,r:0,t:0},{j:0,r:0,t:0}]:null);
+  prMajScore();
+  _pr.prochain=ctx.currentTime+0.25;
+  prMajBoutons(true);
+  if(m==="taper"){ const pad=document.getElementById("prPad"); if(pad)pad.focus({preventScroll:true});
+    const sc=document.getElementById("prScene"), h=document.querySelector("#prScene .cm-horloge");
+    if(sc&&h&&sc.clientWidth<760)h.scrollIntoView({block:"start",behavior:"smooth"}); }
+  _pr.timer=setInterval(prPlanifier,25); prPlanifier();
+  _pr.raf=requestAnimationFrame(prAnimer);
+}
+function prStop(){
+  if(_pr.timer){ clearInterval(_pr.timer); _pr.timer=null; }
+  if(_pr.raf){ cancelAnimationFrame(_pr.raf); _pr.raf=null; }
+  const etait=_pr.session;
+  _pr.session=false; _pr.planif=false; _pr.evts=[]; _pr.fen=[]; _pr.cour=null; _pr.seul=false;
+  if(!etait)return;
+  document.querySelectorAll("#prScene .tape,#prScene .vise,#prScene .cur,#prScene .allume").forEach(function(x){ x.classList.remove("tape","vise","cur","allume"); });
+  const sc=document.getElementById("prScene"); if(sc)sc.classList.remove("sans-filet");
+  const a=document.getElementById("prAiguille"); if(a)a.style.transform="rotate(0deg)";
+  const c1=document.getElementById("prC1"), c2=document.getElementById("prC2");
+  if(c1){ c1.classList.remove("decompte"); c1.innerHTML=_pr.moi+"&#8239;:&#8239;"+_pr.autre; } if(c2)c2.textContent=_pr.moi+" contre "+_pr.autre;
+  prMajBoutons(false);
+}
+function prPlanifier(){
+  if(!document.getElementById("prScene")){ prStop(); return; }
+  if(!_pr.planif)return;
+  const ctx=audio(), T=prT(), L=prL(), dt=T/L, A=_pr.moi, B=_pr.autre, m=_pr.mode;
+  while(_pr.planif&&_pr.prochain<ctx.currentTime+0.15){
+    if(_pr.pos.clics>0){
+      rbToc(Math.max(0,_pr.prochain-ctx.currentTime),true);
+      _pr.evts.push({t:_pr.prochain,clic:_pr.pos.clics}); _pr.pos.clics--; _pr.prochain+=T/2; continue;
+    }
+    const t=_pr.prochain, P=_pr.pos, k=P.k, pre=P.c<0, h=[k%(L/A)===0,k%(L/B)===0];
+    const seul=m==="taper"&&_pr.niv===3&&P.c>=Math.floor(_pr.total/2);
+    if(_pr.metro!=="non"&&(k===0||_pr.metro==="compter"))rbToc(Math.max(0,t-ctx.currentTime),k===0);
+    if(_pr.piano)prPianoNote(t,P.c,k,h);
+    else if(m==="ecoute"){ if(h[0]&&!_pr.muet[0])cmClap(t,1,1); if(h[1]&&!_pr.muet[1])prBongo(t,1); }
+    else if(m==="taper"){ if(h[1])prBongo(t,1); if(h[0]&&(pre||(_pr.guide&&!seul)))cmClap(t,1,pre?0.75:0.28); }
+    else if(m==="duo"){ if(pre){ if(h[0])cmClap(t,1,0.7); if(h[1])prBongo(t,0.8); } }
+    else if(m==="groupes"){ if(h[0]&&_pr.son2[0])cmClap(t,1,1); if(h[1]&&_pr.son2[1])prBongo(t,1); }
+    _pr.evts.push({t:t,c:P.c,k:k,h:h,pre:pre,seul:seul});
+    if(!pre&&_pr.score){
+      if(!_pr.debut)_pr.debut=t;
+      for(let v=0;v<_pr.score.length;v++)if(h[v])_pr.fen.push({t:t,v:v,k:k,ok:false});
+    }
+    P.k++; _pr.prochain+=dt;
+    if(P.k>=L){ P.k=0; P.c++;
+      if(P.c>=_pr.total){ _pr.planif=false; _pr.finT=_pr.prochain; clearInterval(_pr.timer); _pr.timer=null; } }
+  }
+}
+function prAnimer(){
+  if(!document.getElementById("prScene")){ prStop(); return; }
+  const ctx=audio(), now=ctx.currentTime, T=prT(), L=prL();
+  while(_pr.evts.length&&_pr.evts[0].t<=now)prMontrer(_pr.evts.shift());
+  if(_pr.score){
+    _pr.fen=_pr.fen.filter(function(f){
+      if(now-f.t>prTol(f.v)){ if(!f.ok){ _pr.score[f.v].r++; prMarque(f.v,f.k,"rate"); prMajScore(); } return false; }
+      return true;
+    });
+  }
+  if(_pr.cour&&!_pr.cour.clic){ const a=document.getElementById("prAiguille"), f=Math.min(1,(now-_pr.cour.t)/(T/L));
+    if(a)a.style.transform="rotate("+(((_pr.cour.k+f)/L)*360).toFixed(1)+"deg)"; }
+  if(!_pr.planif&&_pr.finT&&now>_pr.finT+0.25){ prFin(); return; }
+  _pr.raf=requestAnimationFrame(prAnimer);
+}
+function prMontrer(ev){
+  _pr.cour=ev;
+  const L=prL(), m=_pr.mode, c1=document.getElementById("prC1"), c2=document.getElementById("prC2"), sc=document.getElementById("prScene");
+  if(ev.clic){
+    if(c1){ c1.textContent=ev.clic; c1.classList.remove("decompte"); void c1.getBoundingClientRect(); c1.classList.add("decompte"); }
+    if(c2)c2.textContent="prêt ?";
+    return;
+  }
+  if(c1){ c1.classList.remove("decompte"); c1.textContent=ev.k+1; }
+  if(c2){
+    let t;
+    if(ev.pre)t="écoute…";
+    else if(m==="taper"||m==="duo")t=ev.seul?"tiens seul !":(ev.c===0&&ev.k<L/2?"à toi !":"tour "+(ev.c+1)+" / "+_pr.total);
+    else t=_pr.piano?prGlassAccord(ev.c).nom:"tour "+(ev.c+1);
+    c2.textContent=t;
+  }
+  if(sc)sc.classList.toggle("sans-filet",!!ev.seul);
+  for(let v=0;v<2;v++){
+    if(!ev.h[v])continue;
+    const n=prN(v), i=ev.k/(L/n), el=document.getElementById("prM"+v+"_"+i);
+    const note=_pr.score&&_pr.score[v]&&!ev.pre;
+    if(!(v===0&&ev.seul))cmFlash(el,note?"vise":"tape",Math.round(prT()/n*1000*0.7));
+    cmFlash(document.getElementById("prPad"+v),"allume",Math.round(Math.min(260,prT()/n*1000*0.6)));
+  }
+  document.querySelectorAll("#prRoue .pr-grad,#prRoue .pr-num,#prGrille .pr-n,#prGrille .pr-c").forEach(function(x){ x.classList.toggle("cur",+x.getAttribute("data-k")===ev.k); });
+}
+
+/* ---------- taper ---------- */
+function prTap(v,e){
+  if(e&&e.preventDefault)e.preventDefault();
+  if(_pr.onglet==="deux"&&_pr.deux!=="joueurs")return;
+  const ctx=audio(); try{ ctx.resume(); }catch(x){}
+  const now=ctx.currentTime;
+  cmClap(now+0.003,v?2:1,0.85);
+  cmFlash(document.getElementById(_pr.onglet==="taper"?"prPad":"prPad"+v),"tape",120);
+  if(!_pr.session||!_pr.score||!_pr.score[v])return;
+  const lat=ctx.outputLatency||ctx.baseLatency||0, tt=now-lat, tol=prTol(v);
+  if(!_pr.debut||tt<_pr.debut-tol)return;          /* pendant le tour d'écoute : on ignore */
+  let best=null,bd=1e9;
+  _pr.fen.forEach(function(f){ if(f.v!==v)return; const d=Math.abs(tt-f.t); if(d<bd){ bd=d; best=f; } });
+  if(best&&bd<=tol&&!best.ok){ best.ok=true; _pr.score[v].j++; prMarque(v,best.k,"ok"); }
+  else{ _pr.score[v].t++; cmFlash(document.getElementById(_pr.onglet==="taper"?"prPad":"prPad"+v),"trop",260); }
+  prMajScore();
+}
+function prMarque(v,k,cls){
+  const n=prN(v), i=k/(prL()/n);
+  cmFlash(document.getElementById("prM"+v+"_"+i),cls,380);
+}
+function prScoreHTML(v){
+  const S=(_pr.score&&_pr.score[v])||{j:0,r:0,t:0};
+  const tete=_pr.onglet==="deux"?'<b class="pr-qui v'+(v+1)+'">'+prLabels()[v]+'</b>':'';
+  return '<span class="pr-sc">'+tete+'<span class="ok"><i class="ph-fill ph-check-circle"></i> <b>'+S.j+'</b> justes</span>'
+    +'<span class="rate"><i class="ph-fill ph-x-circle"></i> <b>'+S.r+'</b> ratés</span>'
+    +'<span class="trop"><i class="ph-fill ph-warning-circle"></i> <b>'+S.t+'</b> en trop</span></span>';
+}
+function prMajScore(){ const s=document.getElementById("prScore"); if(!s)return; s.innerHTML=_pr.onglet==="deux"?prScoreHTML(0)+prScoreHTML(1):prScoreHTML(0); }
+function prPct(S){ const tot=S.j+S.r+S.t; return tot?Math.round(S.j/tot*100):0; }
+function prEtoiles(pct){ const n=pct>=90?3:(pct>=75?2:(pct>=50?1:0)); let h=""; for(let k=0;k<3;k++)h+='<i class="ph-fill ph-star'+(k<n?" on":"")+'"></i>'; return h; }
+function prFin(){
+  const S=_pr.score, m=_pr.mode;
+  prStop();
+  if(!S)return;
+  const r=document.getElementById("prResultat"); if(!r)return;
+  if(m==="duo"){
+    const p0=prPct(S[0]), p1=prPct(S[1]), duo=p0>=75&&p1>=75, lab=prLabels();
+    r.innerHTML='<div class="cm-fin"><b>'+(duo?"Duo réussi !":"Encore un essai ?")+'</b>'
+      +'<div class="pr-duo"><span class="v1"><small>'+lab[0]+'</small>'+p0+' %<em>'+prEtoiles(p0)+'</em></span><span class="v2"><small>'+lab[1]+'</small>'+p1+' %<em>'+prEtoiles(p1)+'</em></span></div>'
+      +'<p>'+(duo?"Vous tenez chacun votre rythme : échangez les rôles !":"Commencez en vitesse Lent, avec le métronome sur chaque case.")+'</p>'
+      +'<div class="cm-commandes"><button type="button" class="cm-play" onclick="prJouer()"><i class="ph-fill ph-arrow-counter-clockwise"></i> Rejouer</button>'
+      +'<button type="button" class="cm-dec" onclick="prEchanger()"><i class="ph-fill ph-arrows-left-right"></i> Échanger les rythmes</button></div></div>';
+    return;
+  }
+  const T0=S[0], pct=prPct(T0);
+  const cle=_pr.niv+"-"+_pr.moi+"-"+_pr.autre; profil.polyRec=profil.polyRec||{};
+  const record=pct>(profil.polyRec[cle]||0); if(record)profil.polyRec[cle]=pct;
+  let gain=0;
+  try{ gain=ajouterPoints(Math.max(GAIN_EFFORT,Math.round(pct/100*PR_NIV[_pr.niv].pts))); sauverProfil(profil); if(typeof majEnteteProfil==="function")majEnteteProfil(); }catch(e){}
+  try{ const nouv=verifierBadges(); if(nouv&&nouv.length){ sauverProfil(profil); setTimeout(function(){ annoncerBadges(nouv); },900); } }catch(e){}
+  const msg=pct>=90?"Parfait : tu tiens la polyrythmie !":(pct>=75?"Très bien ! Encore un essai pour les 3 étoiles ?":(pct>=50?"Bien parti : essaie en Lent, avec le métronome sur chaque case.":"Pas facile ! Compte à voix haute dans « Comprendre », puis réessaie en Lent avec le guide."));
+  r.innerHTML='<div class="cm-fin"><div class="cm-etoiles">'+prEtoiles(pct)+'</div><b>'+pct+' %</b><p>'+msg+'</p>'
+    +'<p class="cm-fin-d">'+T0.j+' justes · '+T0.r+' ratés · '+T0.t+' en trop'+(gain?' · <b>+'+gain+' pts</b>':'')+(record?' · <b>nouveau record !</b>':'')+'</p>'
+    +'<div class="cm-commandes"><button type="button" class="cm-play" onclick="prJouer()"><i class="ph-fill ph-arrow-counter-clockwise"></i> Rejouer</button>'
+    +(pct>=75&&prAutresPour(_pr.autre).indexOf(_pr.moi)>=0?'<button type="button" class="cm-dec" onclick="prEchanger()"><i class="ph-fill ph-arrows-left-right"></i> Échanger : tape le '+_pr.autre+'</button>':'')
+    +((pct>=75&&_pr.niv<3)?'<button type="button" class="cm-dec" onclick="prNiveau('+(_pr.niv+1)+')"><i class="ph-fill ph-arrow-fat-up"></i> Niveau suivant</button>':'')
+    +'</div></div>';
+}
+function prEchanger(){
+  const a=_pr.moi, b=_pr.autre;
+  if(!PR_NIV[_pr.niv].paires.some(function(p){ return p[0]===b&&p[1]===a; }))return;
+  prStop(); _pr.moi=b; _pr.autre=a; prRafraichir();
+}
+document.addEventListener("keydown",function(e){
+  if(!document.getElementById("prScene"))return;
+  const tg=e.target; if(tg&&(tg.tagName==="INPUT"||tg.tagName==="TEXTAREA"||tg.isContentEditable))return;
+  let v=-1;
+  if(_pr.onglet==="taper"&&(e.code==="Space"||e.key===" "))v=0;
+  else if(_pr.onglet==="deux"&&_pr.deux==="joueurs"){ if(e.code==="KeyF")v=0; else if(e.code==="KeyJ")v=1; }
+  if(v<0)return;
+  e.preventDefault(); if(e.repeat)return;
+  prTap(v,null);
+});
+document.addEventListener("visibilitychange",function(){ if(document.hidden&&_pr.session)prStop(); });
+
+/* =====================================================================
+   BOÎTE À RYTHMES (08/10/2026) : une grille de 16 pas (4 temps × 4 doubles
+   croches), 6 instruments synthétisés, les rythmes types du rock, du rap,
+   du reggae, de l'électro et du funk, un tempo réglable, le swing, et un
+   mode « percussions corporelles » pour la classe (pieds, mains, cuisses…).
+   Défi « Reproduis le rythme » : on écoute un rythme mystère et on le
+   recompose dans la grille (3 niveaux, points à la clé).
+   Moteur : planification Web Audio à courte avance, arrêt immédiat.
+   ===================================================================== */
+const BT_PISTES=[
+  {k:"gc",nom:"Grosse caisse",corps:"Pieds",ic:"ph-footprints",c:"var(--dom-rythme)"},
+  {k:"cc",nom:"Caisse claire",corps:"Mains (clap)",ic:"ph-hands-clapping",c:"#2374b0"},
+  {k:"hh",nom:"Charleston",corps:"Cuisses",ic:"ph-hand-palm",c:"var(--dom-ecoute)"},
+  {k:"ho",nom:"Charleston ouvert",corps:"Poitrine",ic:"ph-hand-palm",c:"var(--dom-culture)"},
+  {k:"cl",nom:"Clap",corps:"Claquer des doigts",ic:"ph-hand-tap",c:"var(--dom-loin)"},
+  {k:"cb",nom:"Cloche",corps:"Langue (« clic »)",ic:"ph-bell-simple",c:"var(--dom-theorie)"}
+];
+const BT_STYLES={
+  rock:{nom:"Rock",tempo:112,swing:false,p:{gc:"x.......x.x.....",cc:"....x.......x...",hh:"x.x.x.x.x.x.x.x."},
+    txt:"La grosse caisse sur les temps 1 et 3, la caisse claire sur 2 et 4 : c'est le « backbeat », le cœur du rock."},
+  rap:{nom:"Rap (boom bap)",tempo:90,swing:true,p:{gc:"x......x..x.....",cc:"....x.......x...",hh:"x.x.x.x.x.x.x.x."},
+    txt:"Le « boom » de la grosse caisse, le « bap » de la caisse claire, et un léger balancement (swing) : le rythme du rap des années 1990."},
+  reggae:{nom:"Reggae (one drop)",tempo:76,swing:false,p:{gc:"........x.......",cc:"........x.......",hh:"..x...x...x...x."},
+    txt:"Le « one drop » : rien sur le premier temps ! Grosse caisse et caisse claire tombent ensemble sur le 3, le charleston joue à contretemps."},
+  electro:{nom:"Électro (house)",tempo:124,swing:false,p:{gc:"x...x...x...x...",cl:"....x.......x...",ho:"..x...x...x...x."},
+    txt:"La grosse caisse sur chaque temps (« four on the floor »), le charleston ouvert entre les temps : on ne peut pas s'empêcher de danser."},
+  funk:{nom:"Funk",tempo:100,swing:false,p:{gc:"x..x......x.....",cc:"....x..x.x..x...",hh:"xxxxxxxxxxxxxxxx"},
+    txt:"Des doubles croches au charleston, des coups de caisse claire inattendus : le funk joue avec les décalages (la syncope)."}
+};
+let _bt={grille:null,tempo:100,swing:false,corps:false,muet:{},onglet:"creer",style:"rock",session:false,timer:null,raf:null,
+  pas:0,prochain:0,evts:[],sortie:null,bruit:null,defi:null,niv:1,serie:0};
+
+function btVide(){ const g={}; BT_PISTES.forEach(function(p){ g[p.k]=Array(16).fill(0); }); return g; }
+function btDe(p){ const g=btVide(); Object.keys(p||{}).forEach(function(k){ if(g[k])g[k]=p[k].split("").map(function(c){ return c==="x"?1:0; }); }); return g; }
+function btTexte(g){ const o={}; Object.keys(g).forEach(function(k){ if(g[k].some(function(x){ return x; }))o[k]=g[k].map(function(x){ return x?"x":"."; }).join(""); }); return o; }
+
+/* ---------- les sons ---------- */
+function btSortie(){
+  const ctx=audio();
+  if(!_bt.sortie||_bt.sortie.context!==ctx){
+    const c=ctx.createDynamicsCompressor(), g=ctx.createGain();
+    c.threshold.value=-10; c.knee.value=6; c.ratio.value=5; c.attack.value=0.002; c.release.value=0.12;
+    g.gain.value=1.6; c.connect(g); g.connect(ctx.destination); _bt.sortie=c;
+  }
+  return _bt.sortie;
+}
+function btBruit(){
+  const ctx=audio();
+  if(!_bt.bruit||_bt.bruit.sampleRate!==ctx.sampleRate){
+    const n=Math.floor(ctx.sampleRate*0.5), b=ctx.createBuffer(1,n,ctx.sampleRate), d=b.getChannelData(0);
+    for(let i=0;i<n;i++)d[i]=Math.random()*2-1; _bt.bruit=b;
+  }
+  return _bt.bruit;
+}
+function btSon(k,t,vol){
+  const ctx=audio(), v=vol||1, out=btSortie();
+  if(k==="cl"){ cmClap(t,2,0.8*v); return; }
+  if(k==="gc"){
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type="sine"; o.frequency.setValueAtTime(160,t); o.frequency.exponentialRampToValueAtTime(48,t+0.14);
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(1*v,t+0.003); g.gain.exponentialRampToValueAtTime(0.001,t+0.42);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t+0.45);
+    const c=ctx.createOscillator(), gc=ctx.createGain(); c.type="triangle"; c.frequency.value=1100;
+    gc.gain.setValueAtTime(0.35*v,t); gc.gain.exponentialRampToValueAtTime(0.001,t+0.02); c.connect(gc); gc.connect(out); c.start(t); c.stop(t+0.03);
+    return;
+  }
+  if(k==="cc"){
+    const s=ctx.createBufferSource(), bp=ctx.createBiquadFilter(), g=ctx.createGain();
+    s.buffer=btBruit(); bp.type="highpass"; bp.frequency.value=1200;
+    g.gain.setValueAtTime(0.75*v,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+    s.connect(bp); bp.connect(g); g.connect(out); s.start(t,Math.random()*0.2,0.22);
+    const o=ctx.createOscillator(), go=ctx.createGain(); o.type="triangle"; o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(160,t+0.08);
+    go.gain.setValueAtTime(0.5*v,t); go.gain.exponentialRampToValueAtTime(0.001,t+0.12); o.connect(go); go.connect(out); o.start(t); o.stop(t+0.14);
+    return;
+  }
+  if(k==="hh"||k==="ho"){
+    const s=ctx.createBufferSource(), hp=ctx.createBiquadFilter(), g=ctx.createGain(), d=k==="ho"?0.32:0.06;
+    s.buffer=btBruit(); hp.type="highpass"; hp.frequency.value=7000;
+    g.gain.setValueAtTime(0.42*v,t); g.gain.exponentialRampToValueAtTime(0.001,t+d);
+    s.connect(hp); hp.connect(g); g.connect(out); s.start(t,Math.random()*0.2,d+0.02);
+    return;
+  }
+  if(k==="cb"){
+    [560,845].forEach(function(f){ const o=ctx.createOscillator(), bp=ctx.createBiquadFilter(), g=ctx.createGain();
+      o.type="square"; o.frequency.value=f; bp.type="bandpass"; bp.frequency.value=f; bp.Q.value=3;
+      g.gain.setValueAtTime(0.28*v,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+      o.connect(bp); bp.connect(g); g.connect(out); o.start(t); o.stop(t+0.27); });
+  }
+}
+
+/* ---------- l'écran ---------- */
+function ecranBatterie(style){
+  if(typeof fermerMenu==="function")fermerMenu();
+  btStop(); if(typeof cmStop==="function")cmStop(); if(typeof prStop==="function")prStop();
+  masquerInterfaceNormale(); majRetour(null);
+  const _t=document.getElementById("titre"), _i=document.getElementById("intro");
+  if(_t){ _t.textContent="Boîte à rythmes"; _t.style.display="none"; }
+  if(_i){ _i.textContent=""; _i.style.display="none"; }
+  if(style&&BT_STYLES[style]){ _bt.onglet="creer"; btChargerStyle(style,true); }
+  if(!_bt.grille)btChargerStyle("rock",true);
+  btRendre();
+  if(typeof remonter==="function")remonter();
+}
+function btRendre(){
+  const z=document.getElementById("zone"); if(!z)return;
+  const ong=function(id,n,ic,lib){ return '<button type="button" role="tab" aria-selected="'+(_bt.onglet===id)+'" class="'+(_bt.onglet===id?"on":"")+'" onclick="btOnglet(\''+id+'\')"><span class="cm-on-n">'+n+'</span><i class="ph-fill '+ic+'"></i> '+lib+'</button>'; };
+  z.innerHTML='<div class="cm bt" id="btScene">'
+    +'<div class="cm-top"><button class="sv-btn-rond" onclick="btStop();ecranJouer()" aria-label="Retour aux jeux"><i class="ph ph-caret-left"></i></button>'
+    +'<div class="cm-titre"><span class="sv-label"><i class="ph-fill ph-equalizer"></i> Jeu solo · en classe</span><h2>Boîte à rythmes</h2>'
+    +'<p>Compose des rythmes de batterie, découvre ceux des grands styles, puis joue-les avec ton corps.</p></div>'
+    +'<button class="sv-btn-rond" onclick="btProjeter()" aria-label="Projeter en plein écran" title="Projeter en classe"><i class="ph ph-arrows-out"></i></button></div>'
+    +'<div class="cm-onglets bt-onglets" role="tablist">'+ong("creer",1,"ph-equalizer","Créer")+ong("defi",2,"ph-ear","Défi : reproduis le rythme")+'</div>'
+    +(_bt.onglet==="defi"?btDefiHTML():btCreerHTML())+'</div>';
+  btMajTempo();
+}
+function btOnglet(o){ btStop(); _bt.onglet=o; if(o==="defi"&&!_bt.defi)btNouveauDefi(false); if(o==="creer"&&_bt.defi){ _bt.defi=null; if(!_bt.grille)btChargerStyle("rock",true); } btRendre(); }
+function btProjeter(){
+  const el=document.getElementById("btScene"); if(!el)return;
+  try{ if(document.fullscreenElement)document.exitFullscreen(); else if(el.requestFullscreen)el.requestFullscreen(); }catch(e){}
+}
+function btGrilleHTML(g,opts){
+  opts=opts||{};
+  let h='<div class="bt-grille" id="btGrille" role="group" aria-label="Grille de rythme : 16 cases par instrument">'
+    +'<div class="bt-ligne bt-temps"><span></span>'+Array.from({length:16},function(_,i){ return '<span class="bt-n'+(i%4===0?" t":"")+'" data-p="'+i+'">'+(i%4===0?(i/4+1):"")+'</span>'; }).join("")+'</div>';
+  BT_PISTES.forEach(function(p){
+    if(opts.pistes&&opts.pistes.indexOf(p.k)<0)return;
+    const m=!!_bt.muet[p.k], lib=_bt.corps?p.corps:p.nom;
+    h+='<div class="bt-ligne'+(m?" muet":"")+'" data-k="'+p.k+'" style="--c:'+p.c+'">'
+      +'<span class="bt-lib"><button type="button" class="bt-muet'+(m?" on":"")+'" aria-pressed="'+m+'" onclick="btMuet(\''+p.k+'\')" title="Couper" aria-label="Couper : '+escapeHtml(lib)+'"><i class="ph-fill '+(m?"ph-speaker-slash":p.ic)+'"></i></button><b>'+lib+'</b></span>'
+      +g[p.k].map(function(x,i){ return '<button type="button" class="bt-c'+(x?" on":"")+(i%4===0?" t":"")+'" data-p="'+i+'" aria-pressed="'+(x?"true":"false")+'" aria-label="'+escapeHtml(lib)+', case '+(i+1)+'" onclick="btBasculer(\''+p.k+'\','+i+')"></button>'; }).join("")
+      +'</div>';
+  });
+  return h+'</div>';
+}
+function btCreerHTML(){
+  const S=BT_STYLES[_bt.style], mes=profil.batterie||[];
+  return '<div class="bt-styles" role="group" aria-label="Rythmes types">'
+      +Object.keys(BT_STYLES).map(function(k){ return '<button type="button" class="cm-niv'+(_bt.style===k?" on":"")+'" aria-pressed="'+(_bt.style===k)+'" onclick="btChargerStyle(\''+k+'\')">'+BT_STYLES[k].nom+'<small>'+BT_STYLES[k].tempo+' bpm</small></button>'; }).join("")
+      +'<button type="button" class="cm-niv'+(_bt.style==="vide"?" on":"")+'" aria-pressed="'+(_bt.style==="vide")+'" onclick="btEffacer()">Grille vide<small>à toi d\'inventer</small></button></div>'
+    +(S?'<div class="tx-def bt-def"><b><i class="ph-fill ph-info"></i> '+S.nom+'</b><span>'+S.txt+'</span></div>':'')
+    +btGrilleHTML(_bt.grille)
+    +'<div class="bt-commandes"><button type="button" class="cm-play" id="btPlay" onclick="btJouer()"><i class="ph-fill ph-play"></i> Jouer</button>'
+    +'<label class="bt-tempo"><span>Tempo <b id="btTempoVal">'+_bt.tempo+'</b> bpm</span><input type="range" min="60" max="160" step="2" value="'+_bt.tempo+'" oninput="btTempo(this.value)" aria-label="Tempo en battements par minute"></label></div>'
+    +'<div class="cm-options"><label class="cm-case"><input type="checkbox" '+(_bt.swing?"checked":"")+' onchange="_bt.swing=this.checked"> Swing (balancé)</label>'
+    +'<label class="cm-case"><input type="checkbox" '+(_bt.corps?"checked":"")+' onchange="btCorps(this.checked)"> Percussions corporelles</label>'
+    +'<button type="button" class="va-raz" onclick="btEffacer()"><i class="ph ph-eraser"></i> Effacer</button></div>'
+    +'<div class="cm-sauver"><input type="text" id="btNom" maxlength="24" placeholder="Nom de ton rythme" aria-label="Nom de ton rythme"><button type="button" class="btn-son" onclick="btSauver()"><i class="ph ph-floppy-disk"></i> Garder</button></div>'
+    +(mes.length?'<div class="cm-mes"><span>Mes rythmes</span>'+mes.map(function(x,k){ return '<span class="cm-mes-i"><button type="button" onclick="btCharger('+k+')"><i class="ph-fill ph-equalizer"></i><b>'+echapH(x.n)+'</b></button><button type="button" class="cm-x" onclick="btOublier('+k+')" aria-label="Supprimer '+echapH(x.n)+'"><i class="ph ph-x"></i></button></span>'; }).join("")+'</div>':'')
+    +'<p class="cm-aide"><i class="ph-fill ph-chalkboard-teacher"></i> <b>En classe</b> : coche « Percussions corporelles » et projette la grille. Chaque groupe prend une ligne (pieds, mains, cuisses…) et frappe quand la colonne s\'allume.</p>';
+}
+function btChargerStyle(k,sansRendu){
+  btStop(); const S=BT_STYLES[k]; if(!S)return;
+  _bt.style=k; _bt.grille=btDe(S.p); _bt.tempo=S.tempo; _bt.swing=!!S.swing; _bt.muet={};
+  if(!sansRendu)btRendre();
+}
+function btEffacer(){ btStop(); _bt.style="vide"; _bt.grille=btVide(); btRendre(); }
+function btBasculer(k,i){
+  const g=_bt.onglet==="defi"&&_bt.defi?_bt.defi.essai:_bt.grille; if(!g||(_bt.defi&&_bt.defi.verifie))return;
+  g[k][i]=g[k][i]?0:1;
+  const b=document.querySelector('.bt-ligne[data-k="'+k+'"] .bt-c[data-p="'+i+'"]');
+  if(b){ b.classList.toggle("on",!!g[k][i]); b.setAttribute("aria-pressed",g[k][i]?"true":"false"); }
+  if(g[k][i]&&!_bt.session){ try{ const ctx=audio(); ctx.resume(); btSon(k,ctx.currentTime+0.01,0.8); }catch(e){} }
+  if(_bt.onglet==="creer"&&_bt.style!=="vide"){ _bt.style="perso"; }
+}
+function btMuet(k){ _bt.muet[k]=!_bt.muet[k]; const l=document.querySelector('.bt-ligne[data-k="'+k+'"]'); if(l){ l.classList.toggle("muet",_bt.muet[k]); const b=l.querySelector(".bt-muet"); if(b){ b.classList.toggle("on",_bt.muet[k]); b.setAttribute("aria-pressed",_bt.muet[k]); const P=BT_PISTES.filter(function(p){ return p.k===k; })[0]; b.innerHTML='<i class="ph-fill '+(_bt.muet[k]?"ph-speaker-slash":P.ic)+'"></i>'; } } }
+function btCorps(on){ _bt.corps=!!on; const joue=_bt.session; btStop(); btRendre(); if(joue)btJouer(); }
+function btTempo(v){ _bt.tempo=+v; btMajTempo(); }
+function btMajTempo(){ const e=document.getElementById("btTempoVal"); if(e)e.textContent=_bt.tempo; }
+function btSauver(){
+  const inp=document.getElementById("btNom"), nom=((inp&&inp.value)||"").trim()||("Rythme "+(((profil.batterie||[]).length)+1));
+  const p=btTexte(_bt.grille); if(!Object.keys(p).length){ try{ toast("La grille est vide : ajoute quelques coups !"); }catch(e){} return; }
+  profil.batterie=(profil.batterie||[]).filter(function(x){ return x.n!==nom; });
+  profil.batterie.unshift({n:nom.slice(0,24),p:p,t:_bt.tempo,s:_bt.swing?1:0}); profil.batterie=profil.batterie.slice(0,8);
+  try{ sauverProfil(profil); }catch(e){}
+  btRendre(); try{ toast("Rythme « "+nom+" » gardé !"); }catch(e){}
+}
+function btCharger(k){ const x=(profil.batterie||[])[k]; if(!x)return; btStop(); _bt.grille=btDe(x.p); _bt.tempo=x.t||100; _bt.swing=!!x.s; _bt.style="perso"; btRendre(); }
+async function btOublier(k){
+  const x=(profil.batterie||[])[k]; if(!x)return;
+  if(typeof dlgConfirmer==="function"&&!(await dlgConfirmer("Supprimer le rythme « "+x.n+" » ?")))return;
+  profil.batterie.splice(k,1); try{ sauverProfil(profil); }catch(e){} btRendre();
+}
+
+/* ---------- jouer ---------- */
+function btGrilleJouee(){ return (_bt.onglet==="defi"&&_bt.defi)?(_bt.defi.ecoute?_bt.defi.cible:_bt.defi.essai):_bt.grille; }
+function btJouer(ecoute){
+  const etaitEcoute=!!(_bt.session&&_bt.defi&&_bt.defi.ecoute);
+  if(_bt.session){ btStop(); if(!!ecoute===etaitEcoute)return; }   /* même bouton : on arrête ; l'autre : on enchaîne */
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  if(_bt.defi)_bt.defi.ecoute=!!ecoute;
+  _bt.session=true; _bt.pas=0; _bt.tours=0; _bt.prochain=ctx.currentTime+0.12; _bt.evts=[];
+  _bt.timer=setInterval(btPlanifier,25); btPlanifier();
+  _bt.raf=requestAnimationFrame(btAnimer); btMajBoutons();
+}
+function btStop(){
+  if(_bt.timer){ clearInterval(_bt.timer); _bt.timer=null; }
+  if(_bt.raf){ cancelAnimationFrame(_bt.raf); _bt.raf=null; }
+  const etait=_bt.session; _bt.session=false;
+  if(_bt.defi)_bt.defi.ecoute=false;
+  if(!etait)return;
+  document.querySelectorAll("#btGrille .cur,#btGrille .frappe").forEach(function(x){ x.classList.remove("cur","frappe"); });
+  btMajBoutons();
+}
+function btPlanifier(){
+  if(!document.getElementById("btScene")){ btStop(); return; }
+  const ctx=audio(), dur=60/_bt.tempo/4, g=btGrilleJouee();
+  while(_bt.session&&_bt.prochain<ctx.currentTime+0.12){
+    const i=_bt.pas, t=_bt.prochain+((_bt.swing&&i%2===1)?dur*0.33:0);
+    BT_PISTES.forEach(function(p){ if(g[p.k]&&g[p.k][i]&&!_bt.muet[p.k])btSon(p.k,t,i%4===0?1:0.85); });
+    _bt.evts.push({t:t,i:i});
+    _bt.prochain+=dur; _bt.pas=(i+1)%16;
+    /* le rythme mystère du défi : deux tours, puis on s'arrête */
+    if(_bt.pas===0){ _bt.tours++; if(_bt.defi&&_bt.defi.ecoute&&_bt.tours>=2){ const fin=_bt.prochain; setTimeout(function(){ if(_bt.session&&_bt.defi&&_bt.defi.ecoute)btStop(); },Math.max(0,(fin-ctx.currentTime)*1000)); _bt.prochain=1e9; } }
+  }
+}
+function btAnimer(){
+  if(!document.getElementById("btScene")){ btStop(); return; }
+  const now=audio().currentTime;
+  let ev=null; while(_bt.evts.length&&_bt.evts[0].t<=now)ev=_bt.evts.shift();
+  if(ev){
+    const cache=_bt.defi&&_bt.defi.ecoute;
+    document.querySelectorAll("#btGrille [data-p]").forEach(function(x){ x.classList.toggle("cur",+x.getAttribute("data-p")===ev.i); });
+    if(!cache)document.querySelectorAll('#btGrille .bt-c.on[data-p="'+ev.i+'"]').forEach(function(x){ x.classList.remove("frappe"); void x.offsetWidth; x.classList.add("frappe"); });
+  }
+  _bt.raf=requestAnimationFrame(btAnimer);
+}
+function btMajBoutons(){
+  const b=document.getElementById("btPlay"); if(b){ b.classList.toggle("stop",_bt.session&&!(_bt.defi&&_bt.defi.ecoute)); b.innerHTML=(_bt.session&&!(_bt.defi&&_bt.defi.ecoute))?'<i class="ph-fill ph-stop"></i> Arrêter':'<i class="ph-fill ph-play"></i> '+(_bt.onglet==="defi"?"Jouer ma grille":"Jouer"); }
+  const e=document.getElementById("btEcoute"); if(e){ const on=_bt.session&&_bt.defi&&_bt.defi.ecoute; e.classList.toggle("stop",!!on); e.innerHTML=on?'<i class="ph-fill ph-stop"></i> Arrêter':'<i class="ph-fill ph-ear"></i> Écouter le rythme mystère'; }
+}
+
+/* ---------- défi « Reproduis le rythme » ---------- */
+/* banque de rythmes mystères par niveau : pistes utilisées et grilles */
+const BT_DEFIS={
+  1:{pistes:["gc","cc"],l:[{gc:"x.......x.......",cc:"....x.......x..."},{gc:"x...x...x...x...",cc:"................"},{gc:"x.......x.......",cc:"....x...x...x..."},
+    {gc:"x...x.......x...",cc:"........x......."},{gc:"x.......x.x.....",cc:"....x.......x..."},{gc:"x...............",cc:"....x...x...x..."}]},
+  2:{pistes:["gc","cc","hh"],l:[{gc:"x.......x.......",cc:"....x.......x...",hh:"x.x.x.x.x.x.x.x."},{gc:"x...x...x...x...",cc:"....x.......x...",hh:"..x...x...x...x."},
+    {gc:"x.......x.x.....",cc:"....x.......x...",hh:"x...x...x...x..."},{gc:"x.x.....x.......",cc:"....x.......x...",hh:"x.x.x.x.x.x.x.x."},{gc:"........x.......",cc:"........x.......",hh:"..x...x...x...x."}]},
+  3:{pistes:["gc","cc","hh","cl"],l:[{gc:"x......x..x.....",cc:"....x.......x...",hh:"x.x.x.x.x.x.x.x."},{gc:"x..x......x.....",cc:"....x..x.x..x...",hh:"x.x.x.x.x.x.x.x."},
+    {gc:"x...x...x...x...",cl:"....x.......x...",hh:"x.x.x.x.x.x.x.x."},{gc:"x..x..x...x.....",cc:"....x.......x...",cl:"............x..x"},{gc:"x.....x.x.......",cc:"....x.......x.x.",hh:"xxxxxxxxxxxxxxxx"}]}
+};
+function btNouveauDefi(jouer){
+  const B=BT_DEFIS[_bt.niv], prec=_bt.defi&&_bt.defi.id;
+  let id=rnd(B.l.length); for(let k=0;k<4&&id===prec;k++)id=rnd(B.l.length);
+  _bt.defi={id:id,cible:btDe(B.l[id]),essai:btVide(),verifie:false,ecoute:false,pistes:B.pistes,tempo:_bt.niv===1?84:(_bt.niv===2?92:96)};
+  _bt.tempo=_bt.defi.tempo; _bt.swing=false; _bt.muet={};
+  if(jouer){ btRendre(); btJouer(true); }
+}
+function btDefiHTML(){
+  const D=_bt.defi; if(!D)return "";
+  const niv='<div class="va-niv"><span>Niveau :</span>'+[1,2,3].map(function(n){ return '<button type="button" class="'+(_bt.niv===n?"on":"")+'" aria-pressed="'+(_bt.niv===n)+'" onclick="btStop();_bt.niv='+n+';btNouveauDefi(false);btRendre()">'+n+'</button>'; }).join("")
+    +'<small>'+(_bt.niv===1?"grosse caisse et caisse claire":_bt.niv===2?"+ charleston":"+ clap, rythmes décalés")+'</small></div>';
+  let res="";
+  if(D.verifie){
+    let justes=0,manque=0,trop=0;
+    D.pistes.forEach(function(k){ for(let i=0;i<16;i++){ const c=D.cible[k][i], e=D.essai[k][i]; if(c&&e)justes++; else if(c)manque++; else if(e)trop++; } });
+    const ok=!manque&&!trop;
+    res='<div class="tx-devine"><p class="tx-verdict '+(ok?"ok":"ko")+'"><i class="ph-fill '+(ok?"ph-check-circle":"ph-x-circle")+'"></i> '
+      +(ok?"Parfait, c'est exactement le rythme mystère !":"Presque : "+justes+" coup"+(justes>1?"s":"")+" juste"+(justes>1?"s":"")+", "+manque+" manquant"+(manque>1?"s":"")+", "+trop+" en trop.")
+      +(_bt.serie>1?' <span class="tx-serie"><i class="ph-fill ph-fire"></i> '+_bt.serie+' d\'affilée</span>':'')+'</p>'
+      +'<p class="tx-def-d">Dans la grille : <span class="bt-leg ok"></span> juste, <span class="bt-leg manque"></span> il en manquait un ici, <span class="bt-leg trop"></span> en trop.</p>'
+      +'<div class="tx-choix"><button type="button" class="tx-encore" onclick="btNouveauDefi(true)"><i class="ph-fill ph-arrow-clockwise"></i> Un autre rythme</button>'
+      +(ok?'':'<button type="button" onclick="_bt.defi.verifie=false;btRendre()">Corriger ma grille</button>')+'</div></div>';
+  }
+  return niv
+    +'<p class="cm-aide"><i class="ph-fill ph-ear"></i> Écoute le rythme mystère (il passe deux fois), puis recompose-le dans la grille. Tu peux le réécouter autant que tu veux.</p>'
+    +'<div class="bt-commandes"><button type="button" class="cm-dec" id="btEcoute" onclick="btJouer(true)"><i class="ph-fill ph-ear"></i> Écouter le rythme mystère</button>'
+    +'<button type="button" class="cm-play" id="btPlay" onclick="btJouer()"><i class="ph-fill ph-play"></i> Jouer ma grille</button></div>'
+    +btGrilleHTML(D.essai,{pistes:D.pistes})
+    +(D.verifie?res:'<div class="tx-choix bt-verif"><button type="button" class="tx-encore" onclick="btVerifier()"><i class="ph-fill ph-check"></i> Vérifier</button></div>');
+}
+function btVerifier(){
+  const D=_bt.defi; if(!D||D.verifie)return;
+  btStop(); D.verifie=true;
+  let ok=true; D.pistes.forEach(function(k){ for(let i=0;i<16;i++)if(!!D.cible[k][i]!==!!D.essai[k][i])ok=false; });
+  _bt.serie=ok?_bt.serie+1:0;
+  if(ok){ try{ ajouterPoints(Math.max(GAIN_EFFORT,_bt.niv*5)); sauverProfil(profil); if(typeof majEnteteProfil==="function")majEnteteProfil(); }catch(e){} }
+  else{ try{ ajouterPoints(GAIN_EFFORT); sauverProfil(profil); }catch(e){} }
+  try{ jouerEffet(ok?"bon":"mauvais"); }catch(e){}
+  btRendre();
+  /* correction dans la grille */
+  D.pistes.forEach(function(k){ for(let i=0;i<16;i++){ const b=document.querySelector('.bt-ligne[data-k="'+k+'"] .bt-c[data-p="'+i+'"]'); if(!b)continue;
+    const c=D.cible[k][i], e=D.essai[k][i]; if(c&&e)b.classList.add("juste"); else if(c)b.classList.add("manque"); else if(e)b.classList.add("trop"); } });
+}
+document.addEventListener("visibilitychange",function(){ if(document.hidden&&_bt.session)btStop(); });
+
+/* =====================================================================
+   CHANTE JUSTE (08/10/2026) : l'élève chante, le micro écoute, et l'écran
+   montre en direct la note produite sur une échelle des notes (Do à Do) :
+   une bille monte et descend avec la voix, verte quand c'est juste.
+   - Accordeur : chanter librement, voir sa note et son écart (trop haut,
+     trop bas, juste).
+   - Tiens la note : une note cible (jouée au piano), il faut la tenir
+     juste un moment ; 8 notes par série, 3 niveaux, points à la fin.
+   Voix aiguë (Do4-Do5) ou grave (Do3-Do4) ; l'octave ne compte pas aux
+   niveaux 1 et 2 (un garçon qui chante une octave en dessous a juste).
+   Détection de hauteur de type YIN, entièrement sur l'appareil : le son
+   du micro n'est ni enregistré ni envoyé.
+   ===================================================================== */
+const CJ_NOMS=["Do","Do♯","Ré","Ré♯","Mi","Fa","Fa♯","Sol","Sol♯","La","La♯","Si"];
+const CJ_NIV={1:{nom:"Facile",tol:50,tenue:1.0,octave:true,sous:"notes voisines"},2:{nom:"Moyen",tol:35,tenue:1.5,octave:true,sous:"des sauts"},
+  3:{nom:"Difficile",tol:25,tenue:2.0,octave:false,sous:"la bonne octave"}};
+let _cj={onglet:"accordeur",voix:"aigue",niv:1,flux:null,src:null,an:null,buf:null,raf:null,hist:[],m:null,ecoute:false,
+  muetJusqua:0,serie:null,tenue:0,dernier:0,trace:[]};
+
+function cjBas(){ return _cj.voix==="grave"?48:60; }
+function cjNom(m,oct){ const r=Math.round(m), n=CJ_NOMS[((r%12)+12)%12]; return oct?n+(Math.floor(r/12)-1):n; }
+
+/* ---------- détection de hauteur (YIN simplifié) ---------- */
+function cjHauteur(buf,sr){
+  let rms=0; for(let i=0;i<buf.length;i++)rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/buf.length);
+  if(rms<0.012)return null;                                    /* silence ou bruit de fond */
+  const W=Math.floor(buf.length/2), tMin=Math.floor(sr/1050), tMax=Math.min(W-1,Math.floor(sr/70));
+  const d=new Float32Array(tMax+1);
+  for(let t=1;t<=tMax;t++){ let s=0; for(let i=0;i<W;i++){ const x=buf[i]-buf[i+t]; s+=x*x; } d[t]=s; }
+  let cum=0, best=-1;
+  const dn=new Float32Array(tMax+1); dn[0]=1;
+  for(let t=1;t<=tMax;t++){ cum+=d[t]; dn[t]=cum?d[t]*t/cum:1; }
+  for(let t=tMin;t<tMax;t++){ if(dn[t]<0.15){ while(t+1<tMax&&dn[t+1]<dn[t])t++; best=t; break; } }
+  if(best<0)return null;
+  const a=dn[best-1]||dn[best], b=dn[best], c=dn[best+1]||dn[best], den=a+c-2*b;
+  const tau=best+(den?(a-c)/(2*den):0);
+  return sr/tau;
+}
+function cjMidi(f){ return 69+12*Math.log2(f/440); }
+
+/* ---------- le micro ---------- */
+async function cjActiver(){
+  const z=document.getElementById("cjMsg");
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ if(z)z.innerHTML='<i class="ph-fill ph-warning"></i> Ce navigateur ne donne pas accès au micro.'; return; }
+  try{
+    const ctx=audio(); try{ await ctx.resume(); }catch(e){}
+    cjCouper(true);
+    const flux=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    _cj.flux=flux; cjBrancher(ctx.createMediaStreamSource(flux));
+  }catch(e){
+    if(z)z.innerHTML='<i class="ph-fill ph-warning"></i> Le micro est refusé. Autorise-le dans ton navigateur (le cadenas à gauche de l\'adresse), puis réessaie.';
+  }
+}
+/* branche une source (le micro, ou un son de test) sur l'analyse */
+function cjBrancher(src){
+  const ctx=audio();
+  if(_cj.raf){ cancelAnimationFrame(_cj.raf); _cj.raf=null; }
+  try{ if(_cj.src&&_cj.src!==src)_cj.src.disconnect(); }catch(e){}
+  const an=ctx.createAnalyser(); an.fftSize=2048; src.connect(an);
+  _cj.src=src; _cj.an=an; _cj.buf=new Float32Array(an.fftSize); _cj.ecoute=true; _cj.hist=[]; _cj.trace=[];
+  cjRendre(); _cj.raf=requestAnimationFrame(cjBoucle);
+}
+function cjCouper(garderEcran){
+  if(_cj.raf){ cancelAnimationFrame(_cj.raf); _cj.raf=null; }
+  try{ if(_cj.src)_cj.src.disconnect(); }catch(e){}
+  if(_cj.flux){ try{ _cj.flux.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} }
+  _cj.flux=null; _cj.src=null; _cj.an=null; _cj.ecoute=false;
+  if(!garderEcran&&document.getElementById("cjScene"))cjRendre();
+}
+function cjBoucle(){
+  if(!document.getElementById("cjScene")){ cjCouper(true); return; }
+  const ctx=audio(), now=ctx.currentTime;
+  if(now-(_cj.derAnalyse||0)<0.04){ _cj.raf=requestAnimationFrame(cjBoucle); return; }
+  _cj.derAnalyse=now;
+  _cj.an.getFloatTimeDomainData(_cj.buf);
+  let m=null;
+  if(now>=_cj.muetJusqua){ const f=cjHauteur(_cj.buf,ctx.sampleRate); if(f)m=cjMidi(f); }
+  /* médiane des dernières mesures : une bille stable, sans sauts parasites */
+  _cj.hist.push(m); if(_cj.hist.length>5)_cj.hist.shift();
+  const v=_cj.hist.filter(function(x){ return x!=null; }).sort(function(a,b){ return a-b; });
+  _cj.m=v.length>=3?v[Math.floor(v.length/2)]:null;
+  cjAfficher(now);
+  _cj.raf=requestAnimationFrame(cjBoucle);
+}
+
+/* ---------- l'écran ---------- */
+function ecranChanteJuste(onglet){
+  if(typeof fermerMenu==="function")fermerMenu();
+  if(typeof cmStop==="function")cmStop(); if(typeof prStop==="function")prStop(); if(typeof btStop==="function")btStop();
+  masquerInterfaceNormale(); majRetour(null);
+  const _t=document.getElementById("titre"), _i=document.getElementById("intro");
+  if(_t){ _t.textContent="Chante juste"; _t.style.display="none"; }
+  if(_i){ _i.textContent=""; _i.style.display="none"; }
+  if(onglet)_cj.onglet=onglet;
+  _cj.serie=null;
+  cjRendre();
+  if(typeof remonter==="function")remonter();
+}
+function cjOnglet(o){ _cj.onglet=o; _cj.serie=null; cjRendre(); }
+function cjVoix(v){ _cj.voix=v; if(_cj.serie)_cj.serie=null; cjRendre(); }
+function cjNiveau(n){ _cj.niv=n; _cj.serie=null; cjRendre(); }
+function cjRendre(){
+  const z=document.getElementById("zone"); if(!z)return;
+  const ong=function(id,n,ic,lib){ return '<button type="button" role="tab" aria-selected="'+(_cj.onglet===id)+'" class="'+(_cj.onglet===id?"on":"")+'" onclick="cjOnglet(\''+id+'\')"><span class="cm-on-n">'+n+'</span><i class="ph-fill '+ic+'"></i> '+lib+'</button>'; };
+  const seg=function(cle,val,opts,fn){ return '<div class="cm-seg" role="group">'+opts.map(function(o){ const on=val===o[0]; return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="'+fn+'('+(typeof o[0]==="number"?o[0]:'\''+o[0]+'\'')+')">'+o[1]+'</button>'; }).join("")+'</div>'; };
+  const ex=_cj.onglet==="tenir";
+  z.innerHTML='<div class="cm cj" id="cjScene">'
+    +'<div class="cm-top"><button class="sv-btn-rond" onclick="cjCouper(true);ecranJouer()" aria-label="Retour aux jeux"><i class="ph ph-caret-left"></i></button>'
+    +'<div class="cm-titre"><span class="sv-label"><i class="ph-fill ph-microphone-stage"></i> Jeu solo · échauffement</span><h2>Chante juste</h2>'
+    +'<p>Chante, et regarde ta voix monter et descendre sur l\'échelle des notes.</p></div></div>'
+    +'<div class="cm-onglets bt-onglets" role="tablist">'+ong("accordeur",1,"ph-gauge","Accordeur")+ong("tenir",2,"ph-target","Tiens la note")+'</div>'
+    +'<div class="cm-corps cj-corps">'
+    +'<div class="cm-horloge cj-echelle-zone"><div id="cjEchelle">'+cjEchelleHTML()+'</div></div>'
+    +'<div class="cm-panneau"><div class="cm-bloc">'
+    +(_cj.ecoute?'':'<div class="cj-micro"><button type="button" class="cm-play" onclick="cjActiver()"><i class="ph-fill ph-microphone"></i> Activer le micro</button>'
+      +'<p class="cm-aide"><i class="ph-fill ph-lock-simple"></i> Le son est analysé <b>sur cet appareil</b> : il n\'est ni enregistré, ni envoyé.</p><p class="cj-msg" id="cjMsg" aria-live="polite"></p></div>')
+    +'<div class="cj-lecture" aria-live="polite"><b id="cjNote">…</b><span id="cjConseil">'+(_cj.ecoute?"Chante un « la » tenu":"Active le micro pour commencer")+'</span></div>'
+    +'<div class="cj-aiguille" aria-hidden="true"><span class="cj-zone"></span><i id="cjAig"></i><small>trop bas</small><small>juste</small><small>trop haut</small></div>'
+    +(ex?cjExerciceHTML():'<p class="cm-aide">Chante une note tenue sur « la » ou « dou ». La bille se place sur l\'échelle : <b>verte</b>, tu es juste ; <b>orange</b>, monte ou descends un peu.</p>')
+    +'<div class="cm-options"><div><span>Ma voix</span>'+seg("voix",_cj.voix,[["aigue","Aiguë (Do4-Do5)"],["grave","Grave (Do3-Do4)"]],"cjVoix")+'</div>'
+    +(ex?'<div><span>Niveau</span>'+seg("niv",_cj.niv,[[1,"Facile"],[2,"Moyen"],[3,"Difficile"]],"cjNiveau")+'</div>':'')+'</div>'
+    +(_cj.ecoute?'<p class="cm-aide"><button type="button" class="va-raz" onclick="cjCouper()"><i class="ph ph-microphone-slash"></i> Couper le micro</button></p>':'')
+    +'</div></div></div></div>';
+}
+/* l'échelle : les notes naturelles de Do à Do, la cible en or, la bille de la voix */
+function cjEchelleHTML(){
+  const b=cjBas(), H=360, haut=20, bas=20, pas=(H-haut-bas)/12, nat=[0,2,4,5,7,9,11,12];
+  const y=function(m){ return haut+(b+12-m)*pas; };
+  let s='<svg class="cj-svg" viewBox="0 0 220 '+H+'" role="img" aria-label="Échelle des notes, de '+cjNom(b,true)+' à '+cjNom(b+12,true)+'">';
+  s+='<rect id="cjCible" x="40" y="0" width="170" height="0" rx="8" class="cj-cible"/>';
+  nat.forEach(function(d){ const yy=y(b+d); s+='<line x1="60" x2="210" y1="'+yy+'" y2="'+yy+'" class="cj-ligne"/><text x="52" y="'+(yy+4)+'" class="cj-lib" text-anchor="end">'+cjNom(b+d)+'</text>'; });
+  s+='<polyline id="cjTrace" class="cj-trace" points=""/>';
+  s+='<circle id="cjBille" cx="190" cy="-40" r="13" class="cj-bille"/>';
+  return s+'</svg>';
+}
+/* la note chantée ramenée dans l'échelle (octave libre) */
+function cjDansEchelle(m,octaveLibre){
+  const b=cjBas(); if(!octaveLibre)return m;
+  let x=m; while(x<b-0.5)x+=12; while(x>b+12.5)x-=12; return x;
+}
+function cjAfficher(now){
+  const b=cjBas(), H=360, haut=20, bas=20, pas=(H-haut-bas)/12, y=function(m){ return haut+(b+12-m)*pas; };
+  const S=_cj.serie, N=CJ_NIV[_cj.niv], cible=S&&!S.fini?S.notes[S.i]:null, libre=_cj.onglet!=="tenir"||N.octave;
+  const bille=document.getElementById("cjBille"), note=document.getElementById("cjNote"), con=document.getElementById("cjConseil"), aig=document.getElementById("cjAig"), tr=document.getElementById("cjTrace");
+  let ecart=null;
+  if(_cj.m!=null){
+    const mm=cjDansEchelle(_cj.m,true);
+    if(bille){ bille.setAttribute("cy",y(mm).toFixed(1)); }
+    if(cible!=null){ let d=_cj.m-cible; if(libre){ d=((d%12)+12)%12; if(d>6)d-=12; } ecart=d*100; }
+    else ecart=(_cj.m-Math.round(_cj.m))*100;
+    if(note)note.textContent=cjNom(_cj.m,true);
+    _cj.trace.push([now,mm]);
+  }else if(bille)bille.setAttribute("cy","-40");
+  _cj.trace=_cj.trace.filter(function(p){ return now-p[0]<4; });
+  if(tr)tr.setAttribute("points",_cj.trace.map(function(p){ return (60+(1-(now-p[0])/4)*130).toFixed(1)+","+y(p[1]).toFixed(1); }).join(" "));
+  const tol=cible!=null?N.tol:20, juste=ecart!=null&&Math.abs(ecart)<=tol;
+  if(bille)bille.setAttribute("class","cj-bille"+(ecart==null?"":(juste?" juste":" faux")));
+  if(aig){ const e=ecart==null?0:Math.max(-100,Math.min(100,ecart)); aig.style.left=(50+e/2)+"%"; aig.className=ecart==null?"":(juste?"juste":"faux"); }
+  if(con){
+    if(ecart==null)con.textContent=cible!=null?"Chante « "+cjNom(cible)+" »":"Chante une note tenue…";
+    else if(juste)con.textContent=cible!=null?"Juste ! Tiens-la…":"Juste !";
+    else con.textContent=ecart<0?"Un peu trop bas : monte ↑":"Un peu trop haut : descends ↓";
+  }
+  if(cible!=null)cjTenir(now,juste);
+}
+
+/* ---------- exercice « Tiens la note » ---------- */
+function cjSuite(){
+  const b=cjBas(), nat=[0,2,4,5,7,9,11,12], l=[];
+  if(_cj.niv===1){ let i=pick([0,2,4,7]), sens=i>=4?-1:1;   /* notes voisines : on monte ou on descend, et on rebondit aux bords */
+    for(let k=0;k<8;k++){ l.push(b+nat[i]); if(i+sens<0||i+sens>7)sens=-sens; i+=sens; } }
+  else{ let i=pick([0,2,4]); for(let k=0;k<8;k++){ l.push(b+nat[i]); let j=i; while(j===i||Math.abs(j-i)>(_cj.niv===2?4:7))j=rnd(8); i=j; } }
+  return l;
+}
+function cjCommencer(){
+  if(!_cj.ecoute){ cjActiver().then(function(){ if(_cj.ecoute)cjCommencer(); }); return; }
+  _cj.serie={notes:cjSuite(),i:0,reussies:0,debut:audio().currentTime,fini:false,essai:0};
+  _cj.tenue=0; _cj.dernier=0; cjRendre(); cjJouerCible();
+}
+function cjJouerCible(){
+  const S=_cj.serie; if(!S||S.fini)return;
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const m=S.notes[S.i];
+  rbPiano(440*Math.pow(2,(m-69)/12),0.05,1.1,0.3);
+  _cj.muetJusqua=ctx.currentTime+1.35; _cj.tenue=0; _cj.hist=[];
+  cjMajCible();
+}
+function cjMajCible(){
+  const S=_cj.serie, r=document.getElementById("cjCible"); if(!r)return;
+  if(!S||S.fini){ r.setAttribute("height","0"); return; }
+  const b=cjBas(), H=360, haut=20, bas=20, pas=(H-haut-bas)/12, m=S.notes[S.i], h=pas*1.1;
+  r.setAttribute("y",(haut+(b+12-m)*pas-h/2).toFixed(1)); r.setAttribute("height",h.toFixed(1));
+  const z=document.getElementById("cjEx"); if(z)z.innerHTML=cjExerciceHTML(true);
+}
+function cjTenir(now,juste){
+  const S=_cj.serie, N=CJ_NIV[_cj.niv]; if(!S||S.fini)return;
+  const dt=_cj.dernier?Math.min(0.1,now-_cj.dernier):0; _cj.dernier=now;
+  if(now<_cj.muetJusqua)return;
+  _cj.tenue=juste?_cj.tenue+dt:Math.max(0,_cj.tenue-dt*0.5);
+  const anneau=document.getElementById("cjAnneau"); if(anneau)anneau.style.setProperty("--p",Math.min(1,_cj.tenue/N.tenue));
+  if(_cj.tenue>=N.tenue){
+    S.reussies++; try{ jouerEffet("bon"); }catch(e){}
+    S.i++;
+    if(S.i>=S.notes.length){ cjFin(); return; }
+    setTimeout(cjJouerCible,350); _cj.tenue=0; _cj.muetJusqua=now+0.5;
+  }
+}
+function cjPasser(){ const S=_cj.serie; if(!S||S.fini)return; S.i++; if(S.i>=S.notes.length){ cjFin(); return; } cjJouerCible(); }
+function cjFin(){
+  const S=_cj.serie; S.fini=true;
+  const pct=Math.round(S.reussies/S.notes.length*100), duree=Math.round(audio().currentTime-S.debut);
+  let gain=0; try{ gain=ajouterPoints(Math.max(GAIN_EFFORT,Math.round(pct/100*_cj.niv*10))); sauverProfil(profil); if(typeof majEnteteProfil==="function")majEnteteProfil(); }catch(e){}
+  S.res={pct:pct,duree:duree,gain:gain};
+  const z=document.getElementById("cjEx"); if(z)z.innerHTML=cjExerciceHTML(true);
+  cjMajCible();
+}
+function cjExerciceHTML(interieur){
+  const S=_cj.serie, N=CJ_NIV[_cj.niv];
+  let h;
+  if(!S)h='<p class="cm-aide">MusEduc joue une note au piano : chante-la et <b>tiens-la</b> '+String(N.tenue).replace(".",",")+' s dans la zone dorée. 8 notes par série.'+(N.octave?' L\'octave ne compte pas.':' Il faut la bonne octave.')+'</p>'
+    +'<div class="cm-commandes"><button type="button" class="cm-play" onclick="cjCommencer()"><i class="ph-fill ph-play"></i> Commencer</button></div>';
+  else if(S.fini){
+    const et=[0,1,2].map(function(k){ return '<i class="ph-fill ph-star'+(k<(S.res.pct>=90?3:(S.res.pct>=70?2:(S.res.pct>=40?1:0)))?" on":"")+'"></i>'; }).join("");
+    h='<div class="cm-fin"><div class="cm-etoiles">'+et+'</div><b>'+S.reussies+' / '+S.notes.length+'</b><p>'+(S.res.pct>=90?"Bravo, tu chantes juste !":(S.res.pct>=50?"Bien ! Encore une série pour progresser.":"Écoute bien la note avant de chanter, et chante doucement."))+'</p>'
+      +'<p class="cm-fin-d">'+S.res.duree+' s'+(S.res.gain?' · <b>+'+S.res.gain+' pts</b>':'')+'</p>'
+      +'<div class="cm-commandes"><button type="button" class="cm-play" onclick="cjCommencer()"><i class="ph-fill ph-arrow-counter-clockwise"></i> Une autre série</button></div></div>';
+  }else h='<div class="cj-ex-etat"><span class="cj-anneau" id="cjAnneau" style="--p:0"><b>'+cjNom(S.notes[S.i])+'</b></span>'
+    +'<span><b>Note '+(S.i+1)+' / '+S.notes.length+'</b><small>'+S.reussies+' réussie'+(S.reussies>1?"s":"")+'</small></span></div>'
+    +'<div class="cm-commandes"><button type="button" class="cm-dec" onclick="cjJouerCible()"><i class="ph ph-speaker-high"></i> Réentendre</button>'
+    +'<button type="button" class="va-raz" onclick="cjPasser()">Passer cette note</button></div>';
+  return interieur?h:'<div id="cjEx">'+h+'</div>';
+}
+document.addEventListener("visibilitychange",function(){ if(document.hidden&&_cj.ecoute)cjCouper(true); });
+
+/* en tête de la page Chant de l'élève : l'échauffement à portée de main */
+function cjBandeauHTML(){
+  return '<div class="cj-bandeau"><i class="ph-fill ph-microphone-stage"></i><span><b>Échauffe ta voix</b><small>Chante juste : ta voix s\'affiche sur l\'échelle des notes.</small></span>'
+    +'<button type="button" class="cm-play" onclick="ecranChanteJuste(\'tenir\')"><i class="ph-fill ph-play"></i> Chante juste</button></div>';
+}
+
+/* =====================================================================
    CLAPPING MUSIC (06/10/2026) : le déphasage de Steve Reich, à VOIR, à TAPER
    et à INVENTER. Rond BLANC = on tape dans les mains, rond NOIR = silence.
    Deux voix : la voix 1 ne bouge jamais ; la voix 2 décale son motif d'un rond
@@ -23945,9 +27166,13 @@ const CM_NIV={
 const CM_VIT={lent:1.3,moyen:1,rapide:0.8};
 let _cm={niv:1,motif:[1,1,1,0,1,0],onglet:"comprendre",decal:0,aff:-1,auto:false,rep:4,vit:"moyen",muet:[false,false],
   voixTap:2,guide:false,session:false,planif:false,timer:null,raf:null,evts:[],pos:null,demande:0,prochain:0,finT:0,
-  cour:null,taps:null,perso:null,edit:null,bruit:null,sortie:null,boucle:false};
+  cour:null,taps:null,perso:null,edit:null,bruit:null,sortie:null,boucle:false,
+  motif2:null,perso2:null,edit2:null,meme:true,voixEdit:1};
 
 function cmMotifDe(n){ return (n===0&&_cm.perso)?_cm.perso.slice():CM_NIV[n].motif.split("").map(Number); }
+/* la voix 2 peut avoir son propre motif (inventé), sinon c'est le même que la voix 1 */
+function cmMotif2De(n){ return (n===0&&_cm.perso&&_cm.perso2)?_cm.perso2.slice():cmMotifDe(n); }
+function cmDeuxMotifs(){ return !!(_cm.motif&&_cm.motif2&&_cm.motif.join("")!==_cm.motif2.join("")); }
 function cmPulse(){ return (_cm.niv===0?0.3:CM_NIV[_cm.niv].pulse)*CM_VIT[_cm.vit]; }
 function cmTol(){ return Math.max(0.1,cmPulse()*0.38); }
 /* période : le plus petit décalage qui redonne le même motif (N si aucun) */
@@ -23993,16 +27218,16 @@ function ecranClapping(onglet){
   if(_i){ _i.textContent=""; _i.style.display="none"; }
   if(onglet)_cm.onglet=onglet;
   if(_cm.niv===0&&!_cm.perso)_cm.niv=1;
-  _cm.motif=cmMotifDe(_cm.niv);
-  if(_cm.onglet==="inventer"&&!_cm.edit)_cm.edit=_cm.motif.slice();
-  if(_cm.onglet==="inventer")_cm.motif=_cm.edit.slice();
+  _cm.motif=cmMotifDe(_cm.niv); _cm.motif2=cmMotif2De(_cm.niv);
+  if(_cm.onglet==="inventer"&&!_cm.edit){ _cm.edit=_cm.motif.slice(); _cm.edit2=_cm.motif2.slice(); _cm.meme=!cmDeuxMotifs(); }
+  if(_cm.onglet==="inventer")cmAppliquerEdit();
   _cm.decal=0; _cm.aff=-1;
   const ong=function(id,n,ic,lib){ return '<button type="button" role="tab" aria-selected="'+(_cm.onglet===id)+'" class="'+(_cm.onglet===id?"on":"")+'" onclick="ecranClapping(\''+id+'\')"><span class="cm-on-n">'+n+'</span><i class="ph-fill '+ic+'"></i> '+lib+'</button>'; };
   let niveaux="";
   if(_cm.onglet!=="inventer"){
     niveaux='<div class="cm-niveaux" role="group" aria-label="Niveau">'
       +[1,2,3].map(function(n){ return '<button type="button" class="cm-niv'+(_cm.niv===n?" on":"")+'" onclick="cmNiveau('+n+')">'+CM_NIV[n].nom+'<small>'+CM_NIV[n].sous+'</small></button>'; }).join("")
-      +(_cm.perso?'<button type="button" class="cm-niv perso'+(_cm.niv===0?" on":"")+'" onclick="cmNiveau(0)"><i class="ph-fill ph-star"></i> Mon motif<small>'+_cm.perso.length+' ronds</small></button>':'')
+      +(_cm.perso?'<button type="button" class="cm-niv perso'+(_cm.niv===0?" on":"")+'" onclick="cmNiveau(0)"><i class="ph-fill ph-star"></i> '+(_cm.perso2?"Mes 2 motifs":"Mon motif")+'<small>'+_cm.perso.length+' ronds</small></button>':'')
       +'</div>';
   }
   document.getElementById("zone").innerHTML='<div class="cm" id="cmScene">'
@@ -24029,7 +27254,7 @@ function cmNiveau(n){ cmStop(); _cm.niv=n; ecranClapping(); }
 
 /* l'horloge : deux anneaux de ronds, une aiguille, et le décalage au centre */
 function cmHorlogeSVG(){
-  const m=_cm.motif, N=m.length, C=170, R1=136, R2=86;
+  const m=_cm.motif, m2=_cm.motif2||m, N=m.length, C=170, R1=136, R2=86;
   const r1=Math.min(17,2*Math.PI*R1/N*0.3), r2=Math.min(14,2*Math.PI*R2/N*0.3);
   const pos=function(R,i){ const a=(i/N)*2*Math.PI-Math.PI/2; return [(C+R*Math.cos(a)).toFixed(1),(C+R*Math.sin(a)).toFixed(1)]; };
   let s='<svg class="cm-svg" viewBox="0 0 340 340" role="img" aria-label="Horloge du déphasage : anneau extérieur, la voix 1 ; anneau intérieur, la voix 2 qui tourne d\'un rond à chaque décalage">';
@@ -24041,7 +27266,7 @@ function cmHorlogeSVG(){
   const d1=pos(R1-r1-8,0); s+='<circle cx="'+d1[0]+'" cy="'+d1[1]+'" r="4" class="cm-debut v1"/>';
   s+='</g><g id="cmA2">';
   s+='<circle cx="'+C+'" cy="'+C+'" r="'+R2+'" class="cm-piste v2"/>';
-  for(let j=0;j<N;j++){ const p=pos(R2,j); s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+r2.toFixed(1)+'" class="cm-rond v2 '+(m[j]?"clap":"chut")+'" data-j="'+j+'"/>'; }
+  for(let j=0;j<N;j++){ const p=pos(R2,j); s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+r2.toFixed(1)+'" class="cm-rond v2 '+(m2[j]?"clap":"chut")+'" data-j="'+j+'"/>'; }
   const d2=pos(R2-r2-8,0); s+='<circle cx="'+d2[0]+'" cy="'+d2[1]+'" r="4" class="cm-debut v2"/>';
   s+='</g>';
   s+='<text x="'+C+'" y="'+(C+6)+'" class="cm-c1" id="cmC1">0</text><text x="'+C+'" y="'+(C+28)+'" class="cm-c2" id="cmC2">décalage</text>';
@@ -24052,10 +27277,10 @@ function cmHorlogeSVG(){
 function cmLignesHTML(d){
   const m=_cm.motif, N=m.length; let r1="",r2="",r3="",n2=0,n1=0,n0=0;
   for(let i=0;i<N;i++){
-    const a=m[i], b=m[(i+d)%N], k=a+b; if(k===2)n2++; else if(k===1)n1++; else n0++;
+    const a=m[i], b=(_cm.motif2||m)[(i+d)%N], k=a+b; if(k===2)n2++; else if(k===1)n1++; else n0++;
     r1+='<span class="cm-c v1 '+(a?"clap":"chut")+'" data-c="'+i+'"></span>';
     r2+='<span class="cm-c v2 '+(b?"clap":"chut")+'" data-c="'+i+'"></span>';
-    r3+='<span class="cm-c ens n'+k+'" data-c="'+i+'">'+(k===2?'<i class="ph-fill ph-hands-clapping"></i>':(k===1?'<i class="ph-fill ph-hand"></i>':''))+'</span>';
+    r3+='<span class="cm-c ens n'+k+(k===1?(a?" a":" b"):"")+'" data-c="'+i+'">'+(k===2?'<i class="ph-fill ph-hands-clapping"></i>':(k===1?'<i class="ph-fill ph-hand"></i>':''))+'</span>';
   }
   const col='style="--n:'+N+'"';
   return '<div class="cm-ligne" '+col+'><b class="v1">Voix 1</b>'+r1+'</div>'
@@ -24072,8 +27297,8 @@ function cmPartitionHTML(){
   const m=_cm.motif, N=m.length; let h='<div class="cm-part" style="--n:'+N+'">';
   h+='<b class="v1">Voix 1</b>'; for(let i=0;i<N;i++)h+='<i class="'+(m[i]?"clap":"chut")+'"></i>';
   for(let d=0;d<=N;d++){
-    h+='<button type="button" class="cm-part-l" onclick="cmAller('+d+')">'+(d===0||d===N?"Unisson":"Décal. "+d)+'</button>';
-    for(let i=0;i<N;i++)h+='<i class="v2 '+(m[(i+d)%N]?"clap":"chut")+'" data-d="'+d+'"></i>';
+    h+='<button type="button" class="cm-part-l" onclick="cmAller('+d+')">'+(d===0||d===N?(cmDeuxMotifs()?(d?"Arrivée":"Départ"):"Unisson"):"Décal. "+d)+'</button>';
+    for(let i=0;i<N;i++)h+='<i class="v2 '+((_cm.motif2||m)[(i+d)%N]?"clap":"chut")+'" data-d="'+d+'"></i>';
   }
   return h+'</div>';
 }
@@ -24106,13 +27331,14 @@ function cmPanneauHTML(){
     return '<div class="cm-bloc">'
       +'<h3><i class="ph-fill ph-magic-wand"></i> Invente ton motif</h3>'
       +'<p class="cm-aide">Touche les ronds : <b>blanc</b> = on tape, <b>noir</b> = silence. L\'horloge te montre tout de suite le résultat.</p>'
+      +'<label class="lp-interrupteur cm-meme"><input type="checkbox" '+(_cm.meme?"checked":"")+' onchange="cmMeme(this.checked)"><span></span><em>Même motif pour les deux voix (comme Steve Reich)</em></label>'
       +'<div class="cm-taille"><button type="button" onclick="cmTaille(-1)" aria-label="Un rond de moins"><i class="ph ph-minus"></i></button><b>'+N+' ronds</b><button type="button" onclick="cmTaille(1)" aria-label="Un rond de plus"><i class="ph ph-plus"></i></button></div>'
-      +'<div class="cm-editeur" id="cmEditeur">'+cmEditeurHTML()+'</div>'
+      +'<div id="cmEditeur">'+cmEditeurHTML()+'</div>'
       +'<div class="cm-conseil" id="cmConseil" aria-live="polite"></div>'
       +'<div class="cm-commandes"><button type="button" class="cm-play" id="cmPlay" onclick="cmJouer()"><i class="ph-fill ph-play"></i> Écouter mon motif</button>'
       +'<button type="button" class="cm-dec" onclick="cmLancerPerso()"><i class="ph-fill ph-arrows-clockwise"></i> Lancer le déphasage</button></div>'
       +'<div class="cm-sauver"><input type="text" id="cmNom" maxlength="24" placeholder="Nom de ton motif" aria-label="Nom de ton motif"><button type="button" class="btn-son" onclick="cmSauver()"><i class="ph ph-floppy-disk"></i> Garder</button></div>'
-      +(mes.length?'<div class="cm-mes"><span>Mes motifs</span>'+mes.map(function(x,k){ return '<span class="cm-mes-i"><button type="button" onclick="cmCharger('+k+')">'+cmMiniHTML(x.m)+'<b>'+echapH(x.n)+'</b></button><button type="button" class="cm-x" onclick="cmOublier('+k+')" aria-label="Supprimer '+echapH(x.n)+'"><i class="ph ph-x"></i></button></span>'; }).join("")+'</div>':'')
+      +(mes.length?'<div class="cm-mes"><span id="cmMesLib">'+cmMesLib()+'</span>'+mes.map(function(x,k){ return '<span class="cm-mes-i"><button type="button" onclick="cmCharger('+k+')">'+(x.m2?'<span class="cm-mini2">'+cmMiniHTML(x.m,1)+cmMiniHTML(x.m2,2)+'</span>':cmMiniHTML(x.m))+'<b>'+echapH(x.n)+'</b></button><button type="button" class="cm-x" onclick="cmOublier('+k+')" aria-label="Supprimer '+echapH(x.n)+'"><i class="ph ph-x"></i></button></span>'; }).join("")+'</div>':'')
       +'<p class="cm-aide"><i class="ph-fill ph-chalkboard-teacher"></i> <b>En classe</b> : la moitié de la classe tape la voix 1, l\'autre la voix 2. Projette l\'horloge (bouton <i class="ph ph-arrows-out"></i>) : quand l\'anneau intérieur clignote, la voix 2 se prépare à décaler.</p>'
       +'</div>';
   }
@@ -24130,14 +27356,14 @@ function cmPanneauHTML(){
     +'<div class="cm-bloc"><h3><i class="ph-fill ph-ear"></i> Ce qu\'on entend</h3><div id="cmLignes"></div></div>'
     +'<details class="cm-bloc cm-details"><summary><i class="ph-fill ph-music-notes"></i> Voir toute la partition</summary><p class="cm-aide">Chaque ligne est une étape : regarde les ronds de la voix 2 glisser en diagonale.</p><div id="cmPartition">'+cmPartitionHTML()+'</div></details>'
     +'<div class="cm-bloc"><h3><i class="ph-fill ph-lightbulb"></i> Comment ça marche</h3><ol class="cm-regles">'
-    +'<li>Les deux voix tapent <b>le même motif</b>, en boucle.</li>'
+    +(cmDeuxMotifs()?'<li>Chaque voix tape <b>son propre motif</b>, en boucle.</li>':'<li>Les deux voix tapent <b>le même motif</b>, en boucle.</li>')
     +'<li>La voix 1 ne change jamais. La voix 2 <b>avance d\'un rond</b> à chaque étape : l\'anneau intérieur tourne.</li>'
     +'<li>Chaque décalage crée un <b>nouveau rythme</b> : regarde la ligne « Ensemble ».</li>'
     +'<li>Après '+N+' décalages, tout le monde se retrouve <b>ensemble</b> : c\'est la fin.</li></ol>'
     +'<p class="cm-aide">Steve Reich a écrit <b>Clapping Music</b> en 1972 pour deux musiciens… et seulement leurs mains. Le niveau Difficile, c\'est son motif de 12 ronds.</p>'
     +'<div class="compo-yt-grille"><div class="ce-yt" data-yt="liYkRarIDfo" data-lib="Clapping Music · Steve Reich (1972), London Sinfonietta"></div></div></div>';
 }
-function cmMiniHTML(s){ return '<span class="cm-mini">'+String(s).split("").map(function(c){ return '<i class="'+(c==="1"?"clap":"chut")+'"></i>'; }).join("")+'</span>'; }
+function cmMiniHTML(s,v){ return '<span class="cm-mini'+(v?" v"+v:"")+'">'+String(s).split("").map(function(c){ return '<i class="'+(c==="1"?"clap":"chut")+'"></i>'; }).join("")+'</span>'; }
 
 /* ---------- réglages ---------- */
 function cmVitesse(v){ _cm.vit=v; cmRafraichirPanneau(); }
@@ -24164,10 +27390,11 @@ function cmPoserDecal(d,sansAnim){
   if(d===_cm.aff)return;
   _cm.aff=d; if(!_cm.session)_cm.decal=d;
   const c1=document.getElementById("cmC1"), c2=document.getElementById("cmC2");
-  if(c1&&!(_cm.cour&&_cm.cour.pre)){ c1.textContent=(d===0||d===N)?"=":d; c2.textContent=(d===0||d===N)?"ensemble":"décalage"+(d>1?"s":""); }
+  if(c1&&!(_cm.cour&&_cm.cour.pre)){ c1.textContent=(d===0||d===N)?"=":d; c2.textContent=(d===0||d===N)?(cmDeuxMotifs()?"départ":"ensemble"):"décalage"+(d>1?"s":""); }
   const t=document.getElementById("cmDecalTxt"), e=document.getElementById("cmEtatTxt");
-  if(t){ t.textContent=(d===0)?"Unisson : départ":(d===N?"Unisson : arrivée !":"Décalage "+d+" sur "+N); }
-  if(e){ e.textContent=(d===0||d===N)?"Les deux voix tapent exactement ensemble.":"La voix 2 a avancé de "+d+" rond"+(d>1?"s":"")+" : un nouveau rythme apparaît."; }
+  const deux=cmDeuxMotifs();
+  if(t){ t.textContent=(d===0)?(deux?"Départ":"Unisson : départ"):(d===N?(deux?"Retour au départ !":"Unisson : arrivée !"):"Décalage "+d+" sur "+N); }
+  if(e){ e.textContent=(d===0||d===N)?(deux?"Les deux motifs partent ensemble, chacun le sien.":"Les deux voix tapent exactement ensemble."):"La voix 2 a avancé de "+d+" rond"+(d>1?"s":"")+" : un nouveau rythme apparaît."; }
   const p=document.getElementById("cmPas"); if(p)p.innerHTML=cmPasHTML(d);
   const l=document.getElementById("cmLignes"); if(l)l.innerHTML=cmLignesHTML(d);
   document.querySelectorAll("#cmPartition .cm-part i[data-d]").forEach(function(x){ x.classList.toggle("cur",+x.dataset.d===d); });
@@ -24240,11 +27467,11 @@ function cmPlanifier(){
       if(P.pre%2===0)rbToc(Math.max(0,t-ctx.currentTime),P.pre===8);
       _cm.evts.push({t:t,pre:P.pre}); P.pre--; _cm.prochain+=dur; continue;
     }
-    const v1=_cm.motif[P.i], v2=_cm.motif[(P.i+P.d)%N], kv=tap?_cm.voixTap:0;
+    const v1=_cm.motif[P.i], v2=(_cm.motif2||_cm.motif)[(P.i+P.d)%N], kv=tap?_cm.voixTap:0, seul1=inv&&_cm.meme;
     if(v1&&!_cm.muet[0]&&!(kv===1&&!_cm.guide))cmClap(t,1,kv===1?0.3:1);
-    if(v2&&!inv&&!_cm.muet[1]&&!(kv===2&&!_cm.guide))cmClap(t,2,kv===2?0.3:1);
+    if(v2&&!seul1&&!_cm.muet[1]&&!(kv===2&&!_cm.guide))cmClap(t,2,kv===2?0.3:1);
     const enchaine=tap||_cm.auto;
-    const ev={t:t,i:P.i,d:P.d,rep:P.rep,v1:v1,v2:inv?0:v2,avant:enchaine&&P.rep===_cm.rep-1&&P.d<N};
+    const ev={t:t,i:P.i,d:P.d,rep:P.rep,v1:v1,v2:seul1?0:v2,avant:enchaine&&P.rep===_cm.rep-1&&P.d<N};
     if(tap){ ev.attendu=(kv===1?v1:v2); ev.ok=false; _cm.taps.fen.push(ev); }
     _cm.evts.push(ev);
     P.i++; _cm.prochain+=dur;
@@ -24287,7 +27514,7 @@ function cmMontrer(ev){
   const N=_cm.motif.length, kv=_cm.taps?_cm.voixTap:0;
   const o=document.querySelector('#cmA1 [data-i="'+ev.i+'"]'), n=document.querySelector('#cmA2 [data-j="'+((ev.i+ev.d)%N)+'"]');
   if(kv===1){ if(ev.v1)cmFlash(o,"vise",dur2()); } else cmFlash(o,"tape");
-  if(kv===2){ if(ev.v2)cmFlash(n,"vise",dur2()); } else if(_cm.onglet!=="inventer")cmFlash(n,"tape");
+  if(kv===2){ if(ev.v2)cmFlash(n,"vise",dur2()); } else if(_cm.onglet!=="inventer"||!_cm.meme)cmFlash(n,"tape");
   document.querySelectorAll("#cmHorloge .cm-num").forEach(function(x){ x.classList.toggle("cur",+x.dataset.n===ev.i); });
   document.querySelectorAll("#cmLignes .cm-c").forEach(function(x){ x.classList.toggle("cur",+x.dataset.c===ev.i); });
   const g=document.getElementById("cmA2"); if(g)g.classList.toggle("bientot",!!ev.avant);
@@ -24358,43 +27585,103 @@ document.addEventListener("visibilitychange",function(){ if(document.hidden&&_cm
 
 /* ---------- inventer ---------- */
 function cmEditeurHTML(){
-  return _cm.edit.map(function(x,i){ return '<button type="button" class="cm-e '+(x?"clap":"chut")+'" onclick="cmBasculer('+i+')" aria-label="Rond '+(i+1)+' : '+(x?"on tape":"silence")+'" aria-pressed="'+(x?"true":"false")+'"><small>'+(i+1)+'</small></button>'; }).join("");
+  const ligne=function(v){
+    const fige=v===2&&_cm.meme, m=(v===1||fige)?_cm.edit:_cm.edit2;
+    return '<div class="cm-ed-voix v'+v+(!_cm.meme&&_cm.voixEdit===v?" actif":"")+(fige?" fige":"")+'">'
+      +'<div class="cm-ed-t"'+(fige?'':' onclick="cmVoixEdit('+v+')"')+'><b>Voix '+v+'</b><small>'+(v===1?"ne bouge pas":(fige?"le même motif, qui se décale":"son propre motif, qui se décale"))+'</small></div>'
+      +'<div class="cm-editeur">'+m.map(function(x,i){ return '<button type="button" class="cm-e '+(x?"clap":"chut")+'"'+(fige?' disabled':' onclick="cmBasculer('+v+','+i+')"')
+        +' aria-label="Voix '+v+', rond '+(i+1)+' : '+(x?"on tape":"silence")+'" aria-pressed="'+(x?"true":"false")+'"><small>'+(i+1)+'</small></button>'; }).join("")+'</div></div>';
+  };
+  return ligne(1)+ligne(2);
+}
+function cmMesLib(){ return "Mes motifs"+(_cm.meme?"":" : touche un motif pour le mettre dans la voix "+_cm.voixEdit); }
+/* choisir la voix à remplir (touche son titre) */
+function cmVoixEdit(v){
+  if(_cm.meme||_cm.voixEdit===v)return; _cm.voixEdit=v;
+  const e=document.getElementById("cmEditeur"); if(e)e.innerHTML=cmEditeurHTML();
+  const ml=document.getElementById("cmMesLib"); if(ml)ml.textContent=cmMesLib();
+}
+function cmAppliquerEdit(){
+  if(!_cm.edit2||_cm.edit2.length!==_cm.edit.length)_cm.edit2=_cm.edit.slice();
+  _cm.motif=_cm.edit.slice(); _cm.motif2=(_cm.meme?_cm.edit:_cm.edit2).slice();
 }
 function cmEditer(){
-  cmStop(); _cm.motif=_cm.edit.slice(); _cm.aff=-1;
+  cmStop(); cmAppliquerEdit(); _cm.aff=-1;
   const h=document.getElementById("cmHorloge"); if(h)h.innerHTML=cmHorlogeSVG();
   const e=document.getElementById("cmEditeur"); if(e)e.innerHTML=cmEditeurHTML();
   const t=document.querySelector(".cm-taille b"); if(t)t.textContent=_cm.edit.length+" ronds";
+  const ml=document.getElementById("cmMesLib"); if(ml)ml.textContent=cmMesLib();
   cmPoserDecal(0,true); cmMajConseil();
 }
-function cmBasculer(i){ _cm.edit[i]=_cm.edit[i]?0:1; cmEditer(); try{ const c=audio(); c.resume(); if(_cm.edit[i])cmClap(c.currentTime+0.01,1,0.8); }catch(e){} }
-function cmTaille(k){ const n=Math.max(4,Math.min(12,_cm.edit.length+k)); if(n===_cm.edit.length)return; if(k>0)_cm.edit.push(0); else _cm.edit.pop(); cmEditer(); }
+/* tout l'onglet (interrupteur, motifs gardés) : après un chargement ou un changement de mode */
+function cmEditerTout(){
+  cmStop(); cmAppliquerEdit(); _cm.aff=-1;
+  const h=document.getElementById("cmHorloge"); if(h)h.innerHTML=cmHorlogeSVG();
+  cmRafraichirPanneau();
+}
+function cmMeme(on){
+  _cm.meme=!!on;
+  if(!on){ _cm.edit2=_cm.edit.slice(); _cm.voixEdit=2; }   /* on part d'une copie de la voix 1, à modifier */
+  cmEditerTout();
+}
+function cmBasculer(v,i){
+  if(v===2&&_cm.meme)return;
+  const m=v===1?_cm.edit:_cm.edit2; m[i]=m[i]?0:1; _cm.voixEdit=v;
+  cmEditer();
+  try{ const c=audio(); c.resume(); if(m[i])cmClap(c.currentTime+0.01,v,0.8); }catch(e){}
+}
+function cmTaille(k){
+  const n=Math.max(4,Math.min(12,_cm.edit.length+k)); if(n===_cm.edit.length)return;
+  if(!_cm.edit2||_cm.edit2.length!==_cm.edit.length)_cm.edit2=_cm.edit.slice();
+  [_cm.edit,_cm.edit2].forEach(function(m){ if(k>0)m.push(0); else m.pop(); });
+  cmEditer();
+}
 function cmMajConseil(){
   const c=document.getElementById("cmConseil"); if(!c)return;
-  const m=_cm.edit, N=m.length, k=m.reduce(function(a,b){ return a+b; },0), per=cmPeriode(m);
+  const somme=function(x){ return x.reduce(function(a,b){ return a+b; },0); };
+  const m=_cm.edit, N=m.length, k=somme(m), per=cmPeriode(m);
+  const m2=_cm.meme?m:(_cm.edit2||m), k2=somme(m2), deux=m.join("")!==m2.join("");
   let ic="ph-check-circle", cls="bon", txt;
-  if(k===0){ cls="ko"; ic="ph-warning-circle"; txt="Aucun clap : il faut au moins quelques ronds blancs !"; }
+  if(k===0||k2===0){ cls="ko"; ic="ph-warning-circle"; txt=(deux?"Chaque voix a besoin d'au moins un clap":"Aucun clap : il faut au moins quelques ronds blancs")+" !"; }
+  else if(k2===N){ cls="ko"; ic="ph-warning-circle"; txt=deux?"La voix 2 n'a que des claps : en se décalant, elle ne change rien. Mets-y quelques ronds noirs.":"Que des claps : sans silence, le décalage ne change rien. Mets quelques ronds noirs."; }
+  else if(deux)txt="Deux motifs différents : à chaque décalage, la voix 2 glisse sous la voix 1, et un nouveau rythme apparaît. Après "+N+" décalages, on revient au départ.";
   else if(k===N){ cls="ko"; ic="ph-warning-circle"; txt="Que des claps : sans silence, le décalage ne change rien. Mets quelques ronds noirs."; }
   else if(per<N){ cls="ko"; ic="ph-warning-circle"; txt="Ton motif se répète à l'intérieur de lui-même : dès le décalage "+per+", on retombe sur l'unisson. Change un seul rond pour casser la répétition."; }
   else txt="Super motif : ses "+N+" décalages sont tous différents. Chacun va créer un nouveau rythme !"+(m[0]?"":" Astuce : commencer par un clap aide à se repérer.");
   c.className="cm-conseil "+cls; c.innerHTML='<img src="'+(typeof IMG_LECON!=="undefined"?IMG_LECON:"")+'" alt=""><span><i class="ph-fill '+ic+'"></i> '+txt+'</span>';
 }
+function cmMotifsValides(){
+  const ok=function(x){ const k=x.reduce(function(a,b){ return a+b; },0); return k>0&&k<x.length; };
+  return ok(_cm.edit)&&(_cm.meme||ok(_cm.edit2||_cm.edit));
+}
 function cmLancerPerso(){
-  const m=_cm.edit, k=m.reduce(function(a,b){ return a+b; },0);
-  if(!k||k===m.length){ cmMajConseil(); return; }
-  _cm.perso=m.slice(); _cm.niv=0; cmStop(); ecranClapping("comprendre");
+  if(!cmMotifsValides()){ cmMajConseil(); return; }
+  const m2=_cm.meme?null:_cm.edit2;
+  _cm.perso=_cm.edit.slice(); _cm.perso2=(m2&&m2.join("")!==_cm.edit.join(""))?m2.slice():null;
+  _cm.niv=0; cmStop(); ecranClapping("comprendre");
 }
 function cmSauver(){
   const inp=document.getElementById("cmNom"), nom=((inp&&inp.value)||"").trim()||("Motif "+(((profil.clapMotifs||[]).length)+1));
-  const m=_cm.edit, k=m.reduce(function(a,b){ return a+b; },0);
-  if(!k||k===m.length){ cmMajConseil(); return; }
-  profil.clapMotifs=(profil.clapMotifs||[]).filter(function(x){ return x.m!==m.join(""); });
-  profil.clapMotifs.unshift({n:nom.slice(0,24),m:m.join("")}); profil.clapMotifs=profil.clapMotifs.slice(0,8);
+  if(!cmMotifsValides()){ cmMajConseil(); return; }
+  const m=_cm.edit.join(""), m2=(!_cm.meme&&_cm.edit2&&_cm.edit2.join("")!==m)?_cm.edit2.join(""):"";
+  profil.clapMotifs=(profil.clapMotifs||[]).filter(function(x){ return !(x.m===m&&(x.m2||"")===m2); });
+  const nouv={n:nom.slice(0,24),m:m}; if(m2)nouv.m2=m2;
+  profil.clapMotifs.unshift(nouv); profil.clapMotifs=profil.clapMotifs.slice(0,8);
   try{ sauverProfil(profil); }catch(e){}
-  _cm.perso=m.slice(); cmRafraichirPanneau();
-  try{ toast("Motif « "+nom+" » gardé !"); }catch(e){}
+  _cm.perso=_cm.edit.slice(); _cm.perso2=m2?_cm.edit2.slice():null; cmRafraichirPanneau();
+  try{ toast((m2?"Motifs « ":"Motif « ")+nom+" » gardé"+(m2?"s":"")+" !"); }catch(e){}
 }
-function cmCharger(k){ const x=(profil.clapMotifs||[])[k]; if(!x)return; _cm.edit=x.m.split("").map(Number); cmEditer(); }
+/* un motif gardé : une paire remplit les deux voix ; un motif seul va dans la voix choisie */
+function cmCharger(k){
+  const x=(profil.clapMotifs||[])[k]; if(!x)return;
+  const a=x.m.split("").map(Number), N=a.length;
+  const ajuste=function(m){ m=(m||[]).slice(0,N); while(m.length<N)m.push(0); return m; };
+  if(x.m2){ _cm.edit=a; _cm.edit2=ajuste(x.m2.split("").map(Number)); _cm.meme=false; }
+  else if(_cm.meme){ _cm.edit=a; _cm.edit2=a.slice(); }
+  else if(_cm.voixEdit===2){ _cm.edit2=a; _cm.edit=ajuste(_cm.edit); }
+  else{ _cm.edit=a; _cm.edit2=ajuste(_cm.edit2); }
+  cmEditerTout();
+}
 async function cmOublier(k){
   const x=(profil.clapMotifs||[])[k]; if(!x)return;
   if(typeof dlgConfirmer==="function"&&!(await dlgConfirmer("Supprimer le motif « "+x.n+" » ?")))return;
@@ -25456,60 +28743,7 @@ function sqCarteHTML(code,etat,cls,label){
 }
 
 /* ============================ CÔTÉ PROF ============================ */
-function ecranCalmarHost(mode){
-  mode=mode==="bougies"?"bougies":"squid";
-  fermerMenu();masquerInterfaceNormale();majRetour(ecranJouer,"Jouer");
-  document.getElementById("titre").innerHTML=mode==="bougies"?'<i class="ph ph-fire-simple"></i> La symphonie des bougies':'<i class="ph ph-fish"></i> Le Calmar Musical';
-  document.getElementById("intro").textContent="";
-  if(typeof peutAnimer==="function"&&!peutAnimer()){
-    document.getElementById("zone").innerHTML=`<div class="accueil" style="max-width:520px"><div class="ex">
-      <p>Seul un <b>enseignant connecté</b> peut ouvrir une partie.</p>
-      <button class="action btn-corr" onclick="ecranCalmarJoin()"><i class="ph ph-device-mobile"></i> Rejoindre une partie</button>
-      </div></div>`;return;
-  }
-  if(!fbPret()){
-    document.getElementById("zone").innerHTML=`<div class="ex"><p style="color:var(--faux);font-weight:600">
-      <i class="ph ph-warning"></i> Ce mode fonctionne uniquement avec <b>Firebase</b> (temps réel). Vérifie la configuration.</p></div>`;return;
-  }
-  const bougies=mode==="bougies";
-  const onglets=`<div class="sq-jeux jh-bascule">
-      <button type="button" class="${bougies?"":"on"}" onclick="ecranCalmarHost('squid')"><i class="ph ph-fish"></i> Le Calmar Musical</button>
-      <button type="button" class="${bougies?"on":""}" onclick="ecranCalmarHost('bougies')"><i class="ph ph-fire-simple"></i> La symphonie des bougies</button></div>`;
-  const regles=bougies
-    ? [["ph-fire-simple","Chaque élève est une <b>bougie</b>. Une erreur, ou pas de réponse à temps, la <b>souffle</b>."],
-       ["ph-music-notes","Les bougies éteintes forment le <b>chœur</b> : elles continuent de répondre (+"+SQ_CHOEUR_PTS+" points par bonne réponse)."],
-       ["ph-sparkle","Régulièrement, le meilleur du chœur <b>rallume</b> sa bougie et revient dans la partie."]]
-    : [["ph-coins","Chaque élève <b>mise</b> des points avant de commencer."],
-       ["ph-x-circle","Une erreur, ou pas de réponse à temps : <b>éliminé</b>, sa mise tombe dans la cagnotte."],
-       ["ph-crown","Le <b>dernier en jeu</b> remporte toute la cagnotte."]];
-  /* réglages compacts : une pastille par réglage (libellé + champ côte à côte),
-     l'explication en infobulle et une seule ligne d'aide dessous */
-  const diffHTML='<div class="jhc-item"><span class="jhc-lib"><i class="ph ph-gauge"></i> Difficulté</span><span class="seg jhc-seg" id="sqSeg"><button data-d="1" class="on">Facile</button><button data-d="2">Moyen</button><button data-d="3">Difficile</button></span></div>';
-  const reglages=bougies
-    ? diffHTML
-      +`<label class="jhc-item" title="0 = sans enjeu, sinon de ${SQ_MISE_MIN} à ${SQ_MISE_MAX} points ; une bougie soufflée perd sa mise."><span class="jhc-lib"><i class="ph ph-coins"></i> Mise</span><input class="jhc-num" id="sqMise" type="number" min="0" max="${SQ_MISE_MAX}" step="5" value="0"><small>pts</small></label>`
-      +`<label class="jhc-item" title="L'élève du chœur qui a le plus de bonnes réponses depuis le dernier rallumage revient en jeu."><span class="jhc-lib"><i class="ph ph-fire-simple"></i> Rallumage toutes les</span><input class="jhc-num" id="sqRallume" type="number" min="3" max="10" step="1" value="${SQ_RALLUME_DEFAUT}"><small>questions</small></label>`
-      +`<p class="jhc-aide"><i class="ph ph-info"></i> Mise facultative (0 = sans enjeu, sinon ${SQ_MISE_MIN} à ${SQ_MISE_MAX} pts). Au rallumage, le meilleur du chœur revient en jeu.</p>`
-    : diffHTML
-      +`<label class="jhc-item" title="De ${SQ_MISE_MIN} à ${SQ_MISE_MAX} points ; le gagnant remporte la cagnotte (partagée en cas d'ex æquo)."><span class="jhc-lib"><i class="ph ph-coins"></i> Mise</span><input class="jhc-num" id="sqMise" type="number" min="${SQ_MISE_MIN}" max="${SQ_MISE_MAX}" step="5" value="${SQ_MISE_DEFAUT}"><small>pts</small></label>`
-      +`<label class="jhc-item" title="Un élève qui répond juste plusieurs fois d'affilée peut éliminer un camarade au tour suivant."><input type="checkbox" id="sqPouvoir" checked onchange="var z=document.getElementById('sqSeuilLigne');if(z)z.style.visibility=this.checked?'visible':'hidden';"><span class="jhc-lib"><i class="ph ph-lightning"></i> Pouvoir de série</span><span id="sqSeuilLigne" class="jhc-sous">après <input class="jhc-num" id="sqSeuil" type="number" min="2" max="8" step="1" value="${SQ_ELIM_SEUIL}"> bonnes réponses</span></label>`
-      +`<p class="jhc-aide"><i class="ph ph-info"></i> Mise obligatoire de ${SQ_MISE_MIN} à ${SQ_MISE_MAX} pts, cagnotte au dernier en jeu. Pouvoir de série : éliminer un camarade après plusieurs bonnes réponses d'affilée.</p>`;
-  document.getElementById("zone").innerHTML=`
-   <div class="accueil jh" style="max-width:880px">
-     ${onglets}
-     ${jeuBanniereHTML(bougies?"bougies":"calmar","Vous lancez la partie au tableau ; les élèves la rejoignent avec le code affiché.")}
-     ${jeuReglesHTML(regles)}
-     ${jeuEtapeHTML(1,"Le thème des questions",jeuPickerHTML("sqCat"))}
-     ${jeuEtapeHTML(2,"Les réglages",'<div class="jhc">'+reglages+'</div>')}
-     <div class="jh-lancer"><button class="rm-cta" onclick="sqCreer('${mode}')"><i class="ph-fill ph-play"></i> Créer la partie et afficher le code</button>
-       <p id="sqMsg"></p></div>
-   </div>`;
-  jpRendre("sqCat");
-  document.getElementById("sqSeg").addEventListener("click",function(e){
-    const b=e.target.closest("button");if(!b)return;
-    document.querySelectorAll("#sqSeg button").forEach(function(x){x.classList.remove("on");});
-    b.classList.add("on");});
-}
+function ecranCalmarHost(mode){ ecranLancerPartie(mode==="bougies"?"bougies":"squid"); }
 function sqCreer(mode){
   mode=mode==="bougies"?"bougies":"squid";
   const cat=document.getElementById("sqCat").value;
@@ -25618,7 +28852,7 @@ async function sqArreter(){
   /* on prévient d'abord les téléphones, puis on efface la partie */
   try{ if(sqHost&&sqHost.phase!=="fin"){ sqHost.phase="arrete"; sqPush(); } }catch(e){}
   try{ const b=sqHost&&sqHost.base; if(b)setTimeout(function(){ try{b.remove();}catch(e){} },5000); }catch(e){}
-  sqStop();sqHost=null;ecranCalmarHost(mode);
+  sqStop();sqHost=null;ecranLancerPartie(mode,true);
 }
 async function sqLancer(){
   const n=Object.keys(sqHost.joueurs).length;
@@ -29850,11 +33084,12 @@ const REP_YT={
   armide:"bZVlzxXzhMI",     armide2:"tb8YjkJ5azE"       // Lully, Armide, Passacaille (acte V)
 };
 const REP_INDICES={
- "1_0":"Regarde la <b>clé</b> au début de chaque partition : la clé de <b>sol</b> sert aux voix et aux instruments aigus, la clé de <b>fa</b> aux graves. Les motifs D et E sont en clé de fa : ce sont les plus graves.",
- "1_1":"Écoute les voix : un chœur <b>mixte</b> mélange voix de femmes et d'hommes, un chœur d'<b>hommes</b> sonne plus sombre et plus grave. Les notes rapides et régulières qui «&nbsp;tricotent&nbsp;» sont jouées à l'<b>orgue</b>.",
+  "1_0":"Regarde la <b>clé</b> au début de chaque partition (clé de <b>sol</b> pour les sons aigus, clé de <b>fa</b> pour les graves) et la place des notes sur la portée. Le motif D est en clé de fa, mais ses notes sont tout en haut de la portée : il est dans le <b>médium</b>. Le motif E, tout en bas de la clé de fa, est le seul dans le <b>grave</b>.",
+  "1_1":"Écoute les voix : un chœur <b>mixte</b> mélange voix de femmes et d'hommes, un chœur de <b>femmes</b> sonne clair et aigu, un chœur d'<b>hommes</b> sonne plus sombre. Les notes rapides et régulières qui «&nbsp;tricotent&nbsp;», comme les longues notes très graves, sont jouées à l'<b>orgue électronique</b>.",
  "2_0":"Sur la partition, les <b>rondes</b> et les <b>blanches</b> (notes creuses) sont des valeurs <b>longues</b> ; les <b>doubles croches</b> (notes reliées par deux barres) sont des valeurs <b>brèves</b>. Le motif C a deux lignes&nbsp;!",
  "2_1":"Suis les notes des yeux de gauche à droite : si elles <b>montent</b> sur la portée, le mouvement est ascendant ; si elles <b>descendent</b>, il est descendant.",
  "4_0":"Chaque motif entre <b>après</b> le précédent : A ouvre le morceau seul, puis B le rejoint, puis C… Aide-toi de la machine à accumulation juste au-dessus.",
+ "4_3":"Relance la machine et regarde quelles cases s'allument dans chaque partie. Un motif qui est entré <b>reste</b> jusqu'à la fin, et chaque partie n'ajoute qu'<b>un</b> nouveau motif, dans l'ordre A, B, C, D, E.",
  "7_0":"Les deux motifs sont joués par le même orchestre et montent tous les deux. Regarde plutôt la <b>durée des notes</b> sur les deux partitions.",
  "8_1":"Écoute ce que font les <b>instruments graves</b> (violoncelles, basses) : jouent-ils toujours la même chose, ou changent-ils sans arrêt&nbsp;?",
  "9_1":"Philip Glass, Steve Reich et Terry Riley écrivent de la <b>musique</b>. Donald Judd fabrique des sculptures, Andy Warhol des sérigraphies."
@@ -29886,15 +33121,24 @@ const COURS_REP=[
   <figure><img src="__MOTIF_E__" alt="Partition du motif E"><figcaption>Motif E</figcaption></figure>
  </div>
  <div class="ce-note"><i class="ph ph-info"></i> Le <b>registre</b> est la zone de hauteur où l'on joue : <b>grave</b> (sons bas), <b>médium</b> (au milieu) ou <b>aigu</b> (sons hauts). La <b>formation</b>, ce sont les voix et instruments qui jouent.</div>
- <div class="ce-yt" data-yt="${REP_YT.northStar}" data-yt2="${REP_YT.northStar2}" data-lib="Philip Glass, North Star (1977)"></div>`,
+ <div class="ce-yt" data-yt="${REP_YT.northStar}" data-yt2="${REP_YT.northStar2}" data-lib="Philip Glass, North Star (1977)"></div>
+ <h3 class="rep-h"><i class="ph ph-plug"></i> Deux instruments électroniques</h3>
+ <div class="rep-instr">
+  <div class="rep-instr-c"><i class="ph-fill ph-piano-keys"></i><div><b>L'orgue électronique</b>
+   <p>Un instrument à clavier apparu au XXᵉ siècle. Au lieu de souffler de l'air dans des tuyaux, comme l'orgue des églises, il fabrique ses sons avec des <b>circuits électroniques</b>, et un haut-parleur les fait entendre. On choisit le son avec des boutons ou des tirettes qui imitent les «&nbsp;jeux&nbsp;» de l'orgue. Léger et transportable, il a équipé beaucoup de groupes : Philip Glass lui-même en jouait dans son ensemble.</p></div></div>
+  <div class="rep-instr-c"><i class="ph-fill ph-faders"></i><div><b>Le synthétiseur</b>
+   <p>Un instrument électronique, souvent à clavier, qui <b>fabrique</b> (on dit «&nbsp;synthétise&nbsp;») ses sons à partir de signaux électriques. Le musicien règle lui-même la <b>forme de l'onde</b> (le timbre de départ), le <b>filtre</b> (un son plus sombre ou plus brillant) et l'<b>attaque</b> (un début de son net ou doux). Il peut imiter des instruments… ou inventer des sons qui n'existent nulle part ailleurs. Les premiers ont été construits dans les années 1960 (Robert Moog) ; aujourd'hui, on l'entend partout : électro, rap, musiques de films et de jeux vidéo.</p></div></div>
+ </div>
+ <div class="ce-note"><i class="ph ph-scales"></i> La différence&nbsp;: l'orgue électronique propose des sons <b>tout prêts</b>&nbsp;; avec le synthétiseur, on <b>sculpte</b> le son soi-même. D'ailleurs, un synthétiseur peut imiter un orgue électronique&nbsp;: essaie ci-dessous&nbsp;!</div>
+ <div class="rep-synth" id="repSynth"></div>`,
  ex:[{type:"grille",consigne:"Pour chaque motif, choisis son <b>registre</b>.",
   cols:["Grave","Médium","Aigu"],
-  rows:[{t:"Motif A",r:1},{t:"Motif B",r:2},{t:"Motif C",r:2},{t:"Motif D",r:0},{t:"Motif E",r:0}],
-  expl:"A est dans le <b>médium</b>, B et C dans l'<b>aigu</b>, D et E dans le <b>grave</b> (d'ailleurs, leur partition est écrite en clé de fa)."},
+  rows:[{t:"Motif A",r:1},{t:"Motif B",r:2},{t:"Motif C",r:2},{t:"Motif D",r:1},{t:"Motif E",r:0}],
+  expl:"A et D sont dans le <b>médium</b>, B et C dans l'<b>aigu</b>, E dans le <b>grave</b>. Le motif D est écrit en clé de fa, mais tout en haut de la portée : il reste dans le médium."},
   {type:"grille",consigne:"Pour chaque motif, choisis la <b>formation</b> qui le joue.",
-  cols:["Chœur mixte","Chœur d'hommes","Orgue"],
-  rows:[{t:"Motif A",r:0},{t:"Motif B",r:2},{t:"Motif C",r:0},{t:"Motif D",r:1},{t:"Motif E",r:2}],
-  expl:"A et C sont chantés par un <b>chœur mixte</b>, D par un <b>chœur d'hommes</b>. B est joué par un <b>orgue électrique</b> dans l'aigu, E par l'<b>orgue</b> dans le grave."}]},
+  cols:["Chœur mixte","Chœur de femmes","Chœur d'hommes","Orgue électronique"],
+  rows:[{t:"Motif A",r:0},{t:"Motif B",r:3},{t:"Motif C",r:1},{t:"Motif D",r:2},{t:"Motif E",r:3}],
+  expl:"A est chanté par un <b>chœur mixte</b>, C par un <b>chœur de femmes</b>, D par un <b>chœur d'hommes</b>. B et E sont joués par un <b>orgue électronique</b> : B dans l'aigu, E dans le grave."}]},
 
 /* 2 */{t:"Des notes longues ou brèves",ic:"<i class='ph ph-music-notes'></i>",
  html:`<p>Regarde maintenant la <b>durée des notes</b> et la <b>direction</b> de chaque motif.</p>
@@ -29913,18 +33157,18 @@ const COURS_REP=[
   {type:"grille",consigne:"Pour chaque motif, choisis son <b>mouvement mélodique</b>.",
   cols:["Ascendant (il monte)","Descendant (il descend)"],
   rows:[{t:"Motif A",r:0},{t:"Motif B",r:0},{t:"Motif C",r:1},{t:"Motif D",r:0},{t:"Motif E",r:0}],
-  expl:"Tous les motifs <b>montent</b>, sauf le motif C qui <b>descend</b>. Le motif A monte à deux voix qui avancent ensemble : on parle de mouvement <b>parallèle ascendant</b>."}]},
+  expl:"Tous les motifs <b>montent</b> (mouvement <b>ascendant</b>), sauf le motif C qui <b>descend</b> (mouvement <b>descendant</b>)."}]},
 
 /* 3 */{t:"Le motif du milieu",ic:"<i class='ph ph-intersect'></i>",
  html:`<p>Fais le bilan de tes observations. Voici le tableau complet des cinq motifs&nbsp;:</p>
  <div class="rep-tab-wrap"><table class="rep-tab">
   <thead><tr><th>Motif</th><th>Formation</th><th>Registre</th><th>Valeurs</th><th>Mouvement</th></tr></thead>
   <tbody>
-   <tr><th>A</th><td>Chœur mixte</td><td>Médium</td><td class="rep-long">Longues</td><td>Parallèle ascendant</td></tr>
-   <tr><th>B</th><td>Orgue électrique</td><td>Aigu</td><td class="rep-bref">Brèves</td><td>Ascendant</td></tr>
-   <tr class="rep-centre"><th>C</th><td>Chœur mixte</td><td>Aigu</td><td class="rep-deux">Longues et brèves</td><td>Descendant</td></tr>
-   <tr><th>D</th><td>Chœur d'hommes</td><td>Grave</td><td class="rep-bref">Brèves</td><td>Ascendant</td></tr>
-   <tr><th>E</th><td>Orgue</td><td>Grave</td><td class="rep-long">Longues</td><td>Ascendant</td></tr>
+   <tr><th>A</th><td>Chœur mixte</td><td>Médium</td><td class="rep-long">Longues</td><td>Ascendant</td></tr>
+   <tr><th>B</th><td>Orgue électronique</td><td>Aigu</td><td class="rep-bref">Brèves</td><td>Ascendant</td></tr>
+   <tr class="rep-centre"><th>C</th><td>Chœur de femmes</td><td>Aigu</td><td class="rep-deux">Longues et brèves</td><td>Descendant</td></tr>
+   <tr><th>D</th><td>Chœur d'hommes</td><td>Médium</td><td class="rep-bref">Brèves</td><td>Ascendant</td></tr>
+   <tr><th>E</th><td>Orgue électronique</td><td>Grave</td><td class="rep-long">Longues</td><td>Ascendant</td></tr>
   </tbody></table></div>`,
  ex:[{type:"qcm",q:"Combien de <b>formules rythmiques</b> différentes Philip Glass utilise-t-il pour construire ses motifs&nbsp;?",
   opts:["Une seule","Deux","Cinq","Dix"],r:1,
@@ -29933,23 +33177,26 @@ const COURS_REP=[
   opts:["Le motif A","Le motif B","Le motif C","Le motif E"],r:2,
   expl:"Le motif <b>C</b> réunit une ligne en valeurs longues et une ligne en valeurs brèves, jouées en même temps."},
   {type:"qcm",q:"Le motif C est le 3ᵉ des 5 motifs, au milieu. Pourquoi n'est-ce pas un hasard&nbsp;?",
-  opts:["C'est le motif le plus grave et le plus lent","Il fait le lien entre les longues et les brèves","C'est le seul motif joué par l'orgue électrique","C'est le motif que l'on entend en tout premier"],r:1,
+  opts:["C'est le motif le plus grave et le plus lent","Il fait le lien entre les longues et les brèves","C'est le seul motif joué par l'orgue électronique","C'est le motif que l'on entend en tout premier"],r:1,
   expl:"Regarde la colonne des valeurs : longues, brèves, <b>les deux</b>, brèves, longues. Le motif C est le <b>motif central</b> : il réunit les deux formules et fait le pont entre les motifs qui l'entourent. L'œuvre est construite comme un miroir."}]},
 
 /* 4 */{t:"La machine à accumulation",ic:"<i class='ph ph-stack'></i>",
  html:`<p>Comment Glass assemble-t-il ses cinq motifs&nbsp;? Chaque motif entre <b>l'un après l'autre</b>, une fois que le précédent a été joué <b>4 fois</b>. Et une fois entré, un motif <b>ne s'arrête plus</b>.</p>
- <p>Essaie la machine ci-dessous : elle ne joue pas l'œuvre de Glass mais <b>cinq motifs inventés</b>, construits de la même façon (mêmes registres, mêmes valeurs, mêmes mouvements). Lance l'accumulation, puis amuse-toi à allumer et éteindre les motifs toi-même.</p>
+ <p>Essaie la machine ci-dessous : elle joue les <b>cinq motifs de <i>North Star</i></b>, d'après leur partition (les voix et l'orgue sont imités par un synthétiseur). Lance l'accumulation : les partitions s'empilent comme sur la partition d'orchestre, et un curseur rouge suit le son. Puis amuse-toi à <b>allumer et éteindre</b> les motifs toi-même.</p>
  <div class="rep-accu" id="repAccu"></div>`,
  ex:[{type:"grille",consigne:"Dans <i>North Star</i>, dans quelle <b>partie</b> chaque motif fait-il son entrée&nbsp;?",
   cols:["1","2","3","4","5"],
-  rows:[{t:"Motif A (chœur mixte)",r:0},{t:"Motif B (orgue électrique)",r:1},{t:"Motif C (chœur mixte)",r:2},{t:"Motif D (chœur d'hommes)",r:3},{t:"Motif E (orgue)",r:4}],
+  rows:[{t:"Motif A (chœur mixte)",r:0},{t:"Motif B (orgue électronique)",r:1},{t:"Motif C (chœur de femmes)",r:2},{t:"Motif D (chœur d'hommes)",r:3},{t:"Motif E (orgue électronique)",r:4}],
   expl:"A ouvre le morceau tout seul, B le rejoint dans la partie 2, C dans la partie 3, D dans la partie 4, et E complète l'ensemble dans la partie 5 : les cinq motifs jouent alors <b>en même temps</b>."},
   {type:"qcm",q:"Combien de fois un motif est-il joué avant que le motif suivant n'entre&nbsp;?",
   opts:["1 fois","2 fois","4 fois","10 fois"],r:2,
   expl:"Chaque motif est joué <b>4 fois</b> avant l'entrée du suivant."},
   {type:"qcm",q:"Quand un nouveau motif entre, que devient le motif précédent&nbsp;?",
   opts:["Il s'arrête aussitôt","Il continue de se répéter","Il est joué deux fois plus vite","Il passe dans le registre grave"],r:1,
-  expl:"Le motif précédent <b>continue</b> : les motifs s'ajoutent les uns aux autres, jusqu'à ce que les cinq sonnent ensemble."}]},
+  expl:"Le motif précédent <b>continue</b> : les motifs s'ajoutent les uns aux autres, jusqu'à ce que les cinq sonnent ensemble."},
+  {type:"accu",consigne:"À toi de reconstruire <i>North Star</i>&nbsp;! <b>Glisse</b> les motifs dans les cinq parties (ou touche un motif, puis une partie). Touche un motif déjà posé pour le retirer. Écoute ta structure avant de vérifier.",
+  motifs:["A","B","C","D","E"],sol:["A","AB","ABC","ABCD","ABCDE"],
+  expl:"Partie 1 : A seul. Partie 2 : A + B. Partie 3 : A + B + C. Partie 4 : A + B + C + D. Partie 5 : les cinq motifs ensemble. Chaque partie <b>ajoute</b> un motif sans en retirer aucun : c'est la <b>structure par accumulation</b>."}]},
 
 /* 5 */{t:"Ostinato et accumulation",ic:"<i class='ph ph-repeat'></i>",
  html:`<p>Tu viens de découvrir deux mots essentiels pour parler de la répétition en musique.</p>
@@ -29999,8 +33246,8 @@ const COURS_REP=[
  html:`<div class="recre-role"><img src="__LULLY__" alt="Jean-Baptiste Lully"><div><span class="rr-sur">Œuvre complémentaire</span><b>Jean-Baptiste Lully</b><span>Compositeur (Florence 1632, Paris 1687)</span></div></div>
  <p><b>Jean-Baptiste Lully</b> naît à Florence en 1632 et meurt à Paris en 1687. Il devient <b>surintendant de la musique</b> du roi <b>Louis XIV</b>. En 1686, il compose avec le poète Quinault l'opéra <b>Armide</b>. Écoute la <b>Passacaille</b> de l'acte V.</p>
  <div class="ce-yt" data-yt="${REP_YT.armide}" data-yt2="${REP_YT.armide2}" data-lib="Lully, Armide (1686), Passacaille"></div>
- <p>Voici les notes jouées par les instruments graves au début de la Passacaille&nbsp;:</p>
- <img class="ce-img petite rep-partoche" src="__PASSACAILLE__" alt="Les quatre mesures de la basse de la Passacaille">`,
+ <p>Voici les notes jouées par les instruments graves au début de la Passacaille. Écoute-les en boucle et suis-les sur la partition&nbsp;:</p>
+ <div class="rep-accu rep-passa" id="repPassa"></div>`,
  ex:[{type:"qcm",q:"Comment est la <b>pulsation</b> dans la Passacaille&nbsp;?",
   opts:["Absente, on ne peut pas taper la pulsation","Perceptible et régulière","Perceptible mais de plus en plus rapide","Irrégulière, elle change sans arrêt"],r:1,
   expl:"La pulsation est <b>perceptible</b> et <b>régulière</b> : c'est une danse à trois temps, lente et majestueuse."},
@@ -30041,32 +33288,34 @@ const COURS_REP=[
 ];
 
 /* ---------- La machine à accumulation (étape 4) ----------
-   Cinq motifs inventés (et non la partition de Glass), construits comme ceux de
-   North Star : A médium longues montantes, B aigu brèves montantes, C aigu
-   longues descendantes + brèves, D grave brèves montantes, E grave longues.
-   Pas de temps : doubles croches (16 par mesure, 2 mesures par motif). */
+   Les cinq motifs de North Star, transcrits d'après leur partition (3 bémols,
+   4/4, 2 mesures chacun) :
+   A chœur mixte : quintes la♭-mi♭, si♭-fa (blanches), puis do-sol (ronde)
+   B orgue électronique : si♭-mi♭ puis do-fa, puis sol-mi♭, en doubles croches
+   C chœur de femmes : sol, fa (blanches), mi♭ (ronde), au-dessus de doubles
+     croches mi♭-do, mi♭-si♭, puis do-si♭
+   D chœur d'hommes : mi♭-si♭, fa-do, puis sol-do, en doubles croches
+   E orgue électronique : do, ré (blanches), mi♭ (ronde), dans le grave
+   Pas de temps : doubles croches (16 par mesure, 2 mesures par motif). La
+   reconstitution est faite au synthétiseur : voix et orgue sont imités.
+   Dans la machine, les partitions sont redessinées d'après ces notes (repPartitionSVG). */
 const REP_DC=.1, REP_PAS=32;
 const REP_MOTIFS=[
   {k:"A",nom:"Chœur mixte",det:"médium · longues · ascendant",coul:"#7fd3ff",voix:"choeur",
-   ev:[[0,8,[60,63]],[8,8,[62,65]],[16,16,[63,67]]]},
-  {k:"B",nom:"Orgue électrique",det:"aigu · brèves · ascendant",coul:"#F2C94C",voix:"orgueAigu",ev:[]},
-  {k:"C",nom:"Chœur mixte",det:"aigu · longues et brèves · descendant",coul:"#ff9f7a",voix:"choeur",
+   ev:[[0,8,[56,63]],[8,8,[58,65]],[16,16,[60,67]]]},
+  {k:"B",nom:"Orgue électronique",det:"aigu · brèves · ascendant",coul:"#F2C94C",voix:"orgueAigu",ev:[]},
+  {k:"C",nom:"Chœur de femmes",det:"aigu · longues et brèves · descendant",coul:"#ff9f7a",voix:"choeur",
    ev:[[0,8,[79]],[8,8,[77]],[16,16,[75]]]},
-  {k:"D",nom:"Chœur d'hommes",det:"grave · brèves · ascendant",coul:"#7ee0a4",voix:"hommes",ev:[]},
-  {k:"E",nom:"Orgue",det:"grave · longues · ascendant",coul:"#c9b6ff",voix:"orgueGrave",
-   ev:[[0,8,[36]],[8,8,[38]],[16,16,[39]]]}
+  {k:"D",nom:"Chœur d'hommes",det:"médium · brèves · ascendant",coul:"#7ee0a4",voix:"hommes",ev:[]},
+  {k:"E",nom:"Orgue électronique",det:"grave · longues · ascendant",coul:"#c9b6ff",voix:"orgueGrave",
+   ev:[[0,8,[48]],[8,8,[50]],[16,16,[51]]]}
 ];
 (function(){
-  /* B : arpèges montants en doubles croches, dans l'aigu */
-  const b1=[72,75,79,82], b2=[75,79,82,86];
-  for(let t=0;t<4;t++)b1.forEach(function(n,i){ REP_MOTIFS[1].ev.push([t*4+i,1,[n]]); });
-  for(let t=0;t<4;t++)b2.forEach(function(n,i){ REP_MOTIFS[1].ev.push([16+t*4+i,1,[n]]); });
-  /* C : sous la ligne longue, des doubles croches qui oscillent */
-  for(let p=0;p<32;p++)REP_MOTIFS[2].ev.push([p,1,[p%2?70:67],"bref"]);
-  /* D : petites montées graves, chantées « dou » */
-  const d1=[48,51,55,60], d2=[51,55,58,63];
-  for(let t=0;t<4;t++)d1.forEach(function(n,i){ REP_MOTIFS[3].ev.push([t*4+i,1,[n]]); });
-  for(let t=0;t<4;t++)d2.forEach(function(n,i){ REP_MOTIFS[3].ev.push([16+t*4+i,1,[n]]); });
+  /* doubles croches : deux notes qui alternent pendant 8 pas */
+  const alterne=function(m,debut,a,b){ for(let p=0;p<8;p++)REP_MOTIFS[m].ev.push(m===2?[debut+p,1,[p%2?b:a],"bref"]:[debut+p,1,[p%2?b:a]]); };
+  alterne(1,0,70,75); alterne(1,8,72,77); alterne(1,16,79,75); alterne(1,24,79,75);   /* B */
+  alterne(2,0,75,72); alterne(2,8,75,70); alterne(2,16,72,70); alterne(2,24,72,70);   /* C, ligne du bas */
+  alterne(3,0,51,58); alterne(3,8,53,60); alterne(3,16,55,60); alterne(3,24,55,60);   /* D */
 })();
 let _rep={jeu:null,on:[true,false,false,false,false],auto:false};
 function repMonter(){
@@ -30082,6 +33331,8 @@ function repMonter(){
          ${[1,2,3,4,5].map(function(p){return '<span class="ra-c'+(p>i?" plein":"")+'" style="--c:'+m.coul+'" id="raC'+i+'_'+p+'"></span>';}).join("")}</div>`;
      }).join("")}
    </div>
+   <div class="ra-parts" id="raParts" aria-label="Les partitions des motifs qui jouent">${REP_MOTIFS.map(function(m,i){
+     return `<figure class="ra-part${i===0?" on":""}" id="raF${i}" style="--c:${m.coul}"><figcaption><b>${m.k}</b> ${m.nom}</figcaption><div class="ra-img" tabindex="0" aria-label="Partition du motif ${m.k} : fais-la défiler si elle dépasse">${repPartitionSVG(m)}</div></figure>`; }).join("")}</div>
    <div class="ra-etat" id="raEtat">Lance l'accumulation pour entendre les motifs entrer un par un.</div>
    <div class="ra-btns">
      <button class="action btn-corr" id="raAuto" onclick="repAuto()"><i class="ph-fill ph-play"></i> Lancer l'accumulation</button>
@@ -30091,6 +33342,7 @@ function repMonter(){
 function repMaj(partie,rep){
   for(let i=0;i<5;i++){
     const b=document.getElementById("raM"+i); if(b){ b.classList.toggle("on",!!_rep.on[i]); b.setAttribute("aria-pressed",!!_rep.on[i]); }
+    const f=document.getElementById("raF"+i); if(f)f.classList.toggle("on",!!_rep.on[i]);
     for(let p=1;p<=5;p++){ const c=document.getElementById("raC"+i+"_"+p); if(c)c.classList.toggle("actif",_rep.auto&&partie===p&&p>i); }
   }
   for(let p=1;p<=5;p++){ const e=document.getElementById("raP"+p); if(e)e.classList.toggle("on",_rep.auto&&partie===p); }
@@ -30121,6 +33373,7 @@ function repLibre(){
   _rep.auto=false; if(!_rep.on.some(Boolean))_rep.on[0]=true; repLancer();
 }
 function repLancer(){
+  if(typeof caArret==="function")caArret();
   const ctx=audio(); if(ctx.state==="suspended")ctx.resume();
   const maitre=ctx.createGain(); maitre.gain.value=.5; maitre.connect(ctx.destination);
   const bus=REP_MOTIFS.map(function(m,i){ const g=ctx.createGain(); g.gain.value=_rep.on[i]?1:0; g.connect(maitre); return g; });
@@ -30146,6 +33399,7 @@ function repPlanifier(){
     j.prochain++;
   }
   j.sources=j.sources.filter(function(s){ return s.fin>ctx.currentTime; });
+  repCurseurs();
 }
 function repNote(j,i,voix,t,dur,midi,sorte){
   const ctx=audio(), f=440*Math.pow(2,(midi-69)/12), g=ctx.createGain();
@@ -30169,13 +33423,390 @@ function repNote(j,i,voix,t,dur,midi,sorte){
   oscs.forEach(function(o){ o.start(t); o.stop(t+dur+.05); });
   j.sources.push({src:oscs,fin:t+dur+.05});
 }
+/* ---------- Partitions redessinées (et non plus des images) ----------
+   Espacement PROPORTIONNEL au temps : un pas = L.dx. Les partitions empilées
+   s'alignent comme une partition d'orchestre, et le curseur tombe exactement sur
+   la note jouée. Une « mise en page » L décrit l'armure (bémols), le chiffrage,
+   la longueur des mesures (en pas) et la valeur d'un pas (en noires). */
+const RP={e:10,coul:"#16233a"};
+function rpLayout(o){
+  const L=Object.assign({bemols:0,chiffre:"4/4",pasMesure:16,mesures:2,dx:13.5,q:.25,gap:10},o);
+  L.xCle=58; L.xChiffre=58+L.bemols*9+12; L.x0=L.xChiffre+20;
+  L.x=function(pas){ return L.x0+pas*L.dx+Math.floor(Math.min(pas,L.pasMesure*L.mesures-1e-9)/L.pasMesure)*L.gap; };
+  L.W=L.x(L.pasMesure*L.mesures-1)+L.dx+22;
+  return L;
+}
+const RP_NS=rpLayout({bemols:3,chiffre:"4/4",pasMesure:16,mesures:2,dx:13.5,q:.25});
+/* position sur la portée (0 = ligne du bas : mi4 en clé de sol, sol2 en clé de fa) */
+function rpPos(midi,cle){
+  const lettre={0:0,1:0,2:1,3:2,4:2,5:3,6:3,7:4,8:5,9:5,10:6,11:6}[midi%12];   /* mi♭ → mi, la♭ → la, si♭ → si */
+  const dia=(Math.floor(midi/12)-1)*7+lettre;
+  return dia-(cle==="sol"?(4*7+2):(2*7+4));
+}
+function rpBemol(x,y){
+  return '<path d="M'+x+' '+(y-12)+'V'+(y+4)+'C'+(x+3)+' '+(y+2)+' '+(x+7)+' '+(y-1)+' '+(x+6)+' '+(y-3.5)+'C'+(x+5)+' '+(y-6)+' '+(x+1.5)+' '+(y-4)+' '+x+' '+(y-1.5)+'" fill="none" stroke="'+RP.coul+'" stroke-width="1.5"/>';
+}
+/* une portée : lignes, clé, armure, chiffrage, barres de mesure */
+function rpPortee(T,cle,L){
+  const e=RP.e, c=RP.coul, W=L.W, yLigne=function(n){ return T+(4-n)*e; };
+  let s="";
+  for(let i=0;i<5;i++)s+='<line x1="14" x2="'+(W-6)+'" y1="'+(T+i*e)+'" y2="'+(T+i*e)+'" stroke="'+c+'" stroke-width="1.1"/>';
+  s+=cleSVG(cle,e,yLigne);
+  const bas=T+4*e, bem=(cle==="sol"?[4,7,3,6,2]:[2,5,1,4,0]).slice(0,L.bemols);
+  bem.forEach(function(p,k){ s+=rpBemol(L.xCle+k*9,bas-p*e/2); });
+  const ch=String(L.chiffre).split("/"), tx=function(t,y){ return '<text x="'+L.xChiffre+'" y="'+y+'" font-family="Georgia,serif" font-weight="700" font-size="21" text-anchor="middle" fill="'+c+'">'+t+'</text>'; };
+  s+=ch.length>1?tx(ch[0],T+19)+tx(ch[1],T+39):tx(ch[0],T+29);
+  for(let k=1;k<L.mesures;k++){ const xb=L.x(k*L.pasMesure)-L.gap/2-L.dx/2-1;
+    s+='<line x1="'+xb+'" x2="'+xb+'" y1="'+T+'" y2="'+bas+'" stroke="'+c+'" stroke-width="1.2"/>'; }
+  const xf=W-8;
+  s+='<line x1="'+(xf-4)+'" x2="'+(xf-4)+'" y1="'+T+'" y2="'+bas+'" stroke="'+c+'" stroke-width="1.2"/>'
+    +'<line x1="'+xf+'" x2="'+xf+'" y1="'+T+'" y2="'+bas+'" stroke="'+c+'" stroke-width="3"/>';
+  return s;
+}
+/* lignes supplémentaires sous ou sur la portée */
+function rpLedgers(x,pos,bas){
+  let s="";
+  for(let p=-2;p>=pos;p-=2)s+='<line x1="'+(x-8.5)+'" x2="'+(x+8.5)+'" y1="'+(bas-p*RP.e/2)+'" y2="'+(bas-p*RP.e/2)+'" stroke="'+RP.coul+'" stroke-width="1.1"/>';
+  for(let p=10;p<=pos;p+=2)s+='<line x1="'+(x-8.5)+'" x2="'+(x+8.5)+'" y1="'+(bas-p*RP.e/2)+'" y2="'+(bas-p*RP.e/2)+'" stroke="'+RP.coul+'" stroke-width="1.1"/>';
+  return s;
+}
+function rpTete(x,y,creuse,ronde){
+  const rx=ronde?6.4:5.4, ry=ronde?4.3:3.9;
+  return '<ellipse class="rp-t'+(creuse?" creuse":"")+'" cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" transform="rotate('+(ronde?-12:-20)+' '+x+' '+y+')"'
+    +(creuse?' fill="#fff" stroke="'+RP.coul+'" stroke-width="'+(ronde?2.4:1.8)+'"':' fill="'+RP.coul+'"')+'/>';
+}
+/* une voix. Valeur d'une note en noires : q = durée × L.q. Moins d'une noire : doubles
+   croches liées par 4 ; sinon noire, blanche (pointée) ou ronde. */
+function rpVoix(evs,cle,T,L){
+  const bas=T+4*RP.e, c=RP.coul; let s="";
+  const y=function(p){ return bas-p*RP.e/2; };
+  const longues=evs.filter(function(e){ return e[1]*L.q>=1; }), breves=evs.filter(function(e){ return e[1]*L.q<1; });
+  longues.forEach(function(e){
+    const q=e[1]*L.q, x=L.x(e[0]), ps=e[2].map(function(m){ return rpPos(m,cle); }), ronde=q>=4, creuse=q>=2, point=(q===3||q===1.5);
+    let g='<g class="rp-n" data-a="'+e[0]+'" data-b="'+(e[0]+e[1])+'">';
+    ps.forEach(function(p){ g+=rpLedgers(x,p,bas); });
+    ps.forEach(function(p){ g+=rpTete(x,y(p),creuse,ronde);
+      if(point){ const yp=(p%2===0)?y(p)-RP.e/2:y(p); g+='<circle cx="'+(x+10)+'" cy="'+yp+'" r="1.9" fill="'+c+'"/>'; } });
+    if(!ronde){
+      const haut=Math.max.apply(null,ps), basP=Math.min.apply(null,ps), monte=(haut+basP)/2<4;
+      g+=monte?'<line x1="'+(x+4.9)+'" x2="'+(x+4.9)+'" y1="'+y(basP)+'" y2="'+(y(haut)-30)+'" stroke="'+c+'" stroke-width="1.4"/>'
+              :'<line x1="'+(x-4.9)+'" x2="'+(x-4.9)+'" y1="'+y(haut)+'" y2="'+(y(basP)+30)+'" stroke="'+c+'" stroke-width="1.4"/>';
+    }
+    s+=g+'</g>';
+  });
+  /* doubles croches, par groupes de 4 */
+  const total=L.pasMesure*L.mesures;
+  for(let g0=0;g0<total;g0+=4){
+    const grp=breves.filter(function(e){ return e[0]>=g0&&e[0]<g0+4; }).sort(function(a,b){ return a[0]-b[0]; });
+    if(!grp.length)continue;
+    const ps=grp.map(function(e){ return rpPos(e[2][0],cle); }), moy=ps.reduce(function(a,b){ return a+b; },0)/ps.length, monte=moy<4;
+    const yb=monte?Math.min.apply(null,ps.map(y))-27:Math.max.apply(null,ps.map(y))+27;
+    grp.forEach(function(e,k){
+      const x=L.x(e[0]), p=ps[k], xs=monte?x+4.9:x-4.9;
+      s+='<g class="rp-n" data-a="'+e[0]+'" data-b="'+(e[0]+1)+'">'+rpLedgers(x,p,bas)+rpTete(x,y(p),false,false)
+        +'<line x1="'+xs+'" x2="'+xs+'" y1="'+y(p)+'" y2="'+yb+'" stroke="'+c+'" stroke-width="1.3"/></g>';
+    });
+    const xa=L.x(grp[0][0])+(monte?4.9:-4.9), xz=L.x(grp[grp.length-1][0])+(monte?4.9:-4.9), d=monte?5.5:-5.5;
+    s+='<rect x="'+xa+'" y="'+(monte?yb:yb-3.6)+'" width="'+(xz-xa+0.8)+'" height="3.6" fill="'+c+'"/>'
+      +'<rect x="'+xa+'" y="'+(monte?yb+d:yb+d-3.6)+'" width="'+(xz-xa+0.8)+'" height="3.6" fill="'+c+'"/>';
+  }
+  return s;
+}
+/* portées = [{cle, ev}] (une ou deux portées liées par une accolade) */
+function rpPartition(portees,L,label){
+  const deux=portees.length>1, H=deux?186:110, T=[deux?24:30,118];
+  let s='<svg class="rp-svg" viewBox="0 0 '+L.W+' '+H+'" role="img" aria-label="'+label+'">';
+  portees.forEach(function(p,i){ s+=rpPortee(T[i],p.cle,L)+rpVoix(p.ev,p.cle,T[i],L); });
+  if(deux)s+='<line x1="14" x2="14" y1="'+T[0]+'" y2="'+(T[1]+4*RP.e)+'" stroke="'+RP.coul+'" stroke-width="1.6"/>';
+  s+='<line class="rp-tete" x1="0" x2="0" y1="'+(T[0]-14)+'" y2="'+(T[portees.length-1]+4*RP.e+16)+'"/>';
+  return s+'</svg>';
+}
+/* la partition d'un motif de North Star (C : deux portées, la ligne longue au-dessus) */
+function repPartitionSVG(m){
+  const cle=(m.k==="D"||m.k==="E")?"fa":"sol";
+  const portees=m.k==="C"?[{cle:cle,ev:m.ev.filter(function(e){ return e[3]!=="bref"; })},{cle:cle,ev:m.ev.filter(function(e){ return e[3]==="bref"; })}]
+                         :[{cle:cle,ev:m.ev}];
+  return rpPartition(portees,RP_NS,"Partition du motif "+m.k+" ("+m.nom+")");
+}
+/* allume la note jouée et place le curseur (pas = position en pas dans la boucle) */
+function rpSuivre(boite,L,pas){
+  const svg=boite&&boite.querySelector(".rp-svg"), tete=svg&&svg.querySelector(".rp-tete"); if(!tete)return;
+  if(pas==null||pas<0){
+    tete.style.opacity=0;
+    if(boite._pas!=null){ boite.querySelectorAll(".rp-n.on").forEach(function(n){ n.classList.remove("on"); }); boite._pas=null; }
+    return;
+  }
+  const qi=Math.floor(pas), x=L.x(qi).toFixed(1);
+  tete.setAttribute("x1",x); tete.setAttribute("x2",x); tete.style.opacity=1;
+  if(boite._pas!==qi){ boite._pas=qi;
+    boite.querySelectorAll(".rp-n").forEach(function(n){ n.classList.toggle("on",qi>=+n.getAttribute("data-a")&&qi<+n.getAttribute("data-b")); });
+    /* sur un petit écran, la partition défile pour garder le curseur en vue */
+    if(boite.scrollWidth>boite.clientWidth+2){ const vb=svg.viewBox.baseVal.width||1; boite.scrollLeft=Math.max(0,x/vb*svg.clientWidth-boite.clientWidth*0.4); }
+  }
+}
+/* ---------- Étape 9 : la basse obstinée de Lully, sur une partition redessinée ----------
+   Armide (1686), Passacaille de l'acte V. La basse, en clé de fa, 2 bémols, à 3 temps :
+   sol (blanche pointée), fa, mi♭, puis ré (noire) et ré grave (blanche) : le tétracorde
+   descendant de la passacaille. Un pas = une noire. Domaine public. */
+const PASSA_L=rpLayout({bemols:2,chiffre:"3",pasMesure:3,mesures:4,dx:36,q:1,gap:12});
+const PASSA_EV=[[0,3,[55]],[3,3,[53]],[6,3,[51]],[9,1,[50]],[10,2,[38]]];
+const PASSA_NOIRE=.62, PASSA_TOURS=4;
+let _pa=null;
+function repPassaMonter(){
+  const z=document.getElementById("repPassa"); if(!z)return;
+  if(_pa)paArret();
+  z.innerHTML='<div class="ra-tete"><i class="ph-fill ph-repeat"></i><div><b>La basse obstinée</b><span>Les quatre mesures de la basse de la Passacaille, jouées quatre fois de suite.</span></div></div>'
+    +'<figure class="ra-part on"><figcaption>La basse (violes, violoncelles, bassons)</figcaption>'
+    +'<div class="ra-img" id="paBoite" tabindex="0" aria-label="Partition de la basse de la Passacaille">'
+    +rpPartition([{cle:"fa",ev:PASSA_EV}],PASSA_L,"Partition de la basse de la Passacaille : sol, fa, mi bémol, ré, puis ré grave")+'</div></figure>'
+    +'<div class="pa-tours" id="paTours" aria-hidden="true">'+[1,2,3,4].map(function(n){ return '<span>'+n+'</span>'; }).join("")+'</div>'
+    +'<div class="ra-etat" id="paEtat" role="status">Écoute la basse et suis-la sur la partition : elle revient, toujours identique.</div>'
+    +'<div class="ra-btns"><button type="button" class="action btn-corr" id="paJouer" onclick="paJouer()"><i class="ph-fill ph-play"></i> Écouter la basse en boucle</button></div>';
+}
+function paJouer(){
+  if(_pa){ paArret(); return; }
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  _pa={canal:txCanal(),debut:ctx.currentTime+.12,prochain:0,tour:-1};
+  _pa.min=setInterval(paPlanifier,25); paPlanifier();
+  const b=document.getElementById("paJouer"); if(b)b.innerHTML='<i class="ph-fill ph-stop"></i> Arrêter';
+}
+function paPlanifier(){
+  const j=_pa; if(!j)return;
+  const boite=document.getElementById("paBoite"); if(!boite){ paArret(); return; }
+  const ctx=audio(), lim=ctx.currentTime+.2, n=PASSA_EV.length, cycle=PASSA_L.pasMesure*PASSA_L.mesures;
+  while(j.prochain<n*PASSA_TOURS){
+    const e=PASSA_EV[j.prochain%n], t0=j.debut+(Math.floor(j.prochain/n)*cycle+e[0])*PASSA_NOIRE;
+    if(t0>=lim)break;
+    if(t0>=ctx.currentTime-.02)e[2].forEach(function(m){
+      const d=e[1]*PASSA_NOIRE*0.96;
+      txSon(t0,m,d,"cordes",.26,j.canal); txSon(t0,m,d,"basson",.06,j.canal); });
+    j.prochain++;
+  }
+  const t=(ctx.currentTime-j.debut)/PASSA_NOIRE;
+  if(t>=cycle*PASSA_TOURS+.3){ paArret(true); return; }
+  rpSuivre(boite,PASSA_L,t<0?null:t%cycle);
+  const tour=t<0?0:Math.floor(t/cycle)+1;
+  if(j.tour!==tour){
+    j.tour=tour;
+    const tt=document.getElementById("paTours"); if(tt)tt.querySelectorAll("span").forEach(function(s,k){ s.classList.toggle("on",k<tour); s.classList.toggle("cur",k===tour-1); });
+    const et=document.getElementById("paEtat");
+    if(et&&tour)et.innerHTML="Passage <b>"+tour+"</b> / "+PASSA_TOURS+" : "+(tour===1?"voici la basse.":"la même basse, note pour note : c'est une <b>basse obstinée</b>.");
+  }
+}
+function paArret(fini){
+  const j=_pa; if(!j)return; _pa=null; clearInterval(j.min);
+  try{ txCanalCouper(j.canal); }catch(e){}
+  const boite=document.getElementById("paBoite"); if(boite)rpSuivre(boite,PASSA_L,null);
+  const tt=document.getElementById("paTours"); if(tt)tt.querySelectorAll("span").forEach(function(s){ s.classList.remove("cur"); if(!fini)s.classList.remove("on"); });
+  const et=document.getElementById("paEtat");
+  if(et)et.innerHTML=fini?"Quatre passages, quatre fois la <b>même</b> basse. Dans l'opéra, elle revient pendant toute la Passacaille, sous une mélodie qui change.":"Écoute la basse et suis-la sur la partition : elle revient, toujours identique.";
+  const b=document.getElementById("paJouer"); if(b)b.innerHTML='<i class="ph-fill ph-play"></i> Écouter la basse en boucle';
+}
+/* le curseur suit le son sur la partition de chaque motif allumé, et la note jouée passe en rouge */
+function repCurseurs(){
+  const j=_rep.jeu, ctx=audio();
+  REP_MOTIFS.forEach(function(m,i){
+    const f=document.getElementById("raF"+i), boite=f&&f.querySelector(".ra-img"); if(!boite)return;
+    const pas=j?(ctx.currentTime-j.debut)/REP_DC:-1;
+    rpSuivre(boite,RP_NS,(!j||pas<0||!_rep.on[i])?null:pas%REP_PAS);
+  });
+}
+
+/* ---------- Exercice « accumulation » : reconstruire la structure en glissant les motifs ----------
+   x = {type:"accu", motifs:["A",…], sol:["A","AB",…]} : une partie par case de sol.
+   Glisser à la souris ou au doigt (événements « pointer »), ou toucher un motif puis une partie. */
+let _caSel=null, _caPt=null, _ca=null;
+function caMotif(k){ for(let i=0;i<REP_MOTIFS.length;i++)if(REP_MOTIFS[i].k===k)return REP_MOTIFS[i]; return null; }
+function caPuceHTML(k,posee){
+  const m=caMotif(k);
+  return '<button type="button" class="ca-puce'+(posee?" posee":"")+'" data-k="'+k+'" style="--c:'+m.coul+'"'
+    +' onpointerdown="caPointerDown(event,this)" onpointermove="caPointerMove(event)" onpointerup="caPointerUp(event)" onpointercancel="caPointerUp(event)"'
+    +' onclick="'+(posee?"caRetirer(event,this)":"caPrendre(this)")+'"'
+    +' aria-label="'+(posee?"Retirer le motif "+k:"Motif "+k+" : "+m.nom)+'"><b>'+k+'</b>'+(posee?"":"<span>"+m.nom+"</span>")+'</button>';
+}
+function caHTML(x,cle){
+  return '<div class="ce-accu" id="'+cle+'">'
+    +'<div class="ca-reserve" aria-label="Les cinq motifs">'+x.motifs.map(function(k){ return caPuceHTML(k,false); }).join("")+'</div>'
+    +'<div class="ca-parties">'+x.sol.map(function(_,p){
+      return '<div class="ca-p" data-p="'+p+'" data-m="" onclick="caPoser(this)">'
+        +'<button type="button" class="ca-p-t" aria-label="Partie '+(p+1)+' : vide. Poser ici le motif choisi">Partie '+(p+1)+'</button><div class="ca-pile"><span class="ca-vide">glisse ici</span></div></div>'; }).join("")+'</div>'
+    +'<div class="ca-bas"><button type="button" class="action" id="caJ_'+cle+'" onclick="caJouer(\''+cle+'\')"><i class="ph-fill ph-play"></i> Écouter ma structure</button>'
+    +'<span class="ca-aide">Chaque partie est jouée une fois (dans l\'œuvre, quatre fois).</span></div></div>';
+}
+function caBox(el){ return el&&el.closest(".ce-accu"); }
+function caFini(box){ return !box||box.classList.contains("fini"); }
+function caPrendre(b){
+  if(b.dataset.glisse)return;
+  const box=caBox(b); if(caFini(box))return;
+  const deja=b.classList.contains("sel");
+  box.querySelectorAll(".ca-reserve .ca-puce").forEach(function(x){ x.classList.remove("sel"); });
+  _caSel=deja?null:{k:b.getAttribute("data-k"),box:box};
+  if(!deja)b.classList.add("sel");
+  box.classList.toggle("choix",!deja);
+}
+function caRendrePartie(z){
+  const m=z.getAttribute("data-m")||"", pile=z.querySelector(".ca-pile");
+  pile.innerHTML=m?m.split("").map(function(k){ return caPuceHTML(k,true); }).join(""):'<span class="ca-vide">glisse ici</span>';
+  const t=z.querySelector(".ca-p-t");
+  if(t)t.setAttribute("aria-label","Partie "+(+z.getAttribute("data-p")+1)+(m?" : motifs "+m.split("").join(", "):" : vide")+". Poser ici le motif choisi");
+}
+function caMettre(z,k){
+  if(z.classList.contains("fige")||caFini(caBox(z)))return false;
+  const m=z.getAttribute("data-m")||""; if(m.indexOf(k)>=0)return true;
+  z.setAttribute("data-m",(m+k).split("").sort().join("")); z.classList.remove("arevoir"); caRendrePartie(z); return true;
+}
+function caOter(z,k){ if(!z||z.classList.contains("fige"))return; z.setAttribute("data-m",(z.getAttribute("data-m")||"").replace(k,"")); caRendrePartie(z); }
+function caPoser(z){ if(!_caSel||_caSel.box!==caBox(z))return; caMettre(z,_caSel.k); }
+function caRetirer(ev,b){ ev.stopPropagation(); if(b.dataset.glisse)return; const z=b.closest(".ca-p"); if(z&&!caFini(caBox(z)))caOter(z,b.getAttribute("data-k")); }
+function caPointerDown(ev,b){
+  const box=caBox(b); if(caFini(box))return;
+  const z=b.closest(".ca-p"); if(z&&z.classList.contains("fige"))return;
+  if(ev.button!=null&&ev.button!==0)return;
+  _caPt={b:b,k:b.getAttribute("data-k"),de:z,box:box,x0:ev.clientX,y0:ev.clientY,fant:null,cible:null,id:ev.pointerId};
+  try{ b.setPointerCapture(ev.pointerId); }catch(e){}
+}
+function caPointerMove(ev){
+  const d=_caPt; if(!d||ev.pointerId!==d.id)return;
+  if(!d.fant){
+    if(Math.abs(ev.clientX-d.x0)+Math.abs(ev.clientY-d.y0)<8)return;
+    d.fant=d.b.cloneNode(true); d.fant.className="ca-puce ca-fantome"; d.fant.removeAttribute("onclick");
+    d.fant.style.setProperty("--c",caMotif(d.k).coul); document.body.appendChild(d.fant); d.b.classList.add("prise");
+  }
+  ev.preventDefault();
+  d.fant.style.left=ev.clientX+"px"; d.fant.style.top=ev.clientY+"px";
+  const el=document.elementFromPoint(ev.clientX,ev.clientY), c=el&&(el.closest(".ca-p")||el.closest(".ca-reserve"));
+  const cible=(c&&caBox(c)===d.box)?c:null;
+  if(cible!==d.cible){ if(d.cible)d.cible.classList.remove("survol"); d.cible=cible; if(cible)cible.classList.add("survol"); }
+}
+function caPointerUp(ev){
+  const d=_caPt; if(!d||ev.pointerId!==d.id)return; _caPt=null;
+  if(!d.fant)return;   /* simple toucher : c'est le clic qui agit */
+  d.fant.remove(); d.b.classList.remove("prise"); if(d.cible)d.cible.classList.remove("survol");
+  d.b.dataset.glisse="1"; setTimeout(function(){ try{ delete d.b.dataset.glisse; }catch(e){} },60);
+  const c=d.cible; if(!c||c===d.de)return;
+  if(c.classList.contains("ca-reserve")){ caOter(d.de,d.k); return; }
+  if(caMettre(c,d.k)&&d.de)caOter(d.de,d.k);
+}
+/* « Écouter ma structure » : chaque partie une fois, avec les motifs qu'on y a posés */
+function caJouer(cle){
+  if(_ca){ const meme=_ca.cle===cle; caArret(); if(meme)return; }
+  const box=document.getElementById(cle); if(!box)return;
+  const parts=Array.prototype.map.call(box.querySelectorAll(".ca-p"),function(z){ return z.getAttribute("data-m")||""; });
+  if(!parts.some(Boolean)){ toast("Pose d'abord des motifs dans les parties."); return; }
+  if(_rep.jeu)repArreter();
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const maitre=ctx.createGain(); maitre.gain.value=.5; maitre.connect(ctx.destination);
+  const bus=REP_MOTIFS.map(function(){ const g=ctx.createGain(); g.connect(maitre); return g; });
+  _ca={cle:cle,parts:parts,maitre:maitre,bus:bus,sources:[],debut:ctx.currentTime+.12,prochain:0};
+  _ca.min=setInterval(caPlanifier,25); caPlanifier();
+  const b=document.getElementById("caJ_"+cle); if(b)b.innerHTML='<i class="ph-fill ph-stop"></i> Arrêter';
+}
+function caPlanifier(){
+  const j=_ca; if(!j)return;
+  const box=document.getElementById(j.cle); if(!box){ caArret(); return; }
+  const ctx=audio(), lim=ctx.currentTime+.15, total=j.parts.length*REP_PAS;
+  while(j.prochain<total&&j.debut+j.prochain*REP_DC<lim){
+    const pas=j.prochain%REP_PAS, partie=Math.floor(j.prochain/REP_PAS), t0=j.debut+j.prochain*REP_DC, set=j.parts[partie];
+    if(pas===0)setTimeout(function(){ if(_ca!==j)return; box.querySelectorAll(".ca-p").forEach(function(z,p){ z.classList.toggle("joue",p===partie); }); },Math.max(0,(t0-ctx.currentTime)*1000));
+    if(t0>=ctx.currentTime-.02)REP_MOTIFS.forEach(function(m,i){ if(set.indexOf(m.k)<0)return;
+      m.ev.forEach(function(e){ if(e[0]===pas)e[2].forEach(function(n){ repNote(j,i,m.voix,t0,e[1]*REP_DC,n,e[3]); }); }); });
+    j.prochain++;
+  }
+  j.sources=j.sources.filter(function(s){ return s.fin>ctx.currentTime; });
+  if(j.prochain>=total&&ctx.currentTime>j.debut+total*REP_DC+.2)caArret();
+}
+function caArret(){
+  const j=_ca; if(!j)return; _ca=null; clearInterval(j.min);
+  try{ const t=audio().currentTime; j.maitre.gain.setTargetAtTime(0,t,.03);
+    j.sources.forEach(function(s){ s.src.forEach(function(o){ try{ o.stop(t+.12); }catch(e){} }); });
+    setTimeout(function(){ try{ j.maitre.disconnect(); }catch(e){} },400); }catch(e){}
+  const box=document.getElementById(j.cle);
+  if(box)box.querySelectorAll(".ca-p.joue").forEach(function(z){ z.classList.remove("joue"); });
+  const b=document.getElementById("caJ_"+j.cle); if(b)b.innerHTML='<i class="ph-fill ph-play"></i> Écouter ma structure';
+}
+
+/* ---------- Étape 1 : fabrique ton son (un mini-synthétiseur) ---------- */
+let _rs={onde:"square",filtre:"moyen",attaque:"nette",notes:{},sortie:null,clavier:null};
+const RS_ONDES=[["sine","Sinusoïde"],["square","Carrée"],["sawtooth","Dent de scie"]];
+const RS_FILTRES=[["sombre","Sombre"],["moyen","Moyen"],["brillant","Brillant"]];
+const RS_ATTAQUES=[["nette","Nette"],["douce","Douce"]];
+const RS_PRESETS={orgue:{lib:"Orgue électronique",onde:"square",filtre:"moyen",attaque:"nette"},
+  flute:{lib:"Flûte douce",onde:"sine",filtre:"moyen",attaque:"douce"},
+  nappe:{lib:"Nappe de film",onde:"sawtooth",filtre:"sombre",attaque:"douce"},
+  electro:{lib:"Son électro",onde:"sawtooth",filtre:"brillant",attaque:"nette"}};
+const RS_TOUCHES=[[60,"do","A"],[62,"ré","S"],[64,"mi","D"],[65,"fa","F"],[67,"sol","G"],[69,"la","H"],[71,"si","J"],[72,"do","K"]];
+function rsOndeSVG(o){
+  let d="M0 20 ";
+  for(let x=0;x<=120;x+=2){ const ph=(x%60)/60;
+    const y=o==="sine"?20-15*Math.sin(ph*2*Math.PI):o==="square"?(ph<.5?6:34):(34-28*ph);
+    d+=(x?"L":"M")+x+" "+y.toFixed(1)+" "; }
+  return '<svg class="rs-onde-svg" viewBox="0 0 120 40" aria-hidden="true"><path d="'+d+'"/></svg>';
+}
+function rsSeg(cle,liste,lib){
+  return '<div class="rs-r"><span>'+lib+'</span><div class="cm-seg" role="group" aria-label="'+lib+'">'+liste.map(function(o){ const on=_rs[cle]===o[0];
+    return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="rsRegler(\''+cle+'\',\''+o[0]+'\')">'+o[1]+'</button>'; }).join("")+'</div></div>';
+}
+function repSynthMonter(){
+  const z=document.getElementById("repSynth"); if(!z)return;
+  const pre=Object.keys(RS_PRESETS).filter(function(k){ const p=RS_PRESETS[k]; return p.onde===_rs.onde&&p.filtre===_rs.filtre&&p.attaque===_rs.attaque; })[0];
+  z.innerHTML='<div class="rs-tete"><i class="ph-fill ph-faders"></i><div><b>Fabrique ton son</b><span>Comme sur un synthétiseur : choisis l\'onde, le filtre et l\'attaque, puis joue (touches A S D F G H J K du clavier).</span></div></div>'
+    +'<div class="rs-presets"><span>Essaie :</span>'+Object.keys(RS_PRESETS).map(function(k){
+      return '<button type="button" class="rs-pre'+(pre===k?" on":"")+'" aria-pressed="'+(pre===k)+'" onclick="rsPreset(\''+k+'\')">'+RS_PRESETS[k].lib+'</button>'; }).join("")+'</div>'
+    +'<div class="rs-corps"><div class="rs-regl">'+rsSeg("onde",RS_ONDES,"L'onde")+rsSeg("filtre",RS_FILTRES,"Le filtre")+rsSeg("attaque",RS_ATTAQUES,"L'attaque")+'</div>'
+    +'<div class="rs-ecran">'+rsOndeSVG(_rs.onde)+'<small>'+({sine:"Une vague toute ronde : un son pur et doux.",square:"Des créneaux : un son creux, comme un orgue électronique.",sawtooth:"Des dents de scie : un son riche et brillant."}[_rs.onde])+'</small></div></div>'
+    +'<div class="rs-clavier" role="group" aria-label="Clavier du synthétiseur">'+RS_TOUCHES.map(function(t){
+      return '<button type="button" class="rs-t" data-m="'+t[0]+'" onpointerdown="rsAppui(event,this)" onpointerup="rsLache(this)" onpointerleave="rsLache(this)" onpointercancel="rsLache(this)"'
+        +' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();rsCourte(this);}" aria-label="Note '+t[1]+'"><b>'+t[1]+'</b><small>'+t[2]+'</small></button>'; }).join("")+'</div>';
+  if(!_rs.clavier){
+    _rs.clavier=function(e){
+      const z2=document.getElementById("repSynth"); if(!z2){ document.removeEventListener("keydown",_rs.clavier); document.removeEventListener("keyup",_rs.clavierHaut); _rs.clavier=null; return; }
+      if(e.repeat||/INPUT|TEXTAREA|SELECT/.test((e.target||{}).tagName||""))return;
+      const t=RS_TOUCHES.filter(function(x){ return x[2]===String(e.key).toUpperCase(); })[0]; if(!t)return;
+      const b=z2.querySelector('.rs-t[data-m="'+t[0]+'"]'); if(b)rsAppui(null,b);
+    };
+    _rs.clavierHaut=function(e){
+      const z2=document.getElementById("repSynth"); if(!z2)return;
+      const t=RS_TOUCHES.filter(function(x){ return x[2]===String(e.key).toUpperCase(); })[0]; if(!t)return;
+      const b=z2.querySelector('.rs-t[data-m="'+t[0]+'"]'); if(b)rsLache(b);
+    };
+    document.addEventListener("keydown",_rs.clavier); document.addEventListener("keyup",_rs.clavierHaut);
+  }
+}
+function rsRegler(k,v){ _rs[k]=v; repSynthMonter(); }
+function rsPreset(k){ const p=RS_PRESETS[k]; _rs.onde=p.onde; _rs.filtre=p.filtre; _rs.attaque=p.attaque; repSynthMonter();
+  const z=document.getElementById("repSynth"); const b=z&&z.querySelectorAll(".rs-t");
+  if(b&&b.length){ [0,2,4,7].forEach(function(i,n){ setTimeout(function(){ rsCourte(b[i]); },n*260); }); } }
+function rsSortie(){
+  const ctx=audio();
+  if(!_rs.sortie||_rs.sortie.context!==ctx){ const c=ctx.createDynamicsCompressor(); c.threshold.value=-16; c.ratio.value=4; c.connect(ctx.destination); _rs.sortie=c; }
+  return _rs.sortie;
+}
+function rsAppui(ev,b){
+  if(ev&&ev.preventDefault)ev.preventDefault();
+  const m=+b.getAttribute("data-m"); if(_rs.notes[m])return;
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const o=ctx.createOscillator(), f=ctx.createBiquadFilter(), g=ctx.createGain(), t=ctx.currentTime;
+  o.type=_rs.onde; o.frequency.value=440*Math.pow(2,(m-69)/12);
+  f.type="lowpass"; f.frequency.value={sombre:520,moyen:1700,brillant:7000}[_rs.filtre]; f.Q.value=_rs.filtre==="brillant"?3:.8;
+  const v={sine:.3,square:.12,sawtooth:.14}[_rs.onde], att=_rs.attaque==="douce"?.4:.008;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+att);
+  o.connect(f); f.connect(g); g.connect(rsSortie()); o.start(t);
+  _rs.notes[m]={o:o,g:g}; b.classList.add("on");
+  if(ev&&ev.pointerId!=null){ try{ b.setPointerCapture(ev.pointerId); }catch(e){} }
+}
+function rsLache(b){
+  const m=+b.getAttribute("data-m"), n=_rs.notes[m]; if(!n)return; delete _rs.notes[m]; b.classList.remove("on");
+  const t=audio().currentTime, rel=_rs.attaque==="douce"?.5:.18;
+  try{ n.g.gain.cancelScheduledValues(t); n.g.gain.setValueAtTime(n.g.gain.value,t); n.g.gain.linearRampToValueAtTime(0,t+rel); n.o.stop(t+rel+.05); }catch(e){}
+}
+function rsCourte(b){ if(!b)return; rsAppui(null,b); setTimeout(function(){ rsLache(b); },_rs.attaque==="douce"?700:320); }
 function repArreter(){
   const j=_rep.jeu; if(!j)return; _rep.jeu=null; clearInterval(j.min);
   try{ const t=audio().currentTime; j.maitre.gain.setTargetAtTime(0,t,.03);
     j.sources.forEach(function(s){ s.src.forEach(function(o){ try{o.stop(t+.12);}catch(e){} }); });
     setTimeout(function(){ try{j.maitre.disconnect();}catch(e){} },400); }catch(e){}
   if(_rep.auto){ _rep.auto=false; }
-  repMaj(0,0);
+  repMaj(0,0); repCurseurs();
 }
 
 const BANK_REP=[
@@ -30192,8 +33823,10 @@ const BANK_REP=[
  {id:"p11",diff:2,q:"Dans <i>North Star</i>, quel motif entre en dernier&nbsp;?",r:"le motif E",o:["le motif E","le motif A","le motif B","le motif C"]},
  {id:"p12",diff:2,q:"Le motif A de <i>North Star</i> est chanté par…",r:"un chœur mixte",o:["un chœur mixte","un chœur d'enfants","une soliste","un chœur d'hommes"]},
  {id:"p13",diff:2,q:"Le motif D de <i>North Star</i> est chanté par…",r:"un chœur d'hommes",o:["un chœur d'hommes","un chœur mixte","un chœur de femmes","un chanteur soliste"]},
- {id:"p14",diff:2,q:"Le motif B de <i>North Star</i> est joué…",r:"à l'orgue électrique, dans l'aigu",o:["à l'orgue électrique, dans l'aigu","au piano électrique, dans le grave","à la trompette, dans le médium","au violon, dans le grave"]},
- {id:"p15",diff:2,q:"Dans quel registre se trouvent les motifs D et E de <i>North Star</i>&nbsp;?",r:"le grave",o:["le grave","l'aigu","le médium","le suraigu"]},
+ {id:"p14",diff:2,q:"Le motif B de <i>North Star</i> est joué…",r:"à l'orgue électronique, dans l'aigu",o:["à l'orgue électronique, dans l'aigu","au piano électrique, dans le grave","à la trompette, dans le médium","au violon, dans le grave"]},
+ {id:"p15",diff:2,q:"Dans quel registre se trouvent les motifs A et D de <i>North Star</i>&nbsp;?",r:"le médium",o:["le médium","le grave","l'aigu","le suraigu"]},
+  {id:"p15b",diff:2,q:"Le motif C de <i>North Star</i> est chanté par…",r:"un chœur de femmes",o:["un chœur de femmes","un chœur d'hommes","un chœur d'enfants","un chanteur soliste"]},
+  {id:"p15c",diff:2,q:"Dans quel registre se trouve le motif E de <i>North Star</i>&nbsp;?",r:"le grave",o:["le grave","le médium","l'aigu","le suraigu"]},
  {id:"p16",diff:3,q:"Dans <i>North Star</i>, les motifs A et E utilisent des valeurs…",r:"longues",o:["longues","brèves","pointées","irrégulières"]},
  {id:"p17",diff:3,q:"Dans <i>North Star</i>, les motifs B et D utilisent des valeurs…",r:"brèves",o:["brèves","longues","pointées","libres"]},
  {id:"p18",diff:3,q:"Quel motif de <i>North Star</i> superpose valeurs longues et valeurs brèves&nbsp;?",r:"le motif C",o:["le motif C","le motif A","le motif B","le motif E"]},
@@ -30218,7 +33851,9 @@ const BANK_REP=[
  {id:"p37",diff:1,q:"Andy Warhol est une grande figure…",r:"du Pop Art",o:["du Pop Art","de l'impressionnisme","du cubisme","de la Renaissance"]},
  {id:"p38",diff:2,q:"Quelle technique Warhol utilise-t-il pour répéter le portrait de Marilyn&nbsp;?",r:"la sérigraphie",o:["la sérigraphie","la peinture à l'huile","la sculpture sur bois","l'aquarelle"]},
  {id:"p39",diff:3,q:"Point commun entre les <i>Marilyn</i> de Warhol et <i>North Star</i>&nbsp;:",r:"répéter un même motif en le variant",o:["répéter un même motif en le variant","raconter l'histoire d'une actrice","utiliser un orchestre symphonique","n'employer que des couleurs sombres"]},
- {id:"p40",diff:3,q:"Lequel de ces artistes n'est PAS un compositeur&nbsp;?",r:"Donald Judd",o:["Donald Judd","Steve Reich","Terry Riley","Philip Glass"]}
+ {id:"p40",diff:3,q:"Lequel de ces artistes n'est PAS un compositeur&nbsp;?",r:"Donald Judd",o:["Donald Judd","Steve Reich","Terry Riley","Philip Glass"]},
+ {id:"p41",diff:2,q:"Un orgue électronique produit ses sons grâce à…",r:"des circuits électroniques",o:["des circuits électroniques","de l'air soufflé dans des tuyaux","des cordes frappées par des marteaux","des lames de métal frappées"]},
+ {id:"p42",diff:2,q:"Sur un synthétiseur, le musicien peut…",r:"fabriquer et transformer ses propres sons",o:["fabriquer et transformer ses propres sons","seulement imiter le son du piano","jouer sans aucune électricité","accorder des cordes en métal"]}
 ];
 
 /* Registre des évaluations de cours : id -> banque + nom lisible + module natif. */
@@ -30397,7 +34032,7 @@ function ecranCoursEnr(etape){
          : `<button class="action btn-corr" ${bloque?"disabled":""} onclick="ceMarquer(${ceEtape});ceFinal()"><i class="ph ph-flag-checkered"></i> Terminer le cours</button>`}
      </div>
    </div>`;
-  ceMonterYT(); ceMonterPistes(); stuMonter(); repMonter();
+  ceMonterYT(); ceMonterPistes(); stuMonter(); repMonter(); repSynthMonter(); repPassaMonter();
   if(typeof remonter==="function")remonter();
 }
 
@@ -30740,7 +34375,7 @@ function ceExHTML(x,i){
     corps=`<table class="ce-grille" id="${cle}"><thead><tr><th></th>`+
       x.cols.map(function(c){return "<th>"+c+"</th>";}).join("")+`</tr></thead><tbody>`+
       x.rows.map(function(r,ri){return `<tr data-r="${ri}"><td class="cg-lib">${r.t}</td>`+
-        x.cols.map(function(_,ci){return `<td class="cg-case" data-c="${ci}" onclick="ceCocher(this)"><i class="ph ph-check"></i></td>`;}).join("")+`</tr>`;}).join("")+
+        x.cols.map(function(c,ci){return `<td class="cg-case" data-c="${ci}" onclick="ceCocher(this)" aria-label="${String(r.t+" : "+c).replace(/<[^>]+>/g,"").replace(/"/g,"&quot;")}"><i class="ph ph-check"></i></td>`;}).join("")+`</tr>`;}).join("")+
       `</tbody></table>`;
   } else if(x.type==="etiquettes"){
     corps=`<div class="ce-etiq" id="${cle}">
@@ -30751,6 +34386,8 @@ function ceExHTML(x,i){
         return `<div class="ce-case" data-i="${o.ci}" onclick="cePoser(this)"
           ondragover="ceDragSurv(event,this)" ondragleave="this.classList.remove('survol')" ondrop="ceDeposer(event,this)"
           ><span class="cc-lib">${o.c.lib}</span><span class="cc-slot">glisse ici</span></div>`;}).join("")+`</div></div>`;
+  } else if(x.type==="accu"){
+    corps=caHTML(x,cle);
   } else if(x.type==="ordre"){
     corps=`<div class="ce-ordre" id="${cle}">`+melangerVoc(x.items.map(function(t,k){return {t:t,k:k};})).map(function(o){
       return `<button class="ce-item" data-k="${o.k}" onclick="ceOrdonner(this)"><span class="ci-n"></span><span class="ci-t">${o.t}</span></button>`;}).join("")+`</div>`;
@@ -30907,6 +34544,13 @@ function ceAnalyser(x,box){
       if(!m){repondu=false;return;}
       if(norm(m)===norm(x.cases[ci].r))bon++; else faux.push(c);
     });
+  } else if(x.type==="accu"){
+    total=x.sol.length;
+    box.querySelectorAll(".ca-p").forEach(function(z){
+      const p=+z.getAttribute("data-p"), m=z.getAttribute("data-m")||"";
+      if(!m){repondu=false;return;}
+      if(m===x.sol[p])bon++; else faux.push(z);
+    });
   } else if(x.type==="ordre"){
     total=x.items.length;
     const its=[...box.querySelectorAll(".ce-item.num")];
@@ -30940,6 +34584,8 @@ function ceIndiceAuto(x,n){
                             "<b>1 ligne</b> est à revoir (surlignée en orange).";
     case "etiquettes": return p?("<b>"+n+" étiquettes</b> ne sont pas à leur place : elles sont revenues dans la réserve. Commence par celles dont tu es sûr."):
                                 "<b>1 étiquette</b> n'est pas à sa place : elle est revenue dans la réserve.";
+    case "accu": return (p?("<b>"+n+" parties</b> sont à revoir : elles se sont vidées."):"<b>1 partie</b> est à revoir : elle s'est vidée.")
+                       +" Rappelle-toi : un motif qui est entré ne s'arrête plus, et chaque partie n'en ajoute qu'<b>un seul</b>.";
     case "ordre": return p?("<b>"+n+" étapes</b> sont mal placées. Demande-toi ce qui doit <b>logiquement</b> arriver en premier."):
                            "<b>1 étape</b> est mal placée. Relis l'ordre logique des opérations.";
     case "calcul": return p?("<b>"+n+" résultats</b> sont à revoir. Vérifie ton opération et l'unité demandée."):
@@ -30962,12 +34608,15 @@ function ceDiagnostic(x,r,box){
       el.querySelector(".cc-slot").innerHTML="glisse ici";
       el.classList.add("arevoir");
     }
+    else if(x.type==="accu"){ el.setAttribute("data-m",""); caRendrePartie(el); el.classList.add("arevoir"); }
     else if(x.type==="ordre"){ el.classList.remove("num"); el.querySelector(".ci-n").textContent=""; el.classList.add("arevoir"); }
     else if(x.type==="calcul"||x.type==="lettres"){ el.value=""; el.classList.add("arevoir"); }
   });
   /* ce qui est juste est verrouillé : l'élève ne refait que ce qui coince */
   if(x.type==="etiquettes"){
     box.querySelectorAll(".ce-case.plein").forEach(function(c){c.classList.add("ok-fige");c.onclick=null;});
+  } else if(x.type==="accu"){
+    box.querySelectorAll(".ca-p").forEach(function(z){ if(z.getAttribute("data-m"))z.classList.add("fige"); });
   } else if(x.type==="ordre"){
     box.querySelectorAll(".ce-item.num").forEach(function(it){it.classList.add("fige");});
   } else if(x.type==="calcul"||x.type==="lettres"){
@@ -31004,6 +34653,14 @@ function ceReveler(x,box){
       c.classList.add(ok?"juste":"faux");
       if(!ok)c.querySelector(".cc-slot").innerHTML=(m?`<s>${m}</s> `:"")+`<b>→ ${x.cases[ci].r}</b>`;
     });
+  } else if(x.type==="accu"){
+    if(typeof caArret==="function")caArret();
+    box.querySelectorAll(".ca-p").forEach(function(z){
+      const p=+z.getAttribute("data-p"), m=z.getAttribute("data-m")||"", ok=(m===x.sol[p]);
+      z.classList.remove("arevoir","survol"); z.classList.add(ok?"juste":"faux","fige");
+      if(!ok){ z.setAttribute("data-m",x.sol[p]); caRendrePartie(z); }
+    });
+    box.classList.add("fini"); box.classList.remove("choix");
   } else if(x.type==="ordre"){
     box.querySelectorAll(".ce-item").forEach(function(it){
       const k=+it.getAttribute("data-k"),n=it.querySelector(".ci-n"),pos=n.textContent?+n.textContent:null;
