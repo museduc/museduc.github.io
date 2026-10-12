@@ -770,6 +770,7 @@ const EVAL_NB_QUESTIONS = 20;
 const EVAL_MINUTES_PAP = 5;
 
 /* ---------- État évaluation ---------- */
+let evalOffLance=null;   /* évaluation demandée ouverte AU LANCEMENT de l'épreuve */
 let evalActif=false, evalDomaine=null, evalDiff=2, evalIndex=0, evalReponses=[],
     evalExos=[], evalTimer=null, evalFinAt=0, evalSorties=0, evalEleve={}, evalGraine=0, evalPap=false, evalBonusVoulu=null, evalTempsBonus=0;
 
@@ -9151,17 +9152,23 @@ function majReglagesRole(){
    et met à jour l'affichage du sélecteur. */
 function appliquerDiffCat(id){
   difficulte=(profil.diffParCat&&profil.diffParCat[id])||1; // démarrage en Facile par défaut
+  /* le professeur a ouvert l'entraînement à une difficulté : on y démarre une fois */
+  const s=String(id||""), k=s.indexOf("evalcours-")===0?s.slice(10):"", o=k?(profil.coursDeblo||{})[k]:null;
+  if(o&&+o.d>=2&&(profil.diffDebloVu||{})[k]!==o.t){
+    difficulte=+o.d; profil.diffDebloVu=profil.diffDebloVu||{}; profil.diffDebloVu[k]=o.t;
+    profil.diffParCat=profil.diffParCat||{}; profil.diffParCat[id]=difficulte;
+    try{ sauverProfil(profil); }catch(e){} }
   /* on ne peut pas démarrer sur une difficulté encore verrouillée */
-  const nm=themeAPaliers(id)?niveauMaxDe(id):3;
-  if(difficulte>Math.min(nm,3))difficulte=Math.min(nm,3);
+  const max=nivEntrainMax(id);
+  if(difficulte>max)difficulte=max;
   majSegDiff(id);
 }
 /* Met à jour le sélecteur de difficulté selon les paliers débloqués + l'indicateur. */
 function majSegDiff(id){
-  const nm=themeAPaliers(id)?niveauMaxDe(id):3;
+  const max=nivEntrainMax(id);
   const seg=document.getElementById("segDiff");
   if(seg)seg.querySelectorAll("button").forEach(function(b){
-    const d=parseInt(b.dataset.d), verr=(d>Math.min(nm,3));
+    const d=parseInt(b.dataset.d), verr=(d>max);
     b.disabled=verr; b.classList.toggle("verrou",verr); b.classList.toggle("on",d===difficulte);
     b.innerHTML=(verr?'<i class="ph ph-lock-simple"></i> ':'')+(NIV_NOMS[d]||"");
     b.title=verr?("Débloque en réussissant "+serieDebloc()+" séries d'affilée à ≥ "+seuilDebloc()+"/20 au niveau précédent"):"";
@@ -10260,7 +10267,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-10f";
+const VERSION_APP="2026-10-12a";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -10578,7 +10585,9 @@ function afficherLeconCours(id){
   const prof=(typeof ceProf==="function")&&ceProf();
   const fini=prof||((typeof coursTermine==="function")&&coursTermine(k));
   const off=(typeof devoirEvalOuvertPour==="function")&&devoirEvalOuvertPour(id);
-  const ouvert=fini||off;
+  /* ouvert aussi par le professeur, ou par un travail donné sur ce cours */
+  const raison=fini?"fini":((typeof coursAccesRaison==="function")?coursAccesRaison(k):"");
+  const ouvert=fini||off||!!raison;
   const av=ecAvancementCours(k);
   /* ce que contient le cours : une pastille par étape, cochée quand elle est faite */
   const puces=(def.etapes||[]).map(function(e,i){
@@ -10592,7 +10601,10 @@ function afficherLeconCours(id){
       +'<div class="ec-avance"><span class="lx-jauge"><i style="width:'+pct+'%"></i></span><small>'+av.n+' étape'+(av.n>1?"s":"")+' sur '+av.total+'</small></div>'
       +'<button class="lcc-btn bleu ec-continuer" onclick="ecranCours(\''+k+'\')"><i class="ph-fill ph-play"></i> Continuer le cours</button>';
   }else{
-    action='<p class="ec-note">Entraîne-toi sur les questions du cours, du plus simple au plus difficile. '
+    const ouvertPar=fini?"":(raison==="prof"
+      ?'<p class="ec-ouvert-prof"><i class="ph-fill ph-lock-key-open"></i><span>Ton professeur t’a ouvert l’entraînement'+(coursDebloDiff(k)>=2?' ('+CC_DIFF_LIB[coursDebloDiff(k)]+')':'')+(coursDebloNiv(k)>=2?' et l’évaluation':'')+'. Termine quand même les étapes du cours : tout ce qu’on te demandera y est expliqué.</span></p>'
+      :'<p class="ec-ouvert-prof"><i class="ph-fill ph-backpack"></i><span>Ouvert pour le travail donné par ton professeur. Termine aussi les étapes du cours : tout y est expliqué.</span></p>');
+    action=ouvertPar+'<p class="ec-note">Entraîne-toi sur les questions du cours, du plus simple au plus difficile. '
       +'Réussis <b>'+serieDebloc()+' séries d\'affilée</b> à <b>'+seuilDebloc()+'/20</b> ou plus à chaque difficulté pour débloquer l\'évaluation.</p>'
       +'<div class="lecon-cta">'
       +'<div class="lcc" onclick="jouerEffet(\'valider\');ouvrir(\''+id+'\',true)">'
@@ -10613,7 +10625,7 @@ function afficherLeconCours(id){
   }
   const teinte=(typeof lxTeinteDe==="function"&&lxTeinteDe(id))||"var(--dom-eval)";
   document.getElementById("zone").innerHTML=
-    '<div class="lecon teinte ec" style="--d:'+teinte+'">'
+    '<div class="lecon teinte ec" data-cours="'+k+'" style="--d:'+teinte+'">'
     +'<div class="lecon-entete"><img class="perso" src="'+IMG_LECON+'" alt="">'
     +'<div class="ec-titres"><span class="ec-kicker">Évaluation du cours</span><h2>'+def.titre+'</h2></div></div>'
     +'<div class="carte">'
@@ -10625,6 +10637,9 @@ function afficherLeconCours(id){
     +'<div class="carte ec-action"><h3 class="ec-h">Ton parcours</h3>'+ecParcoursHTML(id,ouvert)+action+'</div>'
     +'</div>';
   remonter();
+  /* le professeur a pu l'ouvrir entre-temps : on relit, et on redessine si besoin */
+  if(!fini&&typeof coursDebloRafraichir==="function")coursDebloRafraichir().then(function(ch){
+    if(ch&&document.querySelector('.lecon.ec[data-cours="'+k+'"]'))afficherLeconCours(id); });
 }
 /* Étapes faites d'un cours (même astuce que coursTermine : on bascule ceCours le temps du test). */
 function ecAvancementCours(k){
@@ -10637,10 +10652,13 @@ function ecAvancementCours(k){
 function ecParcoursHTML(id,ouvert){
   const noms=["Facile","Intermédiaire","Difficile","Évaluation"];
   const nm=ouvert?niveauMaxDe(id):0, p=ouvert?palierInfo(id):null;
+  /* ouvert par le professeur : difficultés et évaluation accessibles, mais seules
+     les coches gagnées par l'élève s'affichent « Validé » */
+  const parProf=ouvert&&nm<4&&(typeof coursEvalOuverteProf==="function")&&coursEvalOuverteProf(id);
   return '<ol class="ec-parcours">'+noms.map(function(n,i){
-    const etat=(i+1<nm)?"fait":(i+1===nm?"cours":"verrou");
+    const etat=(i+1<nm)?"fait":((i+1===nm||(parProf&&i+1>nm))?"cours":"verrou");
     const ic=etat==="fait"?"ph-fill ph-check":(etat==="cours"?(i===3?"ph-fill ph-seal-check":"ph-fill ph-play"):"ph ph-lock-simple");
-    const det=etat==="fait"?"Validé":(etat==="cours"?(i<3?p.serie+" / "+p.total+" séries":"Débloquée"):"À débloquer");
+    const det=etat==="fait"?"Validé":(etat==="cours"?(i+1>nm?(i<3?"Ouvert par ton prof":"Ouverte par ton prof"):(i<3?p.serie+" / "+p.total+" séries":"Débloquée")):"À débloquer");
     return '<li class="ec-etape '+etat+'"><span class="ec-pastille"><i class="'+ic+'"></i></span><b>'+n+'</b><small>'+det+'</small></li>';
   }).join("")+'</ol>';
 }
@@ -12623,8 +12641,10 @@ function serieNivDe(domId,d){ return (profil.serieNiv&&profil.serieNiv[domId+"|"
 /* Tous les thèmes (compositeurs compris) suivent la progression par paliers :
    Facile → Intermédiaire → Difficile → Évaluation. */
 function themeAPaliers(domId){ return !!domId; }
-function diffDeverrouillee(domId,d){ d=+d; if(!themeAPaliers(domId)||profToutOuvert())return true; return d<=1 || d<=niveauMaxDe(domId); }
-function evalEntrainOK(domId){ return profToutOuvert()||niveauMaxDe(domId)>=4; }
+function diffDeverrouillee(domId,d){ d=+d; if(!themeAPaliers(domId)||profToutOuvert())return true; return d<=1 || d<=niveauMaxDe(domId) || d<=coursDebloDiffDom(domId); }
+/* Difficulté d'entraînement la plus haute accessible : paliers gagnés, ou ouverture du professeur. */
+function nivEntrainMax(id){ return themeAPaliers(id)?Math.max(Math.min(niveauMaxDe(id),3),coursDebloDiffDom(id)):3; }
+function evalEntrainOK(domId){ return profToutOuvert()||niveauMaxDe(domId)>=4||coursEvalOuverteProf(domId); }
 /* Compte enseignant : aucun verrou (paliers, delai entre deux passages). */
 function profToutOuvert(){ try{ return typeof arbToutOuvert==="function"&&arbToutOuvert(); }catch(e){ return false; } }
 /* Texte de progression : où en est l'élève, combien il reste pour débloquer la suite. */
@@ -13425,7 +13445,7 @@ function maitriseParTheme(){
 }
 
 /* ---------- Synchronisation élève -> Firestore ---------- */
-let _syncEnCours=false;
+let _syncEnCours=false, _syncARefaire=false;
 /* ---------- Écrans de connexion (enseignant, apprenant) ----------
    Une carte en deux volets : à gauche ce que l'on gagne à créer un compte, à
    droite un formulaire compact à onglets (Se connecter / Créer un compte). Les
@@ -13889,35 +13909,6 @@ function rosterGenererCodes(classId,n){
   return lot();
 }
 function rosterRafraichir(){ try{ if(typeof rosterClasse==="function"&&typeof _classeProfSel!=="undefined"&&_classeProfSel){ rosterClasse(_classeProfSel); } }catch(e){} }
-function rosterStatutHTML(){
-  const n=Object.keys(lireRoster()).length; const meta=lireRosterMeta();
-  if(n>0){ let s='<b style="color:var(--juste)"><i class="ph-fill ph-check-circle"></i> '+n+' nom'+(n>1?"s":"")+' importé'+(n>1?"s":"")+'</b> · ils réapparaissent seuls à chaque ouverture'; if(meta.quand){ try{ s+=' (importés le '+new Date(meta.quand).toLocaleDateString("fr-FR")+')'; }catch(e){} } return s; }
-  return '<span style="color:var(--encre-doux)">Aucune liste importée : tapez les noms, ou importez un CSV (bouton ci-dessus).</span>';
-}
-/* Modèle CSV pré-rempli avec les codes réels de chaque classe. */
-function rosterModele(){
-  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
-  if(!s||!u){ toast("Connectez-vous d'abord à votre espace enseignant."); return; }
-  toast("Préparation du modèle…");
-  Promise.all([
-    s.collection("classes").where("ownerUid","==",u.uid).get(),
-    s.collection("eleveCodes").where("ownerUid","==",u.uid).get().catch(function(){return {forEach:function(){}};})
-  ]).then(function(rr){
-    const clsList=[]; rr[0].forEach(function(d){ clsList.push({id:d.id, nom:(d.data()||{}).nom||""}); });
-    const codesByClass={}; rr[1].forEach(function(d){ const cc=(d.data()||{}).classId; if(cc)(codesByClass[cc]||(codesByClass[cc]=[])).push(d.id); });
-    return clsList.map(function(cl){ return {nom:cl.nom, id:cl.id, codes:codesByClass[cl.id]||[]}; });
-  }).then(function(classes){
-    const rows=[["Classe","Code","Nom","Prénom"]];
-    classes.forEach(function(cl){ cl.codes.forEach(function(code){ rows.push([cl.nom, code, "", labelDe(cl.id,code)||""]); }); });
-    if(rows.length<2){ toast("Aucun élève : créez d'abord une classe et ses codes."); return; }
-    const csv="﻿"+rows.map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
-    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
-    const url=URL.createObjectURL(blob); const link=document.createElement("a");
-    link.href=url; link.download="museduc_liste_classe.csv"; document.body.appendChild(link); link.click();
-    setTimeout(function(){ try{URL.revokeObjectURL(url);}catch(e){} link.remove(); },1500);
-    toast("Modèle téléchargé : complétez les colonnes Nom et Prénom, puis importez-le.");
-  }).catch(function(){ toast("Impossible de préparer le modèle."); });
-}
 /* Carnet de contacts familles : privé, local uniquement (jamais sur le serveur), inclus dans la sauvegarde. */
 const CONTACTS_KEY="educmus_contacts_v1";
 let _contactsMem=null;
@@ -13927,7 +13918,7 @@ function ecrireContacts(o){ _contactsMem=o; try{ localStorage.setItem(CONTACTS_K
 function sauverLabel(input,classId){ try{ definirLabel(classId,input.dataset.code,input.value); }catch(e){}
   const ok = labelDe(classId,input.dataset.code) === (input.value||"").trim();
   input.style.borderColor = ok?"var(--juste)":"var(--faux)"; input.style.background = ok?"var(--juste-fond)":"var(--faux-fond)";
-  clearTimeout(input._lblT); input._lblT=setTimeout(function(){ input.style.borderColor="var(--ligne)"; input.style.background="var(--surface)"; },700);
+  clearTimeout(input._lblT); input._lblT=setTimeout(function(){ input.style.borderColor=""; input.style.background=""; },700);
   if(_labelsBloque && !window._avertiStockage){ window._avertiStockage=true;
     toast("Ton navigateur bloque l'enregistrement : les noms seront perdus en fermant. Exporte ta liste !"); } }
 
@@ -14064,7 +14055,7 @@ function snapshotEleve(){
       ajustementsVus:profil.ajustementsVus||[], tempsMin:tm,
       /* progression des cours de collège : sans elle, un élève qui se déconnecte
          (ou change d'appareil) repartait de la première étape */
-      cours:profil.cours||{},
+      cours:profil.cours||{}, coursDebloVus:profil.coursDebloVus||{},
       /* aussi le vocabulaire, le mode Histoire, Clapping Music, les objectifs et
          ateliers du jour, et les récompenses de chant déjà touchées (sinon elles
          seraient comptées une seconde fois) : rien ne se perd en changeant d'appareil */
@@ -14267,16 +14258,18 @@ function definirSecretEleve(){
   }).catch(function(){ dire("Impossible pour l'instant. Réessaie dans un instant."); });
 }
 
-let _uidRattache=false;
-function rattacherUidEleve(){
-  if(_uidRattache)return Promise.resolve(true);
+let _uidRattache=false, _uidRattacheUid="";
+/* force : refaire le lien même s'il semble fait (une session d'appareil a pu changer) */
+function rattacherUidEleve(force){
+  const _a=fbAuth(), _cu=_a&&_a.currentUser;
+  if(!force&&_uidRattache&&(!_uidRattacheUid||!_cu||_cu.uid===_uidRattacheUid))return Promise.resolve(true);
   if(!profil.eleveCode||!profil.classeId)return Promise.resolve(false);
   const a=fbAuth(), s=fbStore(); if(!a||!s)return Promise.resolve(false);
   const ecrire=function(u){
     return s.collection("eleveUid").doc(u.uid)
       .set({code:profil.eleveCode,classId:profil.classeId,
             preuve:profil.elevePreuve||"",maj:Date.now()},{merge:true})
-      .then(function(){ _uidRattache=true;
+      .then(function(){ _uidRattache=true; _uidRattacheUid=u.uid;
         return publierLienEleve(u.uid,profil.eleveCode,profil.classeId).then(function(){return true;}); })
       .catch(function(){return false;});
   };
@@ -14336,13 +14329,14 @@ function restaurerEleve(){
           if(sv){
             ["points","exercices","sansFaute","serie","dernierJour","badges","badgesTousVu","best","vus",
              "defisBest","survieBest","survieHist","diffParCat","reussiteParCat","sfDiff","notesEval",
-             "evalBonus","entrainOK","niveauMax","serieNiv","evalLibreMois","evalLibreLe","tempsTheme","histEntrain","bonusNiveau","bonusBadge","bonusActuel","bonusNiveauVu","jokersSurvie","refaireVus","defisSemaine","defisAccSemaine","defisEnvoyes","defisHist","echelleV2","jourPts","ptsJour","ajustementsVus","devoirs","cours",
+             "evalBonus","entrainOK","niveauMax","serieNiv","evalLibreMois","evalLibreLe","tempsTheme","histEntrain","bonusNiveau","bonusBadge","bonusActuel","bonusNiveauVu","jokersSurvie","refaireVus","defisSemaine","defisAccSemaine","defisEnvoyes","defisHist","echelleV2","jourPts","ptsJour","ajustementsVus","devoirs","cours","coursDebloVus",
              "voc","histoire","chantRecomp","clapRec","clapMotifs","polyRec","batterie","obj","atelierLe"]
               .forEach(function(k){ if(sv[k]!==undefined&&sv[k]!==null)profil[k]=sv[k]; });
             try{ migrerBonus(profil); }catch(e){}   /* données serveur d'avant les 2 emplacements */
             profil.tempsMin=Math.max(profil.tempsMin||0,sv.tempsMin||0);
             if(d.nbEvals!=null)profil.nbEvals=Math.max(nbEvalsEleve(),d.nbEvals);
-          }else{ /* enregistrement d'avant cette mise à jour : on récupère l'essentiel */
+          }else if(d.points!=null||Array.isArray(d.notes)){ /* enregistrement d'avant cette mise à jour : on récupère l'essentiel
+            (une fiche qui ne porte que ce que le professeur y a écrit n'a rien à rendre) */
             profil.points=d.points||0; profil.exercices=d.exercices||0; profil.serie=d.serie||0;
             if(Array.isArray(d.notes))profil.notesEval=d.notes;
             profil.tempsMin=Math.max(profil.tempsMin||0,d.tempsMin||0);
@@ -14366,6 +14360,8 @@ function restaurerEleve(){
             try{ toast((total>0?"+":"")+total+" points de ton professeur"+(motif?" · "+motif:"")); }catch(e){}
           }
         }
+        /* entraînements de cours ouverts par le professeur (lus tels quels) */
+        if(coursDebloAppliquer(d.coursDeblo))change=true;
         /* « Faire refaire » demandé par le professeur : rouvre le volet eval du devoir
            (jeton « devId|timestamp », appliqué une seule fois chacun). */
         const refaire=Array.isArray(d.refaire)?d.refaire:[];
@@ -14433,7 +14429,8 @@ function evalsAttenteVider(){
   const l=evalsAttente(); if(!l.length||_evalsVidage)return;
   const s=fbStore(); if(!s||!profil.classeId)return;
   _evalsVidage=true;
-  let p=Promise.resolve();
+  /* le lien appareil → code d'abord : sans lui, un renvoi refusé passerait pour « déjà arrivé » */
+  let p=rattacherUidEleve().catch(function(){ return false; });
   l.slice().forEach(function(o){ p=p.then(function(){
     const d=Object.assign({},o); const id=d._id; const cid=d._cid||profil.classeId; delete d._id; delete d._cid; delete d._essais;
     return s.collection("classes").doc(cid).collection("evals").doc(id).set(d)
@@ -14450,7 +14447,12 @@ function syncEleve(){
   const a=fbAuth(), s=fbStore(); if(!a||!s)return Promise.resolve(false);
   /* jamais d'envoi avant d'avoir lu ce qui est déjà enregistré */
   if(!_restaureFait)return restaurerEleve().then(function(){ return _restaureFait?syncEleve():false; });
-  if(_syncEnCours)return Promise.resolve(false); _syncEnCours=true;
+  /* une demande arrivée pendant un envoi n'est plus perdue : elle repart juste après.
+     Avant, à la fin d'une évaluation, l'envoi lancé par la note partait AVANT que le
+     travail soit coché, et celui qui portait « travail rendu » était ignoré : la note
+     arrivait au carnet, mais pas dans le suivi du travail. */
+  if(_syncEnCours){ _syncARefaire=true; return Promise.resolve(false); }
+  _syncEnCours=true; _syncARefaire=false;
   const ecrire=(uid)=>{ const d=snapshotEleve(); d.maitrise=maitriseParTheme();
     return s.collection("classes").doc(profil.classeId).collection("eleves").doc(profil.eleveCode)
       .set(d,{merge:true}).then(()=>{ syncNoter(true); return true; }).catch(()=>{ syncNoter(false); return false; }); };
@@ -14467,7 +14469,7 @@ function syncEleve(){
   if(eleveOK(u))p=ecrire(u.uid).then(ecrireInvites);
   else if(u&&u.email)p=Promise.resolve(false);
   else p=a.signInAnonymously().then(cr=>ecrire(cr.user.uid)).then(ecrireInvites).catch(()=>{ syncNoter(false); return false; });
-  return p.finally(()=>{_syncEnCours=false;});
+  return p.finally(()=>{ _syncEnCours=false; if(_syncARefaire){ _syncARefaire=false; setTimeout(syncEleve,0); } });
 }
 function demarrerSyncEleve(){
   if(!profil.eleveCode||!profil.classeId)return;
@@ -15392,14 +15394,39 @@ function ecranBonusInfoProf(){
 }
 
 /* ---------- Prof : élèves + codes + noms locaux ---------- */
+/* ---------- Élèves et codes (refait le 10/10/2026, charte Ruban & Médaille) ----------
+   Ruban marine (classe avec flèches), quatre compteurs, une rangée de vignettes
+   d'action (les rares : menu « Plus »), puis un tableau aéré : pastille d'initiales,
+   nom modifiable en place, code en pilule (cadenas vert = mot secret choisi), note
+   colorée, et sur chaque ligne Détail, Mot secret, et un menu pour le reste. */
+let _elcCherche="";
+const ELC_TEINTES=["lire","rythme","ecoute","culture","theorie","styles","loin","perso"];
+function elcInitiales(t){
+  const m=String(t||"").trim().split(/\s+/).filter(Boolean);
+  return ((m[0]||"?").charAt(0)+(m.length>1?m[m.length-1].charAt(0):"")).toUpperCase();
+}
+function elcTeinte(code){ let h=0; String(code).split("").forEach(function(c){ h=(h*31+c.charCodeAt(0))>>>0; }); return ELC_TEINTES[h%ELC_TEINTES.length]; }
+function elcRibanHTML(classId,nom){
+  const l=_profClasses||[];
+  let idx=0; for(let i=0;i<l.length;i++){ if(l[i].id===classId){idx=i;break;} }
+  const prev=idx>0?l[idx-1].id:null, next=idx<l.length-1?l[idx+1].id:null;
+  const fl=function(id,ic,t){ return '<button class="ev-rib-fl"'+(id?"":" disabled")+' title="'+t+'" aria-label="'+t+'"'+(id?' onclick="rosterClasse(\''+id+'\')"':"")+'><i class="ph '+ic+'"></i></button>'; };
+  const nav=(l.length>1)
+    ?fl(prev,"ph-caret-left","Classe précédente")
+      +'<select class="ev-rib-sel" aria-label="Classe" onchange="rosterClasse(this.value)">'+l.map(function(c){ return '<option value="'+c.id+'"'+(c.id===classId?" selected":"")+'>'+echapH(c.nom||"Classe")+'</option>'; }).join("")+'</select>'
+      +fl(next,"ph-caret-right","Classe suivante")
+    :'<span class="ev-rib-cl">'+echapH(nom||"Classe")+'</span>';
+  return '<div class="ev-riban">'+rubanRetourHTML()
+    +'<div class="ev-rib-ic"><i class="ph-fill ph-identification-card" style="font-size:1.5rem"></i></div>'
+    +'<div class="ev-rib-txt"><div class="ev-rib-titre">Élèves et codes</div><div class="ev-rib-sous">Les noms restent sur cet appareil.</div></div>'
+    +'<div class="ev-rib-nav"><div class="ev-rib-g"><span class="ev-rib-lab">Classe</span><div class="ev-rib-l">'+nav+'</div></div></div></div>';
+}
 function rosterClasse(classId){
   if(classId)_classeProfSel=classId;   /* la classe suit d'une page à l'autre */
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   const s=fbStore(); if(!s)return;
-  titreProf('<i class="ph ph-identification-card"></i> Élèves et codes',
-            "Noms (privés), codes, mots secrets et points de vos élèves.");
-  document.getElementById("intro").textContent="";
-  document.getElementById("zone").innerHTML=`<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>`;
+  titreProf('<i class="ph ph-identification-card"></i> Élèves et codes',"");
+  document.getElementById("zone").innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>';
   const a=fbAuth(); const u=a&&a.currentUser; if(!u)return;
   /* Codes demandés par ownerUid (et non par classId) puis filtrés localement :
      pour une requête de liste, les règles Firestore doivent pouvoir PROUVER à
@@ -15419,94 +15446,131 @@ function rosterClasse(classId){
        qu'après avoir lui-même ouvert l'application, et ses camarades voient un
        classement vide. Le prof a déjà les données sous la main : on les recopie. */
     try{ semerClassement(classId,codes,prog); }catch(e){}
-    /* Indicateurs de classe (moyenne, réussite, élèves évalués) */
     const notes=[];
     codes.forEach(function(c){ const p=prog[c];
-      if(p&&p.notes&&p.notes.length){ const d=p.notes[p.notes.length-1];
-        notes.push({note:d.note||0, sur:d.sur||20}); } });
-    const moyenne=notes.length?(notes.reduce(function(a,x){return a+(x.note/x.sur)*20;},0)/notes.length):null;
-    const reussite=notes.length?Math.round(100*notes.filter(function(x){return (x.note/x.sur)>=.5;}).length/notes.length):null;
-    const fmtMoy=function(v){return v==null?"-":(Math.round(v*10)/10).toString().replace(".",",")+"/20";};
-
-    let h=`<div class="accueil" style="max-width:1080px">
-      ${selClasseHTML("rosterClasse",classId)}
-      <div class="prof-top" style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px">
-        <div style="font-family:var(--police-titre);font-weight:800;font-size:1.2rem">${echapH(info.nom||"Classe")}</div>
-        <button class="pres-badge" id="presBadge" onclick="presenceToggle('${classId}')" title="Élèves connectés en ce moment (cliquez pour voir les codes)">
-          <span class="pres-pt"></span> <i class="ph ph-broadcast"></i> <b id="presCount">…</b> en ligne</button>
-        <button class="action btn-rejouer" onclick="supprimerClasse('${classId}')" title="Supprimer cette classe"><i class="ph ph-trash"></i></button>
-      </div>
-      <div id="presPanel" class="pres-panel" hidden></div>
-      <input id="rosterInput" type="file" accept=".csv,.txt,text/csv" style="display:none" onchange="rosterImporterFichier(this,'${classId}')">
-      <input id="impLabels" type="file" accept="application/json" style="display:none" onchange="importerLabels('${classId}',this)">
-      ${codes.length?`<div class="rm-grille-3 rm-cascade" style="margin-bottom:20px">
-        <div class="rm-kpi"><div class="kp-lib">Moyenne de classe</div>
-          <div class="kp-val">${fmtMoy(moyenne)}</div></div>
-        <div class="rm-kpi"><div class="kp-lib">Taux de réussite</div>
-          <div class="kp-val" style="color:${reussite==null?"var(--encre)":(reussite>=50?"var(--juste)":"var(--faux)")}">${reussite==null?"-":reussite+"%"}</div></div>
-        <div class="rm-kpi"><div class="kp-lib">Élèves évalués</div>
-          <div class="kp-val">${notes.length}/${codes.length}</div></div>
-      </div>
-      <div class="rs-barre">
-        <div class="rs-groupe">
-          <span class="rs-lib">Élèves</span>
-          <button class="rm-cta" title="Liste Pronote ou tableur (Nom, Prénom) : crée un élève et son code par ligne. Avec le modèle MusEduc (colonne Code) : remplit les noms des codes existants." onclick="rosterLierFichier()"><i class="ph-fill ph-upload-simple"></i> Importer la liste (CSV)</button>
-          <button class="action btn-nouv" title="Créer des codes sans nom (vous pourrez taper les noms ensuite)" onclick="ajouterCodes('${classId}')"><i class="ph ph-plus"></i> Générer des codes</button>
-          <button class="action btn-nouv" title="Inviter un élève d'une autre classe (chorale, groupe…) : même code, même identité" onclick="rosterAjouterMembre('${classId}')"><i class="ph ph-user-plus"></i> Élève d'une autre classe</button>
-        </div>
-        <div class="rs-groupe">
-          <span class="rs-lib">Imprimer</span>
-          <button class="action btn-nouv" title="Une étiquette par élève (nom + code + ligne pour le mot secret), à découper au massicot" onclick="rosterImprimerCartes('${classId}')"><i class="ph ph-scissors"></i> Codes à découper</button>
-          <button class="action btn-nouv" title="Liste imprimée (noms + codes) à garder comme registre de secours" onclick="rosterImprimerListe('${classId}')"><i class="ph ph-list-bullets"></i> Registre</button>
-        </div>
-        <details class="rs-plus">
-          <summary><i class="ph ph-dots-three-outline"></i> Modèle et sauvegarde des noms</summary>
-          <div class="rs-plus-corps">
-            <button class="action btn-nouv" title="Télécharger un modèle CSV déjà rempli avec les codes de vos élèves" onclick="rosterModele()"><i class="ph ph-file-csv"></i> Modèle CSV</button>
-            <button class="action btn-nouv" title="Sauvegarde .json de tous les noms (toutes classes)" onclick="exporterLabels('${classId}')"><i class="ph ph-download-simple"></i> Enregistrer les noms (.json)</button>
-            <button class="action btn-nouv" title="Restaurer une sauvegarde .json de noms" onclick="document.getElementById('impLabels').click()"><i class="ph ph-upload-simple"></i> Restaurer les noms (.json)</button>
-          </div>
-        </details>
-      </div>
-      <p id="rosterStatut" style="text-align:center;font-size:.85rem;margin:0 0 8px">${rosterStatutHTML()}</p>`:""}`;
-    if(!codes.length){ h+=`<div class="rs-vide">
-        <i class="ph ph-users-three rs-vide-ic"></i>
-        <h3>Ajoutez vos élèves</h3>
-        <p><b>Le plus rapide :</b> importez votre liste de classe (export Pronote ou tableur avec les colonnes <b>Nom</b> et <b>Prénom</b>, ou un nom par ligne). Un code personnel est créé pour chaque élève, avec son nom.</p>
-        <div class="rs-vide-actions">
-          <button class="rm-cta" onclick="rosterLierFichier()"><i class="ph-fill ph-upload-simple"></i> Importer la liste (CSV)</button>
-          <button class="action btn-nouv" onclick="ajouterCodes('${classId}')"><i class="ph ph-plus"></i> Générer des codes vierges</button>
-          <button class="action btn-nouv" title="Chorale, groupe… : même code, même identité" onclick="rosterAjouterMembre('${classId}')"><i class="ph ph-user-plus"></i> Élève d'une autre classe</button>
-        </div>
-        <p class="rs-vide-note"><i class="ph ph-lock"></i> Les noms restent sur cet appareil : le serveur ne reçoit que les codes.</p>
-      </div>`; }
-    else{
-      h+=`<p style="color:var(--encre-doux);font-size:.84rem"><i class="ph ph-lock"></i> Les <b>noms restent sur ton appareil</b> (pense à les exporter). Le serveur ne stocke que les codes.</p>`;
-      h+=`<p style="color:var(--encre-doux);font-size:.82rem;margin:8px 0 0"><i class="ph ph-arrows-down-up"></i> Clique sur un en-tête de colonne pour trier.</p>`;
-      h+=`<div style="overflow-x:auto"><table class="dash-table" style="width:100%;margin-top:6px"><thead><tr>
-        ${["nom","code","niveau","points","badges","temps","entr","note","vu"].map(function(c){return enteteRoster(c,classId);}).join("")}
-        <th></th></tr></thead><tbody>`;
-      codes.forEach(code=>{ const p=prog[code]; const lab=labelDe(classId,code); const dn=(p&&p.notes&&p.notes.length)?p.notes[p.notes.length-1]:null;
-        h+=`<tr>
-          <td><input class="lbl-in" data-code="${code}" value="${echapH(lab)}" placeholder="(nom)" style="width:110px;padding:4px 8px;border:1px solid var(--ligne);border-radius:8px;font-family:inherit;background:var(--surface);color:var(--encre)" oninput="sauverLabel(this,'${classId}')"></td>
-          <td><b style="letter-spacing:1px;color:var(--laiton)">${code}</b> ${protege[code]
-            ?'<i class="ph-fill ph-lock-key" title="Protégé par un mot secret" style="color:var(--juste)"></i>'
-            :'<i class="ph ph-lock-open" title="Pas encore de mot secret : ce code seul suffit à se connecter" style="color:var(--encre-doux)"></i>'}${invite[code]?` <span style="font-size:.68rem;background:var(--surface-2);color:var(--or-texte);padding:1px 7px;border-radius:999px" title="Invité depuis ${echapH(clNom(clDe[code]))}"><i class="ph ph-user-plus"></i> ${echapH(clNom(clDe[code]))}</span>`:''}</td>
-          <td>${p?(p.niveau||1):"-"}</td><td>${p?(p.points||0):"-"}</td><td>${p?(p.badges||0):"-"}</td>
-          <td title="Temps actif sur MusEduc (un onglet laissé ouvert sans rien faire ne compte pas)">${p?fmtTemps(p.tempsMin):"-"}</td><td title="Temps passé dans les séries d'entraînement">${p?(p.tempsEntrain!=null?fmtTemps(p.tempsEntrain):"<span style='color:var(--encre-doux)'>-</span>"):"-"}</td><td>${dn?("<b>"+dn.note+"/"+(dn.sur||20)+"</b>"):"-"}</td>
-          <td>${p?fmtDate(p.maj):'<span style="color:var(--encre-doux)">jamais</span>'}</td>
-          <td>${p?`<button class="btn-son mini" title="Détail" onclick="detailEleve('${classId}','${code}')"><i class="ph ph-eye"></i></button>`:""}<button class="btn-son mini" title="Ajouter ou retirer des points" onclick="ajusterPoints('${classId}','${code}')"><i class="ph ph-plus-minus"></i></button><button class="btn-son mini" title="${protege[code]?"Mot secret oublié : le remettre à zéro":"Mot secret oublié ou code bloqué : remettre le mot secret à zéro"}" onclick="reinitSecret('${classId}','${code}',${protege[code]?1:0})"><i class="ph ph-key"></i></button><button class="btn-son mini" title="Réinitialiser cet élève (notes, points, bonus…)" onclick="reinitEleve('${classId}','${code}')"><i class="ph ph-arrow-counter-clockwise" style="color:var(--faux)"></i></button>${invite[code]?`<button class="btn-son mini" title="Retirer de cette classe (il reste dans sa classe d'origine)" onclick="rosterRetirerMembre('${classId}','${code}')"><i class="ph ph-user-minus" style="color:var(--faux)"></i></button>`:`<button class="btn-son mini" title="Supprimer ce code et cet élève" onclick="supprimerCode('${classId}','${code}')"><i class="ph ph-trash" style="color:var(--faux)"></i></button>`}</td>
-        </tr>`; });
-      h+=`</tbody></table></div>`;
+      if(p&&p.notes&&p.notes.length){ const d=p.notes[p.notes.length-1]; notes.push({note:d.note||0, sur:d.sur||20}); } });
+    const moyenne=notes.length?(notes.reduce(function(x,n){return x+(n.note/n.sur)*20;},0)/notes.length):null;
+    const nProt=codes.filter(function(c){ return protege[c]; }).length, nVus=codes.filter(function(c){ return prog[c]; }).length;
+    const nNoms=codes.filter(function(c){ return labelDe(classId,c); }).length;
+    let h='<div class="elc">'+elcRibanHTML(classId,info.nom)
+      +'<input id="rosterInput" type="file" accept=".csv,.txt,text/csv" style="display:none" onchange="rosterImporterFichier(this,\''+classId+'\')">'
+      +'<input id="impLabels" type="file" accept="application/json" style="display:none" onchange="importerLabels(\''+classId+'\',this)">';
+    const tuile=function(fn,ic,lib,teinte,principal,titre){
+      return '<button type="button" class="elc-tuile'+(principal?" or":"")+'" style="--d:var(--dom-'+teinte+')" title="'+escapeHtml(titre)+'" onclick="'+fn+'">'
+        +'<span class="elc-tuile-ic"><i class="ph-fill ph-'+ic+'"></i></span><b>'+lib+'</b></button>'; };
+    const ajout=tuile("rosterLierFichier()","upload-simple","Importer la liste","eval",true,"Liste Pronote ou tableur (Nom, Prénom), ou fichier exporté par MusEduc : un élève et son code par ligne")
+      +tuile("ajouterCodes('"+classId+"')","plus-circle","Ajouter des codes","theorie",false,"Codes sans nom : vous taperez les noms ensuite")
+      +tuile("rosterAjouterMembre('"+classId+"')","user-plus","Élève d’une autre classe","culture",false,"Chorale, groupe… : même code, même identité");
+    if(!codes.length){
+      h+='<section class="elc-vide2"><span class="elc-vide2-ic"><i class="ph-fill ph-users-three"></i></span>'
+        +'<h2>Ajoute tes élèves</h2><p>Importe ta liste de classe (export Pronote) : chaque élève reçoit son code.</p>'
+        +'<div class="elc-tuiles">'+ajout+'</div>'
+        +'<p class="elc-prive"><i class="ph ph-lock"></i> Les noms restent sur cet appareil, le serveur ne reçoit que les codes.</p></section>';
+      document.getElementById("zone").innerHTML=h+'</div>';
+      return;
     }
-    if(codes.length){
-      h+=`<div style="margin-top:24px;border-top:1px dashed var(--ligne);padding-top:14px;text-align:center">
-        <button class="action btn-nouv" style="border-color:var(--faux);color:var(--faux)" onclick="reinitClasse('${classId}')"><i class="ph ph-arrow-counter-clockwise"></i> Réinitialiser la classe…</button>
-        <p style="color:var(--encre-doux);font-size:.8rem;margin:8px 0 0">Fin d'année ou nouveau départ : vous choisissez ce qui est effacé pour <b>tous</b> les élèves (progression, points, bonus, notes, carnet, travail en classe, chant). Pour <b>un seul</b> élève : bouton <i class="ph ph-arrow-counter-clockwise" style="color:var(--faux)"></i> sur sa ligne. Exportez vos notes avant.</p></div>`;
-    }
-    document.getElementById("zone").innerHTML=h+`</div>`;
+    const kpi=function(n,lib,cls,ic){ return '<div class="ccs-kpi '+cls+'"><b>'+n+'</b><span><i class="ph '+ic+'"></i> '+lib+'</span></div>'; };
+    h+='<div class="ccs-kpis elc-kpis">'
+      +kpi(codes.length,"élève"+(codes.length>1?"s":""),"b","ph-users-three")
+      +kpi(nProt+"<small>/"+codes.length+"</small>","mot secret choisi","v","ph-lock-key")
+      +kpi(nVus+"<small>/"+codes.length+"</small>","déjà connecté"+(nVus>1?"s":""),"o","ph-sign-in")
+      +kpi(moyenne==null?"-":String(Math.round(moyenne*10)/10).replace(".",","),"moyenne (dernières notes)","g","ph-exam")
+      +'</div>';
+    h+='<div class="elc-tuiles">'+ajout
+      +tuile("rosterImprimerCartes('"+classId+"')","scissors","Codes à découper","rythme",false,"Une étiquette par élève (nom, code, ligne pour le mot secret)")
+      +tuile("rosterImprimerListe('"+classId+"')","list-bullets","Registre","lire",false,"Liste imprimée des noms et des codes, à garder en lieu sûr")
+      +'<button type="button" class="elc-tuile elc-plus2" style="--d:var(--dom-eval)" aria-haspopup="menu" onclick="elcPlusMenu(event,this,\''+classId+'\')"><span class="elc-tuile-ic"><i class="ph-fill ph-dots-three-outline"></i></span><b>Plus</b></button>'
+      +'</div>';
+    h+='<section class="elc-carte">'
+      +'<div class="elc-barre"><label class="elc-cherche"><i class="ph ph-magnifying-glass"></i><input type="search" placeholder="Chercher un élève" value="'+escapeHtml(_elcCherche)+'" oninput="elcChercher(this.value)" aria-label="Chercher un élève"></label>'
+      +'<span class="elc-prive" title="Le serveur ne reçoit que les codes"><i class="ph ph-lock"></i> '+nNoms+' nom'+(nNoms>1?"s":"")+' sur cet appareil</span>'
+      +'<button class="pres-badge" id="presBadge" onclick="presenceToggle(\''+classId+'\')" title="Élèves connectés en ce moment (cliquez pour voir les codes)"><span class="pres-pt"></span> <i class="ph ph-broadcast"></i> <b id="presCount">…</b> en ligne</button></div>'
+      +'<div id="presPanel" class="pres-panel" hidden></div>'
+      +'<div class="elc-table" tabindex="0" role="region" aria-label="Élèves de la classe"><table><thead><tr>'
+      +["nom","code","niveau","points","badges","temps","entr","note","vu"].map(function(c){ return enteteRoster(c,classId); }).join("")
+      +'<th><span class="sr-only">Actions</span></th></tr></thead><tbody>';
+    codes.forEach(function(code){
+      const p=prog[code], lab=labelDe(classId,code), dn=(p&&p.notes&&p.notes.length)?p.notes[p.notes.length-1]:null;
+      const n20=dn?(dn.note/(dn.sur||20))*20:null;
+      h+='<tr data-cherche="'+escapeHtml((lab+" "+code).toLowerCase())+'">'
+        +'<td class="elc-el"><span class="elc-av" style="--d:var(--dom-'+elcTeinte(code)+')" aria-hidden="true">'+echapH(elcInitiales(lab||code))+'</span>'
+        +'<input class="lbl-in elc-nom" data-code="'+code+'" value="'+escapeHtml(lab)+'" placeholder="Ajouter un nom" aria-label="Nom de l’élève '+code+'" oninput="sauverLabel(this,\''+classId+'\')">'
+        +(invite[code]?'<span class="elc-inv" title="Invité depuis '+escapeHtml(clNom(clDe[code]))+'"><i class="ph ph-user-plus"></i> '+echapH(clNom(clDe[code]))+'</span>':'')+'</td>'
+        +'<td><span class="elc-code'+(protege[code]?" ok":"")+'" title="'+(protege[code]?"Mot secret choisi":"Pas encore de mot secret : le code seul suffit pour se connecter")+'"><i class="ph'+(protege[code]?"-fill ph-lock-key":" ph-lock-open")+'"></i>'+code+'</span></td>'
+        +'<td class="elc-c">'+(p?'<span class="elc-niv">'+(p.niveau||1)+'</span>':'-')+'</td>'
+        +'<td class="elc-c">'+(p?(p.points||0):'-')+'</td><td class="elc-c">'+(p?(p.badges||0):'-')+'</td>'
+        +'<td class="elc-c" title="Temps actif sur MusEduc">'+(p?fmtTemps(p.tempsMin):'-')+'</td>'
+        +'<td class="elc-c" title="Temps passé dans les séries d’entraînement">'+(p&&p.tempsEntrain!=null?fmtTemps(p.tempsEntrain):'-')+'</td>'
+        +'<td class="elc-c">'+(dn?'<span class="elc-note '+(n20>=14?"v":(n20>=10?"o":"r"))+'">'+String(dn.note).replace(".",",")+'<small>/'+(dn.sur||20)+'</small></span>':'-')+'</td>'
+        +'<td class="elc-c elc-vu">'+(p?fmtDate(p.maj):'<span class="elc-jamais">jamais</span>')+'</td>'
+        +'<td class="elc-act">'+(p?'<button class="elc-ib" title="Détail" aria-label="Détail de '+escapeHtml(lab||code)+'" onclick="detailEleve(\''+classId+'\',\''+code+'\')"><i class="ph ph-eye"></i></button>':'')
+        +'<button class="elc-ib" title="Mot secret oublié : le remettre à zéro" aria-label="Mot secret de '+escapeHtml(lab||code)+'" onclick="reinitSecret(\''+classId+'\',\''+code+'\','+(protege[code]?1:0)+')"><i class="ph ph-key"></i></button>'
+        +'<button class="elc-ib" title="Autres actions" aria-haspopup="menu" aria-label="Autres actions pour '+escapeHtml(lab||code)+'" onclick="elcEleveMenu(event,this,\''+classId+'\',\''+code+'\','+(invite[code]?1:0)+')"><i class="ph ph-dots-three-vertical"></i></button></td></tr>';
+    });
+    h+='</tbody></table></div></section></div>';
+    document.getElementById("zone").innerHTML=h;
+    if(_elcCherche)elcChercher(_elcCherche);
     try{ presenceMonter(classId); }catch(e){}
   }).catch(()=>{document.getElementById("zone").innerHTML=svcIndispo("Impossible de charger la classe.");});
+}
+function elcChercher(v){
+  _elcCherche=String(v||"");
+  const q=_elcCherche.trim().toLowerCase();
+  document.querySelectorAll(".elc-table tbody tr").forEach(function(tr){ tr.hidden=!!q&&(tr.getAttribute("data-cherche")||"").indexOf(q)<0; });
+}
+/* petit menu ancré sous un bouton (même style que le menu d'export du carnet) */
+function elcPop(ev,btn,items){
+  ev.preventDefault(); ev.stopPropagation();
+  const deja=document.getElementById("elcPop"), meme=deja&&deja._btn===btn;
+  if(deja)deja.remove(); if(meme)return;
+  const d=document.createElement("div"); d.id="elcPop"; d.className="ev-pop"; d.setAttribute("role","menu"); d._btn=btn;
+  d.innerHTML=items.map(function(it){ return '<button type="button" role="menuitem"'+(it.danger?' class="elc-pop-danger"':'')+' onclick="document.getElementById(\'elcPop\').remove();'+it.fn+'"><i class="ph '+it.ic+'"></i> '+it.lib+'</button>'; }).join("");
+  document.body.appendChild(d);
+  const r=btn.getBoundingClientRect();
+  d.style.top=Math.min(r.bottom+6,window.innerHeight-d.offsetHeight-8)+"px";
+  d.style.left=Math.max(8,Math.min(r.right-d.offsetWidth,window.innerWidth-d.offsetWidth-8))+"px";
+  setTimeout(function(){ document.addEventListener("click",function(){ const x=document.getElementById("elcPop"); if(x)x.remove(); },{once:true}); },0);
+  const premier=d.querySelector("button"); if(premier)premier.focus();
+}
+function elcPlusMenu(ev,btn,classId){
+  elcPop(ev,btn,[
+    {ic:"ph-file-csv",lib:"Exporter la liste (CSV)",fn:"rosterExporterCSV()"},
+    {ic:"ph-download-simple",lib:"Enregistrer les noms (.json)",fn:"exporterLabels('"+classId+"')"},
+    {ic:"ph-upload-simple",lib:"Restaurer les noms (.json)",fn:"document.getElementById('impLabels').click()"},
+    {ic:"ph-arrow-counter-clockwise",lib:"Réinitialiser la classe…",fn:"reinitClasse('"+classId+"')",danger:true},
+    {ic:"ph-trash",lib:"Supprimer la classe…",fn:"supprimerClasse('"+classId+"')",danger:true}]);
+}
+function elcEleveMenu(ev,btn,classId,code,invite){
+  elcPop(ev,btn,[
+    {ic:"ph-plus-minus",lib:"Ajouter ou retirer des points",fn:"ajusterPoints('"+classId+"','"+code+"')"},
+    {ic:"ph-arrow-counter-clockwise",lib:"Réinitialiser cet élève…",fn:"reinitEleve('"+classId+"','"+code+"')",danger:true},
+    invite?{ic:"ph-user-minus",lib:"Retirer de cette classe",fn:"rosterRetirerMembre('"+classId+"','"+code+"')",danger:true}
+          :{ic:"ph-trash",lib:"Supprimer ce code et cet élève…",fn:"supprimerCode('"+classId+"','"+code+"')",danger:true}]);
+}
+/* La liste des élèves de TOUTES les classes, en CSV (UTF-8 avec BOM, lu par Excel) :
+   Classe ; Code ; Élève ; Mot secret. Elle se réimporte telle quelle (colonnes Code
+   et Élève) pour retrouver les noms sur un autre appareil. */
+function rosterExporterCSV(){
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
+  if(!s||!u){ toast("Connectez-vous d'abord à votre espace enseignant."); return; }
+  toast("Préparation de la liste…");
+  Promise.all([
+    s.collection("classes").where("ownerUid","==",u.uid).get(),
+    s.collection("eleveCodes").where("ownerUid","==",u.uid).get().catch(function(){ return {forEach:function(){}}; })
+  ]).then(function(rr){
+    const cls=[]; rr[0].forEach(function(d){ cls.push({id:d.id,nom:(d.data()||{}).nom||""}); });
+    cls.sort(function(x,y){ return x.nom.localeCompare(y.nom,"fr",{numeric:true}); });
+    const par={}, prot={}; rr[1].forEach(function(d){ const v=d.data()||{}; if(v.classId)(par[v.classId]=par[v.classId]||[]).push(d.id); prot[d.id]=!!v.actif; });
+    const rows=[["Classe","Code","Élève","Mot secret"]];
+    cls.forEach(function(cl){ (par[cl.id]||[]).slice().sort(function(x,y){ return String(labelDe(cl.id,x)||"￿"+x).localeCompare(String(labelDe(cl.id,y)||"￿"+y),"fr"); })
+      .forEach(function(code){ rows.push([cl.nom,code,labelDe(cl.id,code)||"",prot[code]?"choisi":"pas encore"]); }); });
+    if(rows.length<2){ toast("Aucun élève : créez d'abord une classe et ses codes."); return; }
+    const csv="﻿"+rows.map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}), url=URL.createObjectURL(blob), lien=document.createElement("a");
+    lien.href=url; const j=new Date(); lien.download="museduc_eleves_"+j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")+".csv"; document.body.appendChild(lien); lien.click();
+    setTimeout(function(){ try{ URL.revokeObjectURL(url); }catch(e){} lien.remove(); },1500);
+    toast((rows.length-1)+" élève"+(rows.length>2?"s":"")+" exporté"+(rows.length>2?"s":"")+". Gardez ce fichier en lieu sûr : il contient les noms.");
+  }).catch(function(){ toast("Impossible de préparer la liste."); });
 }
 /* Mot secret oublié : le professeur l'efface, l'élève en choisit un nouveau à sa
    prochaine connexion. La progression n'est pas touchée. */
@@ -15723,9 +15787,11 @@ function importerLabels(classId,input){
    ============================================================ */
 const DEVOIR_VOLETS={
   lecon:{lib:"Leçon + entraînement", ic:"book-open-text",
-         aide:"L'élève lit la leçon, puis doit réussir une série d'exercices au score demandé."},
+         aide:"L'élève lit la leçon, puis doit réussir une série d'exercices au score demandé. Pour un cours de collège, l'entraînement s'ouvre à ceux qui reçoivent le travail, même s'ils n'ont pas fini le cours."},
   eval: {lib:"Évaluation notée",     ic:"exam",
          aide:"L'élève passe l'évaluation de la leçon. La note vous est envoyée."},
+  blanc:{lib:"Évaluation d'entraînement", ic:"target",
+         aide:"Comme une vraie évaluation, mais elle ne compte nulle part (ni moyenne, ni note bonus). L'élève voit sa correction tout de suite ; vous voyez qui est prêt. Sur un cours de collège, elle s'ouvre même à ceux qui n'ont pas fini le cours."},
   voc:  {lib:"Vocabulaire",          ic:"cards",
          aide:"Vous choisissez les mots exacts à réviser : l'élève les reçoit directement."},
   cours:{lib:"Cours interactif",     ic:"chalkboard-simple",
@@ -15909,7 +15975,10 @@ function devoirFait(cible,action,info){
   _devoirs.forEach(function(d){
     (d.volets||[]).forEach(function(v,i){
       if(devoirVoletFait(d,i))return;
-      if(devoirVoletVerrouille(d,i))return;          /* non rendu : trop tard */
+      /* une épreuve LANCÉE pendant le créneau est rendue, même si le créneau s'est
+         fermé pendant qu'elle était en cours */
+      const epreuveLancee=(v.t==="eval"&&action==="eval"&&v.cible===cible&&info&&info.dev===d.id);
+      if(!epreuveLancee&&devoirVoletVerrouille(d,i))return;          /* non rendu : trop tard */
       const e=devoirEtat(d.id), k=String(i);
       const cur=e.v[k]||(e.v[k]={});
       if(v.t==="lecon"&&v.cible===cible){
@@ -15922,7 +15991,15 @@ function devoirFait(cible,action,info){
           change=true;
         }
       }else if(v.t==="eval"&&v.cible===cible&&action==="eval"){
+        /* seulement l'évaluation demandée qui a été passée : une évaluation libre du
+           même contenu (avant le créneau, par exemple) ne la rend pas */
+        if(!info||!info.dev||d.id!==info.dev)return;
         cur.fait=Date.now(); cur.note=(info&&info.note); cur.sur=(info&&info.sur)||20;
+        cur.essais=(cur.essais||0)+1; change=true;
+      }else if(v.t==="blanc"&&v.cible===cible&&action==="blanc"){
+        if(info&&info.dev&&d.id!==info.dev)return;     /* seulement le travail lancé */
+        cur.fait=Date.now(); cur.note=(info&&info.note); cur.sur=(info&&info.sur)||20;
+        if(info&&info.bons!=null){ cur.bons=info.bons; cur.total=info.total; }
         cur.essais=(cur.essais||0)+1; change=true;
       }else if(v.t==="cours"&&v.cible===cible&&action==="cours"){
         cur.fait=Date.now(); cur.essais=(cur.essais||0)+1; change=true;
@@ -16087,6 +16164,7 @@ function maestroDemarrer(){
   if(estSolo())maestroMessagesAmis().then(maestroAjouter).catch(function(){});
   if(profil.eleveCode){
     chargerDevoirs().then(function(){ maestroAjouter(maestroMessagesDevoirs()); }).catch(function(){});
+    coursDebloRafraichir().then(function(ch){ if(ch)maestroAjouter(coursDebloMessages()); }).catch(function(){});
     maestroChargerVotes();
   }
 }
@@ -16184,6 +16262,7 @@ function maestroMessagesLocaux(){
                  {lib:"Compris",ic:"check",clic:"coursAnnonceVue('"+k+"');maestroRetirer('cours-"+k+"')"}]});
     });
   }
+  try{ l.push.apply(l,coursDebloMessages()); }catch(e){}
   const nv=(typeof vocDus==="function")?vocDus().length:0;
   if(nv)l.push({id:"voc",prio:50,ic:"bell-ringing",titre:nv+" mot"+(nv>1?"s":"")+" de vocabulaire à revoir",
     corps:"C\u2019est le bon moment pour les revoir, avant de les oublier. Fais le petit test maintenant&nbsp;: quelques minutes suffisent.",
@@ -16314,17 +16393,23 @@ function devoirCarteHTML(d,fini,nonRendu){
                :(st.pct!=null?`meilleur essai : ${st.pct}% (il faut ${seuil}%)`:`il faut réussir à ${seuil}%`);
       if(!ok&&st.lu)detail="leçon lue · "+detail;
     }else if(v.t==="eval"){ detail=ok?(st.note!=null?`rendue : ${st.note}/${st.sur||20}`:"rendue"):"à passer"; }
+    else if(v.t==="blanc"){ detail=(ok?(st.note!=null?`faite : ${st.note}/${st.sur||20}`:"faite"):"à passer")+" · ne compte pas dans ta moyenne"; }
     else if(v.t==="voc"){ const n=(v.mots||[]).length;
       detail=ok?`${n} mots révisés`:`${n} mot${n>1?"s":""} à réviser`; }
     else { detail=ok?"terminé":"à dérouler jusqu'au bout"; }
     /* le professeur ET l'élève veulent savoir QUAND c'est passé */
     if(ok&&st.fait)detail+=" · le "+dvDateHeure(st.fait);
+    /* évaluation rendue : sa correction, gardée sur cet appareil */
+    const cp=(ok&&(v.t==="eval"||v.t==="blanc"))?copiePour(d.id,i):null;
+    const corr=!cp?"":((cp.apres&&Date.now()<cp.apres)
+      ?`<span class="dv-corr-att"><i class="ph ph-lock-simple"></i> Correction le ${dvDateHeure(cp.apres)}</span>`
+      :`<button class="action btn-nouv" style="padding:6px 12px;font-size:.88rem" onclick="ecranMaCopie('${d.id}',${i})"><i class="ph ph-magnifying-glass"></i> Ma correction</button>`);
     h+=`<div style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;
          background:${ok?"var(--juste-fond)":"var(--teinte-douce)"}">
         <i class="ph${ok?"-fill":""} ph-${ok?"check-circle":t.ic}" style="${ok?"color:var(--juste)":""};font-size:1.2rem"></i>
         <span style="flex:1;min-width:0"><b>${echapH(devoirVoletNom(v))}</b>
           <br><span style="font-size:.84rem;color:var(--encre-doux)">${t.lib} · ${detail}</span></span>
-        ${ok?"":(nonRendu&&devoirVoletVerrouille(d,i)?`<span class="dv-nr">${_nrZero?"NR*":"NR"}</span>`:`<button class="action btn-corr" style="padding:6px 12px;font-size:.88rem"
+        ${ok?corr:(nonRendu&&devoirVoletVerrouille(d,i)?`<span class="dv-nr">${_nrZero?"NR*":"NR"}</span>`:`<button class="action btn-corr" style="padding:6px 12px;font-size:.88rem"
             onclick="devoirLancerVolet('${d.id}',${i})"><i class="ph ph-play"></i> Y aller</button>`)}
       </div>`;
   });
@@ -16345,6 +16430,12 @@ function devoirLancerVolet(id,i){
   if(v.t==="voc"){ devoirVocPopup(d,i); return; }
   if(v.t==="cours"){ if(typeof ecranCours==="function")ecranCours(String(v.cible).slice(6)); return; }
   if(v.t==="enr"){ if(typeof ecranChantEleve==="function")ecranChantEleve(String(v.cible).slice(6)); return; }
+  if(v.t==="blanc"){
+    _devoirDiffImposee=v.diff||2;
+    _evalCompo=(v.compo&&v.compo.length&&String(v.cible).indexOf("evalcours-")===0)
+      ? {cible:v.cible, coursId:String(v.cible).slice(10), parts:v.compo} : null;
+    _evalBlancLance={cible:v.cible,devId:d.id,i:i};
+    if(typeof ecranEvalDomaine==="function")ecranEvalDomaine(v.cible); return; }
   if(v.t==="eval"){
     const now=Date.now();
     if(v.ouvre&&now<v.ouvre){ toast("Cette évaluation s'ouvrira le "+dvDateHeure(v.ouvre)+"."); return; }
@@ -16417,6 +16508,13 @@ function devoirOptionsCible(sel){
   });
   h+=`</optgroup>`;
   return h;
+}
+/* les entraînements des cours de collège : donnés en travail, ils s'ouvrent à ceux qui le reçoivent */
+function devoirOptionsCours(){
+  if(typeof EVALCOURS_DEF==="undefined")return "";
+  const ks=Object.keys(EVALCOURS_DEF).filter(function(k){ return COURS_DEF[k]; }); if(!ks.length)return "";
+  return '<optgroup label="Entraînements des cours de collège">'+ks.map(function(k){
+    return '<option value="evalcours-'+k+'">Entraînement : '+echapH(COURS_DEF[k].titre)+'</option>'; }).join("")+'</optgroup>';
 }
 function ecranDevoirsProf(classId){
   if(classId)_classeProfSel=classId;   /* la classe suit d'une page à l'autre */
@@ -16583,9 +16681,9 @@ function devoirFormType(){
   const sz=document.getElementById("dvChampScore");
   const aide=document.getElementById("dvAide");
   if(aide)aide.textContent=(DEVOIR_VOLETS[t]||{}).aide||"";
-  if(sz)sz.style.display=(t==="eval"||t==="cours"||t==="enr")?"none":"block";
+  if(sz)sz.style.display=(t==="eval"||t==="blanc"||t==="cours"||t==="enr")?"none":"block";
   const dz=document.getElementById("dvChampDiff");
-  if(dz)dz.style.display=(t==="eval")?"block":"none";
+  if(dz)dz.style.display=(t==="eval"||t==="blanc")?"block":"none";
   const crz=document.getElementById("dvCreneau");
   if(crz)crz.style.display=(t==="eval")?"block":"none";
   /* Pour une évaluation, l'échéance EST la fermeture du créneau : on masque le
@@ -16642,7 +16740,7 @@ function devoirFormType(){
       <select id="dvCible" style="width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;font-size:.95rem;background:var(--surface);color:var(--encre)">
         ${Object.keys(COURS_DEF).map(function(k){return `<option value="cours:${k}">${echapH(COURS_DEF[k].titre)}</option>`;}).join("")}
       </select></label>`;
-  }else if(t==="eval"){
+  }else if(t==="eval"||t==="blanc"){
     vz.style.display="none";
     cz.innerHTML=`<label style="display:block;font-size:.86rem;color:var(--encre-doux)">Sur quoi porte l'évaluation ?
       <select id="dvCible" onchange="dvCompoMaj()" style="width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;font-size:.95rem;background:var(--surface);color:var(--encre)">
@@ -16656,7 +16754,7 @@ function devoirFormType(){
     vz.style.display="none";
     cz.innerHTML=`<label style="display:block;font-size:.86rem;color:var(--encre-doux)">Sur quelle leçon ?
       <select id="dvCible" style="width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;font-size:.95rem;background:var(--surface);color:var(--encre)">
-        ${devoirOptionsCible()}</select></label>`;
+        ${devoirOptionsCours()}${devoirOptionsCible()}</select></label>`;
   }
 }
 /* Composition d'une évaluation de cours (côté prof) : banque du cours + tirages
@@ -16832,14 +16930,18 @@ function devoirVoletDuFormulaire(dire){
   const cible=((document.getElementById("dvCible")||{}).value)||"";
   if(!cible){dire("Choisissez un contenu.");return null;}
   const v={t:t,cible:cible,nom:devoirNomCible(cible)};
+  const coursK=String(cible).indexOf("evalcours-")===0?cible.slice(10):"";
+  if(t==="lecon"&&coursK&&COURS_DEF[coursK])v.nom="Entraînement : "+COURS_DEF[coursK].titre;
   if(t==="lecon")v.score=score;
-  if(t==="eval"){
+  if(t==="eval"||t==="blanc"){
     v.diff=parseInt(((document.getElementById("dvDiff")||{}).value)||2,10);
     if(String(cible).indexOf("evalcours-")===0){
       const parts=(typeof dvCompoLire==="function")?dvCompoLire():[];
       if(!parts.length){ dire("Choisis au moins une source de questions pour l'évaluation."); return null; }
       v.compo=parts;
     }
+    /* l'évaluation d'entraînement n'a pas de créneau : elle se fait pour la date donnée */
+    if(t==="blanc"){ v.nom="Évaluation d'entraînement : "+String(v.nom||"").replace(/^Évaluation\s*:\s*/,""); return v; }
     const ov=((document.getElementById("dvOuvre")||{}).value||"");
     const fe=((document.getElementById("dvFerme")||{}).value||"");
     if(ov){ const t1=new Date(ov).getTime(); if(!isNaN(t1))v.ouvre=t1; }
@@ -19194,7 +19296,7 @@ function appRendre(){
         <button class="btn-son mini" title="Copier cette appréciation" onclick="appCopier('${e.code}',this)"><i class="ph ph-copy"></i></button>
         <button class="btn-son mini" title="Imprimer le bulletin de cet élève" onclick="bulImprimer('${e.code}')"><i class="ph ph-printer"></i></button>
       </div>
-      <textarea id="app-${e.code}" rows="3" oninput="appEditer('${e.code}',this.value)"
+      <textarea id="app-${e.code}" rows="3" aria-label="Appréciation de l’élève ${e.code}" oninput="appEditer('${e.code}',this.value)"
         style="width:100%;padding:10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;
                font-size:.94rem;line-height:1.55;background:var(--surface);color:var(--encre);resize:vertical">${echapH(txt)}</textarea>
       <div style="font-size:.78rem;color:var(--encre-doux);margin-top:4px" id="cpt-${e.code}">${txt.length} caractères</div>
@@ -19254,7 +19356,7 @@ function appBlocHTML(){
         <button class="btn-son mini" title="Copier cette appréciation" onclick="appCopier('${e.code}',this)"><i class="ph ph-copy"></i></button>
         <button class="btn-son mini" title="Imprimer le bulletin de cet élève" onclick="bulImprimer('${e.code}')"><i class="ph ph-printer"></i></button>
       </div>
-      <textarea id="app-${e.code}" rows="3" oninput="appEditer('${e.code}',this.value)"
+      <textarea id="app-${e.code}" rows="3" aria-label="Appréciation de l’élève ${e.code}" oninput="appEditer('${e.code}',this.value)"
         style="width:100%;padding:10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;
                font-size:.94rem;line-height:1.55;background:var(--surface);color:var(--encre);resize:vertical">${echapH(txt)}</textarea>
       <div style="font-size:.78rem;color:var(--encre-doux);margin-top:4px" id="cpt-${e.code}">${txt.length} caractères</div>
@@ -19433,18 +19535,35 @@ function detailDevoir(classId,devoirId){
   z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>';
   Promise.all([ s.collection("classes").doc(classId).collection("devoirs").doc(devoirId).get(),
                 s.collection("eleveCodes").where("ownerUid","==",u.uid).get(),
-                s.collection("classes").doc(classId).collection("eleves").get() ])
+                s.collection("classes").doc(classId).collection("eleves").get(),
+                /* les copies reçues pour ce travail : une note arrivée au carnet compte
+                   comme rendue, même si le suivi de l'élève n'est pas encore remonté */
+                s.collection("classes").doc(classId).collection("evals").where("dev","==",devoirId).get().catch(function(){ return {forEach:function(){}}; }) ])
   .then(function(r){
     const d=r[0].exists?Object.assign({id:devoirId},r[0].data()):{volets:[]};
     if(!Array.isArray(d.volets))d.volets=[];
     let codes=[]; r[1].forEach(function(x){ if((x.data()||{}).classId===classId)codes.push(x.id); });
+    const _cl=((_profClasses||[]).filter(function(x){return x.id===classId;})[0]||{});
+    (Array.isArray(_cl.membres)?_cl.membres:[]).forEach(function(c){ if(codes.indexOf(c)<0)codes.push(c); });
+    const copies={}; r[3].forEach(function(x){ const v=x.data()||{}; if(!v.code)return;
+      if(!copies[v.code]||(v.fait||0)>(copies[v.code].fait||0))copies[v.code]=v; });
     if(Array.isArray(d.eleves)&&d.eleves.length)codes=codes.filter(function(c){return d.eleves.indexOf(c)>=0;});
     const prog={}; r[2].forEach(function(x){ prog[x.id]=x.data()||{}; });
     codes.sort(function(x,y){ return (labelDe(classId,x)||"￿").localeCompare(labelDe(classId,y)||"￿","fr"); });
+    /* évaluation d'entraînement : qui est prêt, en un coup d'œil */
+    const iB=d.volets.findIndex(function(v){ return v.t==="blanc"; });
+    let pret="";
+    if(iB>=0){
+      const n=[0,0,0,0];
+      codes.forEach(function(c){ const st=((((prog[c]||{}).devoirs||{})[devoirId]||{}).v||{})[String(iB)]||{};
+        if(!st.fait||st.note==null){ n[3]++; return; } const x=st.note/(st.sur||20)*20; n[x>=14?0:(x>=10?1:2)]++; });
+      pret='<div class="evb-pret">'+[[n[0],"prêts (14 et plus)","v"],[n[1],"presque (10 à 13)","o"],[n[2],"pas encore (moins de 10)","r"],[n[3],"ne l’ont pas encore passée","g"]]
+        .map(function(x){ return '<div class="ccs-kpi '+x[2]+'"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'; }).join("")+'</div>';
+    }
     let h='<div class="accueil" style="max-width:1000px">'
       +'<div class="ex" style="margin-bottom:16px;text-align:center"><b>'+echapH(d.titre||"")+'</b><br>'
       +'<span style="font-size:.84rem;color:var(--encre-doux)"><i class="ph ph-calendar-dots"></i> '
-      +devoirDateTxt(d.echeance)+'</span></div>'
+      +devoirDateTxt(d.echeance)+'</span>'+(iB>=0?'<br><span class="evb-tag" style="margin-top:8px"><i class="ph-fill ph-target"></i> Ne compte ni dans la moyenne ni dans la note bonus</span>':'')+'</div>'+pret
       +'<div style="overflow-x:auto"><table class="dash-table" style="width:100%"><thead><tr>'
       +'<th>Nom (privé)</th><th>Code</th>'
       +d.volets.map(function(v){return "<th>"+echapH(devoirVoletNom(v))+"</th>";}).join("")
@@ -19454,7 +19573,14 @@ function detailDevoir(classId,devoirId){
       +'<th title="Changements d’onglet pendant le travail">Sorties</th>'
       +'</tr></thead><tbody>';
     codes.forEach(function(c){
-      const e=((prog[c]||{}).devoirs||{})[devoirId]||{v:{}};
+      const e=JSON.parse(JSON.stringify(((prog[c]||{}).devoirs||{})[devoirId]||{v:{}}));
+      e.v=e.v||{};
+      const cp=copies[c];
+      if(cp)d.volets.forEach(function(v,i){
+        const st=e.v[String(i)]||(e.v[String(i)]={});
+        if(v.t==="eval"&&!st.fait){ st.fait=cp.fait||1; st.note=cp.note; st.sur=cp.sur||20; st.recu=1; }
+      });
+      if(cp&&!e.fini&&d.volets.every(function(v,i){ return (e.v[String(i)]||{}).fait; }))e.fini=cp.fait||1;
       const b=dvBilan(e,d.volets.length);
       const lab=labelDe(classId,c);
       h+='<tr><td><b>'+(lab?echapH(lab):'<span style="color:var(--encre-doux)">(sans nom)</span>')+'</b></td>'
@@ -19465,6 +19591,7 @@ function detailDevoir(classId,devoirId){
         if(st.fait){
           txt='<i class="ph-fill ph-check-circle" style="color:var(--juste)"></i>';
           if(st.note!=null)txt+=" <b>"+st.note+"/"+(st.sur||20)+"</b>";
+          if(st.recu)txt+=' <span title="Copie reçue : le suivi de l’élève arrivera à sa prochaine connexion" style="color:var(--encre-doux);font-size:.78rem">(copie reçue)</span>';
           else if(st.pct!=null)txt+=" "+st.pct+"%";
         }else if(st.pct!=null){ txt='<span style="color:var(--faux)">'+st.pct+"%</span>"; }
         else if(st.lu){ txt='<span style="color:var(--encre-doux);font-size:.8rem">lue</span>'; }
@@ -20210,80 +20337,6 @@ async function lpSupprimer(id,depuisGrille){
    ============================================================ */
 let seance=null;
 
-/* Réponse attendue d'un exercice de cours, reformulée pour le tableau. */
-function seanceSolutionHTML(x){
-  if(!x)return "";
-  let h="";
-  if(x.type==="qcm"){
-    h=`<div class="sc-rep"><b>Réponse :</b> ${x.opts[x.r]}</div>`;
-  }else if(x.type==="sondage"){
-    h=`<div class="sc-rep"><b>Il n'y a pas de mauvaise réponse ici.</b></div>`;
-  }else if(x.type==="grille"){
-    h=`<table class="sc-tab"><tr><th></th>${(x.cols||[]).map(function(c){return "<th>"+c+"</th>";}).join("")}</tr>`;
-    (x.rows||[]).forEach(function(r){
-      h+=`<tr><td>${r.t}</td>${(x.cols||[]).map(function(_,k){
-        return "<td>"+(k===r.r?'<i class="ph-fill ph-check-circle" style="color:var(--juste)"></i>':"")+"</td>";}).join("")}</tr>`;
-    });
-    h+=`</table>`;
-  }else if(x.type==="etiquettes"){
-    h=`<div class="sc-paires">`+(x.cases||[]).map(function(c){
-      return `<div><b>${c.lib}</b> <i class="ph ph-arrow-right"></i> ${c.r}</div>`;}).join("")+`</div>`;
-  }else if(x.type==="accu"){
-    h=`<div class="sc-paires">`+(x.sol||[]).map(function(m,p){ return `<div><b>Partie ${p+1}</b> <i class="ph ph-arrow-right"></i> ${m.split("").join(" + ")}</div>`; }).join("")+`</div>`;
-  }else if(x.type==="ordre"){
-    h=`<ol class="sc-ordre">`+(x.items||[]).map(function(it){return "<li>"+it+"</li>";}).join("")+`</ol>`;
-  }else if(x.type==="calcul"){
-    h=`<div class="sc-paires">`+(x.champs||[]).map(function(c){
-      return `<div>${c.lib} <b>${c.r}${c.unite?" "+c.unite:""}</b></div>`;}).join("")+`</div>`;
-  }else if(x.type==="lettres"){
-    h=`<div class="sc-rep"><b>Réponse :</b> <span class="sc-mot">${x.mot}</span></div>`;
-  }else if(x.type==="libre"){
-    h=x.modele?`<div class="sc-rep"><b>Réponse attendue :</b> ${x.modele}</div>`:"";
-  }
-  if(x.expl)h+=`<div class="sc-expl"><i class="ph ph-lightbulb"></i> ${x.expl}</div>`;
-  return h;
-}
-/* Énoncé d'un exercice, sans champ de saisie : on interroge la classe à l'oral. */
-function seanceQuestionHTML(x){
-  let h=`<div class="sc-q">${x.q||x.consigne||""}</div>`;
-  if(x.type==="qcm"||x.type==="sondage"){
-    h+=`<ol class="sc-opts">`+(x.opts||[]).map(function(o){return "<li>"+o+"</li>";}).join("")+`</ol>`;
-  }else if(x.type==="grille"){
-    h+=`<table class="sc-tab"><tr><th></th>${(x.cols||[]).map(function(c){return "<th>"+c+"</th>";}).join("")}</tr>`;
-    (x.rows||[]).forEach(function(r){
-      h+=`<tr><td>${r.t}</td>${(x.cols||[]).map(function(){return "<td></td>";}).join("")}</tr>`; });
-    h+=`</table>`;
-  }else if(x.type==="etiquettes"){
-    h+=`<div class="sc-etiq">`+(x.mots||[]).map(function(m){return `<span>${m}</span>`;}).join("")+`</div>`;
-    h+=`<div class="sc-paires">`+(x.cases||[]).map(function(c){
-      return `<div><b>${c.lib}</b> <i class="ph ph-arrow-right"></i> <span class="sc-trou">?</span></div>`;}).join("")+`</div>`;
-  }else if(x.type==="accu"){
-    h+=`<div class="sc-etiq">`+(x.motifs||[]).map(function(k){ return `<span>Motif ${k}</span>`; }).join("")+`</div>`;
-    h+=`<div class="sc-paires">`+(x.sol||[]).map(function(_,p){ return `<div><b>Partie ${p+1}</b> <i class="ph ph-arrow-right"></i> <span class="sc-trou">?</span></div>`; }).join("")+`</div>`;
-  }else if(x.type==="ordre"){
-    /* Ordre mélangé : sinon l'énoncé donne la réponse. On retire jusqu'à obtenir
-       un ordre RÉELLEMENT différent de l'original : un mélange peut retomber sur
-       la solution, et l'exercice paraît alors déjà corrigé au tableau. */
-    const base=(x.items||[]).slice();
-    let l=base.slice();
-    if(base.length>1){
-      let essais=0;
-      do{ for(let i=l.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=l[i]; l[i]=l[j]; l[j]=t; } essais++; }
-      while(essais<20&&l.every(function(v,i){return v===base[i];}));
-    }
-    h+=`<ul class="sc-ordre melange">`+l.map(function(it){return "<li>"+it+"</li>";}).join("")+`</ul>`;
-  }else if(x.type==="calcul"){
-    h+=`<div class="sc-paires">`+(x.champs||[]).map(function(c){
-      return `<div>${c.lib} <span class="sc-trou">?</span>${c.unite?" "+c.unite:""}</div>`;}).join("")+`</div>`;
-  }else if(x.type==="lettres"){
-    h+=`<div class="sc-cases">`+String(x.mot||"").split("").map(function(){return `<span></span>`;}).join("")+`</div>`;
-    if(x.aide)h+=`<div class="sc-aide"><i class="ph ph-lifebuoy"></i> ${x.aide}</div>`;
-  }else if(x.type==="libre"&&x.aide){
-    h+=`<div class="sc-aide"><i class="ph ph-lifebuoy"></i> ${x.aide}</div>`;
-  }
-  return h;
-}
-
 /* Découpe une leçon sur ses cartes : chacune porte déjà un titre et une idée. */
 function seanceDepuisLecon(id){
   const lec=LECONS[id]; if(!lec)return null;
@@ -20309,13 +20362,15 @@ function seanceDepuisCours(coursId){
     /* certaines étapes n'ont aucun contenu et ne portent que des exercices :
        leur créer un écran donnerait une page blanche au tableau */
     if(html.trim())slides.push({titre:(n+1)+". "+e.t,html:html});
+    /* les exercices sont les VRAIS exercices du cours, faits avec toute la classe ;
+       « Révéler la réponse » corrige DANS l'exercice affiché */
     (e.ex||[]).forEach(function(x,k){
-      slides.push({titre:(n+1)+". "+e.t+" · exercice "+(k+1),
-                   html:seanceQuestionHTML(x), sol:seanceSolutionHTML(x)});
+      slides.push({titre:(n+1)+". "+e.t+" · exercice "+(k+1), etape:n, ex:k,
+                   sol:x.type!=="sondage"&&x.type!=="studio"});
     });
   });
   ceCours=av;
-  return {titre:d.titre,slides:slides,retour:function(){ecranCours(coursId);}};
+  return {titre:d.titre,cours:coursId,slides:slides,retour:function(){ecranCours(coursId);}};
 }
 
 function seanceLancerLecon(id){ seanceOuvrir(seanceDepuisLecon(id)); }
@@ -20327,6 +20382,8 @@ function seanceOuvrir(src){
   let dep=0; try{ dep=parseInt(localStorage.getItem("seanceDer_"+src.titre),10)||0; }catch(e){}
   if(dep<0||dep>=src.slides.length-1)dep=0;
   seance={src:src,i:dep,revele:false,t0:Date.now(),chrono:null};
+  try{ ceCouperSons(); }catch(e){}
+  const zn=document.getElementById("zone"); if(zn)zn.innerHTML="";
   let b=document.getElementById("seanceEcran");
   if(b)b.remove();
   b=document.createElement("div");
@@ -20344,14 +20401,12 @@ function seanceOuvrir(src){
     </div>
     <div class="sc-corps" id="scCorps"></div>
     <div class="sc-pied">
-      <button class="sc-nav" id="scPrec" onclick="seanceAller(-1)"><i class="ph ph-caret-left"></i> Précédent</button>
-      <div class="sc-milieu">
-        <button class="sc-reveler" id="scReveler" onclick="seanceReveler()"><i class="ph ph-eye"></i> Révéler la réponse</button>
-        <div class="sc-compteur" id="scCompteur"></div>
-      </div>
+      <button class="sc-nav" id="scPrec" onclick="seanceAller(-1)" aria-label="Diapositive précédente"><i class="ph ph-caret-left"></i><span class="sc-nav-t"> Précédent</span></button>
+      <div class="sc-frise" id="scFrise" role="navigation" aria-label="Aller à une diapositive">${seanceFriseHTML(src)}</div>
+      <span class="sc-compteur" id="scCompteur"></span>
+      <button class="sc-reveler" id="scReveler" onclick="seanceReveler()"><i class="ph ph-eye"></i> Révéler la réponse</button>
       <button class="sc-nav" id="scSuiv">Suivant <i class="ph ph-caret-right"></i></button>
-    </div>
-    <div class="sc-frise" id="scFrise" role="navigation" aria-label="Aller à une diapositive">${seanceFriseHTML(src)}</div>`;
+    </div>`;
   document.body.appendChild(b);
   document.body.classList.add("seance-ouverte");
   document.addEventListener("keydown",seanceTouche);
@@ -20378,6 +20433,7 @@ function seanceAllerA(k){
 function seanceQuitter(){
   if(!seance)return;
   const r=seance.src.retour;
+  try{ ceCouperSons(); }catch(e){}
   clearInterval(seance.chrono);
   document.removeEventListener("keydown",seanceTouche);
   const poseParSeance=seance.pleinPose;
@@ -20400,15 +20456,20 @@ function seanceRendre(){
   const s=seance.src.slides[seance.i]; if(!s)return;
   /* les titres du cours contiennent des entités (&nbsp;) : innerHTML, pas textContent */
   document.getElementById("scTitre").innerHTML=s.titre||seance.src.titre;
+  try{ ceCouperSons(); }catch(e){}
   const c=document.getElementById("scCorps");
-  c.innerHTML=`<div class="sc-page">${s.html||""}
-    ${s.sol?`<div class="sc-sol" id="scSol" style="display:none">${s.sol}</div>`:""}</div>`;
+  let html=s.html||"";
+  if(seance.src.cours){
+    ceCours=seance.src.cours;                      /* les machines du cours lisent ceDef() */
+    if(s.ex!=null){
+      ceEtape=s.etape; delete ceEssais[s.etape+"_"+s.ex];
+      const x=(COURS_DEF[ceCours].etapes[s.etape].ex||[])[s.ex];
+      html=x?'<div class="sc-exo">'+ceExHTML(x,s.ex)+'</div>':"";
+    }
+  }
+  c.innerHTML=`<div class="sc-page">${html}</div>`;
   c.scrollTop=0;
-  const rev=document.getElementById("scReveler");
-  rev.style.visibility=s.sol?"visible":"hidden";
-  rev.innerHTML=seance.revele?'<i class="ph ph-eye-slash"></i> Masquer'
-                             :'<i class="ph ph-eye"></i> Révéler la réponse';
-  if(s.sol&&seance.revele){ const el=document.getElementById("scSol"); if(el)el.style.display="block"; }
+  seanceMajReveler();
   document.getElementById("scCompteur").textContent=(seance.i+1)+" / "+seance.src.slides.length;
   document.getElementById("scPrec").disabled=(seance.i===0);
   /* dernière diapositive : « Suivant » devient « Terminer », qui ferme la séance */
@@ -20419,7 +20480,53 @@ function seanceRendre(){
   document.querySelectorAll("#scFrise .sc-seg").forEach(function(b,k){
     b.classList.toggle("vu",k<seance.i); b.classList.toggle("ici",k===seance.i); b.setAttribute("aria-current",k===seance.i?"step":"false"); });
   try{ localStorage.setItem("seanceDer_"+seance.src.titre,seance.i); }catch(e){}
-  try{ if(typeof ceMonterYT==="function")ceMonterYT(); }catch(e){}
+  /* tout ce qui s'anime dans le cours s'anime aussi au tableau : vidéos, machine à
+     accumulation, mini-synthétiseur, basse de Lully, partitions, studio */
+  ["ceMonterYT","ceMonterPistes","stuMonter","repMonter","repSynthMonter","repPassaMonter","repRefMonter"].forEach(function(f){
+    try{ if(typeof window[f]==="function")window[f](); }catch(e){} });
+  seanceAjuster();
+  c.querySelectorAll("img").forEach(function(im){ if(!im.complete)im.addEventListener("load",seanceAjuster,{once:true}); });
+}
+/* La page tient dans l'écran : on réduit le texte (jusqu'à 80 %) tant qu'elle
+   déborde, sauf si le professeur a lui-même réglé la taille avec − / +. */
+function seanceAjuster(){
+  const b=document.getElementById("seanceEcran"), c=document.getElementById("scCorps"); if(!b||!c||!seance||seance.zoomManuel)return;
+  let z=1; b.style.setProperty("--sc-zoom",z);
+  while(c.scrollHeight>c.clientHeight+4&&z>0.8){ z=Math.round((z-0.05)*100)/100; b.style.setProperty("--sc-zoom",z); }
+  b.dataset.zoom=z;
+}
+function seanceMajReveler(){
+  const s=seance&&seance.src.slides[seance.i], rev=document.getElementById("scReveler"); if(!s||!rev)return;
+  rev.hidden=!s.sol;
+  rev.innerHTML=seance.revele?'<i class="ph ph-arrow-counter-clockwise"></i> Recommencer l’exercice'
+                             :'<i class="ph ph-eye"></i> Révéler la réponse';
+}
+/* La correction s'affiche DANS l'exercice : bonnes cases, bonnes étiquettes,
+   bonnes lettres, et l'explication sous l'exercice, sans changer de page. */
+function seanceRevelerEx(s){
+  const x=((COURS_DEF[seance.src.cours]||{etapes:[]}).etapes[s.etape]||{ex:[]}).ex[s.ex]; if(!x)return;
+  const box=document.getElementById("ex"+s.etape+"_"+s.ex), corr=document.getElementById("corr"+s.etape+"_"+s.ex);
+  try{ ceCouperSons(); }catch(e){}
+  /* ce que la classe n'a pas rempli s'affiche comme la réponse (en vert), pas comme une erreur */
+  const vides=box?[].filter.call(box.querySelectorAll(".ce-lettre,.ce-calc input,.ce-case,.ce-item,.ca-p"),function(el){
+    if(el.matches(".ce-lettre,.ce-calc input"))return !el.value.trim();
+    if(el.matches(".ce-item"))return !((el.querySelector(".ci-n")||{}).textContent||"").trim();
+    return !el.getAttribute("data-m"); }):[];
+  if(box)ceReveler(x,box);
+  vides.forEach(function(el){
+    el.classList.remove("faux"); el.classList.add("juste");
+    const fl=el.querySelector(".ci-n b,.cc-slot b"); if(fl)fl.textContent=fl.textContent.replace(/^\s*→\s*/,"");
+    if(el.matches(".ce-item")){ const n=el.querySelector(".ci-n"); if(n&&fl)n.textContent=fl.textContent; }
+  });
+  if(corr){
+    corr.className="ce-corr partiel";
+    corr.innerHTML='<div class="cc-score"><i class="ph-fill ph-seal-check"></i> La correction</div>'
+      +(x.type==="libre"&&x.modele?'<div class="cc-expl"><b>Une réponse possible&nbsp;:</b> '+x.modele+'</div>':'')
+      +(x.expl?'<div class="cc-expl">'+x.expl+'</div>':'');
+    seanceAjuster();
+    corr.scrollIntoView({block:"nearest",behavior:"smooth"});
+  }
+  const zb=document.querySelector('#scCorps .ce-ex[data-ex="'+s.ex+'"] .ce-actions'); if(zb)zb.innerHTML="";
 }
 function seanceAller(d){
   if(!seance)return;
@@ -20431,14 +20538,15 @@ function seanceAller(d){
 function seanceReveler(){
   if(!seance)return;
   const s=seance.src.slides[seance.i]; if(!s||!s.sol)return;
-  seance.revele=!seance.revele;
-  seanceRendre();
+  if(seance.revele){ seance.revele=false; seanceRendre(); return; }   /* recommencer */
+  seance.revele=true; seanceRevelerEx(s); seanceMajReveler();
 }
 function seanceZoom(d){
   if(!seance)return;
   const b=document.getElementById("seanceEcran");
   const cur=parseFloat(b.dataset.zoom||"1");
   const z=Math.round(Math.max(.7,Math.min(1.8,cur+d*0.1))*10)/10;
+  seance.zoomManuel=true;
   b.dataset.zoom=z; b.style.setProperty("--sc-zoom",z);
 }
 /* On met la PAGE en plein écran, jamais l'encart : un élément passé en plein
@@ -20452,8 +20560,9 @@ function seancePlein(){
 }
 function seanceTouche(e){
   if(!seance)return;
-  const k=e.key;
+  const k=e.key, t=e.target;
   if(k==="Escape"){ e.preventDefault(); seanceQuitter(); return; }
+  if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.tagName==="SELECT"||t.isContentEditable))return;
   if(k==="ArrowRight"||k==="PageDown"||k===" "){ e.preventDefault(); seanceAller(1); return; }
   if(k==="ArrowLeft"||k==="PageUp"){ e.preventDefault(); seanceAller(-1); return; }
   if(k==="r"||k==="R"){ e.preventDefault(); seanceReveler(); return; }
@@ -20807,6 +20916,9 @@ function sauvegardeCarteHTML(){
     +'<p>Téléchargez un fichier de sauvegarde. Il contient <b>les noms de vos élèves</b> (qui ne quittent jamais cet appareil), vos préférences, et une copie de vos classes, morceaux, leçons et notes.</p>'
     +'<p id="sauvInfo" style="font-size:.88rem;color:var(--encre-doux)">'+sauvegardeInfoHTML()+'</p>'
     +'<button class="rm-cta" id="sauvExportBtn" onclick="sauvegardeExporter()"><i class="ph-fill ph-download-simple"></i> Télécharger ma sauvegarde</button></div>'
+    +'<div class="sauv-bloc"><h3><i class="ph ph-file-csv"></i> Liste des élèves</h3>'
+    +'<p>Un tableau de toutes vos classes : classe, code, nom de l’élève, mot secret choisi ou non. Il s’ouvre dans un tableur et se réimporte dans <b>Élèves et codes</b>.</p>'
+    +'<button class="action btn-corr" onclick="rosterExporterCSV()"><i class="ph ph-file-csv"></i> Exporter la liste (CSV)</button></div>'
     +'<div class="sauv-bloc"><h3><i class="ph ph-upload-simple"></i> Restaurer</h3>'
     +'<p>Vous changez d\'ordinateur, ou vous avez perdu les noms de vos élèves&nbsp;? Rechargez votre fichier&nbsp;: les noms et vos préférences reviennent. Vos classes et vos notes, elles, sont déjà conservées en ligne.</p>'
     +'<input type="file" id="sauvFichier" accept="application/json,.json" style="display:none" onchange="sauvegardeImporter(this)">'
@@ -21985,7 +22097,8 @@ const AP_TUILES={
   contenus:[
     ["Mes leçons","Écrire une leçon et ses exercices","chalkboard-teacher","perso","ecranLeconsProf()"],
     ["Badges &amp; niveaux","Ce que gagnent les élèves, et comment","medal","loin","ecranBonusInfoProf()"],
-    ["Imprimer","Feuilles papier : exercices, éval, recueils de leçons","printer","eval","ecranImpressionProf()"]],
+    ["Imprimer","Évaluations QCM sur papier, exercices, recueils de leçons","printer","eval","ecranImpressionProf()"],
+    ["Centre de correction","Copies papier : les lettres entourées donnent la note","check-square-offset","rythme","ecranCorrectionPapier()"]],
   classe:[
     ["Faire une séance","Projeter une leçon, écran par écran","presentation","lire","ecranLecons()"],
     ["Cours de collège","Les parcours interactifs","graduation-cap","ecoute","ecranCoursCollege()"],
@@ -22355,9 +22468,15 @@ function envoyerEvalProf(o,cidCible){
   const id=String(profil.eleveCode)+"_"+String(o.fait||Date.now());
   const enAttente=function(){ evalsAttenteAjouter(Object.assign({},o,{_id:id,_cid:cid})); syncNoter(false); return false; };
   const a=fbAuth(), s=fbStore(); if(!a||!s)return Promise.resolve(enAttente());
-  const ecrire=function(){ return s.collection("classes").doc(cid)
-    .collection("evals").doc(id).set(o).then(function(){return true;})
-    .catch(function(err){ if(err&&err.code==="permission-denied")return false; return enAttente(); }); };
+  const deposer=function(){ return s.collection("classes").doc(cid).collection("evals").doc(id).set(o).then(function(){return true;}); };
+  /* Refus du serveur : le plus souvent, l'appareil a changé de session et n'est plus
+     rattaché au code. On refait le lien puis on réessaie ; si c'est encore refusé, la
+     copie reste sur l'appareil et repartira (avant, elle était perdue sans bruit). */
+  const ecrire=function(){
+    return rattacherUidEleve().then(deposer).catch(function(err){
+      if(err&&err.code==="permission-denied")
+        return rattacherUidEleve(true).then(deposer).catch(function(){ return enAttente(); });
+      return enAttente(); }); };
   const u=a.currentUser;
   if(eleveOK(u))return ecrire();
   if(u&&u.email)return Promise.resolve(false);
@@ -22404,6 +22523,8 @@ function ecranEvalDomaine(domId){
   const diffDevoir=_devoirDiffImposee; _devoirDiffImposee=null;
   /* Composition d'une évaluation de cours (banque + tirages), posée par le volet. */
   evalCompoActif=(_evalCompo&&_evalCompo.cible===domId)?_evalCompo:null; _evalCompo=null;
+  /* évaluation d'entraînement (posée par devoirLancerVolet) : elle ne compte nulle part */
+  evalBlanc=(_evalBlancLance&&_evalBlancLance.cible===domId)?_evalBlancLance:null; _evalBlancLance=null;
   const ctx=(typeof evalContexte==="function")?evalContexte(domId):{mode:"libre"};
   majRetour(function(){afficherLecon(domId);},"La leçon");
   /* Garde-fou : évaluation verrouillée (entraînement pas fini) ou déjà passée
@@ -22424,13 +22545,14 @@ function ecranEvalDomaine(domId){
   }
   const imposee=diffDevoir||(ctx.mode==="officiel"?(ctx.dev.diff||null):null);
   const titre=(typeof nomCat==="function")?nomCat(domId):domId;
-  document.getElementById("titre").innerHTML='<i class="ph ph-exam"></i> Évaluation';
+  document.getElementById("titre").innerHTML=evalBlanc?'<i class="ph ph-target"></i> Évaluation d’entraînement':'<i class="ph ph-exam"></i> Évaluation';
   document.getElementById("intro").textContent="";
   document.getElementById("zone").innerHTML=`
    <div class="accueil" style="max-width:580px"><div class="ex">
       <h2 style="margin-top:0">${titre}</h2>
       <p style="color:var(--encre-doux);margin-top:-8px">${evalNbPour(domId)} question${evalNbPour(domId)>1?"s":""} · ${EVAL_MINUTES} minutes</p>
       ${blocCodeEval()}
+      ${evalBlanc?'<div class="evb-bandeau"><i class="ph-fill ph-target"></i><span><b>Évaluation d’entraînement</b> : elle ne compte pas dans ta moyenne. Elle sert à vérifier que tu es prêt(e), et tu verras ta correction à la fin.</span></div>':''}
       ${imposee
         ? `<div style="margin-top:16px;background:var(--teinte-douce);border-radius:10px;padding:10px 14px">
              <i class="ph ph-lock-simple"></i> Difficulté fixée par ton professeur :
@@ -22446,7 +22568,7 @@ function ecranEvalDomaine(domId){
         <li>Tu ne verras <b>aucune correction</b> pendant l'épreuve.</li>
         <li>À partir de <b>10/20</b>, tu gagnes un <b>bonus de points</b> pour ton niveau.</li>
       </ul>
-      ${(function(){
+      ${evalBlanc?"":(function(){
         const cb=function(id,b,origine){ return (b&&b.quand==="eval")?`<label class="chk" style="display:block;background:var(--or-fond,rgba(242,201,76,.16));border:1px solid var(--or);border-radius:8px;padding:10px 12px;cursor:pointer;margin-top:14px">
         <input type="checkbox" id="${id}"> <b><i class="${b.ic}"></i> Utiliser ton bonus ${origine} : ${b.nom}</b> : ${b.desc}.</label>`:""; };
         const bn=(typeof bonusNiveauDetenu==="function")?bonusNiveauDetenu():null;
@@ -22498,6 +22620,8 @@ function lancerEval(domId){
   evalEleve={code:profil.eleveCode||""};
   evalDomaine=domId||evalDomaine;
   if(!evalDomaine||!GEN[evalDomaine]){toast("Évaluation indisponible pour cette leçon.");return;}
+  /* le créneau peut se fermer PENDANT l'épreuve : on retient dès maintenant qu'elle est demandée */
+  try{ evalOffLance=(!evalBoss&&!evalBlanc&&typeof devoirEvalOuvertPour==="function")?devoirEvalOuvertPour(evalDomaine):null; }catch(e){ evalOffLance=null; }
   evalGraine=graineDepuis((profil.eleveCode||"anon")+"|"+evalDomaine+"|"+Date.now());
   evalDiff=evalDiff||2;
   if(evalBoss){
@@ -22591,16 +22715,22 @@ function terminerEval(parTemps){
   evalBonusVoulu=null;
   /* apprenant : le boss final valide le cours, sans note enregistrée */
   if(evalBoss){ evalBoss=false; bossTerminer(evalDomaine,note,bons,total,parTemps); return; }
+  /* évaluation d'entraînement : ni note enregistrée, ni copie au carnet */
+  if(evalBlanc){ terminerEvalBlanc(note,bons,total,detail,parTemps); return; }
   const theme=(typeof nomCat==="function")?nomCat(evalDomaine):evalDomaine;
   /* Officielle si elle correspond à une évaluation DEMANDÉE ouverte (calculé AVANT
      devoirFait, qui va la verrouiller). Sinon c'est une évaluation libre (bonus). */
-  const _off=(typeof devoirEvalOuvertPour==="function")?devoirEvalOuvertPour(evalDomaine):null;
+  let _off=(typeof devoirEvalOuvertPour==="function")?devoirEvalOuvertPour(evalDomaine):null;
+  /* créneau fermé pendant l'épreuve, ou liste du travail relue entre-temps : l'épreuve
+     LANCÉE comme demandée reste demandée (sinon la copie partait en « libre ») */
+  if(!_off&&evalOffLance&&evalOffLance.devoir&&((evalOffLance.devoir.volets||[])[evalOffLance.i]||{}).cible===evalDomaine)_off=evalOffLance;
+  evalOffLance=null;
   try{ enregistrerNoteEval(note,20,theme, Object.assign(_off?{off:true,dev:_off.devoir.id,diff:evalDiff}:{libre:true,diff:evalDiff}, noteBonus?{bonus:noteBonus}:{}, {dom:evalDomaine})); }catch(e){}
   if(!_off){ /* une évaluation libre consomme le passage du mois pour cette leçon */
     profil.evalLibreLe=profil.evalLibreLe||{}; profil.evalLibreLe[evalDomaine]=Date.now();   /* verrou 14 jours roulants */
     try{ sauverProfil(profil); }catch(e){} }
   /* l'évaluation rendue valide le travail donné, avec la note */
-  try{ if(typeof devoirFait==="function")devoirFait(evalDomaine,"eval",{note:note,sur:20}); }catch(e){}
+  try{ if(typeof devoirFait==="function")devoirFait(evalDomaine,"eval",{note:note,sur:20,dev:(_off?_off.devoir.id:null)}); }catch(e){}
   /* bonus de points à partir de 10/20, pondéré par la difficulté (max 160 pts en difficile).
      Une seule fois par leçon et par jour, sinon on pourrait farmer la même évaluation
      et faire s'effondrer la progression calibrée sur deux ans. */
@@ -22628,6 +22758,14 @@ function terminerEval(parTemps){
     off:!!_off, libre:!_off, bonus:noteBonus, dev:(_off?_off.devoir.id:""),
     essais:(profil.vus&&profil.vus[evalDomaine])||0, tpsEntrain:Math.round((profil.tempsTheme&&profil.tempsTheme[evalDomaine])||0),
     surv:surv, entrain:entrainResume(evalDomaine) };
+  /* la correction de l'élève : tout de suite, sauf pendant le créneau d'une
+     évaluation demandée (elle circulerait dans la classe) */
+  const _vOff=_off?((_off.devoir.volets||[])[_off.i]||{}):null;
+  const corrApres=(_vOff&&_vOff.ferme&&Date.now()<_vOff.ferme)?_vOff.ferme:0;
+  if(_off)copieGarder({fait:dossier.fait,code:profil.eleveCode||"",dev:_off.devoir.id,i:_off.i,theme:theme,note:note,sur:20,detail:detail,apres:corrApres});
+  const corrHTML=corrApres
+    ?'<div class="ex evc-attente"><i class="ph ph-lock-simple"></i><span>Ta correction s’ouvrira à la fermeture du créneau, le '+dvDateHeure(corrApres)+' : dans <b>Travail à faire</b>, onglet <b>Déjà fait</b>, bouton <b>Ma correction</b>.</span></div>'
+    :'<div class="ex">'+evCorrectionEleveHTML(detail)+'</div>';
   document.getElementById("titre").textContent="Évaluation terminée";
   const zone=document.getElementById("zone");
   /* Évaluation libre : elle ne touche pas la moyenne, mais elle nourrit la NOTE BONUS.
@@ -22660,11 +22798,11 @@ function terminerEval(parTemps){
                 :`<p style="color:var(--encre-doux);font-size:.9rem;margin-top:-4px">Il faut au moins <b>10/20</b> pour gagner des points bonus. Relis la leçon et retente&nbsp;!</p>`}
       ${rappelBonus}`;
   if(profil.eleveCode&&profil.classeId){
-    zone.innerHTML=`<div class="accueil" style="max-width:600px"><div class="ex" style="text-align:center">
+    zone.innerHTML=`<div class="accueil" style="max-width:760px"><div class="ex" style="text-align:center">
       ${parTemps?`<p style="color:var(--faux);font-weight:700"><i class="ph ph-timer"></i> Le temps est écoulé.</p>`:""}
       <h2 style="margin:6px 0">C'est terminé&nbsp;!</h2>${resume}
       <p id="evEnvoi" style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Envoi à ton professeur…</p>
-      </div></div>`;
+      </div>${corrHTML}</div>`;
     envoyerEvalProf(dossier,(_off&&_off.devoir&&_off.devoir._cid)||profil.classeId).then(function(ok){
       const p=document.getElementById("evEnvoi"); if(!p)return;
       const attente=evalsAttente().some(function(x){ return x.fait===dossier.fait; });
@@ -22674,13 +22812,108 @@ function terminerEval(parTemps){
     });
     try{ syncEleve(); }catch(e){}
   }else{
-    zone.innerHTML=`<div class="accueil" style="max-width:600px"><div class="ex" style="text-align:center">
+    zone.innerHTML=`<div class="accueil" style="max-width:760px"><div class="ex" style="text-align:center">
       ${parTemps?`<p style="color:var(--faux);font-weight:700"><i class="ph ph-timer"></i> Le temps est écoulé.</p>`:""}
       <h2 style="margin:6px 0">C'est terminé&nbsp;!</h2>${resume}
       <p style="color:var(--encre-doux)"><i class="ph ph-info"></i> Sans <b>code élève</b>, ta note n'a pas été envoyée. Entre ton code puis repasse l'évaluation pour qu'elle parvienne à ton professeur.</p>
       <button class="action btn-nouv" style="margin-top:8px" onclick="ecranMaClasse()"><i class="ph ph-identification-card"></i> Entrer mon code</button>
-      </div></div>`;
+      </div>${corrHTML}</div>`;
   }
+}
+
+/* ---------- La correction remise à l'élève (10/10/2026) ----------
+   Question par question : ce qu'il a répondu et la bonne réponse, les erreurs
+   d'abord ; les questions réussies se déplient à la demande. Pendant le créneau
+   d'une évaluation demandée, elle attend la fermeture (sinon elle circulerait dans
+   la classe) : la copie est alors gardée sur l'appareil, et s'ouvre ensuite depuis
+   « Travail à faire ». */
+function evCorrectionEleveHTML(detail){
+  const det=Array.isArray(detail)?detail:[]; if(!det.length)return "";
+  const sol=function(s){ return htmlSur(String(s||"").replace(/^\s*R[ée]ponse\s*(&nbsp;)?:\s*/i,"").replace(/\.\s*$/,"")); };
+  const carte=function(d,i){
+    const rep=d.rep?echapH(String(d.rep)):'<i>pas de réponse</i>', bonne=d.ok?"":sol(d.sol);
+    return '<li class="evc-q '+(d.ok?"ok":"ko")+'"><div class="evc-tete"><span class="evc-n">'+(i+1)+'</span>'
+      +'<i class="ph-fill ph-'+(d.ok?"check-circle":"x-circle")+'" aria-hidden="true"></i><b>'+(d.ok?"Juste":"À revoir")+'</b>'
+      +(d.son?'<small>(question à écouter)</small>':'')+'</div>'
+      +'<div class="evc-enonce">'+htmlSur(d.q)+'</div>'
+      +'<div class="evc-reps"><span class="evc-ta"><small>Ta réponse</small>'+rep+'</span>'
+      +(bonne?'<span class="evc-bonne"><small>La bonne réponse</small>'+bonne+'</span>':'')+'</div></li>';
+  };
+  const ko=[], ok=[]; det.forEach(function(d,i){ (d.ok?ok:ko).push(carte(d,i)); });
+  return '<section class="evc"><h3><i class="ph ph-magnifying-glass"></i> Ta correction</h3>'
+    +(ko.length?'<p>Tu t’es trompé(e) sur <b>'+ko.length+' question'+(ko.length>1?"s":"")+'</b> sur '+det.length+'. Les voici, avec la bonne réponse&nbsp;:</p><ol class="evc-liste">'+ko.join("")+'</ol>'
+               :'<p><b>Aucune erreur</b> : toutes tes réponses sont justes, bravo&nbsp;!</p>')
+    +(ok.length&&ko.length?'<details class="evc-ok"><summary>Revoir aussi les '+ok.length+' question'+(ok.length>1?"s":"")+' réussie'+(ok.length>1?"s":"")+'</summary><ol class="evc-liste">'+ok.join("")+'</ol></details>':'')
+    +'</section>';
+}
+/* copies gardées sur l'appareil (les 6 dernières évaluations données en travail) */
+const COPIES_CLE="museducCopies", COPIES_MAX=6;
+function copiesLire(){ try{ const l=JSON.parse(localStorage.getItem(COPIES_CLE)||"[]"); return Array.isArray(l)?l:[]; }catch(e){ return []; } }
+function copieGarder(c){
+  try{
+    c.detail=(c.detail||[]).map(function(d){ const q=String(d.q||""); return Object.assign({},d,{q:q.length>20000?"<i>(énoncé trop lourd pour être gardé)</i>":q}); });
+    let l=copiesLire().filter(function(x){ return x&&x.fait!==c.fait; }); l.unshift(c); l=l.slice(0,COPIES_MAX);
+    while(l.length){ try{ localStorage.setItem(COPIES_CLE,JSON.stringify(l)); return; }catch(e){ l.pop(); } }
+  }catch(e){}
+}
+function copiePour(devId,i){
+  const code=profil.eleveCode||"";
+  return copiesLire().filter(function(c){ return c&&c.dev===devId&&c.i===i&&c.code===code; })[0]||null;
+}
+function ecranMaCopie(devId,i){
+  const c=copiePour(devId,i);
+  if(!c){ toast("Cette copie n’est pas sur cet appareil."); return; }
+  if(c.apres&&Date.now()<c.apres){ toast("Ta correction s’ouvrira le "+dvDateHeure(c.apres)+"."); return; }
+  masquerInterfaceNormale(); majRetour(ecranDevoirs,"Travail à faire");
+  document.getElementById("titre").innerHTML='<i class="ph ph-magnifying-glass"></i> Ma correction';
+  document.getElementById("intro").textContent="";
+  document.getElementById("zone").innerHTML='<div class="accueil" style="max-width:760px">'
+    +'<div class="ex" style="text-align:center">'+(c.blanc?'<span class="evb-tag"><i class="ph-fill ph-target"></i> Évaluation d’entraînement</span>':'')
+    +'<h2 style="margin:6px 0">'+echapH(c.theme||"Évaluation")+'</h2>'
+    +'<p style="margin:0;color:var(--encre-doux)"><b style="font-size:1.4rem;color:var(--laiton)">'+c.note+'/'+(c.sur||20)+'</b> · passée le '+dvDateHeure(c.fait)+'</p></div>'
+    +'<div class="ex">'+evCorrectionEleveHTML(c.detail)+'</div></div>';
+  if(typeof remonter==="function")remonter();
+}
+
+/* ---------- Évaluation d'ENTRAÎNEMENT (« blanche ») donnée par le professeur ----------
+   Passée comme une vraie évaluation (plein écran, chronomètre, surveillance), mais
+   elle ne compte NULLE PART : ni moyenne, ni note bonus, ni délai de 14 jours, et
+   aucune copie dans le carnet. Seul son résultat remonte dans le travail rendu :
+   le professeur voit qui est prêt. L'élève voit sa correction tout de suite. */
+let evalBlanc=null, _evalBlancLance=null;
+function terminerEvalBlanc(note,bons,total,detail,parTemps){
+  const b=evalBlanc; evalBlanc=null;
+  const theme=(typeof nomCat==="function")?nomCat(evalDomaine):evalDomaine, fait=Date.now();
+  try{ devoirFait(evalDomaine,"blanc",{note:note,sur:20,bons:bons,total:total,dev:b.devId}); }catch(e){}
+  copieGarder({fait:fait,code:profil.eleveCode||"",dev:b.devId,i:b.i,theme:theme,note:note,sur:20,detail:detail,apres:0,blanc:true});
+  /* les points de l'effort, comme une évaluation (une fois par leçon et par jour) */
+  let bonus=0; const jour=new Date().toISOString().slice(0,10);
+  profil.evalBonus=profil.evalBonus||{};
+  if(note>=10&&profil.evalBonus[evalDomaine]!==jour){
+    bonus=ajouterPoints(Math.round(note*3*(evalDiff===3?1.6:(evalDiff===2?1.3:1))));
+    profil.evalBonus[evalDomaine]=jour;
+    try{ sauverProfil(profil); if(typeof majEnteteProfil==="function")majEnteteProfil(); }catch(e){}
+  }
+  const verdict=note>=14?['juste','check-circle','Tu es prêt(e) pour l’évaluation.']
+    :(note>=10?['or','hand-pointing','Presque prêt(e) : revois les questions ratées ci-dessous.']
+              :['faux','arrow-counter-clockwise','Pas encore prêt(e) : relis le cours et entraîne-toi encore.']);
+  document.getElementById("titre").textContent="Évaluation d’entraînement terminée";
+  document.getElementById("zone").innerHTML='<div class="accueil" style="max-width:760px"><div class="ex" style="text-align:center">'
+    +(parTemps?'<p style="color:var(--faux);font-weight:700"><i class="ph ph-timer"></i> Le temps est écoulé.</p>':'')
+    +'<span class="evb-tag"><i class="ph-fill ph-target"></i> Évaluation d’entraînement</span>'
+    +'<h2 style="margin:8px 0">C’est terminé&nbsp;!</h2>'
+    +'<div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:10px 0">'
+    +'<div><div style="font-size:2.2rem;font-weight:800;color:var(--laiton)">'+note+'<span style="font-size:1.1rem">/20</span></div><div style="color:var(--encre-doux);font-size:.85rem">ton résultat</div></div>'
+    +'<div><div style="font-size:2.2rem;font-weight:800">'+bons+'<span style="font-size:1.1rem">/'+total+'</span></div><div style="color:var(--encre-doux);font-size:.85rem">bonnes réponses</div></div>'
+    +(bonus>0?'<div><div style="font-size:2.2rem;font-weight:800;color:var(--or-texte)">+'+bonus+'</div><div style="color:var(--encre-doux);font-size:.85rem">points</div></div>':'')
+    +'</div>'
+    +'<p class="evb-verdict '+verdict[0]+'"><i class="ph-fill ph-'+verdict[1]+'"></i> '+verdict[2]+'</p>'
+    +'<p style="color:var(--encre-doux);font-size:.9rem">Elle <b>ne compte pas</b> dans ta moyenne : elle sert à vérifier que tu es prêt(e). Ton professeur voit ton résultat.</p>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px">'
+    +'<button class="action btn-corr" onclick="lecDernierDomaine=null;ouvrir(\''+evalDomaine+'\',true)"><i class="ph ph-barbell"></i> M’entraîner encore</button>'
+    +'<button class="action btn-nouv" onclick="ecranDevoirs()"><i class="ph ph-backpack"></i> Travail à faire</button></div>'
+    +'</div><div class="ex">'+evCorrectionEleveHTML(detail)+'</div></div>';
+  try{ syncEleve(); }catch(e){}
 }
 
 /* --- Professeur : onglet Évaluations de la classe --- */
@@ -23179,6 +23412,7 @@ function evOngletActifVisible(){
    coef). Dernière colonne = BONUS à saisir dans Pronote : points ajoutés par les
    évaluations LIBRES et les colonnes marquées « bonus » (comptées seulement si
    elles font monter la moyenne). Bas de tableau = moyenne de classe. */
+const EV_MARGE_FERME=45*60000;   /* une épreuve commencée avant la fermeture du créneau finit après */
 function evGradebookData(classId,voirTout){
   const regBonus=bonusLibreDe(classId);
   const b=evBornesPeriode(evPeriodeCourante(classId),classId);
@@ -23186,8 +23420,9 @@ function evGradebookData(classId,voirTout){
   const all=(_evalsCache[classId]||[]).filter(function(e){ return !e._chant && !e._travail && dansP(e); });
   const manualMeta={}; (_evManuel[classId]||[]).forEach(function(m){ manualMeta[m.id]={coef:(m.coef!=null?+m.coef:1),bonus:!!m.bonus,nom:m.titre||"Évaluation"}; });
   const devMeta={}; (_evDevoirs[classId]||[]).forEach(function(d){
-    (d.volets||[]).forEach(function(v){ if(v.t==="eval"&&!devMeta[d.id]){
+    (d.volets||[]).forEach(function(v,vi){ if(v.t==="eval"&&!devMeta[d.id]){
       devMeta[d.id]={coef:(d.coef!=null?+d.coef:1),bonus:!!d.bonus,ouvre:(v.ouvre||d.cree||0),
+        i:vi, cible:v.cible||"", deb:(v.ouvre||d.cree||0), fin:(v.ferme?v.ferme+EV_MARGE_FERME:Infinity),
         nr:devoirEstNonRendu(d,retardMaxClasse(classId)), eleves:(Array.isArray(d.eleves)&&d.eleves.length)?d.eleves:null,
         nom:(d.evalNom||d.titre||v.nom||((typeof nomCat==="function"&&v.cible)?nomCat(v.cible):v.cible)||"Évaluation")}; } });
   });
@@ -23204,8 +23439,29 @@ function evGradebookData(classId,voirTout){
   /* évaluations libres passées en « demandées » : une colonne par thème (ou celle du devoir du même thème) */
   Object.keys(promos).forEach(function(k){ const p=promos[k], t=(p&&p.t)||0; if(!p||devCible[k])return;
     if(t===0||(t>=b.deb&&t<=b.fin))colFor("P:"+k,p.titre||p.nom||((typeof nomCat==="function")?nomCat(k):k),p.coef!=null?+p.coef:1,false,t,"P"); });
+  /* Copie d'une évaluation demandée arrivée sans son devoir (« libre ») : le créneau
+     s'était fermé pendant l'épreuve, ou la liste du travail n'était pas encore
+     chargée sur l'appareil. Même contenu, passée pendant le créneau, élève concerné,
+     et aucune autre copie de lui pour ce devoir : elle va dans la colonne du devoir. */
+  const devCopie={}; all.forEach(function(e){ if(e.dev)devCopie[e.dev+"|"+(e.code||"?")]=1; });
+  const devoirDeLaCopie=function(e){
+    if(e.dev||e._manuel||!e.domaine)return null;
+    const debut=(e.fait||0)-Math.max(1,+e.dureeMin||1)*60000;
+    const ids=Object.keys(devMeta);
+    for(let k=0;k<ids.length;k++){ const m=devMeta[ids[k]];
+      if(m.cible!==e.domaine||m.bonus)continue;
+      if(m.eleves&&m.eleves.indexOf(e.code)<0)continue;
+      if(devCopie[ids[k]+"|"+e.code])continue;
+      if((e.fait||0)<m.deb||debut>m.fin)continue;
+      return ids[k]; }
+    return null;
+  };
   all.forEach(function(e){
     const code=e.code||"?", sur20=(e.note||0)/(e.sur||20)*20, fait=e.fait||0;
+    const dvx=devoirDeLaCopie(e);
+    if(dvx){ const key="d:"+dvx, dm=devMeta[dvx]; devCopie[dvx+"|"+code]=1;
+      colFor(key,dm.nom,dm.coef,dm.bonus,fait,"d");
+      (histByCell[key+"|"+code]=histByCell[key+"|"+code]||[]).push({v:sur20,fait:fait,rangee:true}); return; }
     /* DEMANDÉE = évaluation manuelle (prof) ou en ligne rattachée à un devoir.
        Tout le reste (l'élève l'a passée seul) = LIBRE -> bonus, groupée par thème. */
     if(e._manuel){ const key="m:"+e.manuelId, mm=manualMeta[e.manuelId]||{};
@@ -23247,10 +23503,13 @@ function evGradebookData(classId,voirTout){
     return arr.reduce(function(a,x){ return (a==null||x.v>a.v)?x:a; },null); };
   const codes=evTousLesCodes(classId).slice().sort(function(x,y){ return String(labelDe(classId,x)||"￿").localeCompare(String(labelDe(classId,y)||"￿"),"fr",{numeric:true}); });
   const rows=codes.map(function(code){
-    const carnet=carnetDe(classId,code);
+    const carnet=carnetDe(classId,code), fiche=((_evEleves[classId]||{})[code])||{};
+    /* « faire refaire » : date de la dernière demande, par devoir */
+    const refT={}; (Array.isArray(fiche.refaire)?fiche.refaire:[]).forEach(function(tok){
+      const p=String(tok).split("|"), t=+p[1]||0; if(t>(refT[p[0]]||0))refT[p[0]]=t; });
     const cellsRow={}, histRow={}, normal=[], bonusArr=[];
     colList.forEach(function(col){
-      let raw=null, hist=[], diff=2;
+      let raw=null, hist=[], diff=2, suivi=false;
       if(col.src==="L"){ const tk=col.key.slice(2), best=meilleurLibre(code,tk), arr=(libre[code]||{})[tk]||[];
         hist=arr.slice().sort(function(a,b){return (a.fait||0)-(b.fait||0);}).map(function(x){return x.v;});
         diff=best?best.diff:2;
@@ -23262,16 +23521,33 @@ function evGradebookData(classId,voirTout){
           hist=h.filter(function(x,i){return i!==bi;}).map(function(x){return x.v;});
           raw=(carnet[col.key]!=null?carnet[col.key]:(bi>=0?h[bi].v:null));
         } else {
-        hist=h.slice(0,-1).map(function(x){return x.v;});
-        const last=h.length?h[h.length-1].v:null;
-        raw=(carnet[col.key]!=null?carnet[col.key]:last);
-        /* évaluation demandée, délai de retard dépassé, aucune copie : non rendue (N.R., ne compte pas) */
+        let cur=h.length?h[h.length-1]:null, prendCarnet=(carnet[col.key]!=null);
+        if(col.src==="d"){
+          /* « faire refaire » : la copie rendue APRÈS la demande remplace l'ancienne note,
+             y compris une note posée au carnet avant cette demande */
+          const tRef=refT[col.key.slice(2)]||0;
+          if(tRef){
+            const apres=h.filter(function(x){ return !x.prof&&(x.fait||0)>tRef; });
+            if(apres.length){ cur=apres[apres.length-1];
+              if((((carnet._t||{})[col.key])||0)<tRef)prendCarnet=false; }
+          }
+        }
+        hist=h.filter(function(x){ return x!==cur; }).map(function(x){return x.v;});
+        raw=prendCarnet?carnet[col.key]:(cur?cur.v:null);
         if(raw==null&&col.src==="d"){ const dm=devMeta[col.key.slice(2)];
-          if(dm&&dm.nr&&(!dm.eleves||dm.eleves.indexOf(code)>=0))raw=nrZeroClasse(classId)?"z":"r"; }
+          if(dm&&(!dm.eleves||dm.eleves.indexOf(code)>=0)){
+            /* aucune copie reçue, mais l'appareil de l'élève a noté l'évaluation comme
+               rendue avec sa note (suivi du travail) : on la reprend, signalée */
+            const st=((((fiche.devoirs||{})[col.key.slice(2)])||{}).v||{})[String(dm.i)]||{};
+            if(!h.length&&st.fait&&st.note!=null&&+st.fait>=dm.deb&&+st.fait<=dm.fin){
+              raw=Math.round((+st.note)/(+st.sur||20)*200)/10; suivi=true; }
+            /* délai de retard dépassé, aucune copie : non rendue (N.R., ne compte pas) */
+            else if(dm.nr)raw=nrZeroClasse(classId)?"z":"r";
+          } }
         }
       }
       const it=carnetInterp(raw);
-      cellsRow[col.key]={txt:it.txt,count:it.count,raw:(raw==null?"":raw)};
+      cellsRow[col.key]={txt:it.txt,count:it.count,raw:(raw==null?"":raw),suivi:suivi};
       histRow[col.key]=hist;
       if(it.count!=null){
         if(membreDe[col.key]){}                             /* compte via sa colonne fusionnée */
@@ -23322,8 +23598,78 @@ function evGbTrier(key){
   else _gbTri={key:key,sens:(key==="nom")?1:-1};   /* noms A→Z, chiffres du plus haut d'abord */
   if(typeof evalsRendre==="function")evalsRendre();
 }
-/* Un tableau du carnet : colonnes passées en paramètre, colonne finale = moyenne
-   (évaluations demandées) ou note bonus (évaluations libres). */
+/* ---------- Le carnet, version compacte (11/10/2026) ----------
+   Des lignes serrées façon Pronote : une ligne par élève, les moyennes collées au
+   nom (colonnes figées), des en-têtes courts sur deux lignes (le nom complet est
+   dans l'infobulle) et la moyenne de chaque colonne en pied de tableau. Le tableau
+   prend la hauteur de l'écran : en-têtes et moyennes de la classe restent visibles.
+
+   Titres courts : « Évaluation en difficile sur l'enregistrement » devient
+   « Enregistrement » avec un repère « Difficile ». */
+const EV_COURTS=[
+  [/^(l')?orchestre( et (les )?instruments)?$/,"Orchestre"],
+  [/^(l')?(histoire de l')?enregistrement( du son)?$/,"Enregistrement"],
+  [/^(l')?enquete auditive$/,"Enquête auditive"],
+  [/^(la )?recreation( musicale)?$/,"Recréation"],
+  [/^(la )?repetition$/,"Répétition"],
+  [/^noms francais\W+anglais$/,"Noms FR ↔ EN"],
+  [/^melodies celebres/,"Mélodies célèbres"],
+  [/^compositeurs ?: ?epoques/,"Compositeurs"],
+  [/negro-spirituals/,"Gospel"],
+  [/^histoire de l'ecriture musicale$/,"Écriture musicale"],
+  [/^(le )?rock et (le )?metal progressifs?$/,"Rock progressif"],
+  [/^(le )?blues ?: ?histoire/,"Blues"],
+  [/^(la )?voix ?: ?respiration/,"Voix et corps"],
+  [/^lire les notes \(cle de sol\)$/,"Notes en clé de Sol"],
+  [/^lire les notes \(cle de fa\)$/,"Notes en clé de Fa"],
+  [/^lire en cle de sol et de fa$/,"Clés de Sol et Fa"],
+  [/^reconnaitre un intervalle$/,"Intervalles"],
+  [/^plus aigu ou plus grave/,"Aigu ou grave"],
+  [/^(la )?musique de jeux video$/,"Jeux vidéo"],
+  [/^(les )?4 parametres du son$/,"Paramètres du son"],
+  [/^(la )?musique electronique$/,"Musique électro"],
+  [/^dictee ?: ?quelle note/,"Dictée de notes"],
+  [/^accords majeur ?\/ ?mineur$/,"Accords"],
+  [/^(la )?musique minimaliste$/,"Minimalisme"],
+  [/^(les )?voix \(tessitures\)$/,"Tessitures"],
+  [/^vocabulaire de l'ecoute$/,"Vocabulaire écoute"],
+  [/^(la )?guitare instrumentale$/,"Guitare"]
+];
+const EV_DIFF_COURT=["","Facile","Inter.","Difficile"];
+function evSansAccent(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase(); }
+/* Renvoie {t: titre court, d: difficulté lue dans le titre (1 à 3) ou 0}. */
+function evCourt(nom){
+  let s=nomThemePropre(nom).replace(/[’`]/g,"'"), d=0;
+  const md=evSansAccent(s).match(/(^|[^a-z])(facile|intermediaire|difficile)([^a-z]|$)/);
+  if(md){
+    d=md[2]==="facile"?1:(md[2]==="difficile"?3:2);
+    s=s.replace(/[\s(\[,·:–-]*(?:(?:en|de|niveau|mode)\s+)*(?:facile|interm[ée]diaire|difficile)(?![a-zà-ÿ])[\s)\]]*/i," ");
+  }
+  s=s.replace(/^\s*papier\s*:\s*/i,"")
+     .replace(/^\s*(?:mini[- ]?)?[ÉEée]val(?:uation)?s?(?![a-zà-ÿ])(?:\s+(?:d'entra[iî]nement|finale|bilan|blanche|commune))?\s*[:·–-]?\s*/i,"")
+     .replace(/^\s*(?:sur|de|du|des)\s+/i,"").replace(/^\s*d'/i,"")
+     .replace(/\s+/g," ").replace(/^[\s:·,–-]+|[\s:·,–-]+$/g,"");
+  const k=evSansAccent(s);
+  let trouve=false;
+  for(let i=0;i<EV_COURTS.length;i++){ if(EV_COURTS[i][0].test(k)){ s=EV_COURTS[i][1]; trouve=true; break; } }
+  if(!trouve)s=s.replace(/^(?:le|la|les)\s+(?=\S)/i,"").replace(/^l'(?=\S)/i,"");
+  if(!s)s="Évaluation";
+  return {t:s.charAt(0).toUpperCase()+s.slice(1), d:d};
+}
+/* Titre court d'une colonne du carnet, sa difficulté et une petite icône
+   (note saisie à la main, copie papier, colonnes fusionnées). */
+function evColCourt(classId,c){
+  const r=evCourt(c.nom);
+  let d=r.d, ic="";
+  if(c.src==="d"&&!d){
+    const dv=(_evDevoirs[classId]||[]).filter(function(x){ return x.id===c.key.slice(2); })[0];
+    const v=dv&&(dv.volets||[]).filter(function(x){ return x.t==="eval"; })[0];
+    if(v&&v.diff>=1&&v.diff<=3)d=+v.diff;
+  }
+  if(c.src==="m")ic=/^\s*papier\s*:/i.test(c.nom||"")?"printer":"pencil-simple";
+  else if(c.src==="F")ic="arrows-merge";
+  return {t:r.t, d:d, ic:ic};
+}
 function gbTableHTML(classId,g,cols,type){
   const bonusT=(type==="bonus");
   let rows=g.rows.slice();
@@ -23331,74 +23677,123 @@ function gbTableHTML(classId,g,cols,type){
     const q=norm(_gbNom);
     rows=rows.filter(function(r){ return norm(r.nom||"").indexOf(q)>=0 || norm(r.code||"").indexOf(q)>=0; });
   }
-  const tri=_gbTri, cleValide=(tri.key==="nom"||tri.key==="moy"||tri.key==="bonus"||cols.some(function(c){return c.key===tri.key;}));
+  const tri=_gbTri, cleValide=(["nom","moy","bonus","generale"].indexOf(tri.key)>=0||cols.some(function(c){return c.key===tri.key;}));
   const key=cleValide?tri.key:"nom", sens=cleValide?tri.sens:1;
   rows.sort(function(a,b){
     if(key==="nom")return String(a.nom||"￿").toLowerCase().localeCompare(String(b.nom||"￿").toLowerCase(),"fr",{numeric:true})*sens;
     let va,vb;
     if(key==="moy"){va=a.moy;vb=b.moy;} else if(key==="bonus"){va=a.bonus;vb=b.bonus;}
+    else if(key==="generale"){va=a.generale;vb=b.generale;}
     else {va=(a.cells[key]||{}).count;vb=(b.cells[key]||{}).count;}
     if(va==null&&vb==null)return 0; if(va==null)return 1; if(vb==null)return -1;
     return (va-vb)*sens;
   });
-  const fleche=function(k){ return _gbTri.key===k?(_gbTri.sens>0?" ▲":" ▼"):""; };
-  const actif=function(k){ return _gbTri.key===k?" gb-actif":""; };
+  const n1=function(x){ return String(Math.round(x*10)/10).replace(".",","); };
+  const n2=function(x){ return String(Math.round(x*100)/100).replace(".",","); };
+  const ton=function(v){ return v==null?"g":(v>=14?"v":(v>=10?"o":"r")); };
+  const enc=function(v){ return v==null?"":(v>=14?" v":(v<10?" r":"")); };
+  const on=function(k){ return key===k?" on":""; };
+  const aria=function(k){ return key===k?' aria-sort="'+(sens>0?"ascending":"descending")+'"':''; };
+  const fl=function(k){ return key===k?'<i class="ph ph-caret-'+(sens>0?"up":"down")+' gbx-tri" aria-hidden="true"></i>':''; };
   const cleFin=bonusT?"bonus":"moy";
-  const libFin=bonusT?"Note bonus":"Moy.";
   /* la moyenne générale ne s'affiche qu'au carnet des évaluations demandées,
      et seulement si le professeur donne un poids à la note bonus */
   const avecGen=!bonusT&&g.reg.coefBonus>0;
-  const nb1=function(x){ return String(Math.round(x*100)/100).replace(".",","); };
+  const socle=g.reg.socle, N=g.rows.length;
+  const courts=cols.map(function(c){ return evColCourt(classId,c); });
   const titreFin=bonusT
-    ? "NOTE BONUS sur 20, à saisir dans un devoir Pronote à part : socle des "+g.reg.socle+" meilleures évaluations libres (à "+String(g.reg.seuil).replace(".",",")+"/20 ou plus) + "+String(g.reg.pas).replace(".",",")+" point par évaluation réussie en plus"
+    ? "Note bonus sur 20 : les "+socle+" meilleures évaluations libres (à "+n1(g.reg.seuil)+"/20 ou plus), puis +"+n1(g.reg.pas)+" par évaluation réussie en plus. En gris tant que les "+socle+" ne sont pas atteintes"
     : "Moyenne des évaluations demandées (coefficients compris)";
-  let h='<div class="gb-wrap"><table class="gradebook"><thead><tr>'
-    +'<th class="gb-nom'+actif("nom")+'" onclick="evGbTrier(\'nom\')" title="Trier par nom">Nom'+fleche("nom")+'</th>'
-    +'<th class="gb-'+(bonusT?"bonus":"moy")+actif(cleFin)+'" onclick="evGbTrier(\''+cleFin+'\')" title="'+titreFin+' · clique pour trier">'+libFin+fleche(cleFin)+'</th>'
-    + cols.map(function(c,ci){ const edit=(c.src==="m"||c.src==="d"||c.src==="L"||c.src==="P");
-        const sous=[evColDate(c),(c.coef&&c.coef!=1)?"×"+c.coef:""].filter(Boolean).join(" · ");
-        const nm=echapH(c.nom)+(sous?'<span class="gb-col-sous">'+sous+'</span>':'');
-        const ctx=edit?' oncontextmenu="event.preventDefault();evColEditer(\''+classId+'\',\''+c.key+'\');return false"':'';
-        return '<th class="gb-eval'+(ci%2?" gb-b":"")+actif(c.key)+'" onclick="evGbTrier(\''+c.key+'\')"'+ctx+' title="'+echapH(c.nom)+(c.coef&&c.coef!=1?" · coef "+c.coef:"")+' · clic gauche = trier'+(edit?", clic droit = modifier"+(c.src==="m"?"":" ou voir les questions ratées"):"")+'">'
-          +'<div class="gb-rot"><span>'+nm+fleche(c.key)+'</span></div></th>'; }).join("")
-    +(avecGen?'<th class="gb-gen'+actif("generale")+'" onclick="evGbTrier(\'generale\')" title="MOYENNE GÉNÉRALE : évaluations demandées (coefficient '+nb1(g.reg.coefOff)+') et note bonus (coefficient '+nb1(g.reg.coefBonus)+'), réglables dans Paramètres → Règles de la classe · clique pour trier">Générale'+fleche("generale")+'</th>':'')
-    +'</tr></thead><tbody>';
+  let h='<div class="gbx-wrap"><table class="gbx'+(bonusT?" bonus":"")+(avecGen?" a-gen":"")+'"><thead><tr>'
+    +'<th scope="col" class="gbx-nom'+on("nom")+'"'+aria("nom")+'><button type="button" class="gbx-tb" onclick="evGbTrier(\'nom\')" title="Trier par nom">Élève<span class="gbx-nb">'+(rows.length<N?rows.length+"/":"")+N+'</span>'+fl("nom")+'</button></th>'
+    +'<th scope="col" class="gbx-moy'+on(cleFin)+'"'+aria(cleFin)+'><button type="button" class="gbx-tb" onclick="evGbTrier(\''+cleFin+'\')" title="'+titreFin+' · clic : trier">'+(bonusT?"Bonus":"Moy.")+fl(cleFin)+'</button></th>'
+    +(avecGen?'<th scope="col" class="gbx-gen'+on("generale")+'"'+aria("generale")+'><button type="button" class="gbx-tb" onclick="evGbTrier(\'generale\')" title="Moyenne générale : demandées ×'+n2(g.reg.coefOff)+', bonus ×'+n2(g.reg.coefBonus)+', seulement si le bonus fait monter (Paramètres, règles de la classe) · clic : trier">Gén.'+fl("generale")+'</button></th>':'')
+    +cols.map(function(c,i){
+      const edit=(c.src==="m"||c.src==="d"||c.src==="L"||c.src==="P");
+      const ct=courts[i], dt=evColDate(c), cf=(c.coef&&c.coef!=1);
+      const meta=(ct.d?'<span class="gbx-d d'+ct.d+'">'+EV_DIFF_COURT[ct.d]+'</span>':'')+(cf?'<span class="gbx-coef">×'+n2(c.coef)+'</span>':'');
+      const bas=(ct.ic?'<i class="ph ph-'+ct.ic+'" aria-hidden="true"></i>':'')+dt;
+      const tt=nomThemePropre(c.nom)+(dt?" · "+dt:"")+(cf?" · coef "+n2(c.coef):"")+" · clic : trier"+(edit?" · clic droit : modifier":"");
+      const ctx=edit?' oncontextmenu="event.preventDefault();evColEditer(\''+classId+'\',\''+c.key+'\');return false"':'';
+      return '<th scope="col" class="gbx-ev'+on(c.key)+'"'+aria(c.key)+ctx+'><button type="button" class="gbx-tb" onclick="evGbTrier(\''+c.key+'\')" title="'+echapH(tt)+'">'
+        +'<span class="gbx-t">'+echapH(ct.t)+'</span>'
+        +(meta?'<span class="gbx-m">'+meta+'</span>':'')
+        +(bas?'<span class="gbx-dt">'+bas+'</span>':'')+fl(c.key)+'</button></th>'; }).join("")
+    +'<td class="gbx-fin"></td></tr></thead><tbody>';
   rows.forEach(function(r){
-    const val=bonusT?r.bonus:r.moy;
-    const coul=val==null?"var(--encre-doux)":(bonusT?"var(--or-texte)":(val>=14?"var(--juste)":(val>=10?"var(--or-texte)":"var(--faux)")));
-    const coulNom=(bonusT?r.bonus:r.moy)==null?"var(--encre-doux)":coul;
-    h+='<tr><td class="gb-nom" style="cursor:pointer" onclick="ecranEvalEleve(\''+classId+'\',\''+r.code+'\')" title="Voir le détail"><b style="color:'+coulNom+'">'+(r.nom?echapH(r.nom):'<span style="color:var(--encre-doux)">'+r.code+'</span>')+'</b></td>'
-      +'<td class="gb-'+(bonusT?"bonus":"moy")+'"'+((bonusT&&r.bonusInfo)?' title="'+evBonusDetail(r.bonusInfo)+(r.generaleInfo&&!r.generaleInfo.compte?" · ne fait pas monter la moyenne, elle n\'est donc pas comptée":"")+'"':'')+'>'
-      +(val==null?'<b style="color:'+coul+';font-size:1.05rem;background:transparent">-</b>'
-        :(bonusT&&r.generaleInfo&&!r.generaleInfo.compte
-          ? '<b class="gb-inutile" style="font-size:1.05rem">('+String(val).replace(".",",")+'/20)</b>'
-          : '<b style="color:'+coul+';font-size:1.05rem;background:'+evMoyFond(val)+'">'+String(val).replace(".",",")+'/20</b>'))+'</td>'
-      + cols.map(function(c,ci){ const cell=r.cells[c.key]||{}; const old=(r.hist&&r.hist[c.key])||[];
-          const bcls=ci%2?" gb-b":"";
-          const disp=(cell.txt==null?'<span style="color:var(--ligne)">·</span>':(cell.count==null?'<span style="color:var(--faux)" title="Ne compte pas">'+cell.txt+'</span>':cell.txt));
-          let dv=""; if(cell.raw!=null&&cell.raw!==""){ dv=(typeof cell.raw==="number")?String(Math.round(cell.raw*10)/10).replace(".",","):String(cell.raw); }
-          let inner;
-          if(c.src==="L"){ const nb=old.length; inner=disp+(nb>1?' <span style="color:var(--encre-doux);font-size:.78em" title="'+nb+' passages">('+nb+')</span>':''); }
-          else { const oldTxt=old.map(function(o){ return '<span style="color:var(--encre-doux);text-decoration:line-through;font-size:.82em" title="Note précédente">'+String(Math.round(o*10)/10).replace(".",",")+'</span>'; }).join(" "); inner=(oldTxt?oldTxt+" ":"")+disp; }
-          const ctx=' oncontextmenu="return evCellMenu(event,\''+classId+'\',\''+c.key+'\',\''+r.code+'\')"';
-          return '<td class="gb-eval-c'+bcls+' gb-cell" tabindex="0" data-cl="'+classId+'" data-k="'+c.key+'" data-c="'+r.code+'" data-v="'+echapH(dv)+'"'
-            +' onclick="gbStartEdit(this)"'+ctx+' title="Clic = saisir (nombre, ou A/n/w/r) · flèches = se déplacer · clic droit = '+(c.src==="L"?"historique":"refaire / effacer")+'">'+inner+'</td>'; }).join("")
-      +(avecGen?'<td class="gb-gen"'+(r.generaleInfo?' title="'+echapH(evGeneraleDetail(r.generaleInfo))+'"':'')+'>'
-        +(r.generale!=null?'<b>'+String(r.generale).replace(".",",")+'/20</b>'
-          +'<span class="gb-gen-d">'+(r.bonus==null?'sans bonus'
-            :(r.generaleInfo&&r.generaleInfo.compte
-               ? String(r.moy).replace(".",",")+' · bonus '+String(r.bonus).replace(".",",")
-               : String(r.moy).replace(".",",")+' <span class="gb-inutile">(bonus '+String(r.bonus).replace(".",",")+')</span>'))+'</span>'
-          :'<span style="color:var(--encre-doux)">-</span>')+'</td>':'')
-      +'</tr>';
+    const val=bonusT?r.bonus:r.moy, qui=r.nom||r.code;
+    let fin, tFin="";
+    if(val==null)fin='<span class="gbx-vide">-</span>';
+    else if(bonusT){
+      const bi=r.bonusInfo||{}, inutile=!!(r.generaleInfo&&!r.generaleInfo.compte);
+      tFin=evBonusDetail(r.bonusInfo)+(bi.manque>0?" · pas encore envoyée vers Pronote":"")+(inutile?" · ne fait pas monter la moyenne générale : pas comptée":"");
+      fin=(bi.manque>0)
+        ?'<b class="gbx-p g">'+n1(val)+'</b><small class="gbx-s">'+(bi.nb||0)+'/'+socle+'</small>'
+        :'<b class="gbx-p '+(inutile?"g":"b")+'">'+n1(val)+'</b>';
+    } else fin='<b class="gbx-p '+ton(val)+'">'+n1(val)+'</b>';
+    h+='<tr><th scope="row" class="gbx-nom"><button type="button" class="gbx-n" onclick="ecranEvalEleve(\''+classId+'\',\''+r.code+'\')" title="'+echapH(qui)+' · voir le détail">'
+        +(r.nom?echapH(r.nom):'<span class="gbx-code">'+r.code+'</span>')+'</button></th>'
+      +'<td class="gbx-moy"'+(tFin?' title="'+tFin+'"':'')+'>'+fin+'</td>'
+      +(avecGen?'<td class="gbx-gen"'+(r.generaleInfo?' title="'+echapH(evGeneraleDetail(r.generaleInfo))+'"':'')+'>'
+        +(r.generale!=null?'<b class="gbx-p '+ton(r.generale)+'">'+n1(r.generale)+'</b>':'<span class="gbx-vide">-</span>')+'</td>':'')
+      +cols.map(function(c,i){
+        const cell=r.cells[c.key]||{}, old=(r.hist&&r.hist[c.key])||[];
+        let inner="", cls="gbx-c gb-cell", t=qui+" · "+courts[i].t;
+        if(cell.txt!=null){
+          if(cell.count==null){ inner='<span class="gbx-x">'+cell.txt+'</span>'; t+=" · ne compte pas"; }
+          else { inner=cell.txt; cls+=enc(cell.count);
+            if(cell.suivi){ cls+=" gbx-suivi"; t+=" · copie pas encore reçue : note relevée dans le suivi du travail de l'élève"; } }
+        }
+        if(c.src==="L"){ if(old.length>1){ inner='<span class="gbx-h">×'+old.length+'</span>'+inner; t+=" · "+old.length+" passages, la meilleure note compte"; } }
+        else if(old.length){ inner='<span class="gbx-h"><s>'+n1(old[old.length-1])+'</s></span>'+inner;
+          t+=" · avant : "+old.map(function(o){ return n1(o); }).join(" ; "); }
+        let dv=""; if(cell.raw!=null&&cell.raw!==""){ dv=(typeof cell.raw==="number")?n1(cell.raw):String(cell.raw); }
+        return '<td class="'+cls+'" tabindex="0" data-cl="'+classId+'" data-k="'+c.key+'" data-c="'+r.code+'" data-v="'+echapH(dv)+'"'
+          +' onclick="gbStartEdit(this)" oncontextmenu="return evCellMenu(event,\''+classId+'\',\''+c.key+'\',\''+r.code+'\')"'
+          +' title="'+echapH(t)+'">'+inner+'</td>'; }).join("")
+      +'<td class="gbx-fin"></td></tr>';
   });
+  if(!rows.length)h+='<tr><td class="gbx-aucun" colspan="'+(cols.length+(avecGen?4:3))+'">'
+    +(_gbNom.trim()?'Aucun élève ne correspond à « '+echapH(_gbNom.trim())+' ».':'Aucun élève dans cette classe.')+'</td></tr>';
   const moyCl=bonusT?g.classBonus:g.classMoy;
-  h+='<tr class="gb-classe"><td class="gb-nom">Moyenne de classe</td>'
-    +'<td class="gb-'+(bonusT?"bonus":"moy")+'">'+(moyCl==null?"-":String(moyCl).replace(".",",")+"/20")+'</td>'
-    + cols.map(function(c,ci){return '<td class="'+(ci%2?"gb-b":"")+'"></td>';}).join("")
-    +(avecGen?'<td class="gb-gen">'+(g.classGen==null?"-":'<b>'+String(g.classGen).replace(".",",")+'/20</b>')+'</td>':'')
-    +'</tr></tbody></table></div>';
+  h+='</tbody><tfoot><tr><th scope="row" class="gbx-nom"><span class="gbx-n">Moyenne de la classe</span></th>'
+    +'<td class="gbx-moy">'+(moyCl==null?'<span class="gbx-vide">-</span>':'<b class="gbx-p '+(bonusT?"b":ton(moyCl))+'">'+n1(moyCl)+'</b>')+'</td>'
+    +(avecGen?'<td class="gbx-gen">'+(g.classGen==null?'<span class="gbx-vide">-</span>':'<b class="gbx-p '+ton(g.classGen)+'">'+n1(g.classGen)+'</b>')+'</td>':'')
+    +cols.map(function(c){ let s=0,n=0;
+      g.rows.forEach(function(r){ const x=(r.cells[c.key]||{}).count; if(x!=null){ s+=x; n++; } });
+      return '<td class="gbx-c'+(n?enc(s/n):"")+'" title="'+n+' note'+(n>1?"s":"")+' sur '+N+' élève'+(N>1?"s":"")+'">'
+        +(n?n1(s/n):'<span class="gbx-vide">-</span>')+'<small class="gbx-s">'+n+'/'+N+'</small></td>'; }).join("")
+    +'<td class="gbx-fin"></td></tr></tfoot></table></div>';
   return h;
+}
+/* Le tableau défile dans son cadre, qui s'arrête au bas de l'écran ; après un
+   nouveau rendu (saisie d'une note, recherche), on le remet où il était. */
+function gbxGarde(){ const w=document.querySelector(".gbx-wrap"); return w?{l:w.scrollLeft,t:w.scrollTop}:null; }
+function gbxApres(p){
+  gbxAjuster();
+  const w=document.querySelector(".gbx-wrap"); if(w&&p){ w.scrollLeft=p.l; w.scrollTop=p.t; }
+}
+function gbxAjuster(){
+  const w=document.querySelector(".gbx-wrap"); if(!w)return;
+  if(window.innerWidth<761){ w.style.maxHeight=""; return; }
+  const m=w.closest("main")||document.scrollingElement||document.documentElement;
+  const z=w.currentCSSZoom||1;
+  const haut=w.getBoundingClientRect().top-m.getBoundingClientRect().top+m.scrollTop;
+  w.style.maxHeight=Math.round(Math.max(380,m.clientHeight-haut-18)/z)+"px";
+}
+if(!window._gbxRs){ window._gbxRs=true; window.addEventListener("resize",function(){ try{ gbxAjuster(); }catch(e){} }); }
+/* L'aide « ? » se referme d'un clic ailleurs, ou avec Échap. */
+function cnAideBascule(d){
+  if(d._fermer){ document.removeEventListener("pointerdown",d._fermer,true); document.removeEventListener("keydown",d._fermer,true); d._fermer=null; }
+  if(!d.open)return;
+  const f=function(ev){
+    if(ev.type==="keydown"&&ev.key!=="Escape")return;
+    if(ev.type==="pointerdown"&&d.contains(ev.target))return;
+    d.open=false;
+    if(ev.type==="keydown"){ const s=d.querySelector("summary"); if(s)s.focus(); }
+  };
+  d._fermer=f;
+  document.addEventListener("pointerdown",f,true); document.addEventListener("keydown",f,true);
 }
 /* ---------- Carnet éditable : saisie inline + navigation clavier (façon tableur) ---------- */
 let _gbFocus=null;
@@ -23416,7 +23811,20 @@ function gbStartEdit(td){
   });
   inp.addEventListener("blur",function(){ if(done)return; done=true; gbCommit(td,inp.value,null); });
 }
-function gbCommit(td,val,move){ evSetNote(td.getAttribute("data-cl"),td.getAttribute("data-k"),td.getAttribute("data-c"),val,move); }
+/* Une case ouverte puis quittée SANS changement n'écrit rien. Avant, le simple fait
+   de cliquer dans une case puis ailleurs figeait la note affichée comme « note du
+   professeur » : la copie rendue ensuite (faire refaire) restait cachée dessous. */
+function gbValNorm(x){ x=String(x==null?"":x).trim().replace(",",".");
+  return (/^[0-9]+(\.[0-9]+)?$/.test(x))?String(parseFloat(x)):x.toLowerCase(); }
+function gbCommit(td,val,move){
+  if(gbValNorm(val)===gbValNorm(td.getAttribute("data-v"))){
+    if(td.querySelector("input"))td.innerHTML=td.getAttribute("data-prev")||"";
+    td.focus();
+    if(move)gbMove(td,move==="down"?"ArrowDown":(move==="right"?"ArrowRight":"ArrowLeft"));
+    return;
+  }
+  evSetNote(td.getAttribute("data-cl"),td.getAttribute("data-k"),td.getAttribute("data-c"),val,move);
+}
 function gbMove(td,dir){
   if(!td)return; const tr=td.parentNode, tb=tr.parentNode, ci=td.cellIndex; let target=null;
   if(dir==="ArrowLeft"||dir==="ArrowRight"){ let n=td, step=(dir==="ArrowRight")?"nextElementSibling":"previousElementSibling";
@@ -23440,11 +23848,11 @@ function evSetNote(classId,key,code,val,move){
     else { const num=parseFloat(t.replace(",",".")); if(isNaN(num)||num<0||num>20){ toast("Note entre 0 et 20, ou un code : A (absent), n (non noté), w (compte 0), NR (non rendu, ne compte pas), NR* (non rendu, compte 0)."); if(typeof evalsRendre==="function")evalsRendre(); return; } store=Math.round(num*100)/100; }
   }
   const s=fbStore(); if(!s){svcIndispo();return;}
-  const o={}; o[key]=store;
+  const o={}, quand=Date.now(); o[key]=store; o._t={}; o._t[key]=quand;
   s.collection("classes").doc(classId).collection("eleves").doc(code).set({carnet:o},{merge:true})
     .catch(function(){toast("Échec de l'enregistrement : réessaie dans un instant.");});
   _evEleves[classId]=_evEleves[classId]||{}; const el=(_evEleves[classId][code]=_evEleves[classId][code]||{});
-  el.carnet=el.carnet||{}; el.carnet[key]=store;
+  el.carnet=el.carnet||{}; el.carnet[key]=store; el.carnet._t=Object.assign({},el.carnet._t||{}); el.carnet._t[key]=quand;
   _gbFocus={key:key,code:code,move:move};
   if(typeof evalsRendre==="function")evalsRendre();
   setTimeout(function(){ const f=_gbFocus; _gbFocus=null; if(!f)return;
@@ -23485,50 +23893,114 @@ function evKpiBandeau(cards){
 function evMoyFond(m,seuilVert){ if(m==null)return "transparent"; const sv=seuilVert||14;
   return m>=sv?"rgba(26,156,107,.14)":(m>=10?"rgba(242,201,76,.24)":"rgba(198,40,40,.10)"); }
 function evMoyCoul(m,seuilVert){ if(m==null)return "var(--encre)"; const sv=seuilVert||14;
-  return m>=sv?"var(--juste)":(m>=10?"var(--or-texte)":"var(--faux)"); }
-/* Les trois moyennes de la classe tiennent dans UNE carte : trois vignettes
-   séparées prenaient toute la largeur pour trois nombres. */
-function evKpiHTML(g){
-  const nb=function(x){ return x==null?'<i>-</i>':String(x).replace(".",",")+'<span>/20</span>'; };
-  const bloc=function(lib,val,coul,or){
-    return '<div class="ev-moy3-i'+(or?" or":"")+'"><span>'+lib+'</span>'
-      +'<b'+(coul?' style="color:'+coul+'"':'')+'>'+val+'</b></div>'; };
-  let h='<div class="ev-moy3"><div class="ev-moy3-t">Moyennes<br>de la classe</div>'
-    +bloc("Évaluations demandées",nb(g.classMoy),evMoyCoul(g.classMoy))
-    +bloc("Note bonus",nb(g.classBonus),"var(--or-texte)",true);
-  if(g.reg&&g.reg.coefBonus>0)h+=bloc("Moyenne générale",nb(g.classGen),evMoyCoul(g.classGen));
-  return h+'</div>'+evAlertesHTML(g);
+  return m>=sv?"var(--juste-texte)":(m>=10?"var(--or-texte)":"var(--faux-texte)"); }
+/* ---------- Notes & bulletins, version « le carnet d'abord » (11/10/2026) ----------
+   Une barre de tête fine (classe, période), une ligne d'onglets compacts avec les
+   outils, un bandeau visuel (trois moyennes, répartition des élèves) puis UN carnet
+   qui bascule entre évaluations demandées et bonus. Presque pas de texte : l'aide
+   est derrière le « ? ». */
+let _gbVue="moy";   /* carnet affiché : "moy" (demandées) ou "bonus" */
+function evRibanHTML(classId){
+  rubanRetourHTML();
+  const l=_profClasses||[];
+  let idx=0; for(let i=0;i<l.length;i++){ if(l[i].id===classId){idx=i;break;} }
+  const prev=idx>0?l[idx-1].id:null, next=idx<l.length-1?l[idx+1].id:null;
+  const fl=function(id,ic,t){ return '<button class="ev-rib-fl"'+(id?"":" disabled")+' title="'+t+'" aria-label="'+t+'"'+(id?' onclick="evalsClasse(\''+id+'\')"':"")+'><i class="ph '+ic+'"></i></button>'; };
+  const cl=(l.length>1)
+    ?fl(prev,"ph-caret-left","Classe précédente")
+      +'<select class="ev-rib-sel" aria-label="Classe" onchange="evalsClasse(this.value)">'+l.map(function(c){ return '<option value="'+c.id+'"'+(c.id===classId?" selected":"")+'>'+echapH(c.nom||"Classe")+'</option>'; }).join("")+'</select>'
+      +fl(next,"ph-caret-right","Classe suivante")
+    :'<span class="ev-rib-cl">'+echapH((l[idx]&&l[idx].nom)||"Classe")+'</span>';
+  const ts=evTrimestres(), cur=evPeriodeCourante(classId);
+  const per='<select class="ev-rib-sel" aria-label="Période" onchange="evChoisirPeriode(this.value)">'
+    +[EV_ALL].concat(ts).map(function(t){ return '<option value="'+t.id+'"'+((cur&&cur.id===t.id)?" selected":"")+'>'+echapH(t.nom||"Trimestre")+'</option>'; }).join("")+'</select>'
+    +'<button class="ev-rib-fl" title="Régler les périodes" aria-label="Régler les périodes" onclick="_paramVue=\'trimestres\';ecranParametres()"><i class="ph ph-gear"></i></button>';
+  return '<div class="cn-tete"><h2 class="cn-h"><i class="ph-fill ph-exam"></i> Notes</h2>'
+    +'<div class="cn-ctrl">'+cl+'</div><div class="cn-ctrl">'+per+'</div></div>';
 }
-/* Ce qu'il reste à faire, sur une seule ligne : rien d'affiché s'il n'y a rien. */
-function evAlertesHTML(g){
-  const classId=_evClasse, rows=g.rows||[];
-  const puces=[];
-  const aNoter=(typeof _evANoter!=="undefined"&&_evANoter[classId])||0;
-  if(aNoter)puces.push('<button class="gb-alerte rouge" onclick="evVue(\'chant\')">'
-    +'<b>'+aNoter+'</b> copie'+(aNoter>1?"s":"")+' de chant à écouter</button>');
+function evBarre(classId){
   let vig=0;
   try{ const l=_evalsCache[classId]||[], b=evBornesPeriode(evPeriodeCourante(classId),classId);
     vig=l.filter(function(e){ return evEstEpreuve(e)&&(e.fait||0)>=b.deb&&(e.fait||0)<=b.fin&&suspicionEval(e,{cid:classId,liste:l}).niveau>=1; }).length; }catch(e){}
-  if(vig)puces.push('<button class="gb-alerte or" onclick="evVue(\'vigil\')">'
-    +'<b>'+vig+'</b> épreuve'+(vig>1?"s":"")+' à vérifier</button>');
-  /* rien à signaler : pas de ligne du tout, la place revient au carnet */
-  return puces.length?'<div class="gb-alertes">'+puces.join("")+'</div>':"";
+  const aNoter=(typeof _evANoter!=="undefined"&&_evANoter[classId])||0;
+  const T=[["eleves","Cours","exam",0],["chant","Chant","microphone-stage",aNoter]]
+    .concat(TRAVAIL_CLASSE?[["comport","Comportement","chalkboard-simple",0]]:[])
+    .concat([["bilan","Bilan","scroll",0],["vigil","Vigilance","shield-warning",vig]]);
+  let h='<div class="cn-barre"><nav class="cn-onglets" aria-label="Rubriques">'+T.map(function(t){
+    const on=_evVue===t[0];
+    return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="evVue(\''+t[0]+'\')"'
+      +(t[3]?' title="'+(t[0]==="chant"?t[3]+" copie(s) à écouter":t[3]+" épreuve(s) à vérifier")+'"':'')+'>'
+      +'<i class="ph'+(on?"-fill":"")+' ph-'+t[2]+'"></i>'+t[1]+(t[3]?'<span class="cn-pt">'+t[3]+'</span>':'')+'</button>'; }).join("")+'</nav>';
+  let o="";
+  if(_evVue==="eleves")
+    o+='<label class="cn-cherche"><i class="ph ph-magnifying-glass"></i><input id="gbRech" type="search" placeholder="Élève…" value="'+escapeHtml(_gbNom)+'" oninput="evGbChercher(this.value)" aria-label="Chercher un élève"></label>';
+  if(_evVue==="eleves"||_evVue==="chant")
+    o+='<button class="cn-btn or" onclick="evManuelEditer(\''+classId+'\',\''+(_evVue==="chant"?"chant":"cours")+'\')" title="Ajouter une évaluation (notes saisies à la main)"><i class="ph ph-plus"></i><span>Ajouter</span></button>';
+  if(_evVue==="eleves")
+    o+='<button class="cn-btn" onclick="evPronoteAssistant(\''+classId+'\')" title="Envoyer une note vers Pronote"><i class="ph ph-export"></i><span>Pronote</span></button>';
+  return h+(o?'<div class="cn-outils">'+o+'</div>':'')+'</div>';
 }
-let _gbBonusOuvert=false;   /* le carnet bonus reste replié tant qu'on ne l'ouvre pas */
-let _gbOffOuvert=false;     /* le carnet des évaluations demandées s'ouvre à la demande, lui aussi */
-/* ---------- Fusion de colonnes du carnet ---------- */
-function carnetFusionsDe(classId){ const cl=(_profClasses||[]).filter(function(c){ return c.id===classId; })[0]; return (cl&&cl.carnetFusions)||{}; }
-function evFusionBarreHTML(classId,colsOff){
-  const fus=carnetFusionsDe(classId), simples=colsOff.filter(function(c){ return c.src!=="F"; });
-  const faites=colsOff.filter(function(c){ return c.src==="F"; });
-  if(simples.length<2&&!faites.length)return "";
-  return '<div class="gbf-barre">'
-    +(simples.length>=2?'<button type="button" class="action btn-nouv gbf-btn" onclick="evFusionOuvrir(\''+classId+'\')"><i class="ph ph-arrows-merge"></i> Fusionner des colonnes</button>':'')
-    +faites.map(function(c){ const fid=c.key.slice(2);
-      return '<span class="gbf-chip" title="'+escapeHtml(c.membres.map(function(k){ return k; }).length+" colonnes réunies")+'"><i class="ph-fill ph-arrows-merge"></i> '+echapH(c.nom)+' <small>('+c.membres.length+' colonnes)</small>'
-        +'<button type="button" title="Séparer à nouveau" aria-label="Séparer" onclick="evFusionDefaire(\''+classId+'\',\''+fid+'\')"><i class="ph ph-x"></i></button></span>'; }).join("")
+/* Le bandeau de la classe : trois moyennes en grand, et la répartition des élèves
+   (moins de 10, de 10 à 14, 14 et plus, sans note) en une barre de couleur. */
+function evKpiHTML(g){
+  const v=function(x){ return x==null?"-":String(x).replace(".",","); };
+  const cl=function(m){ return m==null?"":(m>=14?" v":(m>=10?" o":" r")); };
+  const rows=g.rows||[], n=[0,0,0,0];
+  rows.forEach(function(r){ const m=r.moy; if(m==null){ n[3]++; return; } n[m>=14?2:(m>=10?1:0)]++; });
+  const tot=rows.length||1;
+  const seg=function(k,c,lib){ return n[k]?'<span class="cn-seg-'+c+'" style="flex:'+n[k]+'" title="'+n[k]+' '+lib+'">'+n[k]+'</span>':''; };
+  const chiffre=function(x,lib,c){ return '<div class="cn-chiffre'+c+'"><b>'+v(x)+'</b><span>'+lib+'</span></div>'; };
+  return '<div class="cn-resume">'
+    +chiffre(g.classMoy,"moyenne",cl(g.classMoy))
+    +chiffre(g.classBonus,"bonus"," b")
+    +((g.reg&&g.reg.coefBonus>0)?chiffre(g.classGen,"générale",cl(g.classGen)):"")
+    +'<div class="cn-repart" aria-label="Répartition : '+n[0]+' sous 10, '+n[1]+' de 10 à 14, '+n[2]+' à 14 et plus, '+n[3]+' sans note">'
+    +'<div class="cn-barre-r">'+seg(0,"r","élève(s) sous 10")+seg(1,"o","élève(s) de 10 à 14")+seg(2,"v","élève(s) à 14 et plus")+seg(3,"g","élève(s) sans note")
+    +(rows.length?'':'<span class="cn-seg-g" style="flex:1">&nbsp;</span>')+'</div>'
+    +'<div class="cn-legende"><span class="r">&lt; 10</span><span class="o">10 à 14</span><span class="v">14 et +</span>'+(n[3]?'<span class="g">sans note</span>':'')+'</div></div>'
     +'</div>';
 }
+function evGbTablesHTML(classId){
+  const g=evGradebookData(classId,true);
+  const colsOff=g.cols.filter(function(c){ return !c.bonus; }), colsLib=g.cols.filter(function(c){ return c.bonus; });
+  const bonus=_gbVue==="bonus";
+  const t=function(k,lib,nb){ return '<button type="button" class="'+(_gbVue===k?"on":"")+'" aria-pressed="'+(_gbVue===k)+'" onclick="_gbVue=\''+k+'\';evGbChercher(_gbNom)">'+lib+'<span>'+nb+'</span></button>'; };
+  let puces="";
+  if(!bonus){
+    const fus=colsOff.filter(function(c){ return c.src==="F"; }), man=(_evManuel[classId]||[]).filter(function(x){ return (x.cat||"cours")==="cours"; });
+    if(fus.length||man.length)puces='<div class="cn-puces">'
+      +man.sort(function(a,b){ return (b.date||0)-(a.date||0); }).map(function(x){
+        return '<button class="cn-puce" onclick="evManuelEditer(\''+classId+'\',\'cours\',\''+x.id+'\')" title="Modifier les notes : '+echapH(nomThemePropre(x.titre||"Évaluation"))+'"><i class="ph ph-pencil-simple"></i>'+echapH(evCourt(x.titre||"Évaluation").t)+'</button>'; }).join("")
+      +fus.map(function(c){ return '<span class="cn-puce f" title="'+echapH(nomThemePropre(c.nom))+'"><i class="ph-fill ph-arrows-merge"></i>'+echapH(evCourt(c.nom).t)
+        +'<button type="button" title="Séparer à nouveau" aria-label="Séparer '+escapeHtml(nomThemePropre(c.nom))+'" onclick="evFusionDefaire(\''+classId+'\',\''+c.key.slice(2)+'\')"><i class="ph ph-x"></i></button></span>'; }).join("")
+      +'</div>';
+  }
+  let h='<section class="cn-carnet"><div class="cn-carnet-t"><div class="cn-bascule" role="group" aria-label="Carnet">'
+    +t("moy","Demandées",colsOff.length)+t("bonus","Bonus",colsLib.length)+'</div>'
+    +puces+'<span class="cn-sp"></span>'
+    +(bonus?'':(colsOff.filter(function(c){ return c.src!=="F"; }).length>=2?'<button type="button" class="cn-ico" title="Fusionner des colonnes (même évaluation, groupes différents)" aria-label="Fusionner des colonnes" onclick="evFusionOuvrir(\''+classId+'\')"><i class="ph ph-arrows-merge"></i></button>':''))
+    +'<button type="button" class="cn-ico" title="Copier ou enregistrer ces notes" aria-label="Exporter" onclick="evExportPop(event,this,\''+classId+'\',\''+(bonus?"bonus":"tout")+'\')"><i class="ph ph-export"></i></button>'
+    +'<details class="cn-aide" ontoggle="cnAideBascule(this)"><summary class="cn-ico" title="Aide" aria-label="Aide"><i class="ph ph-question"></i></summary><div class="cn-aide-c">'+evAideCarnetHTML(classId)+'</div></details>'
+    +'</div>';
+  if(g.rows.length&&g.rows.every(function(r){ return !r.nom; }))
+    h+='<p class="gb-avis">Noms absents de cet appareil. <a href="#" onclick="rosterClasse(\''+classId+'\');return false">Importer la liste</a></p>';
+  if(!bonus){
+    h+=(colsOff.length||g.rows.length)?gbTableHTML(classId,g,colsOff,"moy"):'';
+    if(!colsOff.length)h+='<p class="cn-vide"><i class="ph ph-info"></i> Aucune évaluation demandée sur cette période.</p>';
+  }else{
+    /* la remarque passe au-dessus : le tableau garde toute la hauteur de l'écran */
+    h+=evBonusSyntheseHTML(g);
+    h+=(colsLib.length||g.rows.some(function(r){ return r.bonus!=null; }))?gbTableHTML(classId,g,colsLib,"bonus")
+      :'<p class="cn-vide"><i class="ph ph-info"></i> Aucune évaluation passée librement sur cette période.</p>';
+  }
+  return h+'</section>';
+}
+function evGradebookHTML(classId){
+  const g=evGradebookData(classId,true);
+  return evKpiHTML(g)+'<div id="gbZone">'+evGbTablesHTML(classId)+'</div>';
+}
+/* ---------- Fusion de colonnes du carnet ---------- */
+function carnetFusionsDe(classId){ const cl=(_profClasses||[]).filter(function(c){ return c.id===classId; })[0]; return (cl&&cl.carnetFusions)||{}; }
 function evFusionOuvrir(classId){
   const g=evGradebookData(classId,true), l=g.cols.filter(function(c){ return !c.bonus&&c.src!=="F"; });
   evFusionFermer();
@@ -23571,46 +24043,6 @@ async function evFusionDefaire(classId,fid){
   if(st)st.collection("classes").doc(classId).update(u).catch(function(){ toast("La séparation n\u2019a pas pu être enregistrée."); });
   toast("Colonnes séparées."); if(typeof evalsRendre==="function")evalsRendre();
 }
-function evGbTablesHTML(classId){
-  const g=evGradebookData(classId,true);
-  const colsOff=g.cols.filter(function(c){ return !c.bonus; });
-  const colsLib=g.cols.filter(function(c){ return c.bonus; });
-  const aBonus=g.rows.some(function(r){ return r.bonus!=null; });
-  let h="";
-  /* Aucun nom connu sur cet appareil : le carnet n'affiche que des codes. */
-  if(g.rows.length&&g.rows.every(function(r){ return !r.nom; }))
-    h+='<p class="gb-avis">Les <b>noms ne sont pas sur cet appareil</b> : le carnet affiche les codes. '
-      +'<a href="#" onclick="rosterClasse(\''+classId+'\');return false">Importer ma liste de classe</a></p>';
-  /* Carnet des évaluations demandées : repliable lui aussi, pour atteindre le
-     bonus sans faire défiler toute la classe. */
-  const sansRien=g.rows.filter(function(r){ return r.moy==null&&r.bonus==null; }).length;
-  const resumeOff=(colsOff.length?colsOff.length+' évaluation'+(colsOff.length>1?"s":""):'aucune évaluation')
-    +' · '+g.rows.length+' élève'+(g.rows.length>1?"s":"")
-    +(sansRien?' · <b class="gb-rouge">'+sansRien+'</b> sans aucune note':'');
-  h+='<details class="gb-bloc"'+(_gbOffOuvert?" open":"")+' ontoggle="_gbOffOuvert=this.open">'
-    +'<summary><i class="ph-fill ph-seal-check"></i> Évaluations demandées <span>'+resumeOff+'</span>'
-    +'<span class="gb-sp"></span>'+evExportBtnHTML(classId,"tout")+'</summary>'
-    +'<div class="gb-bloc-c">'
-    +evChipsManuelles(classId,"cours")
-    +evFusionBarreHTML(classId,colsOff)
-    +((colsOff.length||g.rows.length)?gbTableHTML(classId,g,colsOff,"moy"):"")
-    +(colsOff.length?"":'<p class="badge-vide">Aucune évaluation demandée sur cette période. '
-      +'Assignez-en une dans <b>Donner du travail</b>, ou saisissez une note papier avec <b>Ajouter une évaluation</b>.</p>')
-    +'</div></details>';
-  /* Carnet bonus : replié, car on le consulte moins souvent que la moyenne. */
-  const nbB=g.rows.filter(function(r){ return r.bonus!=null; }).length;
-  const resume=(colsLib.length?colsLib.length+' leçon'+(colsLib.length>1?"s":""):'aucune leçon')
-    +(g.classBonus!=null?' · moyenne '+String(g.classBonus).replace(".",",")+'/20':'')
-    +(nbB?' · '+nbB+' élève'+(nbB>1?"s":"")+' concerné'+(nbB>1?"s":""):'');
-  h+='<details class="gb-bloc"'+(_gbBonusOuvert?" open":"")+' ontoggle="_gbBonusOuvert=this.open">'
-    +'<summary><i class="ph-fill ph-gift"></i> Évaluations bonus <span>'+resume+'</span>'
-    +'<span class="gb-sp"></span>'+evExportBtnHTML(classId,"bonus")+'</summary>'
-    +'<div class="gb-bloc-c">'
-    +((colsLib.length||aBonus)?gbTableHTML(classId,g,colsLib,"bonus")
-       :'<p class="badge-vide">Aucune évaluation passée librement sur cette période.</p>')
-    +evBonusSyntheseHTML(g)+'</div></details>';
-  return h;
-}
 /* Une phrase sur l'élève que le bonus fait le plus monter : c'est là que se voit
    le travail en autonomie, qu'aucune autre colonne ne montre. */
 function evBonusSyntheseHTML(g){
@@ -23623,36 +24055,20 @@ function evBonusSyntheseHTML(g){
   if(!best)return "";
   const n=function(x){ return String(x).replace(".",","); };
   const q=best.r.nom?echapH(best.r.nom):best.r.code;
-  return '<p style="color:var(--encre-doux);font-size:.85rem;margin:10px 2px 0">'
+  return '<p style="color:var(--encre-doux);font-size:.85rem;margin:0 2px 8px">'
     +'<i class="ph ph-lightbulb" style="color:var(--or-texte)"></i> '
     +'<b>'+q+'</b> a '+n(best.r.moy)+'/20 de moyenne mais <b>'+n(best.r.bonus)+'/20</b> de note bonus : '
     +'beaucoup de travail en autonomie.</p>';
-}
-function evGradebookHTML(classId){
-  const g=evGradebookData(classId,true);
-  const aBonus=g.rows.some(function(r){ return r.bonus!=null; });
-  if(!g.cols.length && !aBonus && !g.rows.length){
-    return evKpiHTML(g)+'<p class="badge-vide">Aucun élève et aucune évaluation sur cette période. '
-      +'Créez des codes dans « Élèves et codes », ou ajoutez une évaluation hors ligne.</p>';
-  }
-  return evKpiHTML(g)
-    +'<div id="gbZone">'+evGbTablesHTML(classId)+'</div>'
-    +evAideCarnetHTML(classId);
 }
 /* Le mode d'emploi et la règle de calcul : présents, mais repliés. */
 function evAideCarnetHTML(classId){
   const r=bonusLibreDe(classId);
   const n=function(x){ return String(Math.round(x*100)/100).replace(".",","); };
-  return '<details class="gb-bloc gb-aide"><summary><i class="ph ph-question"></i> Aide <span>saisie des notes et calcul du bonus</span></summary>'
-    +'<div class="gb-bloc-c">'
-    +'<p><b>Saisir une note</b> : cliquez une case, même vide. Les <b>flèches</b> déplacent la sélection, le <b>clic droit</b> efface, fait refaire ou montre l\'historique. '
-    +'Codes acceptés : <b>A</b> absent, <b>n</b> non noté, <b>w</b> compte 0, <b>r</b> non rendu. Sur un en-tête : clic pour trier, clic droit pour renommer.</p>'
-    +'<p><b>Note bonus</b> : moyenne des <b>'+r.socle+'</b> meilleures évaluations que l\'élève passe de lui-même (divisée par '+r.socle+' même s\'il en a moins), puis <b>+'+n(r.pas)+'</b> par évaluation réussie de plus. En dessous de <b>'+n(r.seuil)+'/20</b>, une évaluation est ignorée.</p>'
-    +(r.coefBonus>0
-      ? '<p><b>Moyenne générale</b> : demandées <b>×'+n(r.coefOff)+'</b> et note bonus <b>×'+n(r.coefBonus)+'</b>, mais seulement si le bonus <b>fait monter</b> l\'élève : sinon il s\'affiche en gris entre parenthèses et la générale reste la moyenne.</p>'
-      : '<p><b>Moyenne générale</b> : désactivée (coefficient du bonus à 0).</p>')
-    +'<p><a href="#" onclick="ecranParametres();return false">Modifier ces règles dans Paramètres → Règles de la classe</a></p>'
-    +'</div></details>';
+  return '<p><b>Saisir</b> : clic dans une case, flèches pour se déplacer, clic droit pour effacer ou faire refaire. Codes : <b>A</b> absent, <b>n</b> non noté, <b>w</b> compte 0, <b>r</b> non rendu.</p>'
+    +'<p><b>En-têtes</b> : clic pour trier, clic droit pour renommer.</p>'
+    +'<p><b>Note bonus</b> : les <b>'+r.socle+'</b> meilleures évaluations libres (÷ '+r.socle+'), puis <b>+'+n(r.pas)+'</b> par évaluation réussie de plus ; sous <b>'+n(r.seuil)+'/20</b>, ignorée.</p>'
+    +(r.coefBonus>0?'<p><b>Générale</b> : demandées ×'+n(r.coefOff)+', bonus ×'+n(r.coefBonus)+', seulement si le bonus fait monter.</p>':'')
+    +'<p><a href="#" onclick="ecranParametres();return false">Régler dans Paramètres</a></p>';
 }
 /* Historique complet des passages LIBRES d'un élève sur un thème (seule la meilleure compte). */
 function evLibreHistorique(classId,tk,code){
@@ -23698,7 +24114,8 @@ function evColEditer(classId,key){
         <input id="ecCoef" type="number" min="0" max="10" step="0.5" value="${coef}" style="width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--ligne);border-radius:8px;font-family:inherit;background:var(--surface);color:var(--encre)"></label>
       <label class="chk" style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;background:var(--or-fond,rgba(242,201,76,.16));border:1px solid var(--or);border-radius:8px;padding:9px 11px">
         <input id="ecBonus" type="checkbox" ${bonus?"checked":""}> <span>Évaluation <b>bonus</b> : hors moyenne, elle compte comme une évaluation libre dans la colonne « Note bonus ».</span></label>
-      ${src==="d"?`<button class="action btn-nouv eq-btn" onclick="evQuestionsEcran('${classId}','${key}')"><i class="ph ph-chart-bar-horizontal"></i> Questions ratées</button>`:""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${src==="d"?`<button class="action btn-nouv eq-btn" onclick="evQuestionsEcran('${classId}','${key}')"><i class="ph ph-chart-bar-horizontal"></i> Questions ratées</button>`:""}
+      ${bonus?"":`<button class="action btn-nouv eq-btn" onclick="(function(){var x=document.getElementById('evColPop');if(x)x.remove();})();evPronoteAssistant('${classId}','c:${key}')"><i class="ph ph-export"></i> Vers Pronote</button>`}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center">
         <button class="action btn-corr" onclick="evColSauver('${classId}','${key}')"><i class="ph ph-check"></i> Enregistrer</button>
         <button class="action btn-nouv" onclick="(function(){var x=document.getElementById('evColPop');if(x)x.remove();})()">Annuler</button>
@@ -23873,10 +24290,16 @@ async function evFaireRefaire(classId,code,devId){
   const lab=labelDe(classId,code)||code;
   if(!await dlgConfirmer("Faire REFAIRE cette évaluation à « "+lab+" » ?\n\nElle se rouvrira pour lui à sa prochaine connexion (même hors créneau), et sa nouvelle note remplacera l'ancienne."))return;
   const s=fbStore(); if(!s){svcIndispo();return;}
-  const token=devId+"|"+Date.now();
+  const token=devId+"|"+Date.now(), FV=firebase.firestore.FieldValue, cle="d:"+devId, car={};
+  /* une note saisie au carnet pour cette évaluation cacherait la nouvelle copie : on la retire */
+  car[cle]=FV.delete();
   s.collection("classes").doc(classId).collection("eleves").doc(code)
-    .set({refaire:firebase.firestore.FieldValue.arrayUnion(token)},{merge:true})
-    .then(function(){ toast("« "+lab+" » pourra refaire l'évaluation à sa prochaine connexion."); })
+    .set({refaire:FV.arrayUnion(token),carnet:car},{merge:true})
+    .then(function(){
+      const el=((_evEleves[classId]||{})[code]);
+      if(el){ if(el.carnet)delete el.carnet[cle]; el.refaire=(Array.isArray(el.refaire)?el.refaire:[]).concat([token]); }
+      toast("« "+lab+" » pourra refaire l'évaluation à sa prochaine connexion.");
+      if(typeof evalsRendre==="function"&&document.querySelector(".gbx"))evalsRendre(); })
     .catch(function(){ toast("Échec : réessaie dans un instant."); });
 }
 /* Clic droit sur une note du carnet : menu « saisir une note / faire refaire » (façon Pronote). */
@@ -23976,21 +24399,6 @@ function evBonusDetail(b){
   if(b.brut>20)t+=" · total réel "+n(b.brut)+", ramené à 20";
   return echapH(t);
 }
-/* Lignes « Nom<tab>Moyenne<tab>Note bonus », prêtes à coller dans Pronote :
-   la moyenne des évaluations demandées et la note bonus sont deux colonnes
-   distinctes, à saisir dans deux devoirs Pronote différents. */
-function evElLignes(classId,quoi){
-  /* on part du CARNET : tous les élèves de la classe y figurent, même sans note */
-  const g=evGradebookData(classId,true);
-  const n=function(x){ return x==null?"":String(x).replace(".",","); };
-  return g.rows.slice().sort(function(a,b){
-    return String(a.nom||"￿").localeCompare(String(b.nom||"￿"),"fr",{numeric:true});
-  }).map(function(e){
-    /* la note bonus se saisit dans un devoir Pronote à part : on l'exporte seule */
-    if(quoi==="bonus")return (e.nom||e.code)+"\t"+n(e.bonus);
-    return (e.nom||e.code)+"\t"+n(e.moy)+"\t"+n(e.bonus)+"\t"+n(e.generale);
-  }).join("\n");
-}
 /* Une ligne par élève de la classe : le carnet (moyenne, note bonus) complété par
    les repères de la vue par élève (plus basse, plus haute, à vérifier). */
 function evElLignesData(classId){
@@ -24003,25 +24411,6 @@ function evElLignesData(classId){
     return {code:r.code, nom:r.nom, moy:r.moy, bonusNote:r.bonus, generale:r.generale, nb:e.nb||0,
             mini:e.mini, maxi:e.maxi, motifs:e.motifs||[]};
   });
-}
-/* Les notes seules, sans ligne de titres : à coller directement dans la colonne
-   d'un devoir Pronote, sans avoir à ignorer la première ligne. */
-function evElCopierBrut(classId,quoi){
-  appPresse(evElLignes(classId,quoi));
-  toast(quoi==="bonus"
-    ? "Copié sans titres : une ligne par élève (nom, note bonus). Collez dans la grille de notes avec Ctrl+V."
-    : "Copié sans titres : une ligne par élève (nom, moyenne, note bonus, générale). Collez dans la grille de notes avec Ctrl+V.");
-}
-function evElCopier(classId,quoi){
-  if(quoi==="bonus"){
-    appPresse("Nom\tNote bonus\n"+evElLignes(classId,"bonus"));
-    toast("Note bonus copiée (nom, note). Dans Pronote : ouvrez le devoir de bonus, cliquez dans la première case puis Ctrl+V. La 1re ligne est un titre, à ignorer à l'import.");
-    return;
-  }
-  appPresse("Nom\tMoyenne (évaluations demandées)\tNote bonus\tMoyenne générale\n"+evElLignes(classId));
-  /* Pronote accepte le collage depuis le presse-papier : on rappelle la manipulation,
-     et la ligne de titres se saute avec « ne pas importer les premières lignes ». */
-  toast("Copié (nom, moyenne, note bonus, générale). Dans Pronote : ouvrez le devoir, cliquez dans la première case puis Ctrl+V. La 1re ligne est un titre, à ignorer à l'import.");
 }
 function evElExporter(classId,quoi){
   const l=evElLignesData(classId);
@@ -24046,7 +24435,130 @@ function evElExporter(classId,quoi){
   const csv=lignes.map(function(x){
     return x.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
   csvTelecharger("museduc_moyennes.csv",csv);
-  toast("Liste enregistrée (encodage Windows, lisible tel quel par Pronote et Excel).");
+  toast("Tableau enregistré pour un tableur. Pour Pronote, passez par « Vers Pronote » : une note à la fois.");
+}
+/* ---------- Vers Pronote, pas à pas (10/10/2026) ----------
+   Pronote attend une colonne « Nom + Prénom » puis une colonne de note, associée au
+   champ de note. L'ancien fichier à neuf colonnes (code, nombre d'évaluations, plus
+   basse…) laissait cette colonne « à associer » : Pronote refusait l'import (« 1
+   champ manquant »). On produit donc DEUX colonnes : l'élève, et la note choisie. */
+/* Ce qu'on peut envoyer : chaque évaluation demandée, une par une (la plus récente
+   en haut), la note bonus (seulement pour les élèves qui ont atteint le nombre
+   d'évaluations libres demandé, réglable dans Paramètres), et les moyennes. */
+function evPronoteSources(classId){
+  const g=evGradebookData(classId,false), N=g.rows.length;
+  const evs=g.cols.filter(function(c){ return !c.bonus; }).slice()
+    .sort(function(a,b){ return (b.order||0)-(a.order||0); })
+    .map(function(c){ const ct=evColCourt(classId,c); let n=0;
+      g.rows.forEach(function(r){ const x=r.cells[c.key]; if(x&&x.count!=null)n++; });
+      return {k:"c:"+c.key, t:ct.t, d:ct.d, ic:ct.ic, date:evColDate(c), coef:c.coef, nom:nomThemePropre(c.nom), n:n}; });
+  const nb=function(f){ return g.rows.filter(f).length; };
+  return {g:g, N:N, evs:evs,
+    bonusOK:nb(function(r){ return r.bonusInfo&&r.bonusInfo.manque===0; }),
+    bonusEnCours:nb(function(r){ return r.bonusInfo&&r.bonusInfo.manque>0; }),
+    moyN:nb(function(r){ return r.moy!=null; }), genN:nb(function(r){ return r.generale!=null; })};
+}
+function evPronoteLignes(classId,k){
+  const g=evGradebookData(classId,false);
+  const n=function(x){ return String(Math.round(x*10)/10).replace(".",","); };
+  return g.rows.slice().sort(function(a,b){
+    return String(a.nom||"￿").localeCompare(String(b.nom||"￿"),"fr",{numeric:true});
+  }).map(function(r){
+    let v=null;
+    if(k==="moy")v=r.moy; else if(k==="gen")v=r.generale;
+    /* note bonus : seulement si le socle est complet (sinon elle n'est pas définitive) */
+    else if(k==="bonus")v=(r.bonusInfo&&r.bonusInfo.manque===0)?r.bonus:null;
+    else if(k.indexOf("c:")===0){ const c=r.cells[k.slice(2)];
+      /* absent : « Abs », que Pronote reconnaît ; non noté ou non rendu : rien */
+      if(c)v=(c.count!=null)?c.count:(c.raw==="A"?"Abs":null); }
+    return {nom:r.nom||"", code:r.code, note:v==null?"":(typeof v==="number"?n(v):v)};
+  });
+}
+function evPronoteChoix(){ const r=document.querySelector('#pnVoile input[name="pnQuoi"]:checked'); return r?r.value:"moy"; }
+function evPronoteAssistant(classId,quoi){
+  evPronoteFermer();
+  const S=evPronoteSources(classId), N=S.N, socle=S.g.reg.socle;
+  const cl=(_profClasses||[]).filter(function(c){ return c.id===classId; })[0]||{};
+  const avecGen=S.g.reg.coefBonus>0;
+  /* choix de départ : ce qui est demandé, sinon la dernière évaluation qui a des notes */
+  const valides=S.evs.map(function(e){ return e.k; }).concat(["bonus","moy"],avecGen?["gen"]:[]);
+  let choix=(quoi&&valides.indexOf(quoi)>=0)?quoi:"";
+  if(!choix){ const e=S.evs.filter(function(x){ return x.n>0; })[0]||S.evs[0]; choix=e?e.k:"moy"; }
+  const opt=function(k,titre,sous,n,ic){
+    return '<label class="pn-o'+(n?"":" vide")+'"><input type="radio" name="pnQuoi" value="'+escapeHtml(k)+'"'+(k===choix?" checked":"")
+      +' onchange="evPronoteApercu(\''+classId+'\')">'
+      +'<span class="pn-o-ic"><i class="ph ph-'+ic+'"></i></span>'
+      +'<span class="pn-o-t"><b>'+titre+'</b>'+(sous?'<small>'+sous+'</small>':'')+'</span>'
+      +'<span class="pn-o-n" title="'+n+' note'+(n>1?"s":"")+' sur '+N+'">'+n+'<small>/'+N+'</small></span></label>'; };
+  const n2=function(x){ return String(Math.round(x*100)/100).replace(".",","); };
+  let liste=S.evs.map(function(e){
+    const sous=(e.d?'<span class="gbx-d d'+e.d+'">'+EV_DIFF_COURT[e.d]+'</span>':'')
+      +(e.date?'<span>'+e.date+'</span>':'')+((e.coef&&e.coef!=1)?'<span class="gbx-coef">×'+n2(e.coef)+'</span>':'')
+      +(e.nom&&e.nom!==e.t?'<span class="pn-o-nom">'+echapH(e.nom)+'</span>':'');
+    return opt(e.k,echapH(e.t),sous,e.n,e.ic==="printer"?"printer":(e.ic==="pencil-simple"?"pencil-simple":"exam")); }).join("");
+  if(!liste)liste='<p class="pn-rien">Aucune évaluation demandée sur cette période.</p>';
+  const ov=document.createElement("div"); ov.className="dlg-voile"; ov.id="pnVoile";
+  ov.innerHTML='<div class="dlg pn" role="dialog" aria-modal="true" aria-labelledby="pnTitre">'
+    +'<button type="button" class="pn-fermer" aria-label="Fermer" onclick="evPronoteFermer()"><i class="ph ph-x"></i></button>'
+    +'<h2 class="dlg-titre" id="pnTitre"><i class="ph ph-export"></i> Vers Pronote</h2>'
+    +'<p class="pn-sous">'+echapH(cl.nom||"Classe")+' · une note à la fois : <b>Nom + Prénom</b>, puis la <b>note</b>.</p>'
+    +'<fieldset class="pn-choix"><legend>Quelle note&nbsp;?</legend><div class="pn-os">'
+    +'<div class="pn-gr">Évaluations demandées</div>'+liste
+    +'<div class="pn-gr">Notes de synthèse</div>'
+    +opt("bonus","Note bonus",'seulement les élèves qui ont atteint <b>'+socle+'</b> évaluations libres'
+      +(S.bonusEnCours?' · '+S.bonusEnCours+' en cours, laissé'+(S.bonusEnCours>1?"s":"")+' vide'+(S.bonusEnCours>1?"s":""):''),S.bonusOK,"gift")
+    +opt("moy","Moyenne des évaluations demandées","",S.moyN,"chart-bar")
+    +(avecGen?opt("gen","Moyenne générale","demandées et bonus",S.genN,"chart-line-up"):"")
+    +'</div></fieldset>'
+    +'<div id="pnApercu"></div>'
+    +'<div class="pn-btns"><button type="button" class="action btn-corr" onclick="evPronoteCopier(\''+classId+'\')"><i class="ph ph-copy"></i> Copier (le plus simple)</button>'
+    +'<button type="button" class="action btn-nouv" onclick="evPronoteFichier(\''+classId+'\')"><i class="ph ph-file-csv"></i> Fichier CSV</button></div>'
+    +'<details class="pn-aide"><summary>Dans Pronote, après « Copier »</summary><ol>'
+    +'<li><b>Notes › Saisie des notes</b> : affichez votre classe et votre service.</li>'
+    +'<li>Cliquez sur <b>Récupérer les notes depuis le presse-papier</b> (ou faites <b>Ctrl+V</b>).</li>'
+    +'<li>En haut des colonnes : la 1<sup>re</sup> devient <b>Nom + Prénom</b>, la 2<sup>e</sup> devient la <b>note</b>.</li>'
+    +'<li>Cochez <b>Ne pas importer 1 première ligne</b> (la ligne de titres), puis <b>Importer</b> : Pronote crée le devoir.</li></ol></details>'
+    +'<details class="pn-aide"><summary>Dans Pronote, avec le fichier CSV</summary><ol>'
+    +'<li><b>Import de données</b>, type <b>Notes par devoir</b>, séparateur <b>Point-virgule</b>, puis <b>Parcourir</b>.</li>'
+    +'<li>Colonne 1 : <b>Nom de l’élève</b>. Colonne 2 : cliquez sur <b>À associer</b> et choisissez le champ de <b>note</b>.</li>'
+    +'<li>Cochez <b>Ne pas importer 1 première ligne</b>, puis <b>Importer</b>.</li></ol></details>'
+    +'</div>';
+  ov.addEventListener("click",function(e){ if(e.target===ov)evPronoteFermer(); });
+  ov.addEventListener("keydown",function(e){ if(e.key==="Escape")evPronoteFermer(); });
+  document.body.appendChild(ov);
+  evPronoteApercu(classId);
+  try{ const r=ov.querySelector('input[name="pnQuoi"]:checked'); if(r){ r.focus(); r.closest("label").scrollIntoView({block:"nearest"}); } }catch(e){}
+}
+function evPronoteFermer(){ const v=document.getElementById("pnVoile"); if(v)v.remove(); }
+function evPronoteApercu(classId){
+  const k=evPronoteChoix(), z=document.getElementById("pnApercu"); if(!z)return;
+  const L=evPronoteLignes(classId,k), avec=L.filter(function(l){ return l.note!==""; }).length;
+  const abs=L.filter(function(l){ return l.note==="Abs"; }).length;
+  const sansNom=L.filter(function(l){ return !l.nom; }).length;
+  const ex=L.filter(function(l){ return l.note!==""; }).concat(L.filter(function(l){ return l.note===""; })).slice(0,3);
+  z.innerHTML='<div class="pn-apercu"><table><thead><tr><th>Nom + Prénom</th><th>Note</th></tr></thead><tbody>'
+    +ex.map(function(l){ return '<tr><td>'+(l.nom?echapH(l.nom):'<i>'+l.code+' (sans nom)</i>')+'</td><td>'+(l.note?echapH(l.note):'<span class="pn-plus">vide</span>')+'</td></tr>'; }).join("")
+    +(L.length>3?'<tr><td colspan="2" class="pn-plus">… et '+(L.length-3)+' autre'+(L.length-3>1?"s":"")+'</td></tr>':'')
+    +'</tbody></table></div>'
+    +'<p class="pn-bilan"><b>'+avec+'</b> note'+(avec>1?"s":"")+' sur '+L.length+' élève'+(L.length>1?"s":"")
+    +(abs?' (dont '+abs+' « Abs »)':'')
+    +(k==="bonus"?' : les autres n’ont pas encore leurs '+((evGradebookData(classId,false).reg||{}).socle||"")+' évaluations libres':'')+'.'
+    +(sansNom?' <span class="pn-alerte"><i class="ph-fill ph-warning"></i> '+sansNom+' élève'+(sansNom>1?"s":"")+' sans nom : Pronote ne pourra pas '+(sansNom>1?"les":"le")+' reconnaître (importez votre liste de classe dans <b>Élèves et codes</b>).</span>':'')+'</p>';
+}
+function evPronoteCopier(classId){
+  const k=evPronoteChoix();
+  appPresse("Nom + Prénom\tNote\n"+evPronoteLignes(classId,k).map(function(l){ return (l.nom||l.code)+"\t"+l.note; }).join("\n"));
+  toast("Copié : dans Pronote, Saisie des notes, puis « Récupérer les notes depuis le presse-papier » (Ctrl+V).");
+}
+function evPronoteFichier(classId){
+  const k=evPronoteChoix();
+  const q=function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; };
+  const csv=[q("Nom + Prénom")+";"+q("Note")].concat(evPronoteLignes(classId,k).map(function(l){ return q(l.nom||l.code)+";"+q(l.note); })).join("\r\n");
+  const cl=(_profClasses||[]).filter(function(c){ return c.id===classId; })[0]||{};
+  let quoi=k==="bonus"?"bonus":(k==="moy"?"moyenne":(k==="gen"?"generale":""));
+  if(!quoi){ const e=evPronoteSources(classId).evs.filter(function(x){ return x.k===k; })[0]; quoi=e?evSansAccent(e.t):"note"; }
+  csvTelecharger("pronote_"+String(cl.nom||"classe").replace(/[^A-Za-z0-9]+/g,"_")+"_"+quoi.replace(/[^a-z0-9]+/g,"_")+".csv",csv);
+  toast("Fichier enregistré (encodage Windows, comme l'attend Pronote) : suivez les étapes « avec le fichier CSV ».");
 }
 function evElImprimer(classId,quoi){
   const l=evElLignesData(classId);
@@ -24381,9 +24893,9 @@ function evChantRendre(classId){
     {l:"Chants notés",v:String(totChants),or:true}
   ]);
   h+='<p style="color:var(--encre-doux);font-size:.88rem;text-align:center">Cliquez sur un élève pour le détail de ses chants.</p>';
-  h+='<div style="overflow-x:auto"><table class="dash-table" style="width:100%;margin-top:6px"><thead><tr><th>Nom (privé)</th><th>Chants</th><th>Moyenne</th><th>Dernier</th><th></th></tr></thead><tbody>';
+  h+='<div style="overflow-x:auto"><table class="dash-table" style="width:100%;margin-top:6px"><thead><tr><th>Nom (privé)</th><th>Chants</th><th>Moyenne</th><th>Dernier</th><th><span class="sr-only">Détail</span></th></tr></thead><tbody>';
   lignes.forEach(function(b){
-    const coul=b.moy>=14?"var(--juste)":(b.moy>=10?"var(--or-texte)":"var(--faux)");
+    const coul=b.moy>=14?"var(--juste-texte)":(b.moy>=10?"var(--or-texte)":"var(--faux)");
     h+='<tr style="cursor:pointer" onclick="ecranChantElevesProf(\''+classId+'\',\''+b.code+'\')" title="Détail des chants">'
       +'<td><b>'+(b.nom?echapH(b.nom):'<span style="color:var(--encre-doux)">(sans nom)</span>')+'</b></td>'
       +'<td style="text-align:center">'+b.nb+'</td>'
@@ -24424,7 +24936,8 @@ function evBilanRendre(classId){
   evBilanCharger(classId,p);
   if(!_appDonnees.length)return h+'<p class="badge-vide">Aucun élève avec des données sur ce trimestre.</p>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px">'
-    +'<button class="action btn-corr" onclick="evExportPronote(\''+classId+'\')"><i class="ph ph-table"></i> Copier pour Pronote (colonnes)</button>'
+    +'<button class="action btn-corr" onclick="evPronoteAssistant(\''+classId+'\')"><i class="ph ph-export"></i> Vers Pronote (pas à pas)</button>'
+    +'<button class="action btn-nouv" onclick="evExportPronote(\''+classId+'\')"><i class="ph ph-table"></i> Copier toutes les colonnes</button>'
     +'<button class="action btn-nouv" onclick="evExportPronoteCSV(\''+classId+'\')"><i class="ph ph-file-csv"></i> Export Pronote (CSV)</button>'
     +'</div>';
   return h+lsuBlocHTML(classId,p)+appBlocHTML();
@@ -24913,12 +25426,13 @@ function lsuNiveaux(classId,p,code,f){
 function lsuBlocHTML(classId,p){
   lsuCharger(classId,p);
   const comp=LSU_COMP[lsuCycle(classId)];
-  return '<details class="gb-bloc lsu-bloc"'+(_lsuOuvert?" open":"")+' ontoggle="_lsuOuvert=this.open">'
+  return '<div class="gb-bloc-w"><details class="gb-bloc lsu-bloc"'+(_lsuOuvert?" open":"")+' ontoggle="_lsuOuvert=this.open">'
     +'<summary><i class="ph-fill ph-target"></i> Positionnement par compétences <span>'+(lsuCycle(classId)==="c3"?"cycle 3":"cycle 4")+' · pour le livret scolaire</span>'
-    +'<span class="gb-sp"></span><button type="button" class="gb-exp" onclick="event.preventDefault();event.stopPropagation();lsuCopier(\''+classId+'\')"><i class="ph ph-copy"></i> Copier</button></summary>'
+    +'</summary>'
     +'<div class="gb-bloc-c"><p class="lsu-aide">Niveaux <b>proposés</b> (en clair) d\'après les notes de chant, les évaluations de cours et le travail en classe ; « Explorer, imaginer, créer » n\'est pas mesuré par l\'application. '
     +'<b>Cliquez une case</b> pour choisir vous-même le niveau (il passe en plein). Légende : 1 insuffisante · 2 fragile · 3 satisfaisante · 4 très bonne.</p>'
-    +'<div id="lsuZone">'+lsuTableHTML(classId,p)+'</div></div></details>';
+    +'<div id="lsuZone">'+lsuTableHTML(classId,p)+'</div></div></details>'
+    +'<span class="gb-bloc-btn"><button type="button" class="gb-exp" onclick="lsuCopier(\''+classId+'\')"><i class="ph ph-copy"></i> Copier</button></span></div>';
 }
 function lsuTableHTML(classId,p){
   const comp=LSU_COMP[lsuCycle(classId)];
@@ -25158,64 +25672,6 @@ function evalsClasse(classId){
 }
 /* Bandeau-ruban de la page Évaluations : titre + sous-titre + sélecteur de classe
    intégré (flèches précédent/suivant + liste), dans la charte Ruban & Médaille. */
-/* Ruban marine de la page Évaluations (titre + sélecteur de classe).
-   NE PAS nommer evEnteteHTML : ce nom appartient à l'en-tête de colonne triable
-   (voir plus haut), qui est appelée en .map() par le tableau des évaluations. */
-function evRibanHTML(classId){
-  const l=_profClasses||[];
-  let idx=0; for(let i=0;i<l.length;i++){ if(l[i].id===classId){idx=i;break;} }
-  const prev=idx>0?l[idx-1].id:null, next=idx<l.length-1?l[idx+1].id:null;
-  const fl=function(id,ic,t){ return '<button class="ev-rib-fl"'+(id?"":" disabled")+' title="'+t+'"'+(id?' onclick="evalsClasse(\''+id+'\')"':"")+'><i class="ph '+ic+'"></i></button>'; };
-  const nav=(l.length>1)
-    ? fl(prev,"ph-caret-left","Classe précédente")
-      +'<select class="ev-rib-sel" onchange="evalsClasse(this.value)">'+l.map(function(c){return '<option value="'+c.id+'"'+(c.id===classId?" selected":"")+'>'+echapH(c.nom||"Classe")+'</option>';}).join("")+'</select>'
-      +fl(next,"ph-caret-right","Classe suivante")
-    : '<span class="ev-rib-cl">'+echapH((l[idx]&&l[idx].nom)||profil.classeNom||"Classe")+'</span>';
-  const _ts=evTrimestres(), _cur=evPeriodeCourante(classId), _opts=[EV_ALL].concat(_ts);
-  const per='<select class="ev-rib-sel" title="Trimestre affiché" onchange="evChoisirPeriode(this.value)">'
-    +_opts.map(function(t){ return '<option value="'+t.id+'"'+((_cur&&_cur.id===t.id)?" selected":"")+'>'+echapH(t.nom||"Trimestre")+'</option>'; }).join("")
-    +'</select>';
-  /* Chaque réglage est annoncé par son intitulé, comme sur la maquette : sans
-     cela, deux listes déroulantes côte à côte ne disent pas ce qu'elles règlent. */
-  const groupe=function(lib,contenu){
-    return '<div class="ev-rib-g"><span class="ev-rib-lab">'+lib+'</span>'
-      +'<div class="ev-rib-l">'+contenu+'</div></div>'; };
-  return '<div class="ev-riban">'+rubanRetourHTML()
-    +'<div class="ev-rib-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8z"/><path d="M5 21h14"/><path d="M6 21c0-4 2.7-7 6-7s6 3 6 7"/></svg></div>'
-    +'<div class="ev-rib-txt"><div class="ev-rib-titre">Évaluations</div>'
-    +'<div class="ev-rib-sous">Cliquez sur un élève pour son détail.</div></div>'
-    +'<div class="ev-rib-nav">'+groupe("Classe",nav)
-    +groupe("Période",per
-      +'<button class="ev-rib-fl" title="Régler les périodes de l\'année" onclick="_paramVue=\'trimestres\';ecranParametres()"><i class="ph ph-gear"></i></button>')
-    +'</div></div>';
-}
-/* Barre : onglets à gauche, contrôles à droite (trimestre pour tous les onglets,
-   « voir aussi les libres » en plus pour l'onglet Cours). */
-function evBarre(classId){
-  const tabs='<div class="ev-onglets-c"><div class="ev-onglets">'
-    +'<button class="'+(_evVue==="eleves"?"on":"")+'" onclick="evVue(\'eleves\')"><i class="ph ph-exam"></i> Cours</button>'
-    +'<button class="'+(_evVue==="chant"?"on":"")+'" onclick="evVue(\'chant\')"><i class="ph ph-microphone-stage"></i> Chant</button>'
-    +(TRAVAIL_CLASSE?'<button class="'+(_evVue==="comport"?"on":"")+'" onclick="evVue(\'comport\')"><i class="ph ph-chalkboard-simple"></i> Comportement</button>':'')
-    +'<button class="'+(_evVue==="bilan"?"on":"")+'" onclick="evVue(\'bilan\')"><i class="ph ph-scroll"></i> Bilan</button>'
-    +'<button class="'+(_evVue==="vigil"?"on":"")+'" onclick="evVue(\'vigil\')"><i class="ph ph-shield-warning"></i> Vigilance'+(function(){
-        try{ const l=_evalsCache[classId]||[], b=evBornesPeriode(evPeriodeCourante(classId),classId);
-          const n=l.filter(function(e){ return evEstEpreuve(e)&&(e.fait||0)>=b.deb&&(e.fait||0)<=b.fin&&suspicionEval(e,{cid:classId,liste:l}).niveau>=1; }).length;
-          return n?' <span class="vg-badge">'+n+'</span>':''; }catch(e){ return ''; } })()+'</button>'
-    +'</div></div>';
-  /* Comme sur la maquette : la recherche et le bouton « Ajouter » vivent au bout
-     de la ligne des onglets, pas dans une barre d'outils supplémentaire. */
-  let droite="";
-  if(_evVue==="eleves")
-    droite+='<label class="ev-rech"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'
-      +'<span class="sr-seul">Chercher un élève</span>'
-      +'<input id="gbRech" type="search" placeholder="Chercher un élève…" value="'+echapH(_gbNom)+'" oninput="evGbChercher(this.value)"></label>';
-  if(_evVue==="eleves"||_evVue==="chant"){
-    const cat=(_evVue==="chant")?"chant":"cours";
-    droite+='<button class="ev-btn-or" onclick="evManuelEditer(\''+classId+'\',\''+cat+'\')">'
-      +'<i class="ph-fill ph-plus"></i> Ajouter une évaluation</button>';
-  }
-  return '<div class="ev-barre">'+tabs+(droite?'<div class="ev-barre-d">'+droite+'</div>':'')+'</div>';
-}
 /* Barre d'outils du carnet (Option A) : titre à gauche, bouton « Ajouter » marine
    + puces des évals hors-ligne existantes à droite. */
 let _gbNom="";   /* filtre « chercher un élève » du carnet */
@@ -25223,7 +25679,7 @@ function evGbChercher(v){
   _gbNom=String(v||"");
   /* on ne redessine que les tableaux : le champ garde le curseur */
   const z=document.getElementById("gbZone"); if(!z){ if(typeof evalsRendre==="function")evalsRendre(); return; }
-  z.innerHTML=evGbTablesHTML(_evClasse);
+  const p=gbxGarde(); z.innerHTML=evGbTablesHTML(_evClasse); gbxApres(p);
 }
 /* Les évaluations saisies hors ligne, en puces : cliquer en modifie une. */
 function evChipsManuelles(classId,cat){
@@ -25240,16 +25696,6 @@ function evToolbarHTML(classId,cat,titre){
   return '<div class="ev-toolbar">'
     +'<div class="ev-carnet-titre"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8E6D0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v15H4z"/><path d="M4 10h16M9 5v15"/></svg> '+echapH(titre)+'</div>'
     +'<div class="ev-toolbar-act">'+chips+'</div></div>';
-}
-/* Les quatre sorties du carnet, dans un seul menu : la barre reste lisible. */
-/* Bouton « Exporter » posé dans le titre d'un carnet. Le menu s'ouvre au-dessus
-   de la page (et non dans le titre) : un menu dépliant imbriqué dans un titre
-   dépliant ouvrirait les deux à la fois. « quoi » vaut "tout" (moyennes de la
-   classe) ou "bonus" (la seule note bonus). */
-function evExportBtnHTML(classId,quoi){
-  return '<button type="button" class="gb-exp" title="Copier ou enregistrer ces notes"'
-    +' onclick="evExportPop(event,this,\''+classId+'\',\''+quoi+'\')">'
-    +'<i class="ph ph-export"></i> Exporter</button>';
 }
 let _evPopBtn=null;
 function evExportPopFermer(){
@@ -25268,11 +25714,9 @@ function evExportPop(ev,btn,classId,quoi){
   const bonus=(quoi==="bonus");
   const d=document.createElement("div");
   d.id="evExpPop"; d.className="ev-pop";
-  d.innerHTML=item("evElCopier","ph-copy","Copier pour Pronote",
-      "Avec une ligne de titres. Dans Pronote : ouvrez le devoir, cliquez la première case, puis Ctrl+V.")
-    +item("evElCopierBrut","ph-list-numbers","Copier sans l&rsquo;en-tête",
-      "Les mêmes lignes sans titres, à coller directement dans une colonne.")
-    +item("evElExporter","ph-file-csv","Fichier CSV","Encodage Windows, lisible par Pronote et Excel.")
+  d.innerHTML=item("evPronoteAssistant","ph-export","Vers Pronote",
+      "Une évaluation à la fois (ou la note bonus) : Nom + Prénom et la note, avec les étapes à suivre dans Pronote.")
+    +item("evElExporter","ph-file-csv","Tableau complet (CSV)","Toutes les colonnes, pour un tableur. Pour Pronote, utilisez « Vers Pronote ».")
     +item("evElImprimer","ph-printer","Imprimer",
       bonus?"Une page A4 avec les notes bonus.":"Une page A4 avec les moyennes de la classe.");
   document.body.appendChild(d);
@@ -25299,7 +25743,7 @@ function evalsRendre(){
       +'<p class="badge-vide">Aucune note pour l&rsquo;instant. Vos élèves en déposeront <b>avec leur code</b>, ou saisissez une évaluation hors ligne avec <b>Ajouter une évaluation</b>.</p>';
     return;
   }
-  if(!tous.length){ z.innerHTML=tete+barre+evGradebookHTML(classId); return; }
+  if(!tous.length){ const p=gbxGarde(); z.innerHTML=tete+barre+evGradebookHTML(classId); gbxApres(p); return; }
   const themes=[]; tous.forEach(function(e){ const t=e.theme||"(sans thème)";
     if(themes.indexOf(t)<0)themes.push(t); });
   themes.sort(function(x,y){return x.localeCompare(y,"fr");});
@@ -25312,7 +25756,7 @@ function evalsRendre(){
   });
   const moy=ev.length?Math.round(ev.reduce(function(t,e){return t+((e.note||0)/(e.sur||20))*20;},0)/ev.length*10)/10:0;
   if(_evVue==="eleves"){
-    z.innerHTML=tete+barre+evGradebookHTML(classId);
+    const p=gbxGarde(); z.innerHTML=tete+barre+evGradebookHTML(classId); gbxApres(p);
     return;
   }
   let h=tete+barre
@@ -25486,70 +25930,469 @@ function imprimerEvalDomaine(domId,diff){
     +'<div style="page-break-before:always"></div>'+corrigeImprimerHTML(exos);
   ouvrirImpression("Évaluation : "+titre, corps);
 }
-/* Écran professeur : recueil de leçons (cahier de travail papier). */
-function impProfListeHTML(){
-  let h="";
-  CATEGORIES.filter(function(g){return !g.special;}).forEach(function(g){
-    const items=g.items.filter(function(it){return LECONS[it.id];});
-    if(!items.length)return;
-    h+='<details class="imp-groupe">'
-      +'<summary class="imp-groupe-t">'
-      +'<span class="imp-grp-chk" onclick="event.stopPropagation()"><input type="checkbox" class="imp-grp-master" onchange="impGroupeToggle(this)" title="Cocher / décocher tout le domaine"></span>'
-      +'<span class="imp-grp-nom">'+echapH(g.groupe)+'</span>'
-      +'<span class="imp-grp-compte">'+items.length+'</span>'
-      +'</summary><div class="imp-groupe-corps">';
-    items.forEach(function(it){
-      h+='<label class="imp-lecon"><input type="checkbox" class="imp-chk" value="'+it.id+'" onchange="impMajMaster()"> '+echapH(nomThemePropre(it.nom))+'</label>';
+/* =====================================================================
+   ÉVALUATIONS QCM SUR PAPIER (10/10/2026)
+   Pour les élèves sans tablette : des copies imprimées dont chaque question est un
+   QCM ; l'élève ENTOURE la lettre de sa réponse dans la grille en tête de copie.
+   Chaque copie porte une RÉFÉRENCE (K7QM, ou K7QM-3 quand les copies sont toutes
+   différentes) qui renvoie à son corrigé, imprimé à part : même grille, bonnes
+   lettres noircies, à poser à côté de la copie pour corriger d'un coup d'œil.
+   Le centre de correction fait le calcul : référence + lettres entourées → note,
+   rangée directement dans le carnet (avec, au besoin, des points retirés pour un
+   oubli de tablette). Les clés (lettres justes) sont gardées sur le compte du
+   professeur (teachers/{uid}.copiesPapier) : elles servent sur tout appareil.
+   Aucune question n'est conservée, seulement les lettres.
+   ===================================================================== */
+const PP_L="ABCDEFGH", PP_ALPHA="ACDEFHJKMNPRTUVWXY3479";
+let _ppLot=null, _ppCles=null;
+/* une question imprimable en QCM : énoncé, choix, rang du bon choix ; null sinon
+   (question à écouter, à saisie libre, ou à plusieurs bonnes réponses) */
+function ppQCM(ex){
+  if(!ex||ex.sonBtn||ex.studio)return null;
+  let opts=[];
+  if(Array.isArray(ex.visuel)&&ex.visuel.length)opts=ex.visuel.map(function(o){ return {val:o.val,html:o.html}; });
+  else{
+    const d=document.createElement("div"); d.innerHTML=ex.champ||"";
+    const bt=d.querySelectorAll(".choix-btns .opt");
+    if(bt.length)opts=[].map.call(bt,function(b){ return {val:b.getAttribute("data-val"),html:b.innerHTML}; });
+    else{ const sel=d.querySelector("select"); if(!sel)return null;
+      opts=[].filter.call(sel.options,function(o){ return o.value!==""; }).map(function(o){ return {val:o.value,html:echapH(o.textContent)}; }); }
+  }
+  if(opts.length<2||opts.length>PP_L.length)return null;
+  const bons=[]; opts.forEach(function(o,i){ let ok=false; try{ ok=!!ex.verif(o.val); }catch(e){} if(ok)bons.push(i); });
+  if(bons.length!==1)return null;
+  return {q:ex.consigne||"", opts:opts.map(function(o){ return o.html; }), r:bons[0]};
+}
+/* n questions QCM différentes sur un thème (on surgénère, puis on trie) */
+function ppGenerer(domId,diff,n){
+  const out=[], vus={};
+  for(let essai=0;essai<5&&out.length<n;essai++){
+    genererExosPourImpression(domId,diff,Math.min(50,n*2)).forEach(function(ex){
+      if(out.length>=n)return;
+      const q=ppQCM(ex); if(!q)return;
+      const k=empreinteEx(ex); if(vus[k])return; vus[k]=1; out.push(q);
     });
-    h+='</div></details>';
+  }
+  return out;
+}
+function ppTitre(dom){ return String(nomCatTxt(dom)||dom).replace(/^Évaluation\s*:\s*/,""); }
+function ppNouvelId(){ let s=""; for(let i=0;i<4;i++)s+=PP_ALPHA[Math.floor(Math.random()*PP_ALPHA.length)]; return s; }
+/* clés : celles du compte (serveur), complétées par la copie de cet appareil */
+function ppClesCharger(force){
+  if(_ppCles&&!force)return Promise.resolve(_ppCles);
+  let loc={}; try{ loc=JSON.parse(localStorage.getItem("museducCopiesPapier")||"{}")||{}; }catch(e){}
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
+  if(!s||!u){ _ppCles=loc; return Promise.resolve(_ppCles); }
+  return s.collection("teachers").doc(u.uid).get().then(function(d){
+    _ppCles=Object.assign({},loc,(((d&&d.exists&&d.data())||{}).copiesPapier)||{}); return _ppCles;
+  }).catch(function(){ _ppCles=loc; return _ppCles; });
+}
+function ppClesSauver(nouv){
+  _ppCles=Object.assign(_ppCles||{},nouv);
+  /* on garde les 400 références les plus récentes */
+  const vieux=Object.keys(_ppCles).sort(function(a,b){ return (_ppCles[b].t||0)-(_ppCles[a].t||0); }).slice(400);
+  vieux.forEach(function(k){ delete _ppCles[k]; });
+  try{ localStorage.setItem("museducCopiesPapier",JSON.stringify(_ppCles)); }catch(e){}
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return Promise.resolve(false);
+  const maj=Object.assign({},nouv); vieux.forEach(function(k){ maj[k]=firebase.firestore.FieldValue.delete(); });
+  return s.collection("teachers").doc(u.uid).set({copiesPapier:maj},{merge:true}).then(function(){ return true; }).catch(function(){ return false; });
+}
+/* ---------- Fabrication du lot ---------- */
+function ppPreparer(){
+  const v=function(id){ return (document.getElementById(id)||{}).value; };
+  const rd=document.querySelector('input[name="ppDiff"]:checked');
+  const dom=v("ppDom"), diff=(rd?parseInt(rd.value,10):0)||2;
+  const n=Math.max(5,Math.min(40,parseInt(v("ppNb"),10)||20)), nc=Math.max(1,Math.min(40,parseInt(v("ppCopies"),10)||1));
+  const m=document.querySelector('input[name="ppMode"]:checked'), mode=m?m.value:"pareil";
+  if(!dom||!GEN[dom]){ toast("Choisis un thème."); return; }
+  const z=document.getElementById("ppResultat"); if(z)z.innerHTML='<p class="pp-attente"><i class="ph ph-hourglass-medium"></i> Préparation des copies…</p>';
+  ppClesCharger().then(function(){
+    const pris=Object.keys(_ppCles||{}); let id;
+    do{ id=ppNouvelId(); }while(pris.some(function(k){ return k===id||k.indexOf(id+"-")===0; }));
+    const copies=[];
+    if(mode==="pareil")copies.push({ref:id,qs:ppGenerer(dom,diff,n)});
+    else for(let i=1;i<=nc;i++)copies.push({ref:id+"-"+i,qs:ppGenerer(dom,diff,n)});
+    if(copies.some(function(c){ return !c.qs.length; })){
+      if(z)z.innerHTML='<p class="pp-alerte"><i class="ph-fill ph-warning"></i> Ce thème n’a pas de questions à choix imprimables (elles se font à l’écoute ou par saisie). Choisis-en un autre.</p>'; return; }
+    const t=Date.now(), titre=ppTitre(dom);
+    _ppLot={id:id,dom:dom,titre:titre,diff:diff,n:n,nc:nc,mode:mode,copies:copies,t:t};
+    const cles={}; copies.forEach(function(c){
+      cles[c.ref]={k:c.qs.map(function(q){ return PP_L[q.r]; }).join(""), o:c.qs.map(function(q){ return q.opts.length; }).join(""),
+                   titre:titre, dom:dom, diff:diff, lot:id, t:t}; });
+    ppClesSauver(cles).then(function(ok){
+      const court=Math.min.apply(null,copies.map(function(c){ return c.qs.length; }));
+      const refs=mode==="pareil"?id:id+"-1 à "+id+"-"+nc;
+      if(z)z.innerHTML='<div class="imp-pret"><span class="imp-pret-ic"><i class="ph-fill ph-check-circle"></i></span>'
+        +'<div class="imp-pret-t"><b>'+nc+' copie'+(nc>1?"s":"")+' prête'+(nc>1?"s":"")+'</b><small>'+court+' questions · réf. '+refs+(court<n?' · ce thème n’en offre pas plus':'')+'</small></div>'
+        +'<div class="imp-pret-b"><button class="action btn-corr" onclick="ppImprimerSujets()"><i class="ph ph-printer"></i> Sujets</button>'
+        +'<button class="action btn-corr" onclick="ppImprimerCorriges()"><i class="ph ph-key"></i> '+(mode==="pareil"?"Corrigé":"Corrigés")+'</button>'
+        +'<button class="action btn-nouv" onclick="ecranCorrectionPapier(\''+(mode==="pareil"?id:id+"-1")+'\')"><i class="ph ph-check-square-offset"></i> Corriger</button></div>'
+        +(ok?'':'<p class="pp-alerte"><i class="ph-fill ph-warning"></i> Pas de connexion : corrigés gardés sur cet appareil seulement.</p>')+'</div>';
+    });
   });
-  return h||'<p class="mini">Aucune leçon disponible.</p>';
 }
-/* Coche/décoche tout un domaine depuis la case de son en-tête. */
-function impGroupeToggle(cb){
-  const det=cb.closest("details"); if(!det)return;
-  [].forEach.call(det.querySelectorAll(".imp-chk"),function(c){c.checked=cb.checked;});
+/* la grille à entourer : colonnes de 10 questions ; dans le corrigé, bonnes lettres noircies */
+function ppGrilleHTML(qs,corrige){
+  let h='<div class="pp-grilles">';
+  for(let d=0;d<qs.length;d+=10){
+    h+='<table class="pp-grille"><tbody>'+qs.slice(d,d+10).map(function(q,j){
+      return '<tr><td class="n">'+(d+j+1)+'</td><td class="ls">'+q.opts.map(function(_,k){
+        return '<span class="pp-l'+(corrige&&k===q.r?" ok":"")+'">'+PP_L[k]+'</span>'; }).join("")+'</td></tr>'; }).join("")+'</tbody></table>';
+  }
+  return h+'</div>';
 }
-/* Tient à jour l'état (coché / partiel) de chaque case de domaine. */
-function impMajMaster(){
-  [].forEach.call(document.querySelectorAll("details.imp-groupe"),function(det){
-    const chks=[].slice.call(det.querySelectorAll(".imp-chk"));
-    const m=det.querySelector(".imp-grp-master"); if(!m||!chks.length)return;
-    const n=chks.filter(function(c){return c.checked;}).length;
-    m.checked=(n===chks.length); m.indeterminate=(n>0&&n<chks.length);
+function ppSujetHTML(L,c){
+  return '<section class="pp-copie"><div class="pp-marque">'+marqueDoc()+'</div>'
+    +'<div class="pp-tete"><div><h1>Évaluation : '+echapH(L.titre)+'</h1><div class="mini">'+c.qs.length+' questions · '+(NIV_NOMS[L.diff]||"")+' · note&nbsp;: ______ / 20</div></div>'
+    +'<div class="pp-ref">Référence<b>'+c.ref+'</b></div></div>'
+    +'<p class="pp-ident">Nom&nbsp;: ________________________ Prénom&nbsp;: ____________________ Classe&nbsp;: ________</p>'
+    +'<p class="pp-consigne"><b>Grille de réponses</b> : pour chaque question, entoure <b>une seule lettre</b>. Seule la grille est corrigée.</p>'
+    +ppGrilleHTML(c.qs,false)
+    +c.qs.map(function(q,i){ return '<div class="q"><div class="qnum">Question '+(i+1)+'</div><div class="qtxt">'+q.q+'</div><ol class="pp-opts">'
+      +q.opts.map(function(o,k){ return '<li><b>'+PP_L[k]+'</b><span>'+o+'</span></li>'; }).join("")+'</ol></div>'; }).join("")
+    +'</section>';
+}
+function ppCorrigeHTML(L,c,combien){
+  const txt=function(h){ return String(h||"").replace(/<img[^>]*>/gi,"[image]").replace(/<svg[\s\S]*?<\/svg>/gi,"[image]"); };
+  return '<section class="pp-corr"><div class="pp-marque">'+marqueDoc()+'</div>'
+    +'<div class="pp-tete"><div><h1>Corrigé : '+echapH(L.titre)+'</h1><div class="mini">'+(combien>1?"Pour les "+combien+" copies de référence ":"Copie de référence ")+'<b>'+c.ref+'</b> · '+c.qs.length+' questions · 1 point par bonne réponse, ramené sur 20</div></div>'
+    +'<div class="pp-ref">Référence<b>'+c.ref+'</b></div></div>'
+    +ppGrilleHTML(c.qs,true)
+    +'<ol class="pp-sol">'+c.qs.map(function(q){ return '<li><b>'+PP_L[q.r]+'</b> '+txt(q.opts[q.r])+'</li>'; }).join("")+'</ol>'
+    +'</section>';
+}
+const PP_CSS=".pp-copie{break-before:page;page-break-before:always}.pp-copie:first-of-type{break-before:auto;page-break-before:auto}"
+  +".pp-marque{margin:0 0 6px;font:7.5pt Arial,sans-serif;color:#666;text-align:right;letter-spacing:.3px}"
+  +".me-marque{display:none}"
+  +".pp-tete{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}"
+  +".pp-ref{flex:none;border:2px solid #111;border-radius:8px;padding:5px 12px;text-align:center;font-family:Arial,sans-serif;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}"
+  +".pp-ref b{display:block;font-size:1.35rem;letter-spacing:2px;text-transform:none}"
+  +".pp-ident{margin:12px 0 8px;font-size:.92rem}.pp-consigne{margin:4px 0;font-size:.86rem}"
+  +".pp-grilles{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin:6px 0 14px}"
+  +".pp-grille{width:auto;margin:0;font-family:Arial,sans-serif}.pp-grille td{border:1px solid #888;padding:3px 6px;text-align:left}"
+  +".pp-grille td.n{font-weight:bold;background:#eee;width:26px;text-align:center}"
+  +".pp-l{display:inline-block;width:21px;height:21px;line-height:20px;margin:0 2px;border:1.4px solid #333;border-radius:50%;font-size:.76rem;text-align:center}"
+  +".pp-l.ok{background:#111;color:#fff;font-weight:bold}"
+  +".pp-opts{list-style:none;padding:0;margin:6px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}"
+  +".pp-opts li{display:flex;gap:7px;align-items:flex-start;font-size:.9rem}"
+  +".pp-opts li>b{flex:none;width:20px;height:20px;line-height:19px;border:1px solid #333;border-radius:50%;text-align:center;font-size:.72rem;font-family:Arial,sans-serif}"
+  +".pp-corr{page-break-inside:avoid;break-inside:avoid;border:1px dashed #999;border-radius:8px;padding:10px 12px;margin:0 0 14px}"
+  +".pp-sol{columns:2;column-gap:28px;font-size:.84rem;margin:6px 0 0;padding-left:22px}.pp-sol b{font-family:Arial,sans-serif}";
+function ppImprimerSujets(){
+  const L=_ppLot; if(!L){ toast("Prépare d’abord les copies."); return; }
+  const sec=[]; if(L.mode==="pareil"){ for(let i=0;i<L.nc;i++)sec.push(ppSujetHTML(L,L.copies[0])); }
+  else L.copies.forEach(function(c){ sec.push(ppSujetHTML(L,c)); });
+  ouvrirImpression("Évaluation : "+L.titre, sec.join(""), PP_CSS);
+}
+function ppImprimerCorriges(){
+  const L=_ppLot; if(!L){ toast("Prépare d’abord les copies."); return; }
+  ouvrirImpression("Corrigés : "+L.titre, L.copies.map(function(c){ return ppCorrigeHTML(L,c,L.mode==="pareil"?L.nc:1); }).join(""), PP_CSS);
+}
+
+/* ---------- Centre de correction (refait le 10/10/2026, style de la page Imprimer) ----------
+   À gauche la copie (référence, lettres, une case par question qui se colore en
+   tapant), à droite l'élève (classe, élève, colonne, oubli de tablette), en bas une
+   barre fixe : la note en médaillon, le résumé et « Enregistrer ». Entrée passe de
+   la référence aux lettres, puis enregistre. Les élèves déjà corrigés sont cochés. */
+let _ppCc={cid:null,codes:[],cols:[]}, _ppCcFaits=[];
+function ecranCorrectionPapier(ref){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(ecranImpressionProf,"Imprimer");
+  titreProf('<i class="ph ph-check-square-offset"></i> Centre de correction',"Une copie papier, une note dans le carnet.");
+  const cls=(_profClasses||[]).slice().sort(function(x,y){ return String(x.nom||"").localeCompare(String(y.nom||""),"fr",{numeric:true}); });
+  const tete=function(ic,teinte,lib){ return '<div class="cc-tete"><span class="imp-tuile-ic" style="--d:var(--dom-'+teinte+')"><i class="ph-fill ph-'+ic+'"></i></span><h2>'+lib+'</h2></div>'; };
+  document.getElementById("zone").innerHTML='<div class="imp cc">'
+    +'<div class="cc-cols">'
+    +'<section class="imp-panneau">'+tete("file-text","rythme","La copie")
+    +'<label class="imp-champ"><span>Référence</span><input id="ccRef" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="K7QM-3" value="'+escapeHtml(ref||"")+'" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();document.getElementById(\'ccRep\').focus();}"></label>'
+    +'<div id="ccRefEtat" class="cc-etat" aria-live="polite"></div>'
+    +'<label class="imp-champ"><span>Lettres entourées</span><input id="ccRep" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="BADC CABD…" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();ppCcEntree();}"></label>'
+    +'<div id="ccGrille" class="cc-cases"></div>'
+    +'<p class="cc-aide"><i class="ph ph-info"></i> Un tiret « - » pour une question sans réponse.</p>'
+    +'</section>'
+    +'<section class="imp-panneau">'+tete("user","lire","L’élève")
+    +'<label class="imp-champ"><span>Classe</span><select id="ccClasse" onchange="ppCcClasse(this.value)"><option value="">Choisir…</option>'
+    +cls.map(function(c){ return '<option value="'+c.id+'">'+echapH(c.nom||"Classe")+'</option>'; }).join("")+'</select></label>'
+    +'<label class="imp-champ"><span>Élève</span><select id="ccEleve" onchange="ppCcMaj()"><option value="">Choisis la classe</option></select></label>'
+    +'<label class="imp-champ"><span>Ranger la note dans</span><select id="ccCol" onchange="ppCcMaj()"><option value="pp">Sa colonne « Papier »</option></select></label>'
+    +'<div class="cc-oubli"><label class="imp-chip"><input type="checkbox" id="ccOubli" onchange="ppCcMaj()"><span><i class="ph ph-device-tablet"></i> Oubli de tablette</span></label>'
+    +'<span id="ccPtsZ">'+impStepHTML("ccPts",2,0,10,0.5,"Points retirés","ppCcMaj()")+'<small>pt retirés</small></span></div>'
+    +'</section>'
+    +'</div>'
+    +'<div class="imp-panneau cc-bas"><div id="ccScore" class="cc-score" aria-hidden="true"></div>'
+    +'<div id="ccResume" class="cc-resume" aria-live="polite"></div>'
+    +'<button class="rm-cta" id="ccOk" onclick="ppCcEnregistrer()"><i class="ph-fill ph-floppy-disk"></i> Enregistrer la note</button></div>'
+    +'<div id="ccFaits" class="cc-faits" aria-live="polite"></div>'
+    +'</div>';
+  if(_ppCc.cid&&cls.some(function(c){ return c.id===_ppCc.cid; })){ document.getElementById("ccClasse").value=_ppCc.cid; ppCcClasse(_ppCc.cid); }
+  else if(cls.length===1){ document.getElementById("ccClasse").value=cls[0].id; ppCcClasse(cls[0].id); }
+  ppCcFaitsRendre(); ppCcMaj();
+  ppClesCharger(true).then(ppCcMaj);
+  if(typeof remonter==="function")remonter();
+  try{ document.getElementById(ref?"ccRep":"ccRef").focus(); }catch(e){}
+}
+function ppCcClasse(cid){
+  _ppCc={cid:cid,codes:[],cols:[]};
+  const se=document.getElementById("ccEleve"), sc=document.getElementById("ccCol");
+  if(!cid){ se.innerHTML='<option value="">Choisis la classe</option>'; ppCcMaj(); return; }
+  se.innerHTML='<option value="">Chargement…</option>';
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return;
+  const vide={forEach:function(){}};
+  Promise.all([ s.collection("eleveCodes").where("ownerUid","==",u.uid).get().catch(function(){ return vide; }),
+                s.collection("classes").doc(cid).collection("devoirs").get().catch(function(){ return vide; }),
+                s.collection("classes").doc(cid).collection("notesManuelles").get().catch(function(){ return vide; }) ])
+  .then(function(r){
+    if(_ppCc.cid!==cid)return;
+    const codes=[]; r[0].forEach(function(d){ if((d.data()||{}).classId===cid)codes.push(d.id); });
+    const cl=(_profClasses||[]).filter(function(x){ return x.id===cid; })[0]||{};
+    (Array.isArray(cl.membres)?cl.membres:[]).forEach(function(c){ if(codes.indexOf(c)<0)codes.push(c); });
+    codes.sort(function(x,y){ return (labelDe(cid,x)||"￿"+x).localeCompare(labelDe(cid,y)||"￿"+y,"fr"); });
+    _ppCc.codes=codes;
+    ppCcElevesRendre();
+    const cols=[];
+    r[1].forEach(function(d){ const v=d.data()||{}; if((v.volets||[]).some(function(x){ return x.t==="eval"; }))cols.push({k:"d:"+d.id,lib:"Évaluation demandée : "+(v.titre||"sans titre"),t:v.cree||0}); });
+    r[2].forEach(function(d){ const v=d.data()||{}; if(v.cat==="chant"||String(d.id).indexOf("pp_")===0)return; cols.push({k:"m:"+d.id,lib:"Note saisie : "+(v.titre||"sans titre"),t:v.date||0,sur:v.sur||20}); });
+    cols.sort(function(x,y){ return (y.t||0)-(x.t||0); });
+    _ppCc.cols=cols;
+    sc.innerHTML='<option value="pp">Sa colonne « Papier »</option>'+cols.map(function(c){ return '<option value="'+c.k+'">'+echapH(c.lib)+'</option>'; }).join("");
+    ppCcMaj();
   });
 }
-function impProfToutCocher(v){ [].forEach.call(document.querySelectorAll(".imp-chk"),function(c){c.checked=!!v;}); impMajMaster(); }
+/* la liste des élèves : ceux déjà corrigés pendant la séance sont cochés */
+function ppCcElevesRendre(){
+  const se=document.getElementById("ccEleve"), cid=_ppCc.cid; if(!se||!cid)return;
+  const v=se.value;
+  se.innerHTML='<option value="">Choisir…</option>'+_ppCc.codes.map(function(c){
+    const l=labelDe(cid,c), f=_ppCcFaits.some(function(x){ return x.cid===cid&&x.code===c; });
+    return '<option value="'+c+'">'+(f?"✓ ":"")+(l?echapH(l)+' · ':'')+c+'</option>'; }).join("");
+  se.value=v;
+}
+function ppCcEntree(){
+  const R=ppCcCalcul(), cid=(document.getElementById("ccClasse")||{}).value, code=(document.getElementById("ccEleve")||{}).value;
+  if(R.ok&&cid&&code){ ppCcEnregistrer(); return; }
+  if(R.ok)try{ document.getElementById(cid?"ccEleve":"ccClasse").focus(); }catch(e){}
+}
+function ppCcMaj(){
+  const R=ppCcCalcul();
+  const etat=document.getElementById("ccRefEtat"), g=document.getElementById("ccGrille");
+  if(!etat||!g)return;
+  const refTape=!!String((document.getElementById("ccRef")||{}).value||"").trim();
+  etat.className="cc-etat"+(R.cle?" ok":(refTape?" ko":""));
+  etat.innerHTML=R.cle?'<i class="ph-fill ph-check-circle"></i> <b>'+echapH(R.cle.titre||"Évaluation")+'</b> · '+R.n+' questions · '+(NIV_NOMS[R.cle.diff]||"")
+    :(refTape?'<i class="ph-fill ph-warning-circle"></i> Référence inconnue':'');
+  /* une case par question : la lettre tapée, verte si juste, rouge avec la bonne sinon */
+  g.innerHTML=!R.cle?"":R.cle.k.split("").map(function(bon,i){
+    const L=R.reps[i], tape=i<R.reps.length, ok=tape&&L===bon;
+    return '<span class="cc-case'+(!tape?" vide":(ok?" ok":" ko"))+'" title="Question '+(i+1)+(tape&&!ok?" : réponse attendue "+bon:"")+'">'
+      +'<small>'+(i+1)+'</small><b>'+(tape?(L||"·"):"")+'</b>'+(tape&&!ok?'<em>'+bon+'</em>':'')+'</span>'; }).join("");
+  const oub=!!(document.getElementById("ccOubli")||{}).checked, pz=document.getElementById("ccPtsZ"); if(pz)pz.hidden=!oub;
+  const sc=document.getElementById("ccCol"); if(sc&&sc.options[0])sc.options[0].textContent=R.cle?"Sa colonne « Papier : "+(R.cle.titre||"Évaluation")+" »":"Sa colonne « Papier »";
+  const cid=(document.getElementById("ccClasse")||{}).value, code=(document.getElementById("ccEleve")||{}).value;
+  const nom=code?(labelDe(cid,code)||code):"";
+  const s=document.getElementById("ccScore"), z=document.getElementById("ccResume"), b=document.getElementById("ccOk");
+  if(s){ s.className="cc-score"+(R.ok?(R.note>=14?" v":(R.note>=10?" o":" r")):"");
+    s.innerHTML='<b>'+(R.ok?String(R.note).replace(".",","):"?")+'</b><small>/20</small>'; }
+  if(z)z.innerHTML=R.ok
+    ?'<b>'+R.bons+' / '+R.n+'</b> justes'+(R.pts?' · moins '+String(R.pts).replace(".",",")+' (tablette)':'')+'<br><span>'+(nom?'<i class="ph ph-user"></i> '+echapH(nom):'Choisis l’élève')+'</span>'
+    :'<span>'+(R.msg||"")+'</span>';
+  if(b)b.disabled=!(R.ok&&cid&&code);
+}
+function ppCcFaitsRendre(){
+  const z=document.getElementById("ccFaits"); if(!z)return;
+  z.innerHTML=_ppCcFaits.length?'<span class="cc-faits-t">Corrigées</span>'+_ppCcFaits.slice(0,12).map(function(f){
+    return '<span class="cc-fait"><i class="ph-fill ph-check-circle"></i> '+echapH(f.nom)+' <b>'+String(f.note).replace(".",",")+'</b></span>'; }).join(""):"";
+}
+function ppCcEnregistrer(){
+  const R=ppCcCalcul(); if(!R.ok){ toast(R.msg||"Copie incomplète."); return; }
+  const cid=(document.getElementById("ccClasse")||{}).value, code=(document.getElementById("ccEleve")||{}).value;
+  const col=(document.getElementById("ccCol")||{}).value||"pp";
+  if(!cid||!code){ toast("Choisis la classe et l’élève."); return; }
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u){ toast("Service indisponible : vérifie ta connexion."); return; }
+  let p;
+  if(col==="pp"){
+    /* toutes les copies d'un même lot vont dans la même colonne */
+    const notes={}; notes[code]=R.note;
+    p=s.collection("classes").doc(cid).collection("notesManuelles").doc("pp_"+(R.cle.lot||R.ref))
+      .set({titre:"Papier : "+(R.cle.titre||"Évaluation"),cat:"cours",sur:20,date:R.cle.t||Date.now(),ownerUid:u.uid,maj:Date.now(),notes:notes},{merge:true});
+  }else if(col.indexOf("d:")===0){
+    const o={}; o[col]=R.note; o._t={}; o._t[col]=Date.now();
+    p=s.collection("classes").doc(cid).collection("eleves").doc(code).set({carnet:o},{merge:true});
+  }else{
+    const c=_ppCc.cols.filter(function(x){ return x.k===col; })[0]||{}, notes={};
+    notes[code]=Math.round(R.note*(c.sur||20)/20*100)/100;
+    p=s.collection("classes").doc(cid).collection("notesManuelles").doc(col.slice(2)).set({notes:notes,maj:Date.now()},{merge:true});
+  }
+  const b=document.getElementById("ccOk"); if(b)b.disabled=true;
+  p.then(function(){
+    try{ delete _evalsCache[cid]; }catch(e){}
+    const nom=labelDe(cid,code)||code;
+    toast("Note enregistrée : "+String(R.note).replace(".",",")+"/20 pour "+nom+".");
+    _ppCcFaits=_ppCcFaits.filter(function(f){ return !(f.cid===cid&&f.code===code); });
+    _ppCcFaits.unshift({cid:cid,code:code,nom:nom,note:R.note,ref:R.ref});
+    ppCcFaitsRendre();
+    /* copie suivante : on garde la référence si les copies sont identiques */
+    const rep=document.getElementById("ccRep"); if(rep)rep.value="";
+    const oub=document.getElementById("ccOubli"); if(oub)oub.checked=false;
+    const se=document.getElementById("ccEleve"); if(se)se.value="";
+    ppCcElevesRendre();
+    if(R.ref.indexOf("-")>0){ const rf=document.getElementById("ccRef"); if(rf){ rf.value=""; rf.focus(); } } else if(rep)rep.focus();
+    ppCcMaj();
+  }).catch(function(){ toast("Échec de l'enregistrement : vérifie ta connexion."); ppCcMaj(); });
+}
+/* lit la copie : référence, lettres, note */
+function ppCcCalcul(){
+  const ref=String((document.getElementById("ccRef")||{}).value||"").trim().toUpperCase().replace(/\s+/g,"");
+  const cle=(_ppCles||{})[ref];
+  if(!ref)return {ok:false,msg:"Tape la référence imprimée en haut de la copie."};
+  if(!cle)return {ok:false,msg:"Référence inconnue : vérifie-la (elle est imprimée en haut à droite de la copie)."};
+  const brut=String((document.getElementById("ccRep")||{}).value||"").toUpperCase().replace(/[\s,;\/]+/g,"");
+  const reps=brut.split("").map(function(ch){ return /[-._?0*]/.test(ch)?"":ch; });
+  const n=cle.k.length, R={ok:false,ref:ref,cle:cle,n:n,reps:reps};
+  if(!brut){ R.msg=n+" questions : tape les "+n+" lettres entourées, dans l’ordre."; return R; }
+  for(let i=0;i<reps.length;i++){ const L=reps[i]; if(!L)continue;
+    const max=+(cle.o||"")[i]||PP_L.length, k=PP_L.indexOf(L);
+    if(k<0||k>=max){ R.msg="Question "+(i+1)+" : « "+L+" » n’existe pas (choix de A à "+PP_L[max-1]+")."; return R; } }
+  if(reps.length!==n){ R.msg=reps.length+" lettre"+(reps.length>1?"s":"")+" pour "+n+" questions."; return R; }
+  let bons=0; reps.forEach(function(L,i){ if(L===cle.k[i])bons++; });
+  const brute=Math.round(bons/n*20);
+  const oubli=!!(document.getElementById("ccOubli")||{}).checked;
+  const pts=oubli?Math.max(0,Math.min(10,parseFloat(String((document.getElementById("ccPts")||{}).value||"0").replace(",","."))||0)):0;
+  R.ok=true; R.bons=bons; R.brute=brute; R.pts=pts; R.note=Math.max(0,Math.round((brute-pts)*10)/10);
+  return R;
+}
+/* ---------- Page « Imprimer », refaite le 10/10/2026 ----------
+   Quatre vignettes (QCM, recueil, registre, centre de correction) et UN seul
+   panneau à la fois ; réglages en un clic (boutons segmentés, compteurs − / +,
+   cartes illustrées), leçons en pastilles colorées par domaine, barre d'action en
+   bas. Les identifiants lus par ppPreparer et imprimerRecueil sont conservés. */
+let _impVue="qcm", _impDom=0;
+const IMP_VUES=[["qcm","Évaluation QCM","Copies à entourer et corrigés","exam","rythme"],
+                ["recueil","Recueil de leçons","Cours et exercices","book-open-text","lire"],
+                ["registre","Registre des codes","Le code de chaque élève","identification-card","culture"]];
+function impSegHTML(name,opts,val,lib){
+  return '<div class="imp-seg" role="radiogroup" aria-label="'+lib+'">'+opts.map(function(o){
+    return '<label><input type="radio" name="'+name+'" value="'+o[0]+'"'+(String(o[0])===String(val)?" checked":"")+' onchange="impMaj()"><span>'+o[1]+'</span></label>'; }).join("")+'</div>';
+}
+function impStepHTML(id,val,min,max,pas,lib,fn){
+  return '<div class="imp-step" role="group" aria-label="'+lib+'">'
+    +'<button type="button" aria-label="'+lib+' : moins" onclick="impStep(\''+id+'\',-1)"><i class="ph ph-minus"></i></button>'
+    +'<input id="'+id+'" type="number" min="'+min+'" max="'+max+'" step="'+pas+'" value="'+val+'" inputmode="decimal" aria-label="'+lib+'" oninput="'+(fn||"impMaj()")+'">'
+    +'<button type="button" aria-label="'+lib+' : plus" onclick="impStep(\''+id+'\',1)"><i class="ph ph-plus"></i></button></div>';
+}
+function impStep(id,d){
+  const e=document.getElementById(id); if(!e)return;
+  const p=+e.step||1, v=Math.round(((parseFloat(e.value)||+e.min)+d*p)/p)*p;
+  e.value=Math.max(+e.min,Math.min(+e.max,v));
+  e.dispatchEvent(new Event("input"));
+}
+/* trois mini-copies : la même référence partout, ou une par copie */
+function impIllHTML(diff){
+  return '<span class="imp-ill" aria-hidden="true">'+[1,2,3].map(function(i){ return '<i>'+(diff?"K7QM-"+i:"K7QM")+'</i>'; }).join("")+'</span>';
+}
+function impQcmHTML(){
+  return '<ol class="imp-etapes" aria-label="Comment ça marche">'
+    +'<li><i class="ph-fill ph-printer"></i> Tu imprimes</li>'
+    +'<li><i class="ph-fill ph-pencil-circle"></i> L’élève entoure</li>'
+    +'<li><i class="ph-fill ph-check-square-offset"></i> Tu tapes ses lettres : la note est calculée</li></ol>'
+    +'<label class="imp-champ"><span>Thème</span><select id="ppDom" onchange="impMaj()"><optgroup label="Cours de collège">'
+    +Object.keys(typeof EVALCOURS_DEF!=="undefined"?EVALCOURS_DEF:{}).filter(function(k){ return COURS_DEF[k]; }).map(function(k){ return '<option value="evalcours-'+k+'">'+echapH(COURS_DEF[k].titre)+'</option>'; }).join("")
+    +'</optgroup>'+devoirOptionsCible()+'</select></label>'
+    +'<div class="imp-reglages">'
+    +'<div class="imp-reg"><span>Difficulté</span>'+impSegHTML("ppDiff",[[1,"Facile"],[2,"Intermédiaire"],[3,"Difficile"]],2,"Difficulté")+'</div>'
+    +'<div class="imp-reg"><span>Questions</span>'+impStepHTML("ppNb",20,5,40,5,"Nombre de questions")+'</div>'
+    +'<div class="imp-reg"><span>Copies</span>'+impStepHTML("ppCopies",1,1,40,1,"Nombre de copies")+'</div>'
+    +'</div>'
+    +'<div class="imp-modes" role="radiogroup" aria-label="Copies">'
+    +'<label class="imp-mode"><input type="radio" name="ppMode" value="pareil" checked onchange="impMaj()">'+impIllHTML(false)+'<b>Identiques</b><small>Un seul corrigé</small></label>'
+    +'<label class="imp-mode"><input type="radio" name="ppMode" value="diff" onchange="impMaj()">'+impIllHTML(true)+'<b>Toutes différentes</b><small>Un corrigé par copie</small></label>'
+    +'</div>'
+    +'<div class="imp-cta"><button class="rm-cta" onclick="ppPreparer()"><i class="ph-fill ph-magic-wand"></i> <span id="ppGoLib">Préparer</span></button></div>'
+    +'<div id="ppResultat" aria-live="polite"></div>';
+}
+function impRecueilHTML(){
+  const gs=CATEGORIES.filter(function(g){ return !g.special; }).map(function(g){
+    return {nom:g.groupe, t:(typeof LEC_TEINTES!=="undefined"&&LEC_TEINTES[g.groupe])||"perso", items:g.items.filter(function(it){ return LECONS[it.id]; })};
+  }).filter(function(g){ return g.items.length; });
+  if(_impDom>=gs.length)_impDom=0;
+  const pill=function(id,ic,lib){ return '<label class="imp-chip imp-pill"><input type="checkbox" id="'+id+'" checked onchange="impMaj()"><span><i class="ph ph-'+ic+'"></i> '+lib+'</span></label>'; };
+  return '<div class="imp-reglages">'
+    +'<div class="imp-reg"><span>Contenu</span><div class="imp-chips">'+pill("impCours","book-open","Cours")+pill("impExos","pencil-simple-line","Exercices")+pill("impCorrige","check-circle","Corrigé")+'</div></div>'
+    +'<div class="imp-reg" id="impRegNb"><span>Exercices par leçon</span>'+impStepHTML("impNb",8,1,30,1,"Exercices par leçon")+'</div>'
+    +'<div class="imp-reg" id="impRegDiff"><span>Difficulté</span>'+impSegHTML("impDiff",[[1,"Facile"],[2,"Intermédiaire"],[3,"Difficile"]],2,"Difficulté des exercices")+'</div>'
+    +'</div>'
+    +'<div class="imp-sous">Leçons</div>'
+    +'<div class="imp-doms">'+gs.map(function(g,i){
+      return '<button type="button" class="imp-dom" id="impDomB'+i+'" style="--d:var(--dom-'+g.t+')" aria-expanded="'+(i===_impDom)+'" aria-controls="impDomP'+i+'" onclick="impDomOuvrir('+i+')">'
+        +'<span>'+echapH(g.nom)+'</span><span class="imp-dom-n" id="impDomN'+i+'">0/'+g.items.length+'</span></button>'; }).join("")+'</div>'
+    +gs.map(function(g,i){
+      return '<div class="imp-dom-p" id="impDomP'+i+'" style="--d:var(--dom-'+g.t+')"'+(i===_impDom?"":" hidden")+'>'
+        +'<div class="imp-dom-t"><b>'+echapH(g.nom)+'</b><button type="button" class="imp-lien" onclick="impDomTout('+i+',true)">Tout</button><button type="button" class="imp-lien" onclick="impDomTout('+i+',false)">Aucune</button></div>'
+        +'<div class="imp-chips">'+g.items.map(function(it){
+          return '<label class="imp-chip"><input type="checkbox" class="imp-chk" value="'+it.id+'" onchange="impMaj()"><span>'+echapH(nomThemePropre(it.nom))+'</span></label>'; }).join("")+'</div></div>'; }).join("")
+    +'<div class="imp-barre"><span id="impBarreTxt">Aucune leçon choisie</span>'
+    +'<button type="button" class="action btn-nouv" id="impVider" onclick="impDomTout(-1,false)"><i class="ph ph-x"></i> Vider</button>'
+    +'<button type="button" class="rm-cta" id="impGo" onclick="imprimerRecueil()"><i class="ph-fill ph-printer"></i> Générer le recueil</button></div>';
+}
+function impRegistreHTML(){
+  return '<div class="imp-registre-c"><span class="imp-tuile-ic" style="--d:var(--dom-culture)"><i class="ph-fill ph-identification-card"></i></span>'
+    +'<div><b>Une page par classe</b><small>Le nom de chaque élève face à son code. Document confidentiel.</small></div>'
+    +'<button class="rm-cta" onclick="rosterImprimerToutes()"><i class="ph-fill ph-printer"></i> Imprimer le registre</button></div>';
+}
 function ecranImpressionProf(){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
-  titreProf('<i class="ph ph-printer"></i> Imprimer cours &amp; exercices',
-    "Fabriquez des feuilles papier : des exercices, une évaluation, ou un recueil de leçons (cahier de travail) quand les élèves n'ont pas de tablette.");
-  const z=document.getElementById("zone");
-  z.innerHTML='<div class="accueil" style="max-width:820px">'
-    /* registre des codes : en tête, sinon il se perdait sous la longue liste des leçons */
-    +'<div class="rm-carte imp-registre">'
-    +'<div><b><i class="ph ph-identification-card"></i> Registre des codes</b><span>Une page par classe : le nom de chaque élève en face de son code. Document confidentiel, à garder en lieu sûr.</span></div>'
-    +'<button class="action btn-corr" onclick="rosterImprimerToutes()"><i class="ph ph-printer"></i> Imprimer le registre</button></div>'
-    +'<div class="rm-carte" style="text-align:left;margin-top:16px">'
-    +'<div class="rm-carte-titre" style="text-align:center"><i class="ph ph-sliders-horizontal"></i> Ce que contient le recueil</div>'
-    +'<div class="imp-opts">'
-    +'<label class="chk"><input type="checkbox" id="impCours" checked> Inclure le cours (leçon)</label>'
-    +'<label class="chk"><input type="checkbox" id="impExos" checked> Inclure des exercices</label>'
-    +'<label>Exercices par leçon&nbsp;: <input id="impNb" type="number" min="1" max="30" value="8" style="'+_rcInputStyle+'"></label>'
-    +'<label>Difficulté&nbsp;: <select id="impDiff" class="ev-ctrl-sel"><option value="1">Facile</option><option value="2" selected>Intermédiaire</option><option value="3">Difficile</option></select></label>'
-    +'<label class="chk"><input type="checkbox" id="impCorrige" checked> Ajouter le corrigé</label>'
+  titreProf('<i class="ph ph-printer"></i> Imprimer',"Des feuilles prêtes à imprimer, pour travailler sans tablette.");
+  if(!IMP_VUES.some(function(v){ return v[0]===_impVue; }))_impVue="qcm";
+  document.getElementById("zone").innerHTML='<div class="imp">'
+    +'<div class="imp-choix" role="group" aria-label="Que veux-tu imprimer ?">'
+    +IMP_VUES.map(function(v){
+      return '<button type="button" id="impT_'+v[0]+'" aria-controls="impP_'+v[0]+'" aria-pressed="'+(v[0]===_impVue)+'" class="imp-tuile'+(v[0]===_impVue?" on":"")+'" style="--d:var(--dom-'+v[4]+')" onclick="impVue(\''+v[0]+'\')">'
+        +'<span class="imp-tuile-ic"><i class="ph-fill ph-'+v[3]+'"></i></span><span class="imp-tuile-t"><b>'+v[1]+'</b><small>'+v[2]+'</small></span></button>'; }).join("")
+    +'<button type="button" class="imp-tuile imp-tuile-lien" style="--d:var(--dom-theorie)" onclick="ecranCorrectionPapier()">'
+    +'<span class="imp-tuile-ic"><i class="ph-fill ph-check-square-offset"></i></span><span class="imp-tuile-t"><b>Centre de correction</b><small>Noter les copies QCM</small></span><i class="ph ph-arrow-right imp-fl" aria-hidden="true"></i></button>'
     +'</div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px">'
-    +'<button class="action btn-nouv" onclick="impProfToutCocher(true)"><i class="ph ph-check-square"></i> Tout cocher</button>'
-    +'<button class="action btn-nouv" onclick="impProfToutCocher(false)"><i class="ph ph-square"></i> Tout décocher</button>'
-    +'<button class="rm-cta" onclick="imprimerRecueil()"><i class="ph-fill ph-printer"></i> Générer le recueil</button>'
-    +'</div></div>'
-    +'<div class="rm-carte" style="text-align:left;margin-top:16px">'
-    +'<div class="rm-carte-titre" style="text-align:center"><i class="ph ph-list-checks"></i> Leçons à inclure</div>'
-    +'<div class="imp-liste">'+impProfListeHTML()+'</div></div>'
+    +'<section class="imp-panneau" id="impP_qcm" aria-labelledby="impT_qcm"'+(_impVue==="qcm"?"":" hidden")+'>'+impQcmHTML()+'</section>'
+    +'<section class="imp-panneau" id="impP_recueil" aria-labelledby="impT_recueil"'+(_impVue==="recueil"?"":" hidden")+'>'+impRecueilHTML()+'</section>'
+    +'<section class="imp-panneau" id="impP_registre" aria-labelledby="impT_registre"'+(_impVue==="registre"?"":" hidden")+'>'+impRegistreHTML()+'</section>'
     +'</div>';
+  impMaj();
   if(typeof remonter==="function")remonter();
+}
+function impVue(k){
+  _impVue=k;
+  IMP_VUES.forEach(function(v){
+    const on=v[0]===k, t=document.getElementById("impT_"+v[0]), p=document.getElementById("impP_"+v[0]);
+    if(t){ t.classList.toggle("on",on); t.setAttribute("aria-pressed",on); }
+    if(p)p.hidden=!on;
+  });
+}
+function impDomOuvrir(i){
+  _impDom=i;
+  document.querySelectorAll(".imp-dom").forEach(function(b,k){ b.setAttribute("aria-expanded",k===i); });
+  document.querySelectorAll(".imp-dom-p").forEach(function(p,k){ p.hidden=(k!==i); });
+}
+/* i = -1 : toutes les leçons de tous les domaines */
+function impDomTout(i,v){
+  const sel=i<0?".imp-dom-p .imp-chk":"#impDomP"+i+" .imp-chk";
+  document.querySelectorAll(sel).forEach(function(c){ c.checked=!!v; });
+  impMaj();
+}
+/* tout ce qui dépend des réglages : libellés, compteurs, champs visibles */
+function impMaj(){
+  const nc=parseInt((document.getElementById("ppCopies")||{}).value,10)||1;
+  const m=document.querySelector('input[name="ppMode"]:checked'), lib=document.getElementById("ppGoLib");
+  if(lib)lib.textContent="Préparer "+nc+" copie"+(nc>1?"s":"")+(nc>1&&m&&m.value==="diff"?" différentes":"");
+  document.querySelectorAll(".imp-dom-p").forEach(function(p,i){
+    const tot=p.querySelectorAll(".imp-chk").length, n=p.querySelectorAll(".imp-chk:checked").length;
+    const b=document.getElementById("impDomN"+i); if(b){ b.textContent=n+"/"+tot; b.classList.toggle("plein",n>0); }
+  });
+  const n=document.querySelectorAll(".imp-chk:checked").length, ex=document.getElementById("impExos");
+  const t=document.getElementById("impBarreTxt"); if(t)t.innerHTML=n?'<b>'+n+'</b> leçon'+(n>1?"s":"")+' choisie'+(n>1?"s":""):"Aucune leçon choisie";
+  const go=document.getElementById("impGo"); if(go)go.disabled=!n;
+  const vi=document.getElementById("impVider"); if(vi)vi.hidden=!n;
+  const exo=!!(ex&&ex.checked);
+  ["impRegNb","impRegDiff"].forEach(function(id){ const e=document.getElementById(id); if(e)e.hidden=!exo; });
+  const co=document.getElementById("impCorrige"); if(co){ co.disabled=!exo; co.closest(".imp-chip").classList.toggle("off",!exo); }
 }
 function imprimerRecueil(){
   const ids=[].map.call(document.querySelectorAll(".imp-chk:checked"),function(c){return c.value;});
@@ -25558,7 +26401,8 @@ function imprimerRecueil(){
   const avecExos=(document.getElementById("impExos")||{}).checked;
   const avecCorr=(document.getElementById("impCorrige")||{}).checked;
   const nb=Math.max(1,Math.min(30,parseInt((document.getElementById("impNb")||{}).value,10)||8));
-  const diff=parseInt((document.getElementById("impDiff")||{}).value,10)||2;
+  const rdi=document.querySelector('input[name="impDiff"]:checked');
+  const diff=(rdi?parseInt(rdi.value,10):0)||2;
   /* Une « feuille » par partie : chacune commence sur une nouvelle page. */
   const feuilles=[], corriges=[];
   ids.forEach(function(id){
@@ -25586,6 +26430,19 @@ function imprimerRecueil(){
     +".imp-part{text-transform:uppercase;letter-spacing:.8px;margin:0 0 10px}.imp-sep{text-align:center;padding-top:30vh}";
   ouvrirImpression("Recueil MusEduc", corps, cssSup);
 }
+/* Signature de tous les documents produits par le logiciel (10/10/2026) : sans
+   elle, n'importe qui pouvait s'approprier copies, corrigés, recueils ou bulletins. */
+const MUSEDUC_AUTEUR="Philippe Boussetta", MUSEDUC_SITE="museduc.fr";
+function marqueDoc(){ return "MusEduc · "+MUSEDUC_AUTEUR+" · "+MUSEDUC_SITE; }
+/* pied de page signé et numéroté : en marge de page avec Chrome et Edge (131 et
+   plus) ; ailleurs, une ligne fixée en bas de chaque feuille imprimée */
+function marquePiedCSS(){
+  const ua=navigator.userAgent||"", m=/Chrome\/(\d+)/.exec(ua);
+  if(m&&+m[1]>=131&&!/CriOS|FxiOS|Firefox/.test(ua))
+    return '@page{@bottom-left{content:"'+marqueDoc()+'";font:7.5pt Arial,sans-serif;color:#555}'
+      +'@bottom-right{content:"Page " counter(page) " / " counter(pages);font:7.5pt Arial,sans-serif;color:#555}}';
+  return '@media print{.me-pied{display:block;position:fixed;left:0;right:0;bottom:0}}';
+}
 function ouvrirImpression(titre,corps,cssSup){
   const w=window.open("","_blank","width=820,height=920");
   if(!w){toast("Autorise les fenêtres pop-up pour imprimer.");return;}
@@ -25598,8 +26455,13 @@ function ouvrirImpression(titre,corps,cssSup){
     +".q.ok{border-left-color:#2f9e63}.q.ko{border-left-color:#e0483b}"
     +".qnum{font-size:.72rem;text-transform:uppercase;letter-spacing:.6px;color:#555;margin-bottom:5px}"
     +".qtxt{font-size:.92rem}.qrep,.qsol{font-size:.85rem;margin-top:5px}"
-    +".qsol{color:#a3271b}img,svg{max-width:100%;height:auto}";
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+titre+'</title><style>'+css+(cssSup||"")+'</style></head><body>'+corps+'</body></html>');
+    +".qsol{color:#a3271b}img,svg{max-width:100%;height:auto}"
+    +".me-marque{display:flex;justify-content:space-between;gap:12px;margin:0 0 12px;padding:0 0 4px;border-bottom:1px solid #ccc;font:8.5pt Arial,sans-serif;color:#555}"
+    +".me-marque b{color:#1e3a63}.me-pied{display:none;font:7.5pt Arial,sans-serif;color:#555;text-align:center;background:#fff}"
+    +marquePiedCSS();
+  const marque='<div class="me-marque"><span><b>MusEduc</b> · '+MUSEDUC_AUTEUR+'</span><span>'+MUSEDUC_SITE+'</span></div>';
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+titre+' · MusEduc</title><style>'+css+(cssSup||"")+'</style></head><body>'
+    +'<div class="me-pied">'+marqueDoc()+'</div>'+marque+corps+'</body></html>');
   w.document.close(); w.focus(); setTimeout(function(){try{w.print();}catch(e){}},350);
 }
 function dateComplete(ts){ try{return new Date(ts||0).toLocaleDateString("fr-FR");}catch(e){return "";} }
@@ -33112,14 +33974,8 @@ const COURS_REP=[
   expl:"Philip Glass est, avec Terry Riley et Steve Reich, l'un des pionniers de la <b>musique minimaliste</b>, née aux États-Unis dans les années 1960."}]},
 
 /* 1 */{t:"Cinq motifs à la loupe",ic:"<i class='ph ph-magnifying-glass'></i>",
- html:`<p>Un <b>motif</b> est une <b>courte cellule musicale</b> (quelques notes) que l'on peut reconnaître et répéter. <i>North Star</i> en utilise <b>cinq</b>, que l'on a appelés A, B, C, D et E. Observe leur partition et réécoute le morceau.</p>
- <div class="rep-motifs">
-  <figure><img src="__MOTIF_A__" alt="Partition du motif A"><figcaption>Motif A</figcaption></figure>
-  <figure><img src="__MOTIF_B__" alt="Partition du motif B"><figcaption>Motif B</figcaption></figure>
-  <figure><img src="__MOTIF_C__" alt="Partition du motif C"><figcaption>Motif C</figcaption></figure>
-  <figure><img src="__MOTIF_D__" alt="Partition du motif D"><figcaption>Motif D</figcaption></figure>
-  <figure><img src="__MOTIF_E__" alt="Partition du motif E"><figcaption>Motif E</figcaption></figure>
- </div>
+ html:`<p>Un <b>motif</b> est une <b>courte cellule musicale</b> (quelques notes) que l'on peut reconnaître et répéter. <i>North Star</i> en utilise <b>cinq</b>, que l'on a appelés A, B, C, D et E. Observe leur partition et écoute chaque motif seul (bouton <b>Écouter</b>), puis réécoute le morceau.</p>
+ <div class="mo-place" data-ref="ns"></div>
  <div class="ce-note"><i class="ph ph-info"></i> Le <b>registre</b> est la zone de hauteur où l'on joue : <b>grave</b> (sons bas), <b>médium</b> (au milieu) ou <b>aigu</b> (sons hauts). La <b>formation</b>, ce sont les voix et instruments qui jouent.</div>
  <div class="ce-yt" data-yt="${REP_YT.northStar}" data-yt2="${REP_YT.northStar2}" data-lib="Philip Glass, North Star (1977)"></div>
  <h3 class="rep-h"><i class="ph ph-plug"></i> Deux instruments électroniques</h3>
@@ -33131,30 +33987,24 @@ const COURS_REP=[
  </div>
  <div class="ce-note"><i class="ph ph-scales"></i> La différence&nbsp;: l'orgue électronique propose des sons <b>tout prêts</b>&nbsp;; avec le synthétiseur, on <b>sculpte</b> le son soi-même. D'ailleurs, un synthétiseur peut imiter un orgue électronique&nbsp;: essaie ci-dessous&nbsp;!</div>
  <div class="rep-synth" id="repSynth"></div>`,
- ex:[{type:"grille",consigne:"Pour chaque motif, choisis son <b>registre</b>.",
+ ex:[{type:"grille",jouer:"ns",consigne:"Pour chaque motif, choisis son <b>registre</b>.",
   cols:["Grave","Médium","Aigu"],
   rows:[{t:"Motif A",r:1},{t:"Motif B",r:2},{t:"Motif C",r:2},{t:"Motif D",r:1},{t:"Motif E",r:0}],
   expl:"A et D sont dans le <b>médium</b>, B et C dans l'<b>aigu</b>, E dans le <b>grave</b>. Le motif D est écrit en clé de fa, mais tout en haut de la portée : il reste dans le médium."},
-  {type:"grille",consigne:"Pour chaque motif, choisis la <b>formation</b> qui le joue.",
+  {type:"grille",jouer:"ns",consigne:"Pour chaque motif, choisis la <b>formation</b> qui le joue.",
   cols:["Chœur mixte","Chœur de femmes","Chœur d'hommes","Orgue électronique"],
   rows:[{t:"Motif A",r:0},{t:"Motif B",r:3},{t:"Motif C",r:1},{t:"Motif D",r:2},{t:"Motif E",r:3}],
   expl:"A est chanté par un <b>chœur mixte</b>, C par un <b>chœur de femmes</b>, D par un <b>chœur d'hommes</b>. B et E sont joués par un <b>orgue électronique</b> : B dans l'aigu, E dans le grave."}]},
 
 /* 2 */{t:"Des notes longues ou brèves",ic:"<i class='ph ph-music-notes'></i>",
  html:`<p>Regarde maintenant la <b>durée des notes</b> et la <b>direction</b> de chaque motif.</p>
- <div class="rep-motifs">
-  <figure><img src="__MOTIF_A__" alt="Partition du motif A"><figcaption>Motif A</figcaption></figure>
-  <figure><img src="__MOTIF_B__" alt="Partition du motif B"><figcaption>Motif B</figcaption></figure>
-  <figure><img src="__MOTIF_C__" alt="Partition du motif C"><figcaption>Motif C</figcaption></figure>
-  <figure><img src="__MOTIF_D__" alt="Partition du motif D"><figcaption>Motif D</figcaption></figure>
-  <figure><img src="__MOTIF_E__" alt="Partition du motif E"><figcaption>Motif E</figcaption></figure>
- </div>
+ <div class="mo-place" data-ref="ns"></div>
  <div class="ce-note"><i class="ph ph-lightbulb"></i> Les <b>rondes</b> et les <b>blanches</b> sont des valeurs <b>longues</b>. Les <b>doubles croches</b> (reliées par deux barres) sont des valeurs <b>brèves</b>.</div>`,
- ex:[{type:"grille",consigne:"Pour chaque motif, choisis ses <b>valeurs rythmiques</b>.",
+ ex:[{type:"grille",jouer:"ns",consigne:"Pour chaque motif, choisis ses <b>valeurs rythmiques</b>.",
   cols:["Longues","Brèves","Longues et brèves"],
   rows:[{t:"Motif A",r:0},{t:"Motif B",r:1},{t:"Motif C",r:2},{t:"Motif D",r:1},{t:"Motif E",r:0}],
   expl:"A et E n'ont que des valeurs <b>longues</b>, B et D que des valeurs <b>brèves</b>. Le motif C a deux lignes : une en valeurs longues, l'autre en valeurs brèves."},
-  {type:"grille",consigne:"Pour chaque motif, choisis son <b>mouvement mélodique</b>.",
+  {type:"grille",jouer:"ns",consigne:"Pour chaque motif, choisis son <b>mouvement mélodique</b>.",
   cols:["Ascendant (il monte)","Descendant (il descend)"],
   rows:[{t:"Motif A",r:0},{t:"Motif B",r:0},{t:"Motif C",r:1},{t:"Motif D",r:0},{t:"Motif E",r:0}],
   expl:"Tous les motifs <b>montent</b> (mouvement <b>ascendant</b>), sauf le motif C qui <b>descend</b> (mouvement <b>descendant</b>)."}]},
@@ -33184,7 +34034,7 @@ const COURS_REP=[
  html:`<p>Comment Glass assemble-t-il ses cinq motifs&nbsp;? Chaque motif entre <b>l'un après l'autre</b>, une fois que le précédent a été joué <b>4 fois</b>. Et une fois entré, un motif <b>ne s'arrête plus</b>.</p>
  <p>Essaie la machine ci-dessous : elle joue les <b>cinq motifs de <i>North Star</i></b>, d'après leur partition (les voix et l'orgue sont imités par un synthétiseur). Lance l'accumulation : les partitions s'empilent comme sur la partition d'orchestre, et un curseur rouge suit le son. Puis amuse-toi à <b>allumer et éteindre</b> les motifs toi-même.</p>
  <div class="rep-accu" id="repAccu"></div>`,
- ex:[{type:"grille",consigne:"Dans <i>North Star</i>, dans quelle <b>partie</b> chaque motif fait-il son entrée&nbsp;?",
+ ex:[{type:"grille",jouer:"ns",consigne:"Dans <i>North Star</i>, dans quelle <b>partie</b> chaque motif fait-il son entrée&nbsp;?",
   cols:["1","2","3","4","5"],
   rows:[{t:"Motif A (chœur mixte)",r:0},{t:"Motif B (orgue électronique)",r:1},{t:"Motif C (chœur de femmes)",r:2},{t:"Motif D (chœur d'hommes)",r:3},{t:"Motif E (orgue électronique)",r:4}],
   expl:"A ouvre le morceau tout seul, B le rejoint dans la partie 2, C dans la partie 3, D dans la partie 4, et E complète l'ensemble dans la partie 5 : les cinq motifs jouent alors <b>en même temps</b>."},
@@ -33228,10 +34078,7 @@ const COURS_REP=[
 
 /* 7 */{t:"Deux motifs pour un héros",ic:"<i class='ph ph-lightning'></i>",
  html:`<p>Le thème de Batman est construit sur <b>deux motifs</b>. Observe-les et réécoute le début du thème.</p>
- <div class="rep-motifs large">
-  <figure><img src="__BATMAN_1__" alt="Partition du premier motif de Batman"><figcaption>Premier motif</figcaption></figure>
-  <figure><img src="__BATMAN_2__" alt="Partition du second motif de Batman"><figcaption>Second motif</figcaption></figure>
- </div>
+ <div class="mo-place" data-ref="batman"></div>
  <div class="ce-yt" data-yt="${REP_YT.batman}" data-yt2="${REP_YT.batman2}" data-lib="Danny Elfman, The Batman Theme (1989)"></div>`,
  ex:[{type:"grille",consigne:"Pour chaque caractéristique, dis à quel motif elle correspond.",
   cols:["Premier motif","Second motif","Les deux"],
@@ -33526,7 +34373,7 @@ function repPartitionSVG(m){
   const cle=(m.k==="D"||m.k==="E")?"fa":"sol";
   const portees=m.k==="C"?[{cle:cle,ev:m.ev.filter(function(e){ return e[3]!=="bref"; })},{cle:cle,ev:m.ev.filter(function(e){ return e[3]==="bref"; })}]
                          :[{cle:cle,ev:m.ev}];
-  return rpPartition(portees,RP_NS,"Partition du motif "+m.k+" ("+m.nom+")");
+  return rpPartition(portees,RP_NS,"Partition du motif "+m.k);
 }
 /* allume la note jouée et place le curseur (pas = position en pas dans la boucle) */
 function rpSuivre(boite,L,pas){
@@ -33543,6 +34390,144 @@ function rpSuivre(boite,L,pas){
     /* sur un petit écran, la partition défile pour garder le curseur en vue */
     if(boite.scrollWidth>boite.clientWidth+2){ const vb=svg.viewBox.baseVal.width||1; boite.scrollLeft=Math.max(0,x/vb*svg.clientWidth-boite.clientWidth*0.4); }
   }
+}
+/* ---------- Les partitions de référence, à côté des questions ----------
+   North Star : une carte par motif (partition redessinée + bouton Écouter, le curseur
+   suit le son). Batman : les deux motifs redessinés, sans le son (œuvre protégée :
+   on l'écoute avec la vidéo). */
+let _rm=null;
+function repCarteMotifHTML(i){
+  const m=REP_MOTIFS[i];
+  return '<figure class="mo-carte" style="--c:'+m.coul+'"><figcaption><b>'+m.k+'</b><span>Motif '+m.k+'</span>'
+    +'<button type="button" class="mo-play" onclick="repEcouterMotif('+i+',this)" aria-label="Écouter le motif '+m.k+'"><i class="ph-fill ph-play"></i> Écouter</button></figcaption>'
+    +'<div class="ra-img mo-img">'+repPartitionSVG(m)+'</div></figure>';
+}
+function repMotifsHTML(){ return '<div class="mo-grille">'+REP_MOTIFS.map(function(m,i){ return repCarteMotifHTML(i); }).join("")+'</div>'; }
+function batmanMotifsHTML(){
+  return '<div class="mo-grille bat">'+[0,1].map(function(i){
+    return '<figure class="mo-carte" style="--c:'+(i?"#F2C94C":"#7fd3ff")+'"><figcaption><b>'+(i+1)+'</b><span>'+(i?"Second motif":"Premier motif")+'</span></figcaption>'
+      +'<div class="ra-img mo-img">'+batmanSVG(i)+'</div></figure>'; }).join("")+'</div>';
+}
+/* les emplacements des cours (le texte des étapes est écrit avant que les motifs existent) */
+function repRefMonter(){
+  document.querySelectorAll(".mo-place").forEach(function(z){
+    if(z.getAttribute("data-fait"))return;
+    z.innerHTML=z.getAttribute("data-ref")==="batman"?batmanMotifsHTML():repMotifsHTML(); z.setAttribute("data-fait","1");
+  });
+}
+/* écouter un seul motif, deux fois de suite, avec le curseur sur sa carte */
+function repEcouterMotif(i,btn){
+  const carte=btn.closest(".mo-carte")||btn;
+  if(_rm){ const meme=_rm.carte===carte; rmArret(); if(meme)return; }
+  if(_rep.jeu)repArreter();
+  if(typeof caArret==="function")caArret();
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const maitre=ctx.createGain(); maitre.gain.value=.5; maitre.connect(ctx.destination);
+  const bus=REP_MOTIFS.map(function(){ const g=ctx.createGain(); g.connect(maitre); return g; });
+  _rm={i:i,carte:carte,btn:btn,maitre:maitre,bus:bus,sources:[],debut:ctx.currentTime+.12,prochain:0,tours:2};
+  _rm.min=setInterval(rmPlanifier,25); rmPlanifier();
+  _rm.aria=btn.getAttribute("aria-label");
+  if(btn.classList.contains("cg-motif")){ btn.querySelector("i").className="ph-fill ph-stop"; btn.classList.add("on"); }
+  else btn.innerHTML='<i class="ph-fill ph-stop"></i> Arrêter';
+  btn.setAttribute("aria-label","Arrêter le motif "+REP_MOTIFS[i].k);
+}
+function rmPlanifier(){
+  const j=_rm; if(!j)return;
+  if(!j.carte.isConnected){ rmArret(); return; }
+  const ctx=audio(), lim=ctx.currentTime+.15, total=REP_PAS*j.tours, m=REP_MOTIFS[j.i];
+  while(j.prochain<total&&j.debut+j.prochain*REP_DC<lim){
+    const pas=j.prochain%REP_PAS, t0=j.debut+j.prochain*REP_DC;
+    if(t0>=ctx.currentTime-.02)m.ev.forEach(function(e){ if(e[0]===pas)e[2].forEach(function(n){ repNote(j,j.i,m.voix,t0,e[1]*REP_DC,n,e[3]); }); });
+    j.prochain++;
+  }
+  j.sources=j.sources.filter(function(s){ return s.fin>ctx.currentTime; });
+  const p=(ctx.currentTime-j.debut)/REP_DC;
+  if(p>=total+2){ rmArret(); return; }
+  rpSuivre(j.carte.querySelector(".mo-img"),RP_NS,(p<0||p>=total)?null:p%REP_PAS);
+}
+function rmArret(){
+  const j=_rm; if(!j)return; _rm=null; clearInterval(j.min);
+  try{ const t=audio().currentTime; j.maitre.gain.setTargetAtTime(0,t,.03);
+    j.sources.forEach(function(s){ s.src.forEach(function(o){ try{ o.stop(t+.12); }catch(e){} }); });
+    setTimeout(function(){ try{ j.maitre.disconnect(); }catch(e){} },400); }catch(e){}
+  const im=j.carte.querySelector(".mo-img"); if(im)rpSuivre(im,RP_NS,null);
+  if(j.btn.classList.contains("cg-motif")){ j.btn.querySelector("i").className="ph-fill ph-play"; j.btn.classList.remove("on"); }
+  else j.btn.innerHTML='<i class="ph-fill ph-play"></i> Écouter';
+  j.btn.setAttribute("aria-label",j.aria||("Écouter le motif "+REP_MOTIFS[j.i].k));
+}
+
+/* ---------- Batman (Danny Elfman, 1989) : les deux motifs, redessinés sans le son ----------
+   Durées en « tics » : noire = 12 (croche 6, croche de triolet 4).
+   Premier motif, clé de fa : si (noire pointée), do♯ lié do♯, ré, sol lié | 5/4 : sol (blanche
+   pointée) lié sol, fa♯ (noire pointée) lié | 4/4 : fa♯. Second motif, clé de sol : triolet
+   si-do♯-ré, accord ré-sol (noire, accent), accord si-fa♯ (croche, accent), soupirs. */
+const BAT_MOTIFS=[
+  {cle:"fa",dx:4.1,mesures:[{ch:"4/4",t:48},{ch:"5/4",t:60},{ch:"4/4",t:48,coupe:30}],
+   notes:[{t:0,d:18,m:[47]},{t:18,d:6,m:[49],acc:[49],lie:1},{t:24,d:6,m:[49]},{t:30,d:12,m:[50]},{t:42,d:6,m:[55],lie:1},
+          {t:48,d:36,m:[55],lie:1},{t:84,d:6,m:[55]},{t:90,d:18,m:[54],acc:[54],lie:1},{t:108,d:18,m:[54]}]},
+  {cle:"sol",dx:6.2,mesures:[{ch:"4/4",t:48}],
+   notes:[{t:0,d:4,m:[59],tri:1},{t:4,d:4,m:[61],acc:[61],tri:1},{t:8,d:4,m:[62],tri:1},
+          {t:12,d:12,m:[62,67],accent:1},{t:24,d:6,m:[59,66],acc:[66],accent:1},{t:30,d:6,silence:1},{t:36,d:12,silence:1}]}
+];
+function batDiese(x,y){
+  const c=RP.coul;
+  return '<g stroke="'+c+'"><line x1="'+(x+1.5)+'" y1="'+(y-9)+'" x2="'+(x+1.5)+'" y2="'+(y+9)+'" stroke-width="1.2"/><line x1="'+(x+5.5)+'" y1="'+(y-10)+'" x2="'+(x+5.5)+'" y2="'+(y+8)+'" stroke-width="1.2"/>'
+    +'<line x1="'+(x-0.5)+'" y1="'+(y-2)+'" x2="'+(x+7.5)+'" y2="'+(y-4.5)+'" stroke-width="2.6"/><line x1="'+(x-0.5)+'" y1="'+(y+4)+'" x2="'+(x+7.5)+'" y2="'+(y+1.5)+'" stroke-width="2.6"/></g>';
+}
+function batSVG_soupir(x,T,d){
+  const c=RP.coul, mid=T+20;
+  if(d>=12)return '<path d="M'+(x-1)+' '+(mid-13)+'L'+(x+5)+' '+(mid-6)+'L'+x+' '+(mid+1)+'L'+(x+5)+' '+(mid+7)+'Q'+(x-4)+' '+(mid+5)+' '+(x+1)+' '+(mid+12)+'" fill="none" stroke="'+c+'" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>';
+  return '<circle cx="'+(x-2)+'" cy="'+(mid-4)+'" r="2.5" fill="'+c+'"/><path d="M'+(x-2)+' '+(mid-2)+'Q'+(x+2)+' '+(mid-1)+' '+(x+5)+' '+(mid-6)+'L'+(x+1)+' '+(mid+10)+'" fill="none" stroke="'+c+'" stroke-width="1.5"/>';
+}
+function batmanSVG(n){
+  const M=BAT_MOTIFS[n], e=RP.e, c=RP.coul, T=34, bas=T+4*e, H=112;
+  const y=function(p){ return bas-p*e/2; };
+  /* position de chaque mesure */
+  let x=60; const deb=[]; let t0=0;
+  M.mesures.forEach(function(me){ deb.push({x:x+30,t:t0,me:me}); x=x+30+(me.coupe||me.t)*M.dx+(me.coupe?20:14); t0+=me.t; });
+  const W=x+(M.mesures[M.mesures.length-1].coupe?0:8);
+  const xDe=function(t){ let b=deb[0]; deb.forEach(function(d){ if(t>=d.t)b=d; }); return b.x+(t-b.t)*M.dx+8; };
+  let s='<svg class="rp-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Partition du '+(n?"second":"premier")+' motif de Batman">';
+  for(let i=0;i<5;i++)s+='<line x1="14" x2="'+W+'" y1="'+(T+i*e)+'" y2="'+(T+i*e)+'" stroke="'+c+'" stroke-width="1.1"/>';
+  s+='<line x1="14" x2="14" y1="'+T+'" y2="'+bas+'" stroke="'+c+'" stroke-width="1.2"/>';
+  s+=cleSVG(M.cle,e,function(k){ return T+(4-k)*e; });
+  deb.forEach(function(d,k){
+    const ch=d.me.ch.split("/"), xc=d.x-14;
+    s+='<text x="'+xc+'" y="'+(T+19)+'" font-family="Georgia,serif" font-weight="700" font-size="21" text-anchor="middle" fill="'+c+'">'+ch[0]+'</text>'
+      +'<text x="'+xc+'" y="'+(T+39)+'" font-family="Georgia,serif" font-weight="700" font-size="21" text-anchor="middle" fill="'+c+'">'+ch[1]+'</text>';
+    if(!d.me.coupe){ const xb=d.x+d.me.t*M.dx+14; s+='<line x1="'+xb+'" x2="'+xb+'" y1="'+T+'" y2="'+bas+'" stroke="'+c+'" stroke-width="'+(k===deb.length-1?3:1.2)+'"/>'; }
+  });
+  /* notes */
+  const tri=[];
+  M.notes.forEach(function(no,k){
+    const xn=xDe(no.t);
+    if(no.silence){ s+=batSVG_soupir(xn,T,no.d); return; }
+    const ps=no.m.map(function(m){ return rpPos(m,M.cle); }), haut=Math.max.apply(null,ps), basP=Math.min.apply(null,ps);
+    const monte=(haut+basP)/2<4, creuse=no.d>=24, pointee=(no.d===18||no.d===36);
+    ps.forEach(function(p){ s+=rpLedgers(xn,p,bas); });
+    (no.acc||[]).forEach(function(m){ s+=batDiese(xn-17,y(rpPos(m,M.cle))); });
+    ps.forEach(function(p){ s+=rpTete(xn,y(p),creuse,false);
+      if(pointee){ const yp=(p%2===0)?y(p)-e/2:y(p); s+='<circle cx="'+(xn+10)+'" cy="'+yp+'" r="1.9" fill="'+c+'"/>'; } });
+    const xs=monte?xn+4.9:xn-4.9, y1=monte?y(basP):y(haut), y2=monte?y(haut)-30:y(basP)+30;
+    if(no.tri){ tri.push({xs:xs,y1:y1,y2:y2,monte:monte}); }   /* hampe tracée plus bas, jusqu'à la barre */
+    else s+='<line x1="'+xs+'" x2="'+xs+'" y1="'+y1+'" y2="'+y2+'" stroke="'+c+'" stroke-width="1.4"/>';
+    if(no.tri){}
+    else if(no.d===6){ /* crochet */
+      s+=monte?'<path d="M'+xs+' '+y2+'c1 7 9 8 7 17c3-9-4-11-7-13" fill="'+c+'"/>':'<path d="M'+xs+' '+y2+'c1-7 9-8 7-17c3 9-4 11-7 13" fill="'+c+'"/>';
+    }
+    if(no.accent){ const ya=monte?y(basP)+12:y(haut)-12; s+='<path d="M'+(xn-5)+' '+(ya-3)+'L'+(xn+5)+' '+ya+'L'+(xn-5)+' '+(ya+3)+'" fill="none" stroke="'+c+'" stroke-width="1.4"/>'; }
+    if(no.lie){ /* liaison vers la note suivante, du côté opposé à la hampe */
+      const nx=xDe(M.notes[k+1].t), yl=monte?y(basP)+6:y(haut)-6, cy=monte?yl+9:yl-9;
+      s+='<path d="M'+(xn+5)+' '+yl+'Q'+((xn+nx)/2)+' '+cy+' '+(nx-5)+' '+yl+'" fill="none" stroke="'+c+'" stroke-width="1.4"/>';
+    }
+  });
+  if(tri.length){ /* barre du triolet et son « 3 » */
+    const a=tri[0], z=tri[tri.length-1], yb=a.monte?Math.min.apply(null,tri.map(function(t){ return t.y2; })):Math.max.apply(null,tri.map(function(t){ return t.y2; }));
+    tri.forEach(function(t){ s+='<line x1="'+t.xs+'" x2="'+t.xs+'" y1="'+t.y1+'" y2="'+yb+'" stroke="'+c+'" stroke-width="1.4"/>'; });
+    s+='<rect x="'+a.xs+'" y="'+(a.monte?yb:yb-3.6)+'" width="'+(z.xs-a.xs+0.8)+'" height="3.6" fill="'+c+'"/>'
+      +'<text x="'+((a.xs+z.xs)/2)+'" y="'+(a.monte?yb-5:yb+14)+'" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="13" text-anchor="middle" fill="'+c+'">3</text>';
+  }
+  return s+'</svg>';
 }
 /* ---------- Étape 9 : la basse obstinée de Lully, sur une partition redessinée ----------
    Armide (1686), Passacaille de l'acte V. La basse, en clé de fa, 2 bémols, à 3 temps :
@@ -34032,7 +35017,7 @@ function ecranCoursEnr(etape){
          : `<button class="action btn-corr" ${bloque?"disabled":""} onclick="ceMarquer(${ceEtape});ceFinal()"><i class="ph ph-flag-checkered"></i> Terminer le cours</button>`}
      </div>
    </div>`;
-  ceMonterYT(); ceMonterPistes(); stuMonter(); repMonter(); repSynthMonter(); repPassaMonter();
+  ceMonterYT(); ceMonterPistes(); stuMonter(); repMonter(); repSynthMonter(); repPassaMonter(); repRefMonter();
   if(typeof remonter==="function")remonter();
 }
 
@@ -34088,6 +35073,16 @@ function ceMonterYT(){
   const local=ceYTlocal();
   document.querySelectorAll(".ce-yt").forEach(function(d){
     const id=d.getAttribute("data-yt"), lib=d.getAttribute("data-lib")||"";
+    /* dans les cours interactifs, une vraie « affiche » de vidéo : les élèves ne
+       repéraient pas la fine barre bleue. Pas de miniature YouTube (aucune donnée
+       envoyée à Google avant le clic de l'élève). */
+    if(d.closest(".ce-cours,.seance")){
+      d.innerHTML=`<button type="button" class="ce-yt-affiche" onclick="ceLireYT(this,'${id}')" aria-label="${local?"Ouvrir sur YouTube":"Regarder la vidéo"} : ${escapeHtml(lib)}">
+        <span class="cya-badge"><i class="ph-fill ph-film-strip"></i> Vidéo</span>
+        <span class="cya-play"><i class="ph-fill ph-${local?"arrow-square-out":"play"}"></i></span>
+        <span class="cya-txt"><b>${local?"Ouvrir la vidéo sur YouTube":"Regarder la vidéo"}</b><span>${escapeHtml(lib)}</span></span></button>`;
+      return;
+    }
     d.innerHTML=`<button class="ce-yt-btn" onclick="ceLireYT(this,'${id}')">
       <span class="ce-yt-play"><i class="ph-fill ph-${local?"arrow-square-out":"play"}"></i></span>
       <span class="ce-yt-lib">${escapeHtml(lib)}</span>
@@ -34324,7 +35319,7 @@ function ceLireYT(btn,id){
 function ceYTCharger(box){
   const id=box._ytListe[box._ytI], lien="https://www.youtube.com/watch?v="+id;
   box.innerHTML=`<div class="ce-yt-cadre"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0&autoplay=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}"
-      title="Extrait musical" frameborder="0" allow="accelerometer;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>
+      title="${escapeHtml(box.getAttribute("data-lib")||"Extrait musical")}" frameborder="0" allow="accelerometer;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>
     <a class="ce-yt-secours" href="${lien}" target="_blank" rel="noopener noreferrer">
       <i class="ph ph-arrow-square-out"></i> La vidéo ne s'affiche pas ? L'ouvrir sur YouTube</a>`;
   const f=box.querySelector("iframe");
@@ -34355,6 +35350,14 @@ function ceMonterPistes(){
 }
 
 /* ---------- Rendu des exercices ---------- */
+/* libellé de ligne d'un tableau : « Motif A… » devient un bouton qui fait entendre
+   le motif (option jouer:"ns"), sans quitter le tableau */
+function ceLibGrille(x,r){
+  const mo=x.jouer==="ns"&&/^Motif ([A-E])\b/.exec(String(r.t||""));
+  if(!mo)return r.t;
+  const nom=String(r.t).replace(/<[^>]+>/g,"").replace(/&nbsp;/g," ").replace(/"/g,"&quot;");
+  return `<button type="button" class="cg-motif" onclick="repEcouterMotif(${"ABCDE".indexOf(mo[1])},this)" aria-label="Écouter : ${nom}"><i class="ph-fill ph-play"></i><span>${r.t}</span></button>`;
+}
 function ceExHTML(x,i){
   const cle="ex"+ceEtape+"_"+i;
   let corps="";
@@ -34374,7 +35377,7 @@ function ceExHTML(x,i){
   } else if(x.type==="grille"){
     corps=`<table class="ce-grille" id="${cle}"><thead><tr><th></th>`+
       x.cols.map(function(c){return "<th>"+c+"</th>";}).join("")+`</tr></thead><tbody>`+
-      x.rows.map(function(r,ri){return `<tr data-r="${ri}"><td class="cg-lib">${r.t}</td>`+
+      x.rows.map(function(r,ri){return `<tr data-r="${ri}"><td class="cg-lib">${ceLibGrille(x,r)}</td>`+
         x.cols.map(function(c,ci){return `<td class="cg-case" data-c="${ci}" onclick="ceCocher(this)" aria-label="${String(r.t+" : "+c).replace(/<[^>]+>/g,"").replace(/"/g,"&quot;")}"><i class="ph ph-check"></i></td>`;}).join("")+`</tr>`;}).join("")+
       `</tbody></table>`;
   } else if(x.type==="etiquettes"){
@@ -34692,7 +35695,16 @@ function ceReveler(x,box){
    1er essai raté  → on montre ce qui ne va pas + un indice, et l'élève retente ;
    2e essai raté   → correction complète.
    `forcer` = l'élève a cliqué « Voir la correction » (déconseillé, mais disponible). */
+/* « Vérifier » coupe tout ce que l'étape faisait entendre : motifs, machine, basse
+   de Lully, extraits, studio ; les vidéos se mettent en pause */
+function ceCouperSons(){
+  [function(){ rmArret(); },function(){ repArreter(); },function(){ caArret(); },function(){ paArret(); },
+   function(){ sonBtnCouper(); },function(){ stuStop(); }].forEach(function(f){ try{ f(); }catch(e){} });
+  document.querySelectorAll(".ce-yt iframe").forEach(function(f){
+    try{ f.contentWindow.postMessage(JSON.stringify({event:"command",func:"pauseVideo",args:[]}),"*"); }catch(e){} });
+}
 function ceVerifier(i,forcer){
+  ceCouperSons();
   const x=ceDef().etapes[ceEtape].ex[i], cle="ex"+ceEtape+"_"+i, box=document.getElementById(cle);
   const corr=document.getElementById("corr"+ceEtape+"_"+i);
   const kEss=ceEtape+"_"+i;
@@ -34710,9 +35722,9 @@ function ceVerifier(i,forcer){
     corr.className="ce-corr gagne";
     corr.innerHTML=`<div class="cc-score"><i class="ph-fill ph-seal-check"></i> Bravo, tout est juste&nbsp;!${premier?"":" (après correction)"}</div>
       ${x.expl?`<div class="cc-expl">${x.expl}</div>`:""}`;
-    if(zoneBtn)zoneBtn.innerHTML=`<button class="action" onclick="ecranCoursEnr(${ceEtape})"><i class="ph ph-arrow-counter-clockwise"></i> Refaire cet exercice</button>`;
+    if(zoneBtn)zoneBtn.innerHTML=`<button class="action" onclick="${seance?"seanceRendre()":"ecranCoursEnr("+ceEtape+")"}"><i class="ph ph-arrow-counter-clockwise"></i> Refaire cet exercice</button>`;
     try{jouerEffet("bon");}catch(e){}
-    if(premier){ try{ajouterPoints(3);}catch(e){} }
+    if(premier&&!seance){ try{ajouterPoints(3);}catch(e){} }
     delete ceEssais[kEss];
     ceMarquerEx(ceEtape,i); ceMajVerrou();
     return;
@@ -34723,7 +35735,7 @@ function ceVerifier(i,forcer){
     corr.className="ce-corr partiel";
     corr.innerHTML=`<div class="cc-score"><i class="ph-fill ph-info"></i> Voici la correction</div>
       ${x.expl?`<div class="cc-expl">${x.expl}</div>`:""}`;
-    if(zoneBtn)zoneBtn.innerHTML=`<button class="action" onclick="ecranCoursEnr(${ceEtape})"><i class="ph ph-arrow-counter-clockwise"></i> Refaire cet exercice</button>`;
+    if(zoneBtn)zoneBtn.innerHTML=`<button class="action" onclick="${seance?"seanceRendre()":"ecranCoursEnr("+ceEtape+")"}"><i class="ph ph-arrow-counter-clockwise"></i> Refaire cet exercice</button>`;
     try{jouerEffet("mauvais");}catch(e){}
     delete ceEssais[kEss];
     ceMarquerEx(ceEtape,i); ceMajVerrou();
@@ -35830,6 +36842,255 @@ function coursTermine(coursId){
   ceCours=av;
   return n>0 && ok;
 }
+/* =====================================================================
+   ACCÈS À L'ENTRAÎNEMENT ET À L'ÉVALUATION D'UN COURS (10/10/2026)
+   D'ordinaire, l'élève les débloque en terminant toutes les étapes du cours.
+   Le professeur peut aussi les ouvrir à qui il veut (faire avancer un élève,
+   débloquer celui qui n'a pas travaillé) : niveau 1 = l'entraînement, niveau 2 =
+   l'entraînement ET l'évaluation (paliers sautés). C'est rangé sur la fiche de
+   l'élève (classes/{cid}/eleves/{code}.coursDeblo = {rep:{n:1|2,t}}), jamais sur le
+   doc classe : celui-ci est lisible de tous, et un code sert à se connecter.
+   Ce que le professeur ouvre n'entre JAMAIS dans la progression de l'élève
+   (niveauMax) : le suivi distingue ainsi ce qu'il a fait de lui-même.
+   Un travail donné sur ce cours (entraînement, évaluation, évaluation
+   d'entraînement) ouvre lui aussi l'entraînement à ceux qui le reçoivent.
+   ===================================================================== */
+function coursDebloNiv(k){ const o=(profil.coursDeblo||{})[k]; return o?((+o.n>=2)?2:1):0; }
+/* Difficulté d'entraînement ouverte par le professeur (1 Facile, 2 Intermédiaire,
+   3 Difficile). Les ouvertures d'avant n'avaient pas de difficulté : l'évaluation
+   ouverte valait tout ouvert, l'entraînement seul suivait les paliers. */
+function coursDebloDiff(k){ const o=(profil.coursDeblo||{})[k]; if(!o)return 0; const d=+o.d;
+  return (d>=1&&d<=3)?d:((+o.n>=2)?3:1); }
+function coursDebloDiffDom(domId){ const s=String(domId||""); return s.indexOf("evalcours-")===0?coursDebloDiff(s.slice(10)):0; }
+const CC_DIFF_LIB={1:"Facile",2:"jusqu’à Intermédiaire",3:"jusqu’à Difficile"};
+/* l'évaluation libre ouverte par le professeur sans passer par les paliers */
+function coursEvalOuverteProf(domId){ const s=String(domId||""); return s.indexOf("evalcours-")===0&&coursDebloNiv(s.slice(10))>=2; }
+/* un volet de travail sur ce contenu (types donnés), même déjà fait, tant qu'il
+   n'est pas verrouillé comme non rendu */
+function devoirVoletPour(domId,types){
+  if(!_devoirs||!_devoirs.length)return null;
+  for(let k=0;k<_devoirs.length;k++){ const d=_devoirs[k], vs=d.volets||[];
+    for(let i=0;i<vs.length;i++){ const v=vs[i];
+      if(types.indexOf(v.t)<0||v.cible!==domId)continue;
+      if(devoirVoletVerrouille(d,i))continue;
+      return {devoir:d,i:i}; } }
+  return null;
+}
+/* Pourquoi l'élève a accès à l'entraînement d'un cours : "fini" (cours terminé),
+   "prof" (ouvert par le professeur), "devoir" (travail donné), "" (pas encore). */
+function coursAccesRaison(k){
+  if(((typeof ceProf==="function")&&ceProf())||coursTermine(k))return "fini";
+  if(coursDebloNiv(k))return "prof";
+  if(devoirVoletPour("evalcours-"+k,["lecon","blanc","eval"]))return "devoir";
+  return "";
+}
+/* Relit l'ouverture posée par le professeur (au plus une fois par minute, sur les
+   écrans où elle compte) : sans cela, il fallait relancer l'application. */
+let _coursDebloLu=0;
+function coursDebloRafraichir(force){
+  if(!profil.eleveCode||!profil.classeId)return Promise.resolve(false);
+  if(!force&&Date.now()-_coursDebloLu<60000)return Promise.resolve(false);
+  _coursDebloLu=Date.now();
+  const s=fbStore(); if(!s)return Promise.resolve(false);
+  return authElevePret().then(function(){
+    return s.collection("classes").doc(profil.classeId).collection("eleves").doc(profil.eleveCode).get();
+  }).then(function(doc){ return coursDebloAppliquer(doc&&doc.exists?(doc.data()||{}).coursDeblo:null); })
+    .catch(function(){ return false; });
+}
+function coursDebloAppliquer(v){
+  const nv=(v&&typeof v==="object")?v:{};
+  if(JSON.stringify(profil.coursDeblo||{})===JSON.stringify(nv))return false;
+  profil.coursDeblo=nv; try{ sauverProfil(profil); }catch(e){}
+  return true;
+}
+/* Maestro annonce chaque ouverture, une seule fois */
+function coursDebloMessages(){
+  const l=[], D=profil.coursDeblo||{}, vus=profil.coursDebloVus||{};
+  if((typeof ceProf==="function")&&ceProf())return l;
+  Object.keys(D).forEach(function(k){
+    const o=D[k], d=COURS_DEF[k]; if(!o||!d||typeof EVALCOURS_DEF==="undefined"||!EVALCOURS_DEF[k])return;
+    if(vus[k]===o.t)return;
+    const deux=(+o.n>=2), dif=coursDebloDiff(k);
+    if(!deux&&dif<=1&&coursTermine(k))return;       /* il l'avait déjà ouvert lui-même */
+    l.push({id:"deblo-"+k,prio:38,ic:"lock-key-open",titre:"Ton professeur t’a ouvert "+(deux?"un entraînement et une évaluation":"un entraînement"),
+      corps:'Pour le cours «&nbsp;'+echapH(d.titre)+'&nbsp;», ton professeur t’a ouvert l’<b>entraînement</b>'+(dif>=2?' (<b>'+CC_DIFF_LIB[dif]+'</b>)':'')+(deux?' et l’<b>évaluation</b>':'')
+        +'. Tu '+(deux?"les":"le")+' retrouves dans <b>Leçons</b>, rubrique <b>Évaluations des cours de collège</b>.'
+        +(coursTermine(k)?'':' Termine quand même les étapes du cours : tout ce qu’on te demandera y est expliqué.'),
+      actions:[{lib:"Y aller",ic:"barbell",principal:true,clic:"coursDebloVu('"+k+"');lecDernierDomaine=null;ouvrir('evalcours-"+k+"')"},
+               {lib:"Compris",ic:"check",clic:"coursDebloVu('"+k+"');maestroRetirer('deblo-"+k+"')"}]});
+  });
+  return l;
+}
+function coursDebloVu(k){
+  const o=(profil.coursDeblo||{})[k]; if(!o)return;
+  profil.coursDebloVus=profil.coursDebloVus||{}; profil.coursDebloVus[k]=o.t;
+  try{ sauverProfil(profil); }catch(e){}
+}
+
+/* ---------- Enseignant : qui fait quoi dans un cours ----------
+   Une ligne par élève : où il en est du cours, comment il a eu accès à
+   l'entraînement (de lui-même, ouvert par le professeur, travail donné), ses
+   paliers d'entraînement (gagnés par lui seul) et ses évaluations. On y ouvre
+   l'entraînement (et l'évaluation) aux élèves choisis. */
+let _ccSuivi={id:null,cid:null};
+/* étapes terminées d'après la fiche de l'élève (même règle que ceEtapeComplete ;
+   une étape sans exercice compte dès que l'élève est allé plus loin) */
+function ccEtapesFaitesDe(pc,def){
+  const n=def.etapes.length; if(!pc)return 0; if(pc.fini)return n;
+  const faits=Array.isArray(pc.faits)?pc.faits:[], ex=pc.ex||{};
+  let c=0;
+  for(let i=0;i<n;i++){
+    const xs=def.etapes[i].ex||[], l=Array.isArray(ex[String(i)])?ex[String(i)]:[];
+    if(faits.indexOf(i)>=0||(xs.length&&xs.every(function(_,j){ return l.indexOf(j)>=0; }))||(!xs.length&&(pc.max||0)>i))c++;
+  }
+  return c;
+}
+/* Tout ce qu'on sait d'un élève pour ce cours, lu sur sa fiche (et les travaux donnés). */
+function ccSuiviEleve(id,code,prog,devs){
+  const def=COURS_DEF[id], dom="evalcours-"+id, sv=(prog&&prog.sauv)||{}, n=def.etapes.length;
+  const pc=(sv.cours||{})[id]||null, faites=ccEtapesFaitesDe(pc,def);
+  const fini=faites>=n, finiLe=(pc&&pc.fini)||((pc&&pc.dates)?Math.max.apply(null,[0].concat(Object.keys(pc.dates).map(function(k){ return +pc.dates[k]||0; }))):0)||0;
+  const deblo=((prog&&prog.coursDeblo)||{})[id]||null;
+  const nm=(sv.niveauMax&&sv.niveauMax[dom]!=null)?+sv.niveauMax[dom]:1;
+  const serie=(sv.serieNiv&&sv.serieNiv[dom+"|"+nm])||0;
+  const joue=(sv.best&&sv.best[dom]!==undefined)||((sv.vus&&sv.vus[dom])||0)>0||nm>1;
+  /* évaluations : demandées (comptent), libres (bonus), d'entraînement (ne comptent pas) */
+  const notes=(Array.isArray(prog&&prog.notes)?prog.notes:(sv.notesEval||[])).filter(function(x){
+    return x&&x.note!=null&&(x.dom===dom||(!x.dom&&typeof EVALCOURS_DEF!=="undefined"&&EVALCOURS_DEF[id]&&x.theme===EVALCOURS_DEF[id].nom)); });
+  const evs=notes.map(function(x){ return {note:x.note,sur:x.sur||20,type:x.off?"off":(x.diff?"libre":"off"),d:x.d||0}; });
+  let devoir=false;
+  (devs||[]).forEach(function(d){
+    if(Array.isArray(d.eleves)&&d.eleves.length&&d.eleves.indexOf(code)<0)return;
+    const st=((prog&&prog.devoirs)||{})[d.id]||{v:{}};
+    (d.volets||[]).forEach(function(v,i){
+      if(v.cible!==dom)return;
+      devoir=true;
+      const s=(st.v||{})[String(i)]||{};
+      if(v.t==="blanc"&&s.fait&&s.note!=null)evs.push({note:s.note,sur:s.sur||20,type:"blanc",d:s.fait});
+    });
+  });
+  evs.sort(function(a,b){ return (a.d||0)-(b.d||0); });
+  /* de lui-même : cours fini avant toute ouverture par le professeur */
+  const seul=fini&&(!deblo||(finiLe&&finiLe<=(deblo.t||0)));
+  const acces=seul?"seul":(deblo?"prof":(fini?"seul":(devoir?"devoir":"")));
+  return {code:code,faites:faites,n:n,fini:fini,finiLe:finiLe,deblo:deblo,acces:acces,nm:nm,serie:serie,joue:joue,evs:evs,vu:!!(prog&&(prog.sauv||prog.maj))};
+}
+function ecranCoursSuivi(id,cid){
+  if(typeof fermerMenu==="function")fermerMenu();
+  const def=COURS_DEF[id]; if(!def)return;
+  masquerInterfaceNormale();
+  majRetour(function(){ if(_ccNiv)ecranCoursNiveau(_ccNiv,true); else ecranCoursCollege(); },"Cours de collège");
+  document.getElementById("titre").innerHTML='<i class="ph ph-users-three"></i> '+echapH(def.titre)+' · qui fait quoi';
+  document.getElementById("intro").textContent="";
+  const z=document.getElementById("zone");
+  const niv=_ccNiv||ccNiveau(ccInfo(id)), par=ccClassesParNiveau();
+  const cls=(_profClasses||[]).filter(function(cl){ return (par[niv]||[]).indexOf(cl)>=0||ccEtatClasse(cl,id).ouvert; })
+    .sort(function(x,y){ return String(x.nom||"").localeCompare(String(y.nom||""),"fr",{numeric:true}); });
+  if(!cls.length){ z.innerHTML='<div class="ccx"><p class="ccx-vide">Aucune classe ne suit ce cours.</p></div>'; return; }
+  if(cid&&cls.some(function(c){ return c.id===cid; }))_ccSuivi.cid=cid;
+  if(_ccSuivi.id!==id||!cls.some(function(c){ return c.id===_ccSuivi.cid; }))_ccSuivi.cid=cls[0].id;
+  _ccSuivi.id=id; cid=_ccSuivi.cid;
+  const chips='<nav class="ccx-nav ccx-nav-centre" aria-label="Classe">'+cls.map(function(c){
+    return '<button class="ccx-chip'+(c.id===cid?" on":"")+'" aria-pressed="'+(c.id===cid)+'" onclick="ecranCoursSuivi(\''+id+'\',\''+c.id+'\')">'+echapH(c.nom||"Classe")+'</button>'; }).join("")+'</nav>';
+  z.innerHTML='<div class="ccx">'+chips+'<p class="ccx-attente"><i class="ph ph-hourglass-medium"></i> Chargement des élèves…</p></div>';
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u){ z.innerHTML=svcIndispo(); return; }
+  Promise.all([ s.collection("eleveCodes").where("ownerUid","==",u.uid).get(),
+                s.collection("classes").doc(cid).collection("eleves").get(),
+                s.collection("classes").doc(cid).collection("devoirs").get().catch(function(){ return {forEach:function(){}}; }) ])
+  .then(function(r){
+    if(_ccSuivi.id!==id||_ccSuivi.cid!==cid)return;      /* on a changé de page entre-temps */
+    const codes=[]; r[0].forEach(function(d){ if((d.data()||{}).classId===cid)codes.push(d.id); });
+    const prog={}; r[1].forEach(function(d){ prog[d.id]=d.data()||{}; });
+    const devs=[]; r[2].forEach(function(d){ const o=Object.assign({id:d.id},d.data()||{}); if(Array.isArray(o.volets))devs.push(o); });
+    codes.sort(function(x,y){ return (labelDe(cid,x)||"￿"+x).localeCompare(labelDe(cid,y)||"￿"+y,"fr"); });
+    const lignes=codes.map(function(c){ return ccSuiviEleve(id,c,prog[c],devs); });
+    z.innerHTML='<div class="ccx">'+chips+ccSuiviHTML(id,cid,lignes)+'</div>';
+  }).catch(function(){ z.innerHTML='<div class="ccx">'+chips+svcIndispo("Impossible de charger les élèves de cette classe.")+'</div>'; });
+  if(typeof remonter==="function")remonter();
+}
+const CC_ACCES_LIB={seul:["v","De lui-même","Il a terminé le cours tout seul : l’entraînement s’est ouvert de lui-même."],
+  prof:["o","Ouvert par vous","Vous lui avez ouvert l’entraînement."],
+  devoir:["b","Travail donné","L’entraînement est ouvert par un travail que vous lui avez donné sur ce cours."],
+  "":["g","Pas encore","Il n’a pas terminé le cours et rien ne lui a été ouvert."]};
+function ccSuiviHTML(id,cid,L){
+  if(!L.length)return '<p class="ccx-vide">Aucun code élève dans cette classe.</p>';
+  const nb=function(f){ return L.filter(f).length; };
+  const kpi=function(n,lib,cls){ return '<div class="ccs-kpi '+cls+'"><b>'+n+'</b><span>'+lib+'</span></div>'; };
+  const notesTxt=function(e){
+    if(!e.evs.length)return '<span class="ccs-rien">aucune</span>';
+    return e.evs.map(function(v){
+      const lib=v.type==="off"?"demandée":(v.type==="blanc"?"entraînement":"libre");
+      const n=String(Math.round(v.note/(v.sur||20)*200)/10).replace(".",",");
+      return '<span class="ccs-note '+v.type+'" title="Évaluation '+lib+(v.d?" du "+fmtDate(v.d):"")+'"><b>'+n+'</b><small>'+lib+'</small></span>'; }).join("");
+  };
+  const lignes=L.map(function(e){
+    const lab=labelDe(cid,e.code), a=CC_ACCES_LIB[e.acces]||CC_ACCES_LIB[""];
+    const pct=Math.round(e.faites/e.n*100);
+    const cours=e.fini
+      ?'<span class="ccs-fini"><i class="ph-fill ph-check-circle"></i> Terminé'+(e.finiLe?' le '+fmtDate(e.finiLe):'')+'</span>'
+      :'<span class="ccs-av"><span class="ccx-bar"><i style="width:'+pct+'%"></i></span><small>'+e.faites+' / '+e.n+' étapes</small></span>';
+    const accesTxt='<span class="ccs-acces '+a[0]+'" title="'+escapeHtml(a[2])+'">'+a[1]+'</span>'
+      +(e.deblo?'<small class="ccs-sous">entraînement '+ccDiffDe(e.deblo).replace("jusqu’à ","")+(e.deblo.n>=2?" + évaluation":"")+(e.deblo.t?' · le '+fmtDate(e.deblo.t):'')+(e.acces==="prof"&&e.fini?' · cours fini ensuite':'')+'</small>':'');
+    const entr=e.joue?palierPastillesHTML({nm:e.nm,serie:e.serie,total:serieDebloc()}):'<span class="ccs-rien">pas commencé</span>';
+    const niv=e.deblo?((e.deblo.n>=2?2:1)+"."+ccDiffNum(e.deblo)):"0";
+    const opt=function(v,lib){ return '<option value="'+v+'"'+(v===niv?" selected":"")+'>'+lib+'</option>'; };
+    const sel='<select class="ccs-sel" aria-label="Ouverture pour '+escapeHtml(lab||e.code)+'" onchange="ccSuiviOuvrir(\''+cid+'\',\''+id+'\',[\''+e.code+'\'],+this.value.split(\'.\')[0],+(this.value.split(\'.\')[1]||1))">'
+      +opt("0",e.fini?"Normal":"Rien d’ouvert")
+      +'<optgroup label="Entraînement">'+[1,2,3].map(function(d){ return opt("1."+d,"Entraînement · "+CC_DIFF_LIB[d]); }).join("")+'</optgroup>'
+      +'<optgroup label="Entraînement + évaluation">'+[1,2,3].map(function(d){ return opt("2."+d,"Entr. + éval · "+CC_DIFF_LIB[d]); }).join("")+'</optgroup>'
+      +'</select>';
+    return '<tr data-acces="'+(e.acces||"rien")+'" data-fini="'+(e.fini?1:0)+'">'
+      +'<td class="ccs-chk"><input type="checkbox" class="ccsCase" value="'+e.code+'" aria-label="Choisir '+escapeHtml(lab||e.code)+'"></td>'
+      +'<td class="ccs-nom"><b>'+(lab?echapH(lab):'<span class="ccs-rien">(sans nom)</span>')+'</b><small>'+e.code+(e.vu?'':' · jamais connecté')+'</small></td>'
+      +'<td>'+cours+'</td><td>'+accesTxt+'</td><td>'+entr+'</td><td class="ccs-notes">'+notesTxt(e)+'</td><td>'+sel+'</td></tr>';
+  }).join("");
+  return '<div class="ccs-kpis">'
+      +kpi(nb(function(e){ return e.acces==="seul"; }),"ont fini le cours d’eux-mêmes","v")
+      +kpi(nb(function(e){ return e.acces==="prof"; }),"ouverts par vous","o")
+      +kpi(nb(function(e){ return e.acces==="devoir"; }),"par un travail donné","b")
+      +kpi(nb(function(e){ return !e.acces; }),"pas encore","g")
+      +kpi(nb(function(e){ return e.nm>=4; }),"entraînement validé (3 paliers)","v")
+      +kpi(nb(function(e){ return e.evs.length>0; }),"ont passé une évaluation","b")
+    +'</div>'
+    +'<section class="ccx-carte ccs-carte">'
+    +'<div class="ccs-actions"><span class="ccs-choix">Choisir : <button type="button" onclick="ccSuiviCocher(\'tous\')">tous</button><button type="button" onclick="ccSuiviCocher(\'pasfini\')">ceux qui n’ont pas fini le cours</button><button type="button" onclick="ccSuiviCocher(\'rien\')">personne</button></span>'
+    +'<span class="ccs-diff" role="radiogroup" aria-label="Difficulté d’entraînement ouverte"><span class="ccs-diff-t">Difficulté :</span>'
+      +[1,2,3].map(function(d){ return '<label><input type="radio" name="ccsDiff" value="'+d+'"'+(d===_ccsDiff?" checked":"")+' onchange="_ccsDiff='+d+'"><span>'+NIV_NOMS[d]+'</span></label>'; }).join("")+'</span>'
+    +'<span class="ccs-btns"><button class="ccx-btn" onclick="ccSuiviOuvrirCoches(\''+cid+'\',\''+id+'\',1)"><i class="ph ph-barbell"></i> Ouvrir l’entraînement</button>'
+    +'<button class="ccx-btn" onclick="ccSuiviOuvrirCoches(\''+cid+'\',\''+id+'\',2)"><i class="ph ph-exam"></i> Entraînement + évaluation</button>'
+    +'<button class="ccx-btn" onclick="ccSuiviOuvrirCoches(\''+cid+'\',\''+id+'\',0)"><i class="ph ph-lock-simple"></i> Retirer l’ouverture</button></span></div>'
+    +'<div class="ccs-table" tabindex="0" role="region" aria-label="Élèves de la classe"><table><thead><tr><th class="ccs-chk"><span class="sr-only">Choisir</span></th><th>Élève</th><th>Cours</th><th>Accès à l’entraînement</th><th>Paliers d’entraînement</th><th>Évaluations</th><th>Ouvrir</th></tr></thead><tbody>'+lignes+'</tbody></table></div>'
+    +'<p class="ccs-aide"><i class="ph ph-info"></i> <b>De lui-même</b> : l’élève a terminé toutes les étapes avant toute ouverture de votre part. <b>Difficulté</b> : l’élève peut s’entraîner jusqu’à la difficulté ouverte et démarre dessus ; « Facile » lui laisse gagner les suivantes par paliers. Les <b>paliers</b> (F, I, D) sont toujours ceux qu’il a gagnés lui-même : ouvrir ne les coche pas. Une évaluation <b>d’entraînement</b> ne compte nulle part ; pour en donner une, passez par <b>Travail à donner</b>.</p>'
+    +'</section>';
+}
+function ccSuiviCocher(f){
+  document.querySelectorAll(".ccsCase").forEach(function(c){
+    const tr=c.closest("tr"); c.checked=(f==="tous")||(f==="pasfini"&&tr&&tr.getAttribute("data-fini")==="0"); });
+}
+/* Difficulté choisie au-dessus des boutons (Difficile par défaut : on ouvre le plus
+   souvent pour préparer l'évaluation). Facile = l'élève suit ses paliers. */
+let _ccsDiff=3;
+function ccDiffNum(o){ const d=+(o&&o.d); return (d>=1&&d<=3)?d:((o&&+o.n>=2)?3:1); }
+function ccDiffDe(o){ return CC_DIFF_LIB[ccDiffNum(o)]; }
+function ccSuiviOuvrirCoches(cid,id,n){
+  const codes=[].map.call(document.querySelectorAll(".ccsCase:checked"),function(c){ return c.value; });
+  if(!codes.length){ toast("Coche d’abord les élèves concernés."); return; }
+  ccSuiviOuvrir(cid,id,codes,n,_ccsDiff);
+}
+function ccSuiviOuvrir(cid,id,codes,n,d){
+  const s=fbStore(); if(!s){ toast("Service indisponible : vérifie ta connexion."); return; }
+  const FV=firebase.firestore.FieldValue, t=Date.now();
+  d=(+d>=1&&+d<=3)?+d:3;
+  Promise.all(codes.map(function(c){
+    const o={}; o[id]=n?{n:n,d:d,t:t}:FV.delete();
+    return s.collection("classes").doc(cid).collection("eleves").doc(c).set({coursDeblo:o},{merge:true});
+  })).then(function(){
+    const qui=codes.length>1?codes.length+" élèves":"cet élève";
+    toast(n?((n>=2?"Entraînement ("+CC_DIFF_LIB[d]+") et évaluation ouverts":"Entraînement ouvert ("+CC_DIFF_LIB[d]+")")+" pour "+qui+" : Maestro "+(codes.length>1?"les":"le")+" prévient sur l’accueil.")
+           :"Ouverture retirée pour "+qui+".");
+    ecranCoursSuivi(id,cid);
+  }).catch(function(){ toast("Échec de l'enregistrement : vérifie ta connexion."); });
+}
 function lecGroupes(){
   const base=CATEGORIES.filter(x=>!x.special).map(x=>({nom:x.groupe,items:x.items,perso:!!x.perso}));
   /* Évaluations des cours de collège : le PROF y a toujours accès ; l'ÉLÈVE ne
@@ -35839,7 +37100,7 @@ function lecGroupes(){
     const items=[];
     Object.keys(EVALCOURS_DEF).forEach(function(k){
       const def=COURS_DEF[k]; if(!def)return;
-      if(estProfL || coursTermine(k))
+      if(estProfL || coursAccesRaison(k))
         items.push({id:"evalcours-"+k, nom:def.titre, ic:"<i class='ph ph-exam'></i>", niv:""});
     });
     if(items.length)base.push({nom:"Évaluations des cours de collège",items:items,evalcours:true});
@@ -36130,8 +37391,11 @@ function ecranCoursCollege(){
       return '<button class="ccx-onglet'+(x===sel?" on":"")+'" onclick="_ccOnglet=\''+x.c.id+'\';ecranCoursCollege()">'
         +(x.faits===x.n?'<i class="ph ph-check"></i>':'')+echapH(COURS_DEF[x.c.id].titre)+' · '+CC_NIV_LIB[x.c.niveau]+'</button>'; }).join("")+'</nav>':'';
   const lim=(function(){ ceCours=sel.c.id; const l=ceLimiteProf(); ceCours=av; return l; })();
-  const evalBloc=fini
-    ?'<button class="ccx-eval ok" onclick="lecDernierDomaine=null;ouvrir(\'evalcours-'+sel.c.id+'\')"><i class="ph-fill ph-exam"></i><span><b>Entraînement et évaluation</b><small>Débloqués : entraîne-toi, puis passe l\'évaluation</small></span><i class="ph ph-arrow-right"></i></button>'
+  const acces=fini?"fini":coursAccesRaison(sel.c.id);
+  const evalBloc=acces
+    ?'<button class="ccx-eval ok" onclick="lecDernierDomaine=null;ouvrir(\'evalcours-'+sel.c.id+'\')"><i class="ph-fill ph-exam"></i><span><b>Entraînement et évaluation</b><small>'
+      +(acces==="fini"?'Débloqués : entraîne-toi, puis passe l\'évaluation':(acces==="prof"?'Ouverts par ton professeur : entraîne-toi':'Ouverts pour le travail donné par ton professeur'))
+      +'</small></span><i class="ph ph-arrow-right"></i></button>'
     :'<div class="ccx-eval"><i class="ph ph-exam"></i><span><b>Entraînement et évaluation</b><small>S\'ouvrent quand les '+sel.n+' étapes sont terminées.</small></span></div>';
   const lignes=sel.pas.map(function(p){
     const cls="ccx-et "+p.st;
@@ -36155,6 +37419,8 @@ function ecranCoursCollege(){
     +'<section class="ccx-carte ccx-etapes"><div class="ccx-etapes-t"><h3>Les étapes</h3><span>'+(lim&&lim<sel.n?"Étapes 1 à "+lim+" ouvertes par ton professeur":"Toutes les étapes sont ouvertes")+'</span></div>'+lignes+'</section>'
     +'</div></div>';
   if(typeof remonter==="function")remonter();
+  /* entraînement ouvert par le professeur depuis le dernier passage ? */
+  coursDebloRafraichir().then(function(ch){ if(ch&&document.querySelector(".ccx-eleve"))ecranCoursCollege(); });
 }
 
 /* ---------- Enseignant : 1) choix du niveau ---------- */
@@ -36231,6 +37497,7 @@ function ecranCoursNiveau(niv,garderDefil){
     const tete='<div class="ccx-cours-tete">'+ccMed(c.ic)+'<span class="ccx-cours-nom"><b>'+echapH(def.titre)+'</b><small class="ccx-cours-niv">Cours de '+ccNivSelectHTML(c)+(natif?"":", ouvert à la "+CC_NIV_LIB[niv])+' · '+n+' étapes</small></span>'
       +'<span class="ccx-actions">'
       +'<button class="ccx-btn ccx-btn-seance" onclick="seanceLancerCours(\''+c.id+'\')"><i class="ph ph-projector-screen-chart"></i> Faire la séance</button>'
+      +'<button class="ccx-btn" onclick="ecranCoursSuivi(\''+c.id+'\')"><i class="ph ph-users-three"></i> Qui fait quoi</button>'
       +'<button class="ccx-btn" onclick="ecranCours(\''+c.id+'\',0)"><i class="ph ph-eye"></i> Aperçu</button>'
       +(aEval?'<button class="ccx-btn" onclick="ecranBanqueQuestions(\''+c.id+'\')"><i class="ph ph-list-magnifying-glass"></i> Questions</button>':'')
       +(aEval?'<button class="ccx-btn" onclick="lecDernierDomaine=null;ouvrir(\'evalcours-'+c.id+'\')"><i class="ph ph-exam"></i> Évaluation</button>':'')
