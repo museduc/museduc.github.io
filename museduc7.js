@@ -363,8 +363,10 @@ const CATEGORIES=[
     {id:"tempo",nom:"Le tempo",ic:"<i class='ph ph-timer'></i>",niv:"5e"},
     {id:"gammes",nom:"Gamme de Do majeur",ic:"♪♪",niv:"4e"},
     {id:"tons",nom:"Tons et demi-tons",ic:"½",niv:"3e"},
+    {id:"origine-notes",nom:"D'où viennent les notes ?",ic:"<i class='ph ph-hammer'></i>",niv:"4e"},
     {id:"accords",nom:"Accords majeur / mineur",ic:"⑊",niv:"3e"},
     {id:"modulation",nom:"Les modulations",ic:"<i class='ph ph-arrows-down-up'></i>",niv:"3e"},
+    {id:"modes",nom:"Les modes",ic:"<i class='ph ph-palette'></i>",niv:"3e"},
     {id:"formes",nom:"Formes musicales",ic:"⌗",niv:"3e"},
     {id:"variations",nom:"Thème et variations",ic:"<i class='ph ph-magic-wand'></i>",niv:"4e"},
   ]},
@@ -383,6 +385,10 @@ const CATEGORIES=[
     {id:"rap",nom:"Le rap et le hip-hop",ic:"<i class='ph ph-microphone'></i>",niv:"4e"},
     {id:"electro",nom:"La musique électronique",ic:"<i class='ph ph-waveform'></i>",niv:"4e"},
     {id:"jeuxvideo",nom:"La musique de jeux vidéo",ic:"<i class='ph ph-game-controller'></i>",niv:"4e"},
+  ]},
+  /* une seule leçon, ouverte directement depuis sa tuile de la page des leçons */
+  {groupe:"Métiers de la musique",direct:true,items:[
+    {id:"metiers",nom:"Les métiers de la musique",ic:"<i class='ph ph-briefcase'></i>",niv:"3e"},
   ]},
   {groupe:"Pour aller plus loin (hors collège)",items:[
     {id:"melodies",nom:"Mélodies célèbres à reconnaître",ic:"<i class='ph ph-music-notes'></i>",niv:"+"},
@@ -1255,7 +1261,7 @@ function jouerFreq(freq,debut,duree,vol=0.25){
   // Timbre de piano : harmoniques + enveloppe à longue résonance (sustain), attaque douce.
   const sortie=ctx.createGain();
   sortie.gain.value=vol;
-  sortie.connect((typeof _sonBtn!=="undefined"&&_sonBtn.dest)||ctx.destination);
+  sortie.connect(typeof sonSortie==="function"?sonSortie():ctx.destination);
   // filtre passe-bas qui se referme lentement : le son s'assombrit en s'éteignant, comme un vrai piano
   const filtre=ctx.createBiquadFilter();
   filtre.type="lowpass";
@@ -2413,43 +2419,135 @@ const GEN={
       visuel:opts.map(p=>({val:p,html:dessinerPortee(cle,p,true)})),bonneRep:pos,
       verif:v=>parseInt(v)===pos,solution:`La note <b>${note}</b> est sur la portée verte.`};}),
 
+  /* DIÈSE, BÉMOL, BÉCARRE (refait le 13/10/2026) : lire une note altérée sur la
+     portée, trouver sa touche, écouter, la règle de la mesure, le bécarre,
+     l'armure, les notes enharmoniques et les pièges (Mi♯, Si♯, Fa♭, Do♭).
+     Comparaison EXACTE des réponses : norm() efface ♯ et ♭ (Fa♯ = Fa sinon). */
   "alterations":()=>mapEx(nbQuestions,()=>{
-    const types=difficulte===1?["effet","effetInv","nom","demiton","demiton","siAlt","siAlt"]
-      :difficulte===2?["effet","effetInv","demiton","demiton","nom","portee","siAlt"]
-      :["effet","effetInv","demiton","nom","enharmonie","enharmonie","portee","siAlt"];
+    const d=difficulte;
+    const types=d===1?["lire","lire","touche","touche","sens","ecoute","effet","nom"]
+      :d===2?["lire","lire","touche","touche","ecoute","mesure","becarre","enharm","sens"]
+      :["lire","touche","mesure","mesure","becarre","armure","armure","enharm","special"];
     const t=pick(types);
-    const ALT=[{sym:"♯",nom:"dièse",eff:"monte la note d'un demi-ton"},
-               {sym:"♭",nom:"bémol",eff:"baisse la note d'un demi-ton"},
-               {sym:"♮",nom:"bécarre",eff:"annule un dièse ou un bémol et revient à la note naturelle"}];
-    if(t==="effet"){const a=pick(ALT);const phr=pick([
-        `Que fait l'altération <span class="grand">${a.sym} (${a.nom})</span> devant une note&nbsp;?`,
-        `Quel est l'effet d'un <span class="grand">${a.sym} ${a.nom}</span>&nbsp;?`]);
-      return {emp:"alt-ef-"+a.nom+phr.length,consigne:phr,
-      champ:selListe(ALT.map(x=>x.eff)),verif:v=>norm(v)===norm(a.eff),solution:`Le ${a.nom} <b>${a.eff}</b>.`};}
-    if(t==="effetInv"){const a=pick(ALT);return {emp:"alt-ei-"+a.nom,consigne:`Quelle altération <b>${a.eff}</b>&nbsp;?`,
-      champ:selListe(ALT.map(x=>`${x.sym} (${x.nom})`)),verif:v=>norm(v)===norm(`${a.sym} (${a.nom})`),solution:`C'est le <b>${a.nom}</b> (${a.sym}).`};}
-    if(t==="nom"){const a=pick(ALT);return {emp:"alt-nom-"+a.nom,consigne:`Comment s'appelle le signe <span class="grand">${a.sym}</span>&nbsp;?`,
-      champ:selListe(ALT.map(x=>x.nom)),verif:v=>norm(v)===norm(a.nom),solution:`C'est le <b>${a.nom}</b>.`};}
-    if(t==="demiton"){const note=pick(GAMME);const monte=Math.random()<0.5;
-      const r=monte?`${note} dièse`:`${note} bémol`;
-      return {emp:"alt-dt-"+note+monte,consigne:`Si on ${monte?"monte":"baisse"} <span class="grand">${note}</span> d'un demi-ton chromatique, comment l'écrit-on&nbsp;?`,
-        champ:selListe([`${note} dièse`,`${note} bémol`,`${note} bécarre`]),verif:v=>norm(v)===norm(r),solution:`On écrit <b>${r}</b> (${monte?note+"♯":note+"♭"}).`};}
-    if(t==="siAlt"){const note=pick(GAMME);const a=pick(ALT.slice(0,2));
-      const r=a.nom==="dièse"?"plus aigu":"plus grave";
-      return {emp:"alt-si-"+note+a.nom,consigne:`Un <span class="grand">${note} ${a.sym}</span> sonne… par rapport au <b>${note}</b> naturel&nbsp;?`,
-        champ:selListe(["plus aigu","plus grave","exactement pareil"]),
-        verif:v=>norm(v)===norm(r),solution:`Le ${a.nom} rend la note <b>${r}</b> d'un demi-ton.`};}
-    if(t==="enharmonie"){
-      const paires=[{a:"Do dièse",b:"Ré bémol"},{a:"Ré dièse",b:"Mi bémol"},{a:"Fa dièse",b:"Sol bémol"},{a:"Sol dièse",b:"La bémol"},{a:"La dièse",b:"Si bémol"}];
-      const p=pick(paires);const sens=Math.random()<0.5;
-      const q=sens?p.a:p.b,r=sens?p.b:p.a;
-      return {emp:"alt-enh-"+q,consigne:`Quelle note produit le <b>même son</b> que <span class="grand">${q}</span> (enharmonie)&nbsp;?`,
-        champ:selListe([p.a,p.b,"Do bécarre","Mi dièse"]),verif:v=>norm(v)===norm(r),solution:`<b>${q}</b> et <b>${r}</b> sonnent pareil.`};}
-    // portee : combien d'altérations à la clé pour une tonalité simple
-    const tonalites=[{t:"Do majeur",n:0},{t:"Sol majeur",n:1},{t:"Ré majeur",n:2},{t:"Fa majeur",n:1}];
-    const to=pick(tonalites);
-    return {emp:"alt-por-"+to.t,consigne:`Combien d'altérations à la clé possède la tonalité de <b>${to.t}</b>&nbsp;?`,
-      champ:selListe(["0","1","2","3"]),verif:v=>parseInt(v)===to.n,solution:`<b>${to.t}</b> → ${to.n} altération(s) à la clé.`};}),
+    const NAT=["Do","Ré","Mi","Fa","Sol","La","Si"], AVEC_D=["Do","Ré","Fa","Sol","La"], AVEC_B=["Ré","Mi","Sol","La","Si"];
+    const OR="#F2C94C";
+    const motAlt=a=>a==="#"?"dièse":(a==="b"?"bémol":"naturel");
+    const tirerSimple=()=>{ const a=Math.random()<0.5?"#":"b"; return [pick(a==="#"?AVEC_D:AVEC_B),a]; };
+    const tirerNote=()=>{ const r=Math.random();
+      if(d===1)return tirerSimple();
+      if(d===2)return r<0.2?[pick(NAT),"n"]:tirerSimple();
+      return r<0.25?pick(AX_DEFI_PIEGES):(r<0.4?[pick(NAT),"n"]:tirerSimple()); };
+    const porteeQ=(notes,o)=>'<div class="ax-q">'+axPorteeSVG(notes,Object.assign({pas:62,aria:"Portée en clé de sol : la note à lire"},o||{}))+'</div>';
+    const exact=r=>v=>String(v)===String(r);
+    const sonneComme=(l,a)=>{ const x=axMidiDe(AX_BASE[l],a); return AX_NOIRES[((x%12)+12)%12]?"":" : il sonne comme un "+axNomsTouche(x)[0]; };
+    if(t==="lire"){
+      const [l,a]=tirerNote(), bonne=a==="n"?l:axNom(l,a);
+      const voisin=NAT[(NAT.indexOf(l)+(Math.random()<0.5?1:6))%7];
+      const opts=[...new Set([bonne,l,axNom(l,"#"),axNom(l,"b"),axNom(voisin,a==="n"?"":a)])];
+      return {emp:"ax-lire-"+l+a,consigne:"Comment s'appelle cette note&nbsp;?"+porteeQ([{l:l,a:a}]),
+        champ:selListe(opts,bonne),verif:exact(bonne),
+        solution:a==="n"?`C'est un <b>${l}</b> : le bécarre ♮ ramène la note à son état naturel.`
+          :`C'est un <b>${bonne}</b> (${l} ${motAlt(a)})${sonneComme(l,a)}.`};
+    }
+    if(t==="touche"){
+      const r=Math.random(); let l,a;
+      if(d===3&&r<0.25)[l,a]=pick(AX_DEFI_PIEGES); else if(d>=2&&r<0.4){ l=pick(NAT); a=""; } else [l,a]=tirerSimple();
+      const dans=x=>((x-60)%12+12)%12+60;
+      const nat=dans(AX_BASE[l]), cible=dans(axMidiDe(AX_BASE[l],a)), bonne=axNom(l,a);
+      const cand=[cible,nat,dans(nat+1),dans(nat-1),dans(cible+2),dans(cible-2)];
+      let cles=[...new Set(cand)].filter(x=>x>=60&&x<=71);
+      cles=[cible].concat(shuffle(cles.filter(x=>x!==cible)).slice(0,d===1?2:3));
+      cles=shuffle(cles);
+      const ou=a===""?"c'est la touche blanche du "+l
+        :`on part du ${l} et on ${a==="#"?"monte":"descend"} d'un demi-ton, vers la ${a==="#"?"droite":"gauche"}`+(AX_NOIRES[cible%12]?"":` : pas de touche noire ici, c'est la touche blanche du ${axNomsTouche(cible)[0]}`);
+      return {emp:"ax-tou-"+l+a,consigne:`Sur quel clavier la touche dorée est-elle un <b>${bonne}</b>&nbsp;?`,
+        visuel:cles.map((x,i)=>({val:i,html:axClavierSVG({[x]:{c:OR}},{aria:"Proposition "+(i+1)+" : un clavier avec une touche dorée",L:24,H:78})})),
+        bonneRep:cles.indexOf(cible),verif:v=>parseInt(v)===cles.indexOf(cible),
+        solution:`<b>${bonne}</b> : ${ou}.`};
+    }
+    if(t==="sens"){
+      const [l,a]=tirerSimple(), nat=((AX_BASE[l]-60)%12+12)%12+60;
+      const opts=d===1?["la touche juste à droite","la touche juste à gauche"]:["la touche juste à droite","la touche juste à gauche","la même touche"];
+      const bonne=a==="#"?opts[0]:opts[1];
+      return {emp:"ax-sens-"+l+a,consigne:`Sur le piano, où se trouve <b>${axNom(l,a)}</b> par rapport au <b>${l}</b> (en bleu)&nbsp;?<div class="ax-q">${axClavierSVG({[nat]:{c:"#bcd5f2",t:l}},{aria:"Clavier : la touche "+l+" en bleu"})}</div>`,
+        champ:choixBoutons(opts),verif:exact(bonne),
+        solution:`Le ${a==="#"?"dièse monte":"bémol descend"} d'un demi-ton : ${axNom(l,a)} est <b>${bonne}</b> du ${l}.`};
+    }
+    if(t==="ecoute"){
+      const [l,a]=tirerSimple(), m0=AX_BASE[l], m1=axMidiDe(m0,a);
+      const opts=["un dièse : le 2ᵉ son est plus aigu","un bémol : le 2ᵉ son est plus grave"], bonne=a==="#"?opts[0]:opts[1];
+      return {emp:"ax-ec-"+l+a,consigne:`On joue un <b>${l}</b>, puis le même ${l} avec une altération. Laquelle&nbsp;?`,
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",midis:[m0,m1],sequence:true,ecart:0.85},
+        champ:choixBoutons(opts),verif:exact(bonne),rejouable:true,
+        solution:`C'était <b>${axNom(l,a)}</b> : ${a==="#"?"un demi-ton plus aigu":"un demi-ton plus grave"} que le ${l}.`};
+    }
+    if(t==="effet"){
+      const ALT=[{sym:"♯",nom:"dièse",eff:"il monte la note d'un demi-ton"},{sym:"♭",nom:"bémol",eff:"il baisse la note d'un demi-ton"},
+                 {sym:"♮",nom:"bécarre",eff:"il annule un dièse ou un bémol"}];
+      const a=pick(ALT);
+      return {emp:"ax-ef-"+a.nom,consigne:`Que fait le <span class="grand">${a.sym}</span> (${a.nom}) placé devant une note&nbsp;?`,
+        champ:selListe(ALT.map(x=>x.eff)),verif:exact(a.eff),solution:`Le ${a.nom} : <b>${a.eff}</b>.`};
+    }
+    if(t==="nom"){
+      const ALT=[{sym:"♯",nom:"dièse"},{sym:"♭",nom:"bémol"},{sym:"♮",nom:"bécarre"}], a=pick(ALT);
+      return {emp:"ax-nom-"+a.nom,consigne:`Comment s'appelle ce signe&nbsp;: <span class="grand ax-gros">${a.sym}</span>&nbsp;?`,
+        champ:selListe(ALT.map(x=>x.nom)),verif:exact(a.nom),solution:`C'est le <b>${a.nom}</b>.`};
+    }
+    if(t==="mesure"){
+      const [l,a]=tirerSimple(), autre=NAT[(NAT.indexOf(l)+1)%7], barre=Math.random()<0.5;
+      const notes=[{l:l,a:a,lib:"1"},{l:autre,lib:"2"},{l:l,lib:"?",halo:true,barre:barre}];
+      const opts=[axNom(l,a),l,axNom(l,a==="#"?"b":"#")], bonne=barre?l:axNom(l,a);
+      return {emp:"ax-mes-"+l+a+barre,consigne:"Comment joue-t-on la note entourée (?)&nbsp;?"+porteeQ(notes,{pas:74}),
+        champ:selListe(opts,bonne),verif:exact(bonne),
+        solution:barre?`Une barre de mesure les sépare : le ${motAlt(a)} est oublié, on joue <b>${l}</b> naturel.`
+          :`Même mesure : le ${motAlt(a)} vaut jusqu'à la barre, on joue encore <b>${axNom(l,a)}</b>.`};
+    }
+    if(t==="becarre"){
+      const [l,a]=tirerSimple(), long=d===3&&Math.random()<0.5;
+      const notes=long?[{l:l,a:a,lib:"1"},{l:l,a:"n",lib:"2"},{l:l,lib:"?",halo:true}]:[{l:l,a:a,lib:"1"},{l:l,a:"n",lib:"?",halo:true}];
+      const opts=[l,axNom(l,a),axNom(l,a==="#"?"b":"#")];
+      return {emp:"ax-bec-"+l+a+long,consigne:"Comment joue-t-on la note entourée (?)&nbsp;?"+porteeQ(notes,{pas:74}),
+        champ:selListe(opts,l),verif:exact(l),
+        solution:`Le bécarre ♮ annule le ${motAlt(a)} : on joue <b>${l}</b> naturel`+(long?", et cela vaut jusqu'à la fin de la mesure.":".")};
+    }
+    if(t==="armure"){
+      const v=pick(["fa","fa","si","compte"]);
+      if(v==="compte"){
+        const k=1+rnd(3), arm=[{p:8,a:"#"},{p:5,a:"#"},{p:9,a:"#"}].slice(0,k);
+        return {emp:"ax-arm-n"+k,consigne:"Combien de dièses compte cette armure&nbsp;?"+porteeQ([{l:"Mi"}],{armure:arm,aria:"Portée en clé de sol avec une armure à compter"}),
+          champ:choixBoutons(["1","2","3","4"]),verif:exact(String(k)),
+          solution:`<b>${k} dièse${k>1?"s":""}</b> : ${["Fa♯","Fa♯ et Do♯","Fa♯, Do♯ et Sol♯"][k-1]}, valables pour tout le morceau.`};
+      }
+      const arm=v==="fa"?[{p:8,a:"#"}]:[{p:4,a:"b"}], L=v==="fa"?"Fa":"Si", alt=v==="fa"?"#":"b";
+      const touche=Math.random()<0.6, l=touche?L:pick(NAT.filter(x=>x!==L)), m=(touche&&v==="fa"&&Math.random()<0.5)?77:AX_BASE[l];
+      const bonne=touche?axNom(l,alt):l, opts=[...new Set([bonne,l,axNom(l,"#"),axNom(l,"b")])];
+      return {emp:"ax-arm-"+v+l+m,consigne:"Avec cette armure, comment joue-t-on la note entourée (?)&nbsp;?"+porteeQ([{m:m,lib:"?",halo:true}],{armure:arm}),
+        champ:selListe(opts,bonne),verif:exact(bonne),
+        solution:touche?`L'armure porte un ${L}${axSym(alt)} : tous les ${L} du morceau se jouent <b>${bonne}</b>.`
+          :`L'armure ne concerne que les ${L} : ce ${l} reste <b>${l}</b> naturel.`};
+    }
+    if(t==="enharm"){
+      const k=pick([1,3,6,8,10]), noms=AX_NOIRES[k], i=rnd(2), q=noms[i], r=noms[1-i];
+      const tous=["Do♯","Ré♭","Ré♯","Mi♭","Fa♯","Sol♭","Sol♯","La♭","La♯","Si♭","Do♭","Mi♯","Fa♭","Si♯"];
+      const pc=n=>{ const l=n.replace(/[♯♭]/,""), a=n.indexOf("♯")>=0?"#":(n.indexOf("♭")>=0?"b":""); return ((axMidiDe(AX_BASE[l],a)%12)+12)%12; };
+      const proches=tous.filter(n=>pc(n)!==k&&(n.charAt(0)===q.charAt(0)||n.charAt(0)===r.charAt(0)));
+      const autres=shuffle(proches).slice(0,2).concat(shuffle(tous.filter(n=>pc(n)!==k&&proches.indexOf(n)<0)).slice(0,1));
+      const opts=[r].concat(autres);
+      return {emp:"ax-enh-"+q,consigne:`Quelle note sonne <b>exactement comme</b> ${q}&nbsp;?`+(d===2?`<div class="ax-q">${axClavierSVG({[60+k]:{c:OR}},{aria:"Clavier : la touche de "+q+" en doré"})}</div>`:""),
+        champ:selListe(opts,r),verif:exact(r),
+        solution:`<b>${q}</b> et <b>${r}</b> : la même touche noire, donc le même son. Ce sont des notes enharmoniques.`};
+    }
+    const B=[{q:"Le <b>Mi♯</b> sonne comme…",r:"Fa",d:["Fa♯","Mi","Ré♯"],s:"Pas de touche noire entre Mi et Fa : Mi♯ tombe sur le Fa."},
+      {q:"Le <b>Si♯</b> sonne comme…",r:"Do",d:["Do♯","Si","La♯"],s:"Pas de touche noire entre Si et Do : Si♯ tombe sur le Do."},
+      {q:"Le <b>Fa♭</b> sonne comme…",r:"Mi",d:["Mi♭","Fa","Sol♭"],s:"Pas de touche noire entre Mi et Fa : Fa♭ tombe sur le Mi."},
+      {q:"Le <b>Do♭</b> sonne comme…",r:"Si",d:["Si♭","Do","Ré♭"],s:"Pas de touche noire entre Si et Do : Do♭ tombe sur le Si."},
+      {q:"Entre quelles notes n'y a-t-il <b>pas</b> de touche noire&nbsp;?",r:"Mi-Fa et Si-Do",d:["Do-Ré et Fa-Sol","Ré-Mi et La-Si","Sol-La et Do-Ré"],s:"Mi-Fa et Si-Do ne sont séparées que d'un demi-ton."},
+      {q:"Combien de demi-tons y a-t-il dans un ton&nbsp;?",r:"2",d:["1","3","4"],s:"Un ton = deux demi-tons."},
+      {q:"Une altération écrite devant une note vaut…",r:"jusqu'à la barre de mesure",d:["pour la note suivante seulement","jusqu'à la fin du morceau","jusqu'à la fin de la ligne"],s:"C'est une altération accidentelle."},
+      {q:"Une altération écrite à l'armure vaut…",r:"pour tout le morceau",d:["pour une seule note","jusqu'à la barre de mesure","pour la première ligne"],s:"L'armure vaut pour tout le morceau, dans toutes les octaves."}];
+    const b=pick(B);
+    return {emp:"ax-sp-"+B.indexOf(b),consigne:b.q,champ:selListe([b.r].concat(b.d),b.r),verif:exact(b.r),solution:`<b>${b.r}</b>. ${b.s}`};
+  }),
 
   "fr-en":()=>mapEx(nbQuestions,()=>{const note=pick(GAMME);const l=NOTES_EN[note];
     const types=["frEn","frEn","enFr","enFr","vraiFaux","contexte"];
@@ -3100,11 +3198,385 @@ const GEN={
       sonBtn:{label:"<i class='ph ph-play'></i> Écouter l'intervalle",midis:demi===0?[base,base]:[base,haut],sequence:true},champ:selListe(IV.map(x=>x.nom)),
       verif:v=>norm(v)===norm(itv.nom),solution:`C'était ${itv.nom==="unisson"?"un":"une"} <b>${itv.nom}</b>${itv.nom==="unisson"?" (deux fois la même note)":""}.`,rejouable:true};}),
 
-  "dictee-aigu":()=>mapEx(nbQuestions,()=>{const a=MIDI_BASE[pick(GAMME)];let b=a+pick([-7,-5,-4,4,5,7]);
-    const r=b>a?"la 2e est plus aiguë":"la 2e est plus grave";
-    return {emp:"da-"+a+"-"+b,consigne:`Écoute les deux sons : le second est-il plus aigu ou plus grave&nbsp;?`,
-      sonBtn:{label:"<i class='ph ph-play'></i> Écouter",midis:[a,b],sequence:true},champ:selListe(["la 2e est plus aiguë","la 2e est plus grave"]),
-      verif:v=>norm(v)===norm(r),solution:`<b>${r}</b>.`,rejouable:true};}),
+  /* PLUS AIGU OU PLUS GRAVE ? (refait le 13/10/2026) : deux ou trois sons à
+     comparer (écart qui se resserre avec le niveau, « même son » dès le 2ᵉ), le
+     contour d'une mélodie à reconnaître parmi des dessins, la portée, le piano,
+     l'octave et ce qui fait qu'un son est aigu ou grave. */
+  "dictee-aigu":()=>mapEx(nbQuestions,()=>{
+    const d=difficulte;
+    const types=d===1?["deux","deux","deux","contour","portee","piano","savoir","savoir"]
+      :d===2?["deux","deux","trois","contour","contour","portee","piano","savoir","octave"]
+      :["deux","deux","trois","trois","contour","contour","octave","portee","savoir"];
+    const t=pick(types);
+    const ecoute=(midis,lib,ecart)=>({label:"<i class='ph ph-play'></i> "+(lib||"Écouter"),midis:midis,sequence:true,ecart:ecart||0.8});
+    const exact=r=>v=>String(v)===String(r);
+    const NOM_EC={1:"un demi-ton",2:"un ton",3:"une tierce mineure",4:"une tierce majeure",5:"une quarte",7:"une quinte",9:"une sixte",12:"une octave"};
+    if(t==="deux"){
+      const ecarts=d===1?[5,7,9,12]:(d===2?[2,3,4,5]:[1,1,2,3]);
+      const a=55+rnd(14), meme=d>=2&&Math.random()<0.18, e=meme?0:pick(ecarts)*(Math.random()<0.5?1:-1), b=a+e;
+      const opts=d===1?["le 2ᵉ est plus aigu","le 2ᵉ est plus grave"]:["le 2ᵉ est plus aigu","le 2ᵉ est plus grave","c'est exactement le même son"];
+      const bonne=e>0?opts[0]:(e<0?opts[1]:opts[2]);
+      return {emp:"hx2-"+a+"-"+b,consigne:"Écoute les deux sons. Le second est-il plus aigu ou plus grave que le premier&nbsp;?",
+        sonBtn:ecoute([a,b]),champ:choixBoutons(opts),verif:exact(bonne),rejouable:true,
+        solution:e===0?"<b>C'est le même son</b>, joué deux fois."
+          :`Le 2ᵉ son <b>${e>0?"monte":"descend"}</b> : il est plus ${e>0?"aigu":"grave"}, de ${NOM_EC[Math.abs(e)]}.`};
+    }
+    if(t==="trois"){
+      const ec=d===2?2:1, a=55+rnd(10); let m=[];
+      while(m.length<3){ const x=a+rnd(10); if(m.every(y=>Math.abs(y-x)>=ec))m.push(x); }
+      const aigu=Math.random()<0.5, cible=aigu?Math.max.apply(null,m):Math.min.apply(null,m), i=m.indexOf(cible);
+      const opts=["le son 1","le son 2","le son 3"];
+      return {emp:"hx3-"+m.join("-")+aigu,consigne:`Écoute les trois sons. Lequel est le plus <b>${aigu?"aigu":"grave"}</b>&nbsp;?`,
+        sonBtn:ecoute(m,"Écouter",0.75),champ:choixBoutons(opts),verif:exact(opts[i]),rejouable:true,
+        solution:`C'était <b>${opts[i]}</b>.`};
+    }
+    if(t==="contour"){
+      const formes=d===1?["monte","descend","reste"]:(d===2?["monte","descend","reste","vague"]:["monte","descend","vague","creux","reste"]);
+      const k=pick(formes), a=57+rnd(8), mel=HX_CONTOURS[k].pts.map(p=>a+p), choix=shuffle(formes.slice()), i=choix.indexOf(k);
+      return {emp:"hxc-"+k+"-"+a,consigne:"Écoute la mélodie. Quel dessin lui correspond&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter la mélodie",melodie:mel.map(x=>[x,1]),spb:0.5},
+        visuel:choix.map((f,j)=>({val:j,html:'<span class="hx-opt">'+hxContourSVG(HX_CONTOURS[f].pts,{aria:"Dessin : "+HX_CONTOURS[f].lib})+'<b>'+HX_CONTOURS[f].lib+'</b></span>'})),
+        bonneRep:i,verif:v=>parseInt(v)===i,rejouable:true,
+        solution:`La mélodie : <b>${HX_CONTOURS[k].lib}</b>.`};
+    }
+    if(t==="portee"){
+      let p1,p2;
+      do{ if(d===3){ p1=rnd(15)-3; p2=rnd(15)-3; } else { p1=rnd(9); p2=rnd(9); } }
+      while(d===1?Math.abs(p1-p2)<3:(d===2?(Math.abs(p1-p2)<1||Math.abs(p1-p2)>2):p1===p2));
+      const aigue=Math.random()<0.5, haute=p1>p2?1:2, i=aigue?haute:(haute===1?2:1), opts=["la note 1","la note 2"];
+      return {emp:"hxp-"+p1+"-"+p2+aigue,consigne:`Laquelle de ces deux notes est la plus <b>${aigue?"aiguë":"grave"}</b>&nbsp;?<div class="ax-q">${modPorteeSVG([{p:p1,alt:""},{p:p2,alt:""}],[],["1","2"])}</div>`,
+        champ:choixBoutons(opts),verif:exact(opts[i-1]),
+        solution:`La note ${i} est écrite plus ${aigue?"haut":"bas"} sur la portée : elle est plus <b>${aigue?"aiguë":"grave"}</b>.`};
+    }
+    if(t==="piano"){
+      let k1,k2; const bl=[60,62,64,65,67,69,71,72];
+      do{ if(d===1){ k1=pick(bl); k2=pick(bl); } else { k1=60+rnd(13); k2=60+rnd(13); } }
+      while(d===1?Math.abs(bl.indexOf(k1)-bl.indexOf(k2))<3:(d===2?Math.abs(k1-k2)<2:(Math.abs(k1-k2)<1||Math.abs(k1-k2)>2)));
+      const aigu=Math.random()<0.5, hautA=k1>k2, bonA=aigu?hautA:!hautA, opts=["la touche A","la touche B"];
+      return {emp:"hxk-"+k1+"-"+k2+aigu,consigne:`Laquelle de ces deux touches donne le son le plus <b>${aigu?"aigu":"grave"}</b>&nbsp;?<div class="ax-q">${axClavierSVG({[k1]:{c:"#bcd5f2",t:"A"},[k2]:{c:"#F2C94C",t:"B"}},{aria:"Clavier : deux touches marquées A et B"})}</div>`,
+        champ:choixBoutons(opts),verif:exact(bonA?opts[0]:opts[1]),
+        solution:`Sur le piano, les sons ${aigu?"aigus sont à droite":"graves sont à gauche"} : c'est <b>${bonA?"la touche A":"la touche B"}</b>.`};
+    }
+    if(t==="octave"){
+      const a=55+rnd(10), monte=Math.random()<0.5, b=monte?a+12:a-12;
+      const opts=["plus aigu (une octave au-dessus)","plus grave (une octave en dessous)"], bonne=monte?opts[0]:opts[1];
+      return {emp:"hxo-"+a+monte,consigne:"Les deux sons portent le <b>même nom de note</b>. Le second est…",
+        sonBtn:ecoute([a,b]),champ:choixBoutons(opts),verif:exact(bonne),rejouable:true,
+        solution:`Il est <b>${bonne}</b> : même nom, mais il vibre ${monte?"deux fois plus vite":"deux fois moins vite"}.`};
+    }
+    const B1=[{q:"Un son <b>aigu</b> est un son…",r:"haut et fin",d:["bas et profond","fort et lourd","long et lent"]},
+      {q:"Le contraire d'un son <b>aigu</b>, c'est un son…",r:"grave",d:["fort","doux","court"]},
+      {q:"Sur un piano, les sons <b>graves</b> sont…",r:"à gauche du clavier",d:["à droite du clavier","sur les touches noires","au milieu du clavier"]},
+      {q:"Lequel de ces instruments joue le plus <b>grave</b>&nbsp;?",r:"le tuba",d:["la flûte piccolo","le violon","la trompette"]},
+      {q:"Lequel de ces instruments joue le plus <b>aigu</b>&nbsp;?",r:"la flûte piccolo",d:["le tuba","la contrebasse","la clarinette basse"]},
+      {q:"Sur la portée, une note écrite plus <b>haut</b> sonne…",r:"plus aiguë",d:["plus grave","plus fort","plus longtemps"]},
+      {q:"Un son aigu est-il forcément un son <b>fort</b>&nbsp;?",r:"non, aucun rapport",d:["oui, toujours","oui, sauf pour la voix","non, il est toujours doux"]}];
+    const B2=[{q:"La hauteur d'un son dépend de la vitesse des…",r:"vibrations",d:["nuances","silences","mesures"]},
+      {q:"On mesure la hauteur d'un son en…",r:"hertz (Hz)",d:["décibels (dB)","secondes","mètres"]},
+      {q:"Un son de 880 Hz, comparé à un son de 440 Hz, est…",r:"plus aigu",d:["plus grave","plus fort","identique"]},
+      {q:"Une corde plus <b>courte</b> et plus <b>tendue</b> donne un son…",r:"plus aigu",d:["plus grave","plus fort","plus doux"]},
+      {q:"Le plus grand tuyau d'un orgue donne le son le plus…",r:"grave",d:["aigu","fort","court"]},
+      {q:"Deux Do à une octave d'écart : le Do du dessus vibre…",r:"deux fois plus vite",d:["deux fois plus lentement","à la même vitesse","dix fois plus vite"]},
+      {q:"Dans la famille des violons, lequel joue le plus <b>grave</b>&nbsp;?",r:"la contrebasse",d:["le violon","l'alto","le violoncelle"]},
+      {q:"Une mélodie qui va vers l'aigu note après note…",r:"monte",d:["descend","reste sur place","ralentit"]}];
+    const B=d===1?B1:B1.concat(B2).filter((x,j)=>d===3?j>=3:true), b=pick(B);
+    return {emp:"hxs-"+b.q.length+b.r,consigne:b.q,champ:selListe([b.r].concat(b.d),b.r),verif:v=>norm(v)===norm(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+  }),
+
+  /* D'OÙ VIENNENT LES NOTES ? (14/10/2026) : fractions du monocorde, intervalles
+     écoutés en rapports purs, octaves en hertz, marteaux de la légende, chaîne des
+     quintes, comma, tempéraments, calcul depuis le La 440, histoire du diapason. */
+  "origine-notes":()=>mapEx(nbQuestions,()=>{
+    const d=difficulte, exact=r=>v=>String(v)===String(r);
+    const types=d===1?["frac","frac","ecoute","ecoute","octaveHz","moitie","forge","savoir","savoir","savoir"]
+      :d===2?["frac","longueur","freq","ecoute","battements","octaveHz","forge","quinte","savoir","savoir"]
+      :["longueur","freq","demiton","demiton","ecoute","battements","quinte","comma","egal","histoire","histoire"];
+    const t=pick(types);
+    const INT=[{n:1,d:2,nom:"l'octave",r:2},{n:2,d:3,nom:"la quinte",r:1.5},{n:3,d:4,nom:"la quarte",r:4/3},{n:8,d:9,nom:"le ton",r:9/8}];
+    const ints=d===1?INT.slice(0,3):INT, noms=ints.map(x=>x.nom);
+    const hz=x=>pyNb(x)+" Hz";
+    if(t==="frac"){
+      const it=pick(ints);
+      if(Math.random()<0.5)return {emp:"pyf-"+it.d,groupe:"pyf"+it.d,consigne:`Sur le monocorde, on ne fait vibrer que <b>${it.n}/${it.d}</b> de la corde. Quel intervalle entend-on par rapport à la corde entière&nbsp;?<div class="py-q">${pyCordeSVG(it.n/it.d,true)}</div>`,
+        champ:choixBoutons(noms),verif:exact(it.nom),solution:`Avec ${it.n}/${it.d} de la corde, la fréquence est multipliée par ${it.d}/${it.n}&nbsp;: c'est <b>${it.nom}</b>.`};
+      return {emp:"pyg-"+it.d,groupe:"pyf"+it.d,consigne:`Quelle longueur de corde faut-il faire vibrer pour entendre <b>${it.nom}</b> au-dessus de la corde entière&nbsp;?`,
+        champ:choixBoutons(ints.map(x=>x.n+"/"+x.d)),verif:exact(it.n+"/"+it.d),solution:`Pour ${it.nom}, on garde <b>${it.n}/${it.d}</b> de la corde (la fréquence est multipliée par ${it.d}/${it.n}).`};
+    }
+    if(t==="ecoute"){
+      const it=pick(ints), f=pick([220,246.94,261.63,293.66,329.63]);
+      return {emp:"pye-"+it.d+"-"+f,consigne:"Écoute les deux sons, puis les deux ensemble. Quel intervalle forment-ils&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter",py:pyDuo(f,f*it.r)},champ:choixBoutons(noms),verif:exact(it.nom),rejouable:true,
+        solution:`C'était <b>${it.nom}</b> (fréquences dans le rapport ${it.d}/${it.n}).`};
+    }
+    if(t==="octaveHz"){
+      const B=d===1?[{nom:"La3",f:440}]:[{nom:"La3",f:440},{nom:"Do3",f:261.63},{nom:"Sol3",f:392}];
+      const b=pick(B), k=d===1?pick([1,-1]):pick([1,-1,2,-2]), r=b.f*Math.pow(2,k), lettre=b.nom.slice(0,-1), oct=+b.nom.slice(-1)+k;
+      const opts=[r,b.f*Math.pow(2,-k),b.f*1.5,b.f+(k>0?100:-100)*Math.abs(k)].concat(Math.abs(k)===1?[b.f*Math.pow(2,2*k)]:[b.f*Math.pow(2,k/2)]);
+      const vus=[],L=[]; opts.forEach(x=>{ const s=hz(x); if(vus.indexOf(s)<0&&x>0){ vus.push(s); L.push(s); } });
+      return {emp:"pyo-"+b.nom+k,consigne:`Le <b>${b.nom}</b> vibre à <b>${hz(b.f)}</b>. À combien vibre le <b>${lettre}${oct}</b>, ${Math.abs(k)===1?"une octave":"deux octaves"} plus ${k>0?"haut":"bas"}&nbsp;?`,
+        champ:selListe(L,hz(r)),verif:exact(hz(r)),solution:`Une octave ${k>0?"plus haut, on multiplie":"plus bas, on divise"} par 2${Math.abs(k)===2?", et deux octaves, par 4":""}&nbsp;: <b>${hz(r)}</b>.`};
+    }
+    if(t==="moitie"){
+      const F=pick([100,150,200,220,250,300]), demi=Math.random()<0.5, bon=demi?F*2:F/2;
+      const L=[F*2,F/2,F,F*4,F+100].filter((x,i,a)=>a.indexOf(x)===i).map(x=>pyNb(x)+" Hz");
+      return {emp:"pyv-"+F+demi,consigne:demi?`Une corde vibre à <b>${F} Hz</b>. On ne fait plus vibrer que sa <b>moitié</b>. À quelle fréquence vibre-t-elle&nbsp;?`:`Une corde vibre à <b>${F} Hz</b>. On la remplace par une corde <b>deux fois plus longue</b> (même épaisseur, même tension). À quelle fréquence vibre-t-elle&nbsp;?`,
+        champ:selListe(L,pyNb(bon)+" Hz"),verif:exact(pyNb(bon)+" Hz"),solution:demi?`Deux fois plus courte, elle vibre deux fois plus vite&nbsp;: <b>${pyNb(bon)} Hz</b>, l'octave au-dessus.`:`Deux fois plus longue, elle vibre deux fois moins vite&nbsp;: <b>${pyNb(bon)} Hz</b>, l'octave en dessous.`};
+    }
+    if(t==="battements"){
+      const e=pick([0,0,1.5,3,-2.5]), f2=440+e, opts=["oui, accordés","non, ça bat"], bon=e===0?opts[0]:opts[1];
+      return {emp:"pyb-"+e,consigne:"Un violoniste accorde sa corde sur le La 440. Écoute les deux sons ensemble&nbsp;: sont-ils accordés&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter les deux sons ensemble",py:{s:[[[440,f2],3.5]],tb:"tenu"}},champ:choixBoutons(opts),verif:exact(bon),rejouable:true,
+        solution:e===0?"<b>Accordés</b>&nbsp;: le son est stable, sans battements.":`<b>Désaccordés</b>&nbsp;: la corde est à ${pyNb(f2)} Hz, on entend ${pyNb(Math.abs(e),1)} battement${Math.abs(e)>=2?"s":""} par seconde.`};
+    }
+    if(t==="forge"){
+      const P=d===1?[[12,6,"l'octave"],[12,8,"la quinte"],[12,9,"la quarte"]]:[[12,6,"l'octave"],[12,8,"la quinte"],[9,6,"la quinte"],[12,9,"la quarte"],[8,6,"la quarte"],[9,8,"le ton"]];
+      const p=pick(P), g=pyPgcd(p[0],p[1]);
+      return {emp:"pym-"+p[0]+p[1],consigne:`Dans la légende des forgerons, quel intervalle donnent les marteaux de poids <b>${p[0]}</b> et <b>${p[1]}</b>&nbsp;?`,
+        champ:choixBoutons(noms),verif:exact(p[2]),solution:`${p[0]} ÷ ${p[1]} : le rapport est ${p[0]/g}/${p[1]/g}, c'est <b>${p[2]}</b>.`};
+    }
+    if(t==="longueur"){
+      const L=pick([36,72,108,144]), it=pick(ints), bon=L*it.n/it.d;
+      const cand=[bon,L/2,L*2/3,L*3/4,L*8/9,L*it.d/it.n].filter((x,i,a)=>a.indexOf(x)===i&&Number.isInteger(x));
+      const opts=cand.map(x=>x+" cm");
+      return {emp:"pyl-"+L+it.d,consigne:`Une corde de <b>${L} cm</b> donne un Do. Quelle longueur faut-il faire vibrer pour obtenir <b>${it.nom}</b> au-dessus&nbsp;?`,
+        champ:selListe(opts,bon+" cm"),verif:exact(bon+" cm"),solution:`Pour ${it.nom}, on garde ${it.n}/${it.d} de la corde&nbsp;: ${L} × ${it.n}/${it.d} = <b>${bon} cm</b>.`};
+    }
+    if(t==="freq"){
+      const F=pick([120,144,192,240,288,360]), it=pick(ints), bon=F*it.d/it.n;
+      const cand=[bon,F*2,F*1.5,F*4/3,F*9/8,F*it.n/it.d].filter((x,i,a)=>a.indexOf(x)===i);
+      return {emp:"pyq-"+F+it.d,consigne:`Une corde vibre à <b>${F} Hz</b>. On ne fait plus vibrer que les <b>${it.n}/${it.d}</b> de sa longueur. Quelle est la nouvelle fréquence&nbsp;?`,
+        champ:selListe(cand.map(x=>pyNb(x)+" Hz"),pyNb(bon)+" Hz"),verif:exact(pyNb(bon)+" Hz"),solution:`Corde plus courte, son plus aigu&nbsp;: on retourne la fraction. ${F} × ${it.d}/${it.n} = <b>${pyNb(bon)} Hz</b>.`};
+    }
+    if(t==="quinte"){
+      const CH=["Fa","Do","Sol","Ré","La","Mi","Si","Fa♯"], k=rnd(d===3?7:6), dep=CH[k], arr=CH[k+1];
+      if(Math.random()<0.7)return {emp:"pyc-"+k,consigne:`Pythagore empile des quintes. En partant de <b>${dep}</b> et en montant d'une quinte, on obtient…`,
+        champ:selListe(CH.slice(0,7).filter(x=>x!==dep).concat(k===6?["Fa♯"]:[]).filter((x,i,a)=>a.indexOf(x)===i),arr),verif:exact(arr),solution:`${dep} × 3/2 → <b>${arr}</b>. La chaîne complète&nbsp;: Fa Do Sol Ré La Mi Si.`};
+      const o=["Fa Do Sol Ré La Mi Si","Do Ré Mi Fa Sol La Si","Si Mi La Ré Sol Do Fa","Do Mi Sol Si Ré Fa La"];
+      return {emp:"pyc-ordre",consigne:"Dans quel ordre Pythagore trouve-t-il les sept notes en empilant des quintes&nbsp;?",champ:choixBoutons(shuffle(o)),verif:exact(o[0]),
+        solution:"<b>Fa Do Sol Ré La Mi Si</b> : chaque note est une quinte au-dessus de la précédente. C'est aussi l'ordre des dièses à l'armure."};
+    }
+    if(t==="demiton"){
+      const C=[{n:1,nom:"le La♯3",dir:"un demi-ton plus haut"},{n:-1,nom:"le Sol♯3",dir:"un demi-ton plus bas"},{n:3,nom:"le Do4",dir:"3 demi-tons plus haut"},{n:-2,nom:"le Sol3",dir:"2 demi-tons plus bas"},{n:7,nom:"le Mi4",dir:"7 demi-tons plus haut"},{n:5,nom:"le Ré4",dir:"5 demi-tons plus haut"},{n:-9,nom:"le Do3",dir:"9 demi-tons plus bas"}];
+      if(Math.random()<0.25){
+        const q=pick([["Combien de demi-tons y a-t-il entre le La3 et le Do4&nbsp;?","3",["2","3","4","5"]],["Combien de fois faut-il multiplier par 1,0595 pour monter d'une octave&nbsp;?","12",["7","8","12","24"]],["Combien de demi-tons y a-t-il entre le La3 et le La4&nbsp;?","12",["7","8","12","24"]]]);
+        return {emp:"pyn-"+q[1]+q[0].length,consigne:q[0],champ:choixBoutons(q[2]),verif:exact(q[1]),solution:`Réponse&nbsp;: <b>${q[1]}</b>.`};
+      }
+      const c=pick(C), f=x=>Math.round(440*Math.pow(2,x/12))+" Hz", bon=f(c.n);
+      const L=[bon,f(-c.n),f(c.n+1),f(c.n-1),(440+c.n*10)+" Hz"].filter((x,i,a)=>a.indexOf(x)===i);
+      return {emp:"pyd-"+c.n,consigne:`Le La3 vibre à 440 Hz. À combien vibre environ <b>${c.nom}</b>, ${c.dir}&nbsp;? <small>(Chaque demi-ton multiplie ou divise par 1,0595.)</small>`,
+        champ:selListe(L,bon),verif:exact(bon),solution:`440 ${c.n>0?"×":"÷"} 1,0595, ${Math.abs(c.n)} fois&nbsp;: environ <b>${bon}</b>.`};
+    }
+    if(t==="comma"){
+      if(Math.random()<0.35){ const loup1=Math.random()<0.5, f=pick([220,246.94,261.63]), pur=[[f,f*1.5],2.6], loup=[[f,f*1.5/1.0136433],2.6], opts=["la 1ʳᵉ","la 2ᵉ"];
+        return {emp:"pyw-"+loup1+f,consigne:"Écoute les deux quintes. Laquelle est la «&nbsp;quinte du loup&nbsp;», celle qui sonne faux&nbsp;?",
+          sonBtn:{label:"<i class='ph ph-play'></i> Écouter les deux quintes",py:{s:loup1?[loup,pur]:[pur,loup],tb:"tenu",ec:0.6}},champ:choixBoutons(opts),verif:exact(loup1?opts[0]:opts[1]),rejouable:true,
+          solution:`C'était <b>${loup1?"la 1ʳᵉ":"la 2ᵉ"}</b>&nbsp;: ses battements rapides la font «&nbsp;hurler&nbsp;».`}; }
+      const Q=[{q:"Douze quintes pures donnent (3/2)<sup>12</sup> ≈ 129,75, alors que sept octaves donnent 2<sup>7</sup> = 128. Ce petit écart s'appelle…",r:"le comma pythagoricien",o:["le comma pythagoricien","la quinte du loup","le tempérament égal","le demi-ton chromatique"]},
+        {q:"En empilant 12 quintes pures depuis Fa, on arrive sur Mi♯. Ce Mi♯ est…",r:"un peu plus aigu que Fa",o:["un peu plus aigu que Fa","exactement égal à Fa","un peu plus grave que Fa","une octave sous le Fa"]},
+        {q:"Avec l'accord de Pythagore, la «&nbsp;quinte du loup&nbsp;» est…",r:"une quinte très fausse",o:["une quinte très fausse","une quinte parfaite","une quinte très grave","une quinte très forte"]},
+        {q:"Le comma pythagoricien vaut environ…",r:"un quart de demi-ton",o:["un quart de demi-ton","un ton entier","une octave","une quinte"]}];
+      const b=pick(Q);
+      return {emp:"pyk-"+b.r,consigne:b.q,champ:choixBoutons(shuffle(b.o)),verif:exact(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+    }
+    if(t==="egal"){
+      const Q=[{q:"Dans le tempérament égal, chaque demi-ton multiplie la fréquence par environ…",r:"1,0595",o:["1,0595","1,1250","1,3333","1,5000"]},
+        {q:"Le tempérament égal découpe l'octave en…",r:"12 demi-tons identiques",o:["12 demi-tons identiques","7 tons tous identiques","12 quintes toutes pures","8 notes toutes égales"]},
+        {q:"Dans le tempérament égal, les quintes sont…",r:"très légèrement trop petites",o:["très légèrement trop petites","parfaitement pures (3/2)","beaucoup trop grandes","fausses comme le loup"]},
+        {q:"Le tempérament mésotonique (XVIᵉ siècle) privilégie…",r:"les tierces pures",o:["les tierces pures","les quintes pures","les octaves fausses","les tonalités éloignées"]},
+        {q:"Le grand avantage du tempérament égal, c'est que…",r:"toutes les tonalités sont jouables",o:["toutes les tonalités sont jouables","tous les intervalles sont purs","les quintes sont toutes parfaites","il n'y a plus de demi-tons"]},
+        {q:"Qui a calculé le tempérament égal en Chine en 1584&nbsp;?",r:"Zhu Zaiyu",o:["Zhu Zaiyu","Pythagore","John Shore","Vincenzo Galilei"]},
+        {q:"Après 12 quintes pures depuis le La 440, la 13ᵉ note devrait retomber sur 440 Hz. Avec les quintes de Pythagore, elle vaut…",r:"446 Hz",o:["434 Hz","440 Hz","446 Hz","452 Hz"]},
+        {q:"Pour retomber pile sur le La 440, le tempérament égal raccourcit chaque quinte d'environ…",r:"2 cents",o:["2 cents","12 cents","23 cents","50 cents"]}];
+      const b=pick(Q);
+      return {emp:"pyt-"+b.r,consigne:b.q,champ:choixBoutons(/^[\d, ]+(Hz|cents)?$/.test(b.r)?b.o:shuffle(b.o)),verif:exact(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+    }
+    if(t==="histoire"){
+      const Q=[{q:"En quelle année une conférence internationale à Londres fixe-t-elle le La à 440 Hz&nbsp;?",r:"1939",o:["1711","1859","1939","1975"]},
+        {q:"En 1859, le «&nbsp;diapason normal&nbsp;» français fixe le La à…",r:"435 Hz",o:["415 Hz","435 Hz","440 Hz","466 Hz"]},
+        {q:"Les ensembles de musique baroque s'accordent souvent à…",r:"415 Hz",o:["415 Hz","435 Hz","440 Hz","466 Hz"]},
+        {q:"415 Hz, le La des baroques, est plus bas que 440 Hz d'environ…",r:"un demi-ton",o:["un demi-ton","une quinte","une octave","un comma"]},
+        {q:"Qui a inventé le diapason (la fourche d'acier) en 1711&nbsp;?",r:"John Shore",o:["John Shore","Pythagore","Hector Berlioz","Marin Mersenne"]},
+        {q:"Dans un orchestre, quel instrument donne le La pour que tous s'accordent&nbsp;?",r:"le hautbois",o:["le hautbois","le violon","la trompette","le piano"]},
+        {q:"Le La à 440 Hz est…",r:"une convention",o:["une convention","une loi naturelle","un calcul de Pythagore","un son sacré"]},
+        {q:"Beaucoup d'orchestres d'aujourd'hui s'accordent un peu plus haut que 440 Hz, à…",r:"442 Hz",o:["415 Hz","432 Hz","435 Hz","442 Hz"]},
+        {q:"Avec <i>Le Clavier bien tempéré</i> (24 préludes et fugues), Bach montre…",r:"que toutes les tonalités sont jouables",o:["que toutes les tonalités sont jouables","que le La doit vibrer à 440 Hz exactement","que les quintes doivent rester toutes pures","qu'il faut accorder le clavier plus haut"]},
+        {q:"Selon une hypothèse de 2005, l'accordage de Bach serait caché…",r:"dans les boucles de la page de titre",o:["dans les boucles de la page de titre","dans les notes de la toute dernière fugue","dans une lettre écrite à son fils aîné","dans les registres de l'orgue de Leipzig"]},
+        {q:"Un logiciel de correction de hauteur ramène la voix vers…",r:"les notes du tempérament égal",o:["les notes du tempérament égal","les quintes pures de Pythagore","une voix plus grave et plus forte","le La à 432 Hz"]}];
+      const b=pick(Q);
+      return {emp:"pyh-"+b.r+b.q.length,consigne:b.q,champ:choixBoutons(/^\d/.test(b.r)?b.o:shuffle(b.o)),verif:exact(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+    }
+    const B1=[{q:"Selon la légende, Pythagore découvre les rapports des sons en écoutant…",r:"des forgerons",d:["des oiseaux","la pluie","des cloches"]},
+      {q:"Le monocorde est un instrument à…",r:"une seule corde",d:["deux cordes","sept cordes","douze cordes"]},
+      {q:"Plus la partie de corde qui vibre est courte, plus le son est…",r:"aigu",d:["grave","fort","doux"]},
+      {q:"Une corde deux fois plus courte donne…",r:"l'octave au-dessus",d:["la quinte au-dessus","l'octave en dessous","le même son"]},
+      {q:"Le La du diapason vibre…",r:"440 fois par seconde",d:["44 fois par seconde","1 000 fois par seconde","100 fois par seconde"]},
+      {q:"La devise des pythagoriciens était…",r:"« Tout est nombre »",d:["« Tout est musique »","« Tout est eau »","« Tout passe »"]},
+      {q:"Pythagore était…",r:"un savant grec",d:["un compositeur allemand","un roi égyptien","un moine français"]},
+      {q:"Le diapason sert à…",r:"accorder les instruments",d:["battre la mesure de l'orchestre","écrire les notes sur la portée","mesurer la force du son"]},
+      {q:"Selon la légende, les marteaux qui sonnent bien ensemble ont des poids…",r:"aux rapports simples",d:["tous exactement identiques","choisis complètement au hasard","tous plus légers qu'une plume"]},
+      {q:"Un son aigu correspond à des vibrations…",r:"rapides",d:["lentes","fortes","faibles"]},
+      {q:"On mesure la fréquence d'un son (le nombre de vibrations par seconde) en…",r:"hertz",d:["décibels","mètres","secondes"]},
+      {q:"L'écart entre deux Do voisins s'appelle…",r:"une octave",d:["une quinte","une quarte","un ton"]}];
+    const B2=[{q:"La tetraktys des pythagoriciens (1, 2, 3, 4 points) contient les rapports de…",r:"l'octave, la quinte et la quarte",d:["la tierce, la sixte et la septième","la seconde, la tierce et le ton","la sixte, la septième et l'octave"]},
+      {q:"Selon les pythagoriciens, les planètes en tournant produisent…",r:"une musique",d:["de la lumière","de la pluie","du vent"]},
+      {q:"La légende des forgerons est-elle exacte&nbsp;?",r:"non, pas pour les marteaux",d:["oui, entièrement","oui, mais seulement pour l'octave","non, Pythagore n'a jamais existé"]},
+      {q:"Pour monter d'une octave en tendant une corde avec des poids, il faut un poids…",r:"4 fois plus lourd",d:["2 fois plus lourd","3 fois plus lourd","8 fois plus lourd"]},
+      {q:"Pour jouer l'octave, le guitariste appuie sur la 12ᵉ case, qui se trouve…",r:"au milieu de la corde",d:["au quart de la corde","au bout du manche","aux deux tiers de la corde"]},
+      {q:"Quand la longueur de la corde est multipliée par 2/3, la fréquence est multipliée par…",r:"3/2",d:["2/3","2","4/3"]},
+      {q:"Pourquoi est-ce souvent le hautbois qui donne le La à l'orchestre&nbsp;?",r:"son son perçant et très stable",d:["c'est l'instrument le plus grave","c'est le plus ancien de l'orchestre","il est assis au premier rang"]},
+      {q:"Pourquoi un violoniste peut-il jouer certains accords plus «&nbsp;purs&nbsp;» qu'un pianiste&nbsp;?",r:"il place ses doigts librement",d:["son violon est accordé plus haut","ses cordes sont plus épaisses","il joue toujours très fort"]},
+      {q:"Pour accorder sa corde sur le La de l'orchestre, le musicien écoute…",r:"les battements disparaître",d:["le chef d'orchestre compter","le public applaudir","son voisin chanter"]}];
+    const B=d===1?B1:B1.concat(B2), b=pick(B);
+    return {emp:"pys-"+b.q.length+b.r,consigne:b.q,champ:selListe([b.r].concat(b.d),b.r),verif:v=>norm(v)===norm(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+  }),
+
+  /* LES MODES (14/10/2026) : reconnaître un mode à l'oreille (même mélodie sur
+     un bourdon), touches blanches, schéma de tons, notes sur Do, portée, note
+     caractéristique, du plus lumineux au plus sombre, histoire. */
+  "modes":()=>mapEx(nbQuestions,()=>{
+    const d=difficulte, exact=r=>v=>String(v)===String(r);
+    const types=d===1?["ecoute","ecoute","blanche","blanche","famille","car","savoir","savoir"]
+      :d===2?["ecoute","ecoute","blanche","ruban","notes","car","lumiere","savoir"]
+      :["ecoute","ecoute","ruban","notes","portee","construire","car","lumiere","histoire"];
+    const t=pick(types), nm=M=>M.nom.toLowerCase();
+    const nomsM=ids=>ids.map(id=>nm(mxMode(id)));
+    if(t==="ecoute"){
+      const ids=d===1?["ionien","eolien","phrygien"]:(d===2?["ionien","dorien","phrygien","lydien","eolien"]:["ionien","dorien","phrygien","lydien","mixolydien","eolien"]);
+      const M=mxMode(pick(ids)), to=55+rnd(9);
+      return {emp:"mxe-"+M.id+to,groupe:"mxe"+M.id,consigne:"Écoute la mélodie, jouée sur un bourdon grave. Dans quel mode est-elle&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter la mélodie",mx:{pas:M.pas,t:to,quoi:"motif"}},champ:choixBoutons(nomsM(ids)),verif:exact(nm(M)),rejouable:true,
+        solution:`C'était le mode <b>${nm(M)}</b> (${M.hum}).`};
+    }
+    if(t==="blanche"){
+      const M=pick(MX_MODES), dep=LN_NOMS[M.de];
+      if(Math.random()<0.5)return {emp:"mxb-"+M.id,groupe:"mxb"+M.id,consigne:`Sur les touches blanches du piano, le mode <b>${nm(M)}</b> commence sur…`,
+        champ:selListe(LN_NOMS.slice(),dep),verif:exact(dep),solution:`Le mode ${nm(M)}, c'est le mode de <b>${dep}</b>&nbsp;: de ${dep} à ${dep}, touches blanches.`};
+      const mq={}; for(let k=0;k<8;k++){ const m=mxMidi([0,2,4,5,7,9,11],60,M.de+1+k); mq[m]={c:k===0||k===7?"#F2C94C":"#cfe0f5",t:k===0||k===7?dep:""}; }
+      return {emp:"mxc-"+M.id,groupe:"mxb"+M.id,consigne:`On joue toutes les touches blanches de <b>${dep}</b> à <b>${dep}</b>. Quel mode entend-on&nbsp;?<div class="ax-q">${axClavierSVG(mq,{de:MX_BLANC[M.de],nb:8,noms:true,aria:"Clavier : les touches blanches de "+dep+" à "+dep})}</div>`,
+        champ:selListe(MX_MODES.map(nm),nm(M)),verif:exact(nm(M)),solution:`De ${dep} à ${dep} sur les touches blanches&nbsp;: le mode <b>${nm(M)}</b>.`};
+    }
+    if(t==="famille"){
+      const Q=[{q:"Le mode <b>ionien</b>, c'est la gamme…",r:"majeure"},{q:"Le mode <b>éolien</b>, c'est la gamme…",r:"mineure"}], b=pick(Q), o=["majeure","mineure","chromatique","pentatonique"];
+      return {emp:"mxf-"+b.r,consigne:b.q,champ:choixBoutons(o),verif:exact(b.r),solution:`Le ${b.r==="majeure"?"mode ionien est la gamme <b>majeure</b>":"mode éolien est la gamme <b>mineure</b> naturelle"}.`};
+    }
+    if(t==="car"){
+      const L=MX_MODES.filter(M=>M.car>0&&M.id!=="eolien"), M=pick(L), cars=L.map(x=>MX_CAR_NOM[x.car]);
+      if(Math.random()<0.5)return {emp:"mxk-"+M.id,groupe:"mxk"+M.id,consigne:`Quelle note donne sa couleur particulière au mode <b>${nm(M)}</b>&nbsp;?`,
+        champ:selListe(cars,MX_CAR_NOM[M.car]),verif:exact(MX_CAR_NOM[M.car]),solution:`Le mode ${nm(M)} se reconnaît à <b>${MX_CAR_NOM[M.car]}</b>.`};
+      const fam=M.ref==="ionien"?"Un majeur":(M.ref==="eolien"?"Un mineur":"Un phrygien");
+      return {emp:"mxl-"+M.id,groupe:"mxk"+M.id,consigne:`${fam} avec ${MX_CAR_NOM[M.car].replace(/^la /,"une ")}&nbsp;: c'est le mode…`,
+        champ:selListe(L.map(nm),nm(M)),verif:exact(nm(M)),solution:`C'est le mode <b>${nm(M)}</b>.`};
+    }
+    if(t==="ruban"){
+      const M=pick(MX_MODES), p=M.pas.concat([12]), sch=p.slice(1).map((v,i)=>v-p[i]===1?"½":"T").join(" ");
+      return {emp:"mxr-"+M.id,groupe:"mxr"+M.id,consigne:`Quel mode suit cet ordre de tons (T) et de demi-tons (½)&nbsp;?<div class="mx-q-sch">${sch}</div>`,
+        champ:selListe(MX_MODES.map(nm),nm(M)),verif:exact(nm(M)),solution:`${sch}&nbsp;: c'est le mode <b>${nm(M)}</b>.`};
+    }
+    if(t==="notes"){
+      const L=d===2?MX_MODES.filter(M=>M.id!=="locrien"):MX_MODES, M=pick(L), n=mxNoms(0,M.pas).concat(["Do"]).join(" ");
+      return {emp:"mxn-"+M.id,groupe:"mxn"+M.id,consigne:`Quel mode sur Do utilise ces notes&nbsp;?<div class="mx-q-sch">${n}</div>`,
+        champ:selListe(L.map(nm),nm(M)),verif:exact(nm(M)),solution:`${n}&nbsp;: c'est Do <b>${nm(M)}</b>.`};
+    }
+    if(t==="portee"){
+      const M=pick(MX_MODES), surDo=Math.random()<0.5, lettre=surDo?0:M.de, noms=mxNoms(lettre,M.pas).concat([LN_NOMS[lettre]]);
+      const p0=[-2,-1,0,1,2,3,4][lettre], notes=noms.map((x,k)=>({p:p0+k,alt:/♯/.test(x)?"#":(/♭/.test(x)?"b":"")}));
+      return {emp:"mxp-"+M.id+surDo,groupe:"mxp"+M.id,consigne:`Dans quel mode est écrite cette gamme&nbsp;?<div class="ax-q">${modPorteeSVG(notes,[],noms)}</div>`,
+        champ:selListe(MX_MODES.map(nm),nm(M)),verif:exact(nm(M)),solution:`${noms.join(" ")}&nbsp;: c'est ${LN_NOMS[lettre]} <b>${nm(M)}</b>.`};
+    }
+    if(t==="construire"){
+      const C=[["ionien","lydien","Fa devient Fa♯"],["ionien","mixolydien","Si devient Si♭"],["eolien","dorien","La♭ devient La"],["eolien","phrygien","Ré devient Ré♭"],["phrygien","locrien","Sol devient Sol♭"]];
+      const c=pick(C), A=mxMode(c[0]), B=mxMode(c[1]);
+      return {emp:"mxt-"+c[1],consigne:`Pour transformer Do <b>${nm(A)}</b> en Do <b>${nm(B)}</b>, quelle note faut-il changer&nbsp;?`,
+        champ:choixBoutons(C.map(x=>x[2])),verif:exact(c[2]),solution:`<b>${c[2]}</b>&nbsp;: c'est la note caractéristique du ${nm(B)}.`};
+    }
+    if(t==="lumiere"){
+      const L=shuffle(MX_MODES.slice()).slice(0,d===2?3:4), clair=Math.random()<0.5, M=L.slice().sort((a,b)=>clair?b.lum-a.lum:a.lum-b.lum)[0];
+      return {emp:"mxu-"+L.map(x=>x.id).sort().join("")+clair,consigne:`Parmi ces modes, lequel est le plus <b>${clair?"lumineux":"sombre"}</b>&nbsp;?`,
+        champ:choixBoutons(L.map(nm)),verif:exact(nm(M)),solution:`Du plus lumineux au plus sombre&nbsp;: lydien, ionien, mixolydien, dorien, éolien, phrygien, locrien. Ici&nbsp;: <b>${nm(M)}</b>.`};
+    }
+    if(t==="histoire"){
+      const Q=[{q:"Au Moyen Âge, les modes sont utilisés surtout dans…",r:"le chant grégorien",o:["le chant grégorien","les opéras de Verdi","le jazz de La Nouvelle-Orléans","les symphonies de Mozart"]},
+        {q:"En 1547, le savant Glaréan ajoute deux modes&nbsp;: l'ionien et…",r:"l'éolien",o:["l'éolien","le dorien","le lydien","le phrygien"]},
+        {q:"Aux XVIIᵉ et XVIIIᵉ siècles, deux modes l'emportent sur les autres&nbsp;:",r:"le majeur et le mineur",o:["le majeur et le mineur","le dorien et le lydien","le phrygien et le locrien","le lydien et le locrien"]},
+        {q:"«&nbsp;So What&nbsp;» de Miles Davis (1959), un morceau de jazz modal, est en mode…",r:"dorien",o:["dorien","lydien","locrien","phrygien"]},
+        {q:"Les noms des modes (dorien, phrygien, lydien…) viennent…",r:"de la Grèce antique",o:["de la Grèce antique","de l'Égypte ancienne","du Japon médiéval","de l'Amérique"]},
+        {q:"Notre mode «&nbsp;dorien&nbsp;» est-il le même que celui des Grecs&nbsp;?",r:"non, le nom a été réutilisé",o:["non, le nom a été réutilisé","oui, exactement le même","oui, mais joué plus vite","non, il a une note de plus"]}];
+      const b=pick(Q);
+      return {emp:"mxh-"+b.r+b.q.length,consigne:b.q,champ:choixBoutons(shuffle(b.o)),verif:exact(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+    }
+    const B1=[{q:"Combien de modes peut-on jouer sur les seules touches blanches du piano&nbsp;?",r:"7",d:["2","5","12"]},
+      {q:"Le générique des <i>Simpson</i> utilise le mode…",r:"lydien",d:["dorien","phrygien","locrien"]},
+      {q:"Le flamenco utilise souvent le mode…",r:"phrygien",d:["lydien","ionien","mixolydien"]},
+      {q:"D'un mode à l'autre, ce qui change, c'est…",r:"l'ordre des tons et demi-tons",d:["le nombre de notes de la gamme","l'instrument qui joue la mélodie","la vitesse de la mélodie"]},
+      {q:"Le mode le plus sombre, presque jamais utilisé seul, est le…",r:"locrien",d:["lydien","ionien","mixolydien"]},
+      {q:"Le mode le plus lumineux est le…",r:"lydien",d:["locrien","phrygien","éolien"]}];
+    const B2=[{q:"Le mode dorien ressemble au mineur, avec une note plus haute&nbsp;: la…",r:"6ᵉ",d:["2ᵉ","4ᵉ","5ᵉ"]},
+      {q:"Le mode mixolydien est un majeur avec une 7ᵉ…",r:"mineure",d:["majeure","augmentée","doublée"]},
+      {q:"Le mode lydien est un majeur avec une 4ᵉ…",r:"augmentée",d:["diminuée","mineure","doublée"]},
+      {q:"Ré dorien utilise les mêmes notes que…",r:"Do majeur",d:["Ré majeur","Sol majeur","La mineur harmonique"]}];
+    const B=d===1?B1:B1.concat(B2), b=pick(B);
+    return {emp:"mxs-"+b.q.length+b.r,consigne:b.q,champ:selListe([b.r].concat(b.d),b.r),verif:v=>norm(v)===norm(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+  }),
+
+  /* LES MÉTIERS DE LA MUSIQUE (refait le 14/10/2026) : qui fait quoi (les autres réponses viennent
+     d'autres familles de métiers, pour qu'une seule convienne), familles, les études expliquées
+     (CAP, bac, BTS, licence, master…), la route à prendre après la 3e, le parcours de professeur. */
+  "metiers":()=>mapEx(nbQuestions,()=>{
+    const d=difficulte, exact=r=>v=>String(v)===String(r);
+    const t=pick(d===1?["qui","qui","fam","etudes","route","savoir"]:(d===2?["qui","qui","fam","etudes","etudes","route","cap"]:["qui","etudes","etudes","route","cap","fam","savoir"]));
+    if(t==="qui"){
+      /* métiers voisins d'une autre famille (un musicien peut aussi enseigner…) : jamais proposés ensemble */
+      const PROCHES={musicien:["intervenant","prof"],chanteur:["intervenant"],intervenant:["musicien","chanteur","chef"],prof:["musicien","chef"],chef:["prof","intervenant"]};
+      const m=pick(MT), autres=shuffle(MT.filter(x=>x.fam!==m.fam&&(PROCHES[m.id]||[]).indexOf(x.id)<0)).slice(0,6).map(x=>x.nom);
+      return {emp:"mtq-"+m.id,groupe:"mt"+m.id,consigne:`Quel est le métier de la personne qui ${m.q}&nbsp;?`,champ:selListe([m.nom].concat(autres),m.nom),verif:exact(m.nom),
+        solution:`<b>${m.nom}</b>&nbsp;: ${m.desc}`};
+    }
+    if(t==="fam"){
+      const m=pick(MT), F=mtFam(m.fam);
+      return {emp:"mtf-"+m.id,groupe:"mt"+m.id,consigne:`Dans quelle famille de métiers range-t-on le métier de <b>${/^[A-Z]{2}/.test(m.nom)?m.nom:m.nom.charAt(0).toLowerCase()+m.nom.slice(1)}</b>&nbsp;?`,champ:selListe(MT_FAM.map(f=>f.nom),F.nom),verif:exact(F.nom),
+        solution:`Famille «&nbsp;<b>${F.nom}</b>&nbsp;»&nbsp;: ${m.desc}`};
+    }
+    if(t==="cap"){
+      const m=pick(MT.filter(x=>x.niv==="cap")), autres=shuffle(MT.filter(x=>x.niv==="bac23"||x.niv==="bac5")).slice(0,5).map(x=>x.nom);
+      return {emp:"mtc-"+m.id,groupe:"mt"+m.id,consigne:"Lequel de ces métiers peut se préparer avec un <b>CAP</b>, en 2 ans juste après la 3ᵉ&nbsp;?",champ:selListe([m.nom].concat(autres),m.nom),verif:exact(m.nom),
+        solution:`<b>${m.nom}</b>&nbsp;: ${m.chemin.map(c=>c[0]).join(" → ")}.`};
+    }
+    if(t==="route"){
+      const Q=[{q:"Pour devenir <b>accordeur de pianos</b>, après la 3ᵉ, on va…",r:"en voie professionnelle (CAP)",o:["en voie professionnelle (CAP)","en seconde générale, puis au bac général","directement à l'université","en BTS métiers de l'audiovisuel"]},
+        {q:"Pour devenir <b>luthier</b>, après la 3ᵉ, on peut aller…",r:"en CAP assistant luthier",o:["en CAP assistant luthier","en seconde générale, puis au bac général","directement à l'université","en BTS métiers de l'audiovisuel"]},
+        {q:"Pour devenir <b>professeur de musique au collège</b>, après la 3ᵉ, on va plutôt…",r:"en seconde générale et technologique",o:["en seconde générale et technologique","en CAP accordeur de pianos","directement en apprentissage chez un luthier","en bac pro métiers d'art"]},
+        {q:"Pour devenir <b>chercheur en acoustique musicale</b>, après la 3ᵉ, on va plutôt…",r:"en seconde générale et technologique",o:["en seconde générale et technologique","en CAP accordeur de pianos","directement en apprentissage chez un luthier","en bac pro métiers d'art"]},
+        {q:"Pour devenir <b>ingénieur du son</b>, après la 3ᵉ, on va plutôt…",r:"en seconde générale et technologique",o:["en seconde générale et technologique","en CAP assistant luthier","directement en apprentissage chez un luthier","en bac pro métiers d'art"]}];
+      const b=pick(Q);
+      return {emp:"mtr-"+b.q.length,consigne:b.q,champ:choixBoutons(shuffle(b.o)),verif:exact(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+    }
+    if(t==="etudes"){
+      const Q1=[{q:"Un CAP se prépare en…",r:"2 ans après la 3ᵉ",o:["2 ans après la 3ᵉ","2 ans après le bac","5 ans après le bac","1 an après la 3ᵉ"]},
+        {q:"Que veut dire «&nbsp;bac + 5&nbsp;»&nbsp;?",r:"5 années d'études après le bac",o:["5 années d'études après le bac","5 spécialités choisies pour passer le bac","avoir obtenu le bac avec 5 de moyenne","5 années d'études après la 3ᵉ"]},
+        {q:"Le diplôme qu'on prépare en 3 ans à l'université après le bac s'appelle…",r:"la licence",o:["la licence","le CAP","le brevet","le BMA"]},
+        {q:"L'apprentissage, c'est…",r:"se former en alternance, avec un salaire",o:["se former en alternance, avec un salaire","apprendre seul chez soi, sans professeur","redoubler pour mieux apprendre","une option de musique au collège"]},
+        {q:"Au lycée professionnel, on…",r:"apprend un métier concret, avec des stages",o:["apprend un métier concret, avec des stages","prépare surtout des études longues à l'université","ne fait plus de français ni de maths","passe le bac général"]},
+        {q:"Le conservatoire, c'est…",r:"une école de musique, à côté de l'école",o:["une école de musique, à côté de l'école","un lycée professionnel où l'on fabrique des instruments","un diplôme de l'université","un studio d'enregistrement"]}];
+      const Q2=[{q:"Le master se prépare…",r:"en 2 ans après la licence",o:["en 2 ans après la licence","en 2 ans après la 3ᵉ","en 1 an après le brevet","en 3 ans après le CAP, au lycée professionnel"]},
+        {q:"Un BTS se prépare…",r:"en 2 ans après le bac",o:["en 2 ans après le bac","en 2 ans après la 3ᵉ","en 5 ans après le bac","en 3 ans après le CAP"]},
+        {q:"Le bac technologique S2TMD (théâtre, musique, danse) commence…",r:"en 1ʳᵉ, après une seconde générale",o:["en 1ʳᵉ, après une seconde générale","dès la seconde professionnelle, en atelier","après le bac, dans un conservatoire supérieur","en 3ᵉ, à la place du brevet des collèges"]},
+        {q:"Un BMA, c'est…",r:"un diplôme des métiers d'art, après un CAP",o:["un diplôme des métiers d'art, après un CAP","un bac général avec la spécialité musique et danse","un concours pour devenir professeur","une école de musique pour enfants"]},
+        {q:"Pour devenir professeur de musique au collège, il faut au final…",r:"un master (bac + 5) et le concours",o:["un master (bac + 5) et le concours","un CAP de musique","le bac seulement","un diplôme de conservatoire seulement"]},
+        {q:"Le concours pour devenir professeur de musique au collège se passe…",r:"en fin de licence (bac + 3)",o:["en fin de licence (bac + 3)","en fin de 3ᵉ, avec le brevet","juste après le bac","après 10 ans de conservatoire"]},
+        {q:"Après le concours, le futur professeur se forme pendant 2 ans en master. Pendant ce temps…",r:"il est payé",o:["il est payé","il paie l'école","il n'a pas de cours","il travaille la nuit"]},
+        {q:"Le doctorat, le plus haut diplôme, correspond à…",r:"bac + 8",o:["bac + 3","bac + 5","bac + 8","bac + 12"]},
+        {q:"Un concours, c'est un examen où…",r:"le nombre de places est limité",o:["le nombre de places est limité","tout le monde est reçu","on choisit sa note","on joue de la musique devant le public"]}];
+      const b=pick(d===1?Q1:Q1.concat(Q2));
+      return {emp:"mte-"+b.q.length+b.r.length,consigne:b.q,champ:choixBoutons(/^bac \+/.test(b.r)?b.o:shuffle(b.o)),verif:exact(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+    }
+    const B=[{q:"Un intermittent du spectacle, c'est un artiste ou un technicien qui…",r:"enchaîne des contrats courts",d:["travaille toujours au même endroit","ne travaille que la nuit","est payé par l'État chaque mois"]},
+      {q:"Quelle qualité revient dans presque tous les métiers de la musique&nbsp;?",r:"une oreille fine",d:["une grande taille","une voix grave","un permis de conduire"]},
+      {q:"Un musicien ou un chanteur professionnel s'entraîne…",r:"tous les jours",d:["une fois par mois","seulement avant un concert","jamais, c'est un don"]},
+      {q:"Pour découvrir un métier de la musique en 3ᵉ, on peut profiter…",r:"du stage de 3ᵉ",d:["des vacances d'été seulement","du conseil de classe","de l'épreuve du brevet"]},
+      {q:"Quel organisme public décrit les métiers et les formations sur son site&nbsp;?",r:"l'Onisep",d:["la Sacem","l'Opéra de Paris","le Conservatoire de Lyon"]}];
+    const b=pick(B);
+    return {emp:"mts-"+b.q.length,consigne:b.q,champ:selListe([b.r].concat(b.d),b.r),verif:v=>norm(v)===norm(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+  }),
 
   /* ÉCOUTE ACTIVE : reconnaître à l'oreille une caractéristique du son joué
      (accord majeur/mineur, mélodie qui monte/descend, tempo, nuance). */
@@ -5069,6 +5541,7 @@ function txJouer(){
   _tx.notes.sort(function(a,b){ return a.b-b.b; });
   _tx.idx=0; _tx.spb=60/TX_TEMPOS[_tx.tempo]; _tx.t0=ctx.currentTime+0.15; _tx.session=true; _tx.canal=txCanal();
   _tx.timer=setInterval(txPlanifier,25); txPlanifier();
+  sonSessionDebut({zone:document.getElementById("txAtelier"),actif:function(){ return !!_tx.session; },arret:txStop});
   _tx.raf=requestAnimationFrame(txAnimer);
   txMajBouton();
 }
@@ -5324,6 +5797,7 @@ function vaJouer(quoi){
   const der=_va.plan[_va.plan.length-1]; _va.fin=_va.t0+der.debut+der.X.total*der.X.spb;
   _va.session=true; _va.canal=txCanal(); _va.timer=setInterval(vaPlanifier,25); vaPlanifier();
   _va.raf=requestAnimationFrame(vaAnimer); vaMajBoutons();
+  sonSessionDebut({zone:document.getElementById("vaAtelier"),actif:function(){ return !!_va.session; },arret:vaStop});
 }
 function vaStop(){
   if(_va.timer){ clearInterval(_va.timer); _va.timer=null; }
@@ -5592,6 +6066,7 @@ function fmJouer(seq){
   _fm.notes=X.notes; _fm.places=X.places; _fm.idx=0; _fm.spb=60/FM_TEMPO; _fm.t0=ctx.currentTime+0.15; _fm.fin=_fm.t0+X.total*_fm.spb;
   _fm.canal=txCanal(); _fm.session=true;
   _fm.timer=setInterval(fmPlanifier,25); fmPlanifier(); _fm.raf=requestAnimationFrame(fmAnimer); fmMajBouton();
+  sonSessionDebut({zone:document.getElementById("fmAtelier"),actif:function(){ return !!_fm.session; },arret:fmStop});
 }
 function fmStop(){
   if(_fm.timer){ clearInterval(_fm.timer); _fm.timer=null; }
@@ -6231,6 +6706,7 @@ function veLire(cfg){
     if(tete&&svg){ tete.style.transform="translateX("+(Math.max(0,Math.min(1,t/X.duree))*600).toFixed(1)+"px)"; }
     if(t>X.duree+0.4)veStop();
   },40);
+  sonSessionDebut({zone:document.getElementById("veAtelier"),actif:function(){ return !!_ve.anim; },arret:veStop});
 }
 
 /* ---------- l'atelier ---------- */
@@ -6343,7 +6819,1678 @@ function veOeuvresHTML(){
     return i<0?'':'<div class="ve-oeuvre">'+meCarteHTML(i)+'<p>'+o[1]+'</p></div>';
   }).join("")+'</div>';
 }
+/* =====================================================================
+   LEÇON « DIÈSE, BÉMOL, BÉCARRE » refaite (13/10/2026) : le laboratoire des
+   altérations. On choisit une note, on lui ajoute un ♯, un ♭ ou un ♮ : la portée
+   l'écrit, le piano montre la touche (noire ou blanche) et le pas d'un demi-ton,
+   on entend avant et après. Défi « trouve la touche » ; règle de la mesure et
+   armure dessinées et jouées. Préfixe ax*.
+   ===================================================================== */
+/* octave choisie pour que chaque note tombe dans la portée de sol */
+const AX_BASE={Do:72,"Ré":74,Mi:64,Fa:65,Sol:67,La:69,Si:71};
+/* touches noires : leurs deux noms */
+const AX_NOIRES={1:["Do♯","Ré♭"],3:["Ré♯","Mi♭"],6:["Fa♯","Sol♭"],8:["Sol♯","La♭"],10:["La♯","Si♭"]};
+const AX_ENC="#1f2440", AX_OR="#8a6408", AX_GRIS="#9aa3b5";
+function axSym(a){ return a==="#"?"♯":(a==="b"?"♭":(a==="n"?"♮":"")); }
+function axNom(l,a){ return l+((a==="#"||a==="b")?axSym(a):""); }
+function axMidiDe(m,a){ return a==="#"?m+1:(a==="b"?m-1:m); }
+function axNomsTouche(m){ const k=((m%12)+12)%12; return AX_NOIRES[k]||[LN_NOMS[LN_PAS.indexOf(k)]]; }
+/* ---------- une portée de sol : notes [{l|m, a, lib, c, halo, barre}], armure [{p, a}] ---------- */
+function axPorteeSVG(notes,o){
+  o=o||{};
+  const arm=o.armure||[], e=12, top=30, base=top+4*e, pas=o.pas||58;
+  const yP=function(p){ return base-p*e/2; }, yLigne=function(n){ return top+(4-n)*e; };
+  const xArm=58, x0=xArm+(arm.length?arm.length*12+14:0)+32;
+  const xs=[]; let x=x0; notes.forEach(function(n){ if(n.barre)x+=16; xs.push(x); x+=pas; });
+  const W=Math.max(o.W||0,x-pas+44), avecLib=notes.some(function(n){ return n.lib; }), H=avecLib?148:120;
+  const aria=o.aria||("Portée en clé de sol"+(arm.length?", armure "+arm.map(function(q){ return axSym(q.a); }).join(" "):"")+" : "
+    +notes.map(function(n){ return (n.barre?"barre de mesure, ":"")+(n.lib||axNom(n.l||lnNom(n.m),n.a)); }).join(", "));
+  let s='<svg class="ax-svg" viewBox="0 0 '+W+' '+H+'" style="max-width:'+W+'px" role="img" aria-label="'+echapH(aria)+'">';
+  for(let i=0;i<5;i++){ const y=top+i*e; s+='<line x1="6" y1="'+y+'" x2="'+(W-6)+'" y2="'+y+'" stroke="'+AX_ENC+'" stroke-width="1.3"/>'; }
+  s+=cleSVG("sol",e,yLigne).replace('x="22"','x="10"');
+  const gl=function(a,gx,p,taille,coul){ const dy=a==="#"?8:(a==="b"?4:7);
+    return '<text x="'+gx+'" y="'+(yP(p)+dy)+'" font-size="'+taille+'" font-family="Segoe UI Symbol,Apple Symbols,Noto Music,DejaVu Sans,serif" fill="'+coul+'" text-anchor="middle">'+axSym(a)+'</text>'; };
+  arm.forEach(function(q,i){ s+=gl(q.a,xArm+i*12,q.p,23,AX_ENC); });
+  notes.forEach(function(n,i){
+    const xx=xs[i], mN=n.m||AX_BASE[n.l], p=lnPos("sol",mN), y=yP(p), col=n.c||AX_ENC;
+    if(n.barre){ const xb=xx-pas/2-4; s+='<line x1="'+xb+'" y1="'+top+'" x2="'+xb+'" y2="'+base+'" stroke="'+AX_ENC+'" stroke-width="1.5"/>'; }
+    if(p<=-2)for(let q=-2;q>=p;q-=2)s+='<line x1="'+(xx-12)+'" y1="'+yP(q)+'" x2="'+(xx+12)+'" y2="'+yP(q)+'" stroke="'+AX_ENC+'" stroke-width="1.3"/>';
+    if(p>=10)for(let q=10;q<=p;q+=2)s+='<line x1="'+(xx-12)+'" y1="'+yP(q)+'" x2="'+(xx+12)+'" y2="'+yP(q)+'" stroke="'+AX_ENC+'" stroke-width="1.3"/>';
+    if(n.halo)s+='<circle cx="'+xx+'" cy="'+y+'" r="15" fill="rgba(242,201,76,.32)" stroke="#d9a520" stroke-width="1.6" stroke-dasharray="4 3"/>';
+    if(n.a)s+=gl(n.a,xx-20,p,27,col);
+    s+='<ellipse cx="'+xx+'" cy="'+y+'" rx="7.2" ry="5.3" fill="'+col+'" transform="rotate(-18 '+xx+' '+y+')"/>';
+    s+=p<4?'<line x1="'+(xx+6.4)+'" y1="'+y+'" x2="'+(xx+6.4)+'" y2="'+(y-30)+'" stroke="'+col+'" stroke-width="1.5"/>'
+          :'<line x1="'+(xx-6.4)+'" y1="'+y+'" x2="'+(xx-6.4)+'" y2="'+(y+30)+'" stroke="'+col+'" stroke-width="1.5"/>';
+    if(n.lib)s+='<text x="'+xx+'" y="'+(H-10)+'" font-size="12.5" font-weight="'+((n.halo||n.c===AX_OR)?800:600)+'" font-family="Inter,Arial,sans-serif" fill="'+(n.c===AX_GRIS?"#5d6880":(n.c||"#44506a"))+'" text-anchor="middle">'+echapH(n.lib)+'</text>';
+  });
+  /* flèche du demi-ton entre les deux premières notes */
+  if(o.fleche&&xs.length>1){
+    const ya=Math.min(yP(lnPos("sol",notes[0].m||AX_BASE[notes[0].l])),yP(lnPos("sol",notes[1].m||AX_BASE[notes[1].l])))-26, xa=xs[0]+12, xb=xs[1]-26;
+    s+='<line x1="'+xa+'" y1="'+ya+'" x2="'+xb+'" y2="'+ya+'" stroke="#d9a520" stroke-width="2"/>'
+      +'<path d="M'+xb+' '+(ya-4.5)+' L'+(xb+7)+' '+ya+' L'+xb+' '+(ya+4.5)+' Z" fill="#d9a520"/>'
+      +'<text x="'+((xa+xb)/2)+'" y="'+(ya-7)+'" font-size="11" font-weight="700" font-family="Inter,Arial,sans-serif" fill="'+AX_OR+'" text-anchor="middle">'+echapH(o.fleche)+'</text>';
+  }
+  if(o.fin)s+='<line x1="'+(W-12)+'" y1="'+top+'" x2="'+(W-12)+'" y2="'+base+'" stroke="'+AX_ENC+'" stroke-width="1.5"/><line x1="'+(W-7)+'" y1="'+top+'" x2="'+(W-7)+'" y2="'+base+'" stroke="'+AX_ENC+'" stroke-width="3.5"/>';
+  return s+'</svg>';
+}
+/* ---------- petit clavier dessiné (leçon et questions) : marques {midi:{c, t}} ---------- */
+function axClavierSVG(marques,o){
+  o=o||{}; marques=marques||{};
+  const de=o.de||60, nb=o.nb||8, L=o.L||30, H=o.H||94, hN=Math.round(H*0.6), lN=Math.round(L*0.62);
+  const bl=[]; for(let x=de;bl.length<nb;x++)if(LN_PAS.indexOf(x%12)>=0)bl.push(x);
+  const desc=Object.keys(marques).map(Number).sort(function(a,b){ return a-b; }).map(function(m){ const q=marques[m]; return (q.t||axNomsTouche(m).join(" ou ")); });
+  let s='<svg class="ax-clav" viewBox="0 0 '+(nb*L+2)+' '+(H+(o.noms?18:3))+'" style="max-width:'+(nb*L+2)+'px" role="img" aria-label="'+echapH(o.aria||("Clavier"+(desc.length?", touches marquées : "+desc.join(", "):"")))+'">', noires="";
+  bl.forEach(function(x,i){
+    const q=marques[x], xg=1+i*L;
+    s+='<rect x="'+xg+'" y="1" width="'+L+'" height="'+H+'" rx="3" fill="'+(q?q.c:"#fff")+'" stroke="'+AX_ENC+'" stroke-width="1.2"/>';
+    if(q&&q.t)s+='<text x="'+(xg+L/2)+'" y="'+(H-9)+'" font-size="12" font-weight="800" font-family="Inter,Arial,sans-serif" fill="'+AX_ENC+'" text-anchor="middle">'+echapH(q.t)+'</text>';
+    if(o.noms)s+='<text x="'+(xg+L/2)+'" y="'+(H+14)+'" font-size="10" font-weight="600" font-family="Inter,Arial,sans-serif" fill="#5d6880" text-anchor="middle">'+LN_NOMS[LN_PAS.indexOf(x%12)]+'</text>';
+    if(i<nb-1&&x%12!==4&&x%12!==11){ const n=x+1, qn=marques[n], xn=1+(i+1)*L-lN/2;
+      noires+='<rect x="'+xn+'" y="1" width="'+lN+'" height="'+hN+'" rx="2" fill="'+(qn?qn.c:AX_ENC)+'" stroke="'+AX_ENC+'" stroke-width="1"/>';
+      if(qn&&qn.t)noires+='<text x="'+(xn+lN/2)+'" y="'+(hN-8)+'" font-size="11" font-weight="800" font-family="Inter,Arial,sans-serif" fill="'+AX_ENC+'" text-anchor="middle">'+echapH(qn.t)+'</text>'; }
+  });
+  return s+noires+'</svg>';
+}
+/* ---------- le piano du laboratoire : touches blanches ET noires, de Do3 à Do5 ---------- */
+function axPianoHTML(dep,arr,aide){
+  const bl=[]; for(let x=60;x<=84;x++)if(LN_PAS.indexOf(x%12)>=0)bl.push(x);
+  const lw=100/bl.length, cx={};
+  const cls=function(x){ return (x===arr?" arr":"")+(dep!=null&&x===dep&&dep!==arr?" dep":"")+(x===aide?" aide":""); };
+  let h='<div class="ax-piano" role="group" aria-label="Piano : touche une touche blanche ou noire">';
+  bl.forEach(function(x,i){ cx[x]=(i+0.5)*lw;
+    h+='<button type="button" class="ax-b'+cls(x)+'" data-m="'+x+'" style="left:'+(i*lw)+'%;width:'+lw+'%" onclick="axTouche('+x+')" aria-label="'+axNomsTouche(x).join(" ou ")+'"><span>'+LN_NOMS[LN_PAS.indexOf(x%12)]+'</span></button>'; });
+  bl.forEach(function(x,i){ if(i===bl.length-1)return; const st=x%12; if(st===4||st===11)return; const n=x+1; cx[n]=(i+1)*lw;
+    h+='<button type="button" class="ax-n'+cls(n)+'" data-m="'+n+'" style="left:'+((i+1)*lw-lw*0.32)+'%;width:'+(lw*0.64)+'%" onclick="axTouche('+n+')" aria-label="'+axNomsTouche(n).join(" ou ")+'"></button>'; });
+  h+='</div>';
+  let bande='<div class="ax-bande" aria-hidden="true">';
+  if(dep!=null&&arr!=null&&dep!==arr&&cx[dep]!=null&&cx[arr]!=null){
+    const g=Math.min(cx[dep],cx[arr]), w=Math.abs(cx[arr]-cx[dep]);
+    bande+='<span class="ax-fleche '+(arr>dep?"d":"g")+'" style="left:'+g+'%;width:'+w+'%"><b>½ ton</b></span>'; }
+  return bande+'</div>'+h;
+}
+/* ---------- l'atelier ---------- */
+let _ax={m:65,a:"#",prev:"",defi:null,suite:null};
+function axRacine(){ return document.getElementById("axAtelier"); }
+function axEtat(){
+  const m=_ax.m, a=_ax.a, l=lnNom(m);
+  if(_ax.defi){ const q=_ax.defi.q; return {dep:null,arr:null,notes:[{m:AX_BASE[q[0]],a:q[1],lib:"?",halo:true}]}; }
+  if(a==="n"){ const pa=_ax.prev;
+    return pa?{dep:axMidiDe(m,pa),arr:m,notes:[{m:m,a:pa,lib:axNom(l,pa),c:AX_GRIS},{m:m,a:"n",lib:l+" naturel",c:AX_OR}],fleche:"le ♮ annule"}
+             :{dep:null,arr:m,notes:[{m:m,a:"n",lib:l+" naturel",c:AX_OR}]}; }
+  if(a==="#"||a==="b")return {dep:m,arr:axMidiDe(m,a),notes:[{m:m,lib:l,c:AX_GRIS},{m:m,a:a,lib:axNom(l,a),c:AX_OR}],fleche:a==="#"?"monte d'½ ton":"descend d'½ ton"};
+  return {dep:null,arr:m,notes:[{m:m,lib:l}]};
+}
+function axExplHTML(){
+  const m=_ax.m, a=_ax.a, l=lnNom(m);
+  if(a==="#"||a==="b"){
+    const x=axMidiDe(m,a), noms=axNomsTouche(x), noire=!!AX_NOIRES[((x%12)+12)%12], monte=a==="#", ici=axNom(l,a);
+    let t='<b>'+ici+'</b> ('+l+' '+(monte?"dièse":"bémol")+')&nbsp;: on part du <b>'+l+'</b> et on <b>'+(monte?"monte":"descend")+'</b> d\'un demi-ton, jusqu\'à la touche juste à '+(monte?"droite":"gauche")+'. Le son devient un peu plus <b>'+(monte?"aigu":"grave")+'</b>.';
+    if(!noire){ const paire=(l==="Mi"||l==="Fa")?"le Mi et le Fa":"le Si et le Do";
+      t+='<span class="ax-piege"><i class="ph-fill ph-warning"></i><span><b>Piège&nbsp;!</b> Il n\'y a pas de touche noire entre '+paire+'. '+ici+' tombe sur la touche <b>blanche</b> du <b>'+noms[0]+'</b>&nbsp;: c\'est exactement le même son.</span></span>'; }
+    else{ const autre=noms.filter(function(n){ return n!==ici; })[0];
+      if(autre)t+='<span class="ax-deux"><i class="ph-fill ph-arrows-left-right"></i><span>Cette touche noire a un <b>deuxième nom</b>&nbsp;: <b>'+autre+'</b>, car on y arrive aussi en '+(monte?"descendant":"montant")+' depuis le '+autre.replace(/[♯♭]/,"")+'. Ce sont deux notes <b>enharmoniques</b>.</span></span>'; }
+    return '<p class="ax-phrase">'+t+'</p>';
+  }
+  if(a==="n"){
+    if(!_ax.prev)return '<p class="ax-phrase">Le bécarre <b>♮</b> sert à <b>annuler</b> un dièse ou un bémol. Ajoute d\'abord un ♯ ou un ♭ à la note, puis appuie sur le bécarre.</p>';
+    return '<p class="ax-phrase">Le <b>bécarre ♮</b> annule le '+(_ax.prev==="#"?"dièse":"bémol")+'&nbsp;: on revient au <b>'+l+' naturel</b>, sur la touche blanche. On s\'en sert quand une altération vaut encore dans la mesure et qu\'on veut l\'arrêter.</p>';
+  }
+  return '<p class="ax-phrase"><b>'+l+'</b>&nbsp;: une note naturelle, sur une touche blanche. Ajoute un <b>♯</b> pour la faire monter d\'un demi-ton, ou un <b>♭</b> pour la faire descendre.</p>';
+}
+function axDefiHTML(){
+  const d=_ax.defi; if(!d)return "";
+  const nomQ=axNom(d.q[0],d.q[1]);
+  let pts=''; for(let i=0;i<5;i++)pts+='<i class="'+(i<d.serie?"ok":"")+'"></i>';
+  return '<div class="ax-defi"><div class="ax-defi-t"><span>Trouve la touche de&nbsp;:</span><b class="ax-cible">'+(d.fini?"Bravo&nbsp;!":nomQ)+'</b><span class="pl-serie" role="img" aria-label="'+d.serie+' réussies d\'affilée sur 5">'+pts+'</span></div>'
+    +(d.msg?'<p class="ax-retour '+(d.bon?"ok":"ko")+'">'+d.msg+'</p>':'<p class="ax-retour">Lis la note sur la portée, puis touche la bonne touche du piano. Cinq d\'affilée pour gagner.</p>')
+    +'<div class="ax-defi-b">'+(d.fini?'<button type="button" class="btn-son" onclick="axDefi(true)"><i class="ph ph-arrow-clockwise"></i> Recommencer</button>':'')
+    +'<button type="button" class="btn-son" onclick="axDefi(false)"><i class="ph ph-x"></i> Quitter le défi</button></div></div>';
+}
+function axRendre(){
+  const r=axRacine(); if(!r)return;
+  const E=axEtat(), d=_ax.defi;
+  r.querySelector("#axPortee").innerHTML=axPorteeSVG(E.notes,{fleche:E.fleche||null,pas:76});
+  r.querySelector("#axClavier").innerHTML=axPianoHTML(E.dep,E.arr,d?d.montre:null);
+  r.querySelector("#axExpl").innerHTML=d?axDefiHTML():axExplHTML();
+  r.querySelectorAll(".ax-l").forEach(function(b){ const on=!d&&+b.dataset.m===_ax.m; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); b.disabled=!!d; });
+  r.querySelectorAll(".ax-a").forEach(function(b){ const on=!d&&b.dataset.a===_ax.a; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); b.disabled=!!d; });
+  const bd=r.querySelector("#axBtnDefi"); if(bd)bd.hidden=!!d;
+}
+function axArreter(){ if(_ax.suite){ clearTimeout(_ax.suite); _ax.suite=null; } }
+function axJouer(){
+  const E=axEtat(); try{ audio().resume(); }catch(e){}
+  if(E.dep!=null&&E.arr!=null&&E.dep!==E.arr){ jouerMidi(E.dep,0,0.55,0.3); jouerMidi(E.arr,0.68,0.85,0.3); }
+  else if(E.arr!=null)jouerMidi(E.arr,0,0.85,0.3);
+}
+function axLettre(m){ axArreter(); _ax.m=m; _ax.a=""; _ax.prev=""; axRendre(); axJouer(); }
+function axAlt(a){
+  axArreter();
+  if(a==="n"){ if(_ax.a==="#"||_ax.a==="b")_ax.prev=_ax.a; }
+  else _ax.prev="";
+  /* Do♭ sort du piano par le bas : on prend le Do du dessus */
+  if(a==="b"&&_ax.m===60)_ax.m=72;
+  _ax.a=a; axRendre(); axJouer();
+}
+function axTouche(m){
+  if(_ax.defi){ axDefiRepondre(m); return; }
+  axArreter();
+  if(LN_PAS.indexOf(m%12)>=0){ _ax.m=m; _ax.a=""; }
+  else{ _ax.m=m-1; _ax.a="#"; }
+  _ax.prev=""; axRendre(); axJouer();
+}
+/* la gamme chromatique : les 12 demi-tons, montrés un par un */
+function axChromatique(){
+  axArreter(); if(_ax.defi)return; let m=60;
+  const un=function(){ if(m>72||!axRacine()){ _ax.suite=null; return; }
+    if(LN_PAS.indexOf(m%12)>=0){ _ax.m=m; _ax.a=""; } else { _ax.m=m-1; _ax.a="#"; }
+    _ax.prev=""; axRendre(); try{ audio().resume(); jouerMidi(m,0,0.5,0.3); }catch(e){}
+    m++; _ax.suite=setTimeout(un,430); };
+  un();
+}
+const AX_DEFI_SIMPLE=[["Do","#"],["Ré","b"],["Ré","#"],["Mi","b"],["Fa","#"],["Sol","b"],["Sol","#"],["La","b"],["La","#"],["Si","b"]];
+const AX_DEFI_PIEGES=[["Mi","#"],["Si","#"],["Fa","b"],["Do","b"]];
+function axDefiTirer(){
+  const d=_ax.defi; let q, n=0;
+  do{ q=(d.reussis>=2&&Math.random()<0.25)?pick(AX_DEFI_PIEGES):(Math.random()<0.12?[pick(GAMME),""]:pick(AX_DEFI_SIMPLE)); n++; }
+  while(d.q&&q[0]===d.q[0]&&q[1]===d.q[1]&&n<20);
+  d.q=q; d.montre=null;
+}
+function axDefi(on){
+  axArreter();
+  if(on){ _ax.defi={serie:0,reussis:0,q:null,msg:"",bon:false,fini:false,montre:null}; axDefiTirer(); }
+  else _ax.defi=null;
+  axRendre();
+}
+function axDefiRepondre(m){
+  const d=_ax.defi; if(!d||d.fini)return;
+  const q=d.q, cible=axMidiDe(AX_BASE[q[0]],q[1]), nomQ=axNom(q[0],q[1]);
+  const bon=(((m-cible)%12)+12)%12===0;
+  try{ audio().resume(); jouerMidi(m,0,0.7,0.3); }catch(e){}
+  const ou=q[1]===""?"c'est une touche blanche"
+    :("on part du "+q[0]+" et on "+(q[1]==="#"?"monte":"descend")+" d'un demi-ton, vers la "+(q[1]==="#"?"droite":"gauche")+(AX_NOIRES[((cible%12)+12)%12]?"":" : pas de touche noire ici, c'est la touche blanche du "+axNomsTouche(cible)[0]));
+  if(bon){ d.serie++; d.reussis++; d.bon=true; d.montre=null;
+    if(d.serie>=5){ d.fini=true; d.msg='<i class="ph-fill ph-check-circle"></i> Cinq d\'affilée&nbsp;! Tu sais trouver les dièses et les bémols sur le piano.'; }
+    else{ d.msg='<i class="ph-fill ph-check-circle"></i> Oui&nbsp;! <b>'+nomQ+'</b>&nbsp;: '+ou+'.'; axDefiTirer(); } }
+  else{ d.serie=0; d.bon=false; d.montre=cible>84?cible-12:cible;
+    d.msg='<i class="ph-fill ph-x-circle"></i> Pas tout à fait. <b>'+nomQ+'</b>&nbsp;: '+ou+'. La bonne touche est entourée&nbsp;; essaie la suivante.';
+    const garde=d.montre; axDefiTirer(); d.montre=garde; }
+  axRendre();
+}
+function axAtelierHTML(){
+  const lettres=["Do","Ré","Mi","Fa","Sol","La","Si"].map(function(l){
+    return '<button type="button" class="ax-l'+(AX_BASE[l]===_ax.m?" on":"")+'" data-m="'+AX_BASE[l]+'" aria-pressed="'+(AX_BASE[l]===_ax.m)+'" onclick="axLettre('+AX_BASE[l]+')">'+l+'</button>'; }).join("");
+  const alt=function(a,lib,ic){ return '<button type="button" class="ax-a'+(a===_ax.a?" on":"")+'" data-a="'+a+'" aria-pressed="'+(a===_ax.a)+'" onclick="axAlt(\''+a+'\')"><b>'+ic+'</b><span>'+lib+'</span></button>'; };
+  const E=axEtat();
+  return '<div class="carte ax" id="axAtelier">'
+    +'<h3><i class="ph-fill ph-flask"></i> Le laboratoire des altérations</h3>'
+    +'<p class="ax-aide">Choisis une note, puis ajoute-lui un dièse, un bémol ou un bécarre. Regarde où elle s\'écrit, quelle touche du piano elle devient, et <b>écoute</b> la différence. Tu peux aussi toucher directement le piano.</p>'
+    +'<div class="ax-choix"><div class="ax-lettres" role="group" aria-label="Note">'+lettres+'</div>'
+    +'<div class="ax-alts" role="group" aria-label="Altération">'+alt("#","dièse","♯")+alt("b","bémol","♭")+alt("n","bécarre","♮")+'</div></div>'
+    +'<div class="ax-portee" id="axPortee">'+axPorteeSVG(E.notes,{fleche:E.fleche||null,pas:76})+'</div>'
+    +'<div class="ax-clavier" id="axClavier">'+axPianoHTML(E.dep,E.arr,null)+'</div>'
+    +'<div id="axExpl" aria-live="polite">'+axExplHTML()+'</div>'
+    +'<div class="ax-actions"><button type="button" class="btn-son" onclick="axJouer()"><i class="ph ph-play"></i> Écouter avant / après</button>'
+    +'<button type="button" class="btn-son" onclick="axChromatique()"><i class="ph ph-play"></i> Les 12 demi-tons</button>'
+    +'<button type="button" class="btn-son ax-go" id="axBtnDefi" onclick="axDefi(true)"><i class="ph-fill ph-target"></i> Défi : trouve la touche</button></div>'
+    +'</div>';
+}
+function axInit(){ axArreter(); _ax.defi=null; axRendre(); }
+/* ---------- les illustrations de la leçon ---------- */
+function axBouton(lib,midis){ return '<button type="button" class="btn-son" onclick="jouerSonBtn({midis:['+midis.join(",")+'],sequence:true,ecart:0.62})"><i class="ph ph-play"></i> '+lib+'</button>'; }
+function axDemiTonHTML(){
+  return '<div class="ax-fig">'+axClavierSVG({64:{c:"#F2C94C",t:"Mi"},65:{c:"#F2C94C",t:"Fa"},71:{c:"#9fd8bd",t:"Si"},72:{c:"#9fd8bd",t:"Do"}},{noms:true,aria:"Clavier : Mi et Fa, puis Si et Do, sont côte à côte sans touche noire entre eux"})
+    +'<p class="ax-legende">Mi-Fa et Si-Do&nbsp;: deux touches blanches voisines, sans touche noire entre elles. Elles ne sont séparées que d\'<b>un demi-ton</b>.</p></div>'
+    +'<div class="ax-ecoutes">'+axBouton("un demi-ton : Do → Do♯",[60,61])+axBouton("un ton : Do → Ré",[60,62])+axBouton("un demi-ton : Mi → Fa",[64,65])+'</div>';
+}
+function axTrioHTML(){
+  const c=function(sym,nom,eff,notes,son,coul){ return '<div class="ax-signe" style="--x:'+coul+'"><span class="ax-glyphe" aria-hidden="true">'+sym+'</span><b>'+nom+'</b><small>'+eff+'</small>'
+    +axPorteeSVG(notes,{pas:62})+axBouton("Écouter",son)+'</div>'; };
+  return '<div class="ax-trio">'
+    +c("♯","Le dièse","monte la note d'un demi-ton : plus aigu",[{l:"Fa",lib:"Fa",c:AX_GRIS},{l:"Fa",a:"#",lib:"Fa♯",c:AX_OR}],[65,66],"#a44f40")
+    +c("♭","Le bémol","descend la note d'un demi-ton : plus grave",[{l:"Si",lib:"Si",c:AX_GRIS},{l:"Si",a:"b",lib:"Si♭",c:AX_OR}],[71,70],"#2b70ab")
+    +c("♮","Le bécarre","annule un ♯ ou un ♭ : retour à la note naturelle",[{l:"Fa",a:"#",lib:"Fa♯",c:AX_GRIS},{l:"Fa",a:"n",lib:"Fa",c:AX_OR}],[66,65],"#307e46")
+    +'</div>';
+}
+function axEnharmonieHTML(){
+  return '<div class="ax-fig">'+axClavierSVG({61:{c:"#F2C94C"}},{noms:true,aria:"Clavier : la touche noire entre Do et Ré, qui s'appelle Do dièse ou Ré bémol"})
+    +'<p class="ax-legende">La touche dorée a <b>deux noms</b>&nbsp;: <b>Do♯</b> (on monte depuis le Do) ou <b>Ré♭</b> (on descend depuis le Ré). Même touche, même son.</p></div>'
+    +'<div class="ax-ecoutes">'+axBouton("Do♯ puis Ré♭ : le même son",[61,61])+'</div>';
+}
+function axMesureHTML(){
+  return '<div class="ax-ex"><div class="ax-ex-t">Exemple 1&nbsp;: le dièse vaut jusqu\'à la barre de mesure</div>'
+    +axPorteeSVG([{l:"Fa",a:"#",lib:"Fa♯"},{l:"Sol",lib:"Sol"},{l:"Fa",lib:"Fa♯ encore",c:AX_OR,halo:true},{l:"Fa",lib:"Fa naturel",barre:true}],{pas:84,fin:true})
+    +axBouton("Écouter",[66,67,66,65])+'</div>'
+    +'<div class="ax-ex"><div class="ax-ex-t">Exemple 2&nbsp;: le bécarre annule le bémol pour la fin de la mesure</div>'
+    +axPorteeSVG([{l:"Si",a:"b",lib:"Si♭"},{l:"Si",a:"n",lib:"Si naturel",c:AX_OR},{l:"La",lib:"La"},{l:"Si",lib:"Si naturel",c:AX_OR,halo:true}],{pas:84,fin:true})
+    +axBouton("Écouter",[70,71,69,71])+'</div>';
+}
+function axArmureHTML(){
+  return '<div class="ax-ex"><div class="ax-ex-t">Un Fa♯ à la clé&nbsp;: tous les Fa se jouent Fa♯, dans toutes les octaves</div>'
+    +axPorteeSVG([{l:"Sol",lib:"Sol"},{l:"Fa",lib:"Fa♯",c:AX_OR,halo:true},{l:"Sol",lib:"Sol"},{l:"La",lib:"La"},{m:77,lib:"Fa♯",c:AX_OR,halo:true}],{armure:[{p:8,a:"#"}],pas:72,fin:true})
+    +axBouton("Écouter",[67,66,67,69,78])+'</div>';
+}
+
+/* =====================================================================
+   LEÇON « PLUS AIGU OU PLUS GRAVE ? » refaite (13/10/2026) : l'ascenseur des
+   sons (une onde qui se resserre quand le son monte, les vibrations par seconde,
+   des exemples concrets) et le jeu « Jusqu'où va ton oreille ? », où l'écart
+   entre les deux sons rétrécit à chaque réussite. Préfixe hx*.
+   ===================================================================== */
+const HX_ZONES=[{max:42,nom:"très grave",ex:"comme un tuba ou une contrebasse",c:"#1f4f86"},
+  {max:54,nom:"grave",ex:"comme une voix d'homme",c:"#2b70ab"},
+  {max:66,nom:"médium",ex:"comme une voix de femme ou un violon",c:"#307e46"},
+  {max:78,nom:"aigu",ex:"comme une flûte ou une voix d'enfant",c:"#8a6408"},
+  {max:999,nom:"très aigu",ex:"comme une flûte piccolo ou le chant d'un oiseau",c:"#a44f40"}];
+const HX_MIN=36, HX_MAX=96;
+function hxZone(m){ return HX_ZONES.filter(function(z){ return m<=z.max; })[0]; }
+function hxHz(m){ return Math.round(440*Math.pow(2,(m-69)/12)); }
+function hxNomNote(m){ const k=((m%12)+12)%12; return (AX_NOIRES[k]?AX_NOIRES[k][0]:LN_NOMS[LN_PAS.indexOf(k)])+" "+lnOct(m); }
+/* l'onde : plus le son est aigu, plus elle se resserre */
+function hxOndeSVG(m,o){
+  o=o||{}; const W=o.W||360, H=o.H||84, z=hxZone(m);
+  const cyc=1.2+(Math.max(HX_MIN,Math.min(HX_MAX,m))-HX_MIN)/(HX_MAX-HX_MIN)*13, n=260;
+  let d=""; for(let i=0;i<=n;i++){ const x=i/n*W, y=H/2-Math.sin(i/n*cyc*2*Math.PI)*(H/2-8); d+=(i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1); }
+  return '<svg class="hx-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+echapH(o.aria||("Onde du son : "+Math.round(cyc)+" vibrations dessinées, son "+z.nom))+'">'
+    +'<line x1="0" y1="'+(H/2)+'" x2="'+W+'" y2="'+(H/2)+'" stroke="#c9d2de" stroke-width="1" stroke-dasharray="4 4"/>'
+    +'<path d="'+d+'" fill="none" stroke="'+z.c+'" stroke-width="2.6" stroke-linejoin="round"/></svg>';
+}
+/* le dessin d'une mélodie (contour) : points = hauteurs relatives */
+function hxContourSVG(pts,o){
+  o=o||{}; const W=o.W||132, H=o.H||64, mn=Math.min.apply(null,pts), mx=Math.max.apply(null,pts), amp=Math.max(1,mx-mn);
+  const xy=pts.map(function(v,i){ return [14+i*(W-28)/Math.max(1,pts.length-1), mx===mn?H/2:(H-12)-(v-mn)/amp*(H-24)]; });
+  let s='<svg class="hx-cont" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+echapH(o.aria||"Dessin d'une mélodie")+'">'
+    +'<polyline points="'+xy.map(function(p){ return p[0].toFixed(1)+","+p[1].toFixed(1); }).join(" ")+'" fill="none" stroke="'+(o.c||"#2b70ab")+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+  xy.forEach(function(p){ s+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="5" fill="'+(o.c||"#2b70ab")+'" stroke="#fff" stroke-width="1.5"/>'; });
+  return s+'</svg>';
+}
+const HX_CONTOURS={monte:{lib:"il monte",pts:[0,2,4,5,7]},descend:{lib:"il descend",pts:[7,5,4,2,0]},
+  reste:{lib:"il reste sur la même note",pts:[0,0,0,0,0]},vague:{lib:"il monte puis redescend",pts:[0,4,7,4,0]},
+  creux:{lib:"il descend puis remonte",pts:[7,4,0,4,7]}};
+/* ---------- l'atelier ---------- */
+let _hx={m:60,dernier:0,suite:null,jeu:null};
+const HX_PAS=[{d:12,nom:"une octave"},{d:7,nom:"une quinte"},{d:5,nom:"une quarte"},{d:4,nom:"une tierce majeure"},{d:3,nom:"une tierce mineure"},{d:2,nom:"un ton"},{d:1,nom:"un demi-ton"}];
+function hxRacine(){ return document.getElementById("hxAtelier"); }
+function hxArreter(){ if(_hx.suite){ clearTimeout(_hx.suite); _hx.suite=null; } }
+function hxInfoHTML(m){ const z=hxZone(m);
+  return '<span class="hx-pastille" style="--z:'+z.c+'">'+hxNomNote(m)+'</span><span><b>'+hxHz(m)+' vibrations par seconde</b> ('+hxHz(m)+'&nbsp;Hz) · son <b class="hx-zn" style="--z:'+z.c+'">'+z.nom+'</b>, '+z.ex+'.</span>'; }
+function hxMaj(){
+  const r=hxRacine(); if(!r)return; const m=_hx.m;
+  r.querySelector("#hxOnde").innerHTML=hxOndeSVG(m);
+  r.querySelector("#hxInfo").innerHTML=hxInfoHTML(m);
+  const c=r.querySelector("#hxCurseur"); if(c&&+c.value!==m)c.value=m;
+  const k=r.querySelector(".hx-repere"); if(k)k.style.top=((HX_MAX-m)/(HX_MAX-HX_MIN)*100)+"%";
+  r.querySelectorAll(".hx-zone").forEach(function(e){ e.classList.toggle("on",e.dataset.z===hxZone(m).nom); });
+}
+function hxRegler(m,muet){
+  _hx.m=Math.max(HX_MIN,Math.min(HX_MAX,m)); hxMaj();
+  if(muet)return;
+  const t=Date.now(); if(t-_hx.dernier<110)return; _hx.dernier=t;
+  try{ audio().resume(); jouerMidi(_hx.m,0,0.6,0.28); }catch(e){}
+}
+function hxPas(d){ hxArreter(); hxRegler(_hx.m+d); }
+function hxRejouer(){ hxArreter(); _hx.dernier=0; hxRegler(_hx.m); }
+function hxGlissando(){
+  hxArreter(); if(_sonBtn.bis)return; let m=HX_MIN;
+  const un=function(){ if(m>HX_MAX||!hxRacine()){ _hx.suite=null; return; } _hx.m=m; hxMaj(); try{ audio().resume(); jouerMidi(m,0,0.3,0.24); }catch(e){} m+=2; _hx.suite=setTimeout(un,95); };
+  un();
+  sonSessionAttacher({arret:hxArreter,actif:function(){ return !!_hx.suite; }});
+}
+/* ---------- le jeu : jusqu'où va ton oreille ? ---------- */
+function hxJeuHTML(){
+  const j=_hx.jeu;
+  const echelle='<ol class="hx-echelons" aria-label="Écart entre les deux sons">'+HX_PAS.map(function(p,i){
+    const cls=j?((i===j.niv&&!j.fini)?" on":"")+(j.meilleur!=null&&i<=j.meilleur?" fait":""):"";
+    return '<li class="'+cls.trim()+'"><b>'+p.d+'</b><small>'+p.nom+'</small></li>'; }).join("")+'</ol>';
+  if(!j)return '<div class="hx-jeu-t"><i class="ph-fill ph-ear"></i><div><b>Jeu : jusqu\'où va ton oreille&nbsp;?</b><small>Deux sons, de plus en plus proches. Dis si le 2ᵉ monte ou descend&nbsp;: à chaque réussite, l\'écart rétrécit.</small></div></div>'
+    +echelle+'<div class="hx-jeu-b"><button type="button" class="btn-son hx-go" onclick="hxJeu(true)"><i class="ph-fill ph-play"></i> Commencer</button></div>';
+  if(j.fini){ const b=j.meilleur!=null?HX_PAS[j.meilleur]:null;
+    return '<div class="hx-jeu-t"><i class="ph-fill ph-trophy"></i><div><b>'+(b?"Ton oreille entend la différence jusqu'à "+b.nom+"&nbsp;!":"Continue de t'entraîner&nbsp;!")+'</b><small>'
+      +(b&&b.d===1?"C'est le plus petit écart du piano : bravo, c'est une oreille de musicien.":(b?"Écart de "+b.d+" demi-tons. Rejoue pour descendre encore d'un échelon.":"Écoute bien le mouvement : ton corps le sent souvent avant ta tête."))+'</small></div></div>'
+      +echelle+'<div class="hx-jeu-b"><button type="button" class="btn-son hx-go" onclick="hxJeu(true)"><i class="ph ph-arrow-clockwise"></i> Rejouer</button><button type="button" class="btn-son" onclick="hxJeu(false)"><i class="ph ph-x"></i> Fermer</button></div>';
+  }
+  return '<div class="hx-jeu-t"><i class="ph-fill ph-ear"></i><div><b>Essai '+(j.essai+1)+' sur '+j.total+'</b><small>Écart actuel&nbsp;: '+HX_PAS[j.niv].nom+' ('+HX_PAS[j.niv].d+' demi-ton'+(HX_PAS[j.niv].d>1?"s":"")+')</small></div></div>'
+    +echelle
+    +'<div class="hx-jeu-b"><button type="button" class="btn-son" onclick="hxJeuEcouter()"><i class="ph ph-play"></i> Réécouter</button>'
+    +'<button type="button" class="btn-son hx-rep" onclick="hxJeuRepondre(1)"'+(j.repondu?" disabled":"")+'><i class="ph ph-trend-up"></i> Le 2ᵉ monte</button>'
+    +'<button type="button" class="btn-son hx-rep" onclick="hxJeuRepondre(-1)"'+(j.repondu?" disabled":"")+'><i class="ph ph-trend-down"></i> Le 2ᵉ descend</button>'
+    +(j.repondu?'<button type="button" class="btn-son hx-go" onclick="hxJeuSuivant()"><i class="ph ph-arrow-right"></i> Suivant</button>':'')+'</div>'
+    +(j.msg?'<p class="hx-retour '+(j.bon?"ok":"ko")+'" aria-live="polite">'+j.msg+'</p>':'');
+}
+function hxJeuMaj(){ const z=document.getElementById("hxJeu"); if(z)z.innerHTML=hxJeuHTML(); }
+function hxJeu(on){
+  hxArreter();
+  _hx.jeu=on?{niv:0,serie:0,essai:0,total:12,meilleur:null,a:0,b:0,repondu:false,msg:"",bon:false,fini:false}:null;
+  if(on)hxJeuTirer(); hxJeuMaj();
+}
+function hxJeuTirer(){
+  const j=_hx.jeu, d=HX_PAS[j.niv].d, a=55+Math.floor(Math.random()*16), sens=Math.random()<0.5?1:-1;
+  j.a=a; j.b=a+sens*d; j.repondu=false; j.msg=""; hxJeuEcouter();
+}
+function hxJeuEcouter(){ const j=_hx.jeu; if(!j||j.fini)return; try{ audio().resume(); jouerMidi(j.a,0,0.6,0.3); jouerMidi(j.b,0.8,0.8,0.3); }catch(e){} }
+function hxJeuRepondre(sens){
+  const j=_hx.jeu; if(!j||j.repondu||j.fini)return;
+  const vrai=j.b>j.a?1:-1, p=HX_PAS[j.niv]; j.repondu=true; j.bon=(sens===vrai);
+  if(j.bon){ j.serie++; if(j.meilleur==null||j.niv>j.meilleur)j.meilleur=j.niv;
+    j.msg='<i class="ph-fill ph-check-circle"></i> Juste&nbsp;! Le 2ᵉ son '+(vrai>0?"montait":"descendait")+' de '+p.nom+'.'+(j.serie>=2&&j.niv<HX_PAS.length-1?" On resserre l'écart.":"");
+    if(j.serie>=2&&j.niv<HX_PAS.length-1){ j.niv++; j.serie=0; } }
+  else{ j.serie=0; j.msg='<i class="ph-fill ph-x-circle"></i> Non&nbsp;: le 2ᵉ son '+(vrai>0?"montait (plus aigu)":"descendait (plus grave)")+'. Réécoute-les.'+(j.niv>0?" On élargit un peu l'écart.":"");
+    if(j.niv>0)j.niv--; }
+  j.essai++; if(j.essai>=j.total)j.fini=true;
+  hxJeuMaj();
+}
+function hxJeuSuivant(){ const j=_hx.jeu; if(!j||j.fini)return; hxJeuTirer(); hxJeuMaj(); }
+function hxAtelierHTML(){
+  const m=_hx.m;
+  const zones=HX_ZONES.slice().reverse().map(function(z){ return '<span class="hx-zone'+(z===hxZone(m)?" on":"")+'" data-z="'+z.nom+'" style="--z:'+z.c+'">'+z.nom+'</span>'; }).join("");
+  return '<div class="carte hx" id="hxAtelier">'
+    +'<h3><i class="ph-fill ph-arrows-down-up"></i> L\'ascenseur des sons</h3>'
+    +'<p class="hx-aide">Fais monter et descendre le son avec le curseur ou les boutons&nbsp;: regarde l\'onde se <b>resserrer</b> quand le son devient aigu, et écoute.</p>'
+    +'<div class="hx-scene"><div class="hx-colonne" aria-hidden="true">'+zones+'<i class="hx-repere" style="top:'+((HX_MAX-m)/(HX_MAX-HX_MIN)*100)+'%"></i></div>'
+    +'<div class="hx-centre"><div class="hx-onde" id="hxOnde">'+hxOndeSVG(m)+'</div>'
+    +'<div class="hx-info" id="hxInfo" aria-live="polite">'+hxInfoHTML(m)+'</div>'
+    +'<div class="hx-regle"><span>grave</span><input type="range" id="hxCurseur" min="'+HX_MIN+'" max="'+HX_MAX+'" step="1" value="'+m+'" aria-label="Hauteur du son, du plus grave au plus aigu" oninput="hxRegler(+this.value)"><span>aigu</span></div>'
+    +'<div class="hx-btns"><button type="button" class="btn-son" onclick="hxPas(-2)"><i class="ph ph-caret-down"></i> Plus grave</button>'
+    +'<button type="button" class="btn-son" onclick="hxRejouer()"><i class="ph ph-play"></i> Rejouer</button>'
+    +'<button type="button" class="btn-son" onclick="hxPas(2)"><i class="ph ph-caret-up"></i> Plus aigu</button>'
+    +'<button type="button" class="btn-son" onclick="hxGlissando()"><i class="ph ph-wave-sine"></i> Du plus grave au plus aigu</button></div></div></div>'
+    +'<div class="hx-jeu" id="hxJeu">'+hxJeuHTML()+'</div>'
+    +'</div>';
+}
+function hxInit(){ hxArreter(); _hx.jeu=null; hxMaj(); hxJeuMaj(); }
+/* ---------- les illustrations de la leçon ---------- */
+function hxEchelleHTML(){
+  const rangs=[{m:86},{m:74},{m:62},{m:48},{m:38}];
+  return '<div class="hx-paliers">'+rangs.map(function(r){ const z=hxZone(r.m);
+    return '<div class="hx-palier" style="--z:'+z.c+'"><span class="hx-palier-n">'+z.nom+'</span><span class="hx-palier-ex">'+z.ex.replace(/^comme /,"")+'</span>'
+      +'<button type="button" class="btn-son" onclick="jouerSonBtn({midis:['+r.m+'],gain:0.3})" aria-label="Écouter un son '+z.nom+'"><i class="ph ph-play"></i></button></div>'; }).join("")+'</div>';
+}
+function hxDeuxOndesHTML(){
+  return '<div class="hx-duo">'
+    +'<figure>'+hxOndeSVG(40,{W:300,H:70,aria:"Onde d'un son grave : larges et lentes vibrations"})+'<figcaption><b>Grave</b>&nbsp;: peu de vibrations par seconde, l\'onde est large.</figcaption>'+axBouton("Écouter",[40])+'</figure>'
+    +'<figure>'+hxOndeSVG(88,{W:300,H:70,aria:"Onde d'un son aigu : vibrations serrées et rapides"})+'<figcaption><b>Aigu</b>&nbsp;: beaucoup de vibrations par seconde, l\'onde est serrée.</figcaption>'+axBouton("Écouter",[88])+'</figure></div>';
+}
+function hxPorteePianoHTML(){
+  const notes=[0,1,2,3,4,5,6,7,8].map(function(p){ return {p:p,alt:""}; }), noms=["Mi","Fa","Sol","La","Si","Do","Ré","Mi","Fa"];
+  return '<div class="hx-duo"><figure>'+modPorteeSVG(notes,[],noms)+'<figcaption>Plus la note est écrite <b>haut</b>, plus elle est <b>aiguë</b>.</figcaption>'+axBouton("Écouter",[64,65,67,69,71,72,74,76,77])+'</figure>'
+    +'<figure>'+axClavierSVG({},{noms:true,aria:"Clavier : les sons graves à gauche, les aigus à droite"})+'<div class="hx-sens" aria-hidden="true"><span>◀ grave</span><span>aigu ▶</span></div><figcaption>Sur le piano, les sons <b>graves</b> sont à gauche, les <b>aigus</b> à droite.</figcaption>'+axBouton("Écouter",[60,62,64,65,67,69,71,72])+'</figure></div>';
+}
+function hxContoursHTML(){
+  const ex={monte:[60,62,64,65,67],descend:[67,65,64,62,60],reste:[64,64,64,64,64],vague:[60,64,67,64,60]};
+  return '<div class="hx-contours">'+Object.keys(ex).map(function(k){ const c=HX_CONTOURS[k];
+    return '<div class="hx-contour">'+hxContourSVG(c.pts,{aria:"Contour : "+c.lib})+'<b>'+c.lib.charAt(0).toUpperCase()+c.lib.slice(1)+'</b>'+axBouton("Écouter",ex[k])+'</div>'; }).join("")+'</div>';
+}
+
+/* ===== Leçon « D'où viennent les notes ? » (14/10/2026) =====
+   Pythagore et les forgerons, le monocorde, l'école pythagoricienne, la gamme
+   construite par quintes et son comma, les accordages (Pythagore, mésotonique,
+   Werckmeister, tempérament égal), le calcul des fréquences depuis le La 440 et
+   l'histoire du diapason. Préfixe py*. Les sons passent par jouerSonBtn({py:…})
+   pour pouvoir être coupés (sonBtnCouper) comme ceux des exercices. */
+const PY_DO=261.63;   // Do3 du piano actuel (La3 = 440 Hz)
+function pyNb(x,dec){ const p=Math.pow(10,dec==null?2:dec); return (Math.round(x*p)/p).toLocaleString("fr-FR",{maximumFractionDigits:dec==null?2:dec}); }
+/* son tenu et riche en harmoniques, comme un orgue : on y entend les battements d'un intervalle un peu faux */
+function pyTenir(f,debut,duree,vol){
+  const ctx=audio(), t=ctx.currentTime+debut, s=ctx.createGain(); vol=vol||0.07;
+  s.gain.setValueAtTime(0,t); s.gain.linearRampToValueAtTime(vol,t+0.06);
+  s.gain.setValueAtTime(vol,t+Math.max(0.1,duree-0.3)); s.gain.linearRampToValueAtTime(0,t+duree);
+  s.connect(sonSortie());
+  for(let r=1;r<=8;r++){ if(f*r>9000)break;
+    const o=ctx.createOscillator(), g=ctx.createGain(); o.frequency.value=f*r; g.gain.value=0.6/r;
+    o.connect(g).connect(s); o.start(t); o.stop(t+duree+0.05); }
+}
+/* coup de marteau sur l'enclume : un choc bref, puis une note qui s'éteint */
+function pyFrappe(f,debut,vol){
+  const ctx=audio(), t=ctx.currentTime+debut, s=ctx.createGain();
+  s.gain.value=vol||0.2; s.connect(sonSortie());
+  [[1,1,1],[2,0.45,1.5],[3,0.3,2],[4,0.18,2.6],[5,0.1,3.2]].forEach(function(p){
+    const o=ctx.createOscillator(), g=ctx.createGain(), fin=t+2.2/p[2];
+    o.frequency.value=f*p[0]; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(p[1],t+0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001,fin); o.connect(g).connect(s); o.start(t); o.stop(fin+0.05); });
+  const n=Math.floor(ctx.sampleRate*0.04), b=ctx.createBuffer(1,n,ctx.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+  const src=ctx.createBufferSource(), fl=ctx.createBiquadFilter(), g=ctx.createGain();
+  src.buffer=b; fl.type="bandpass"; fl.frequency.value=Math.min(6000,f*5); fl.Q.value=1.5; g.gain.value=0.5;
+  src.connect(fl).connect(g).connect(s); src.start(t);
+}
+/* le diapason : un son presque pur qui s'éteint lentement */
+function pyDiapason(f,debut,duree){
+  const ctx=audio(), t=ctx.currentTime+debut, o=ctx.createOscillator(), g=ctx.createGain();
+  o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.32,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+duree); o.connect(g).connect(sonSortie()); o.start(t); o.stop(t+duree+0.05);
+}
+/* lecture commune (leçon et questions) : {s:[[[fréquences],durée],…], tb:"tenu"|"frappe"|"diapason"|"piano", ec:écart, v:volume} */
+function pyExtrait(o){
+  if(o.voix){ pyVoix(o.voix,0); return; }
+  let t=0; const tb=o.tb||"piano";
+  (o.s||[]).forEach(function(p){ const d=p[1]||1;
+    p[0].forEach(function(f){
+      if(tb==="tenu")pyTenir(f,t,d,o.v||0.07);
+      else if(tb==="frappe")pyFrappe(f,t,0.2);
+      else if(tb==="diapason")pyDiapason(f,t,d+0.8);
+      else jouerFreq(f,t,Math.min(1.2,d*0.9),p[0].length>1?0.2:0.26); });
+    t+=d+(o.ec==null?0.1:o.ec); });
+}
+function pyJ(o){ return "jouerSonBtn({py:"+JSON.stringify(o,function(k,v){ return typeof v==="number"?Math.round(v*100)/100:v; }).replace(/"/g,"'")+"})"; }
+function pyBtn(lib,o,aria){ return '<button type="button" class="btn-son" onclick="'+pyJ(o)+'"'+(aria?' aria-label="'+aria+'"':'')+'><i class="ph ph-play"></i>'+(lib?" "+lib:"")+'</button>'; }
+/* un intervalle : les deux notes l'une après l'autre, puis ensemble */
+function pyDuo(f1,f2,tb){ return {s:[[[f1],0.8],[[f2],0.8],[[f1,f2],tb==="tenu"?2.6:1.8]],tb:tb||"piano",ec:0.12}; }
+let _py={sel:[],L:1,dernier:0,q:0,anim:null,ref:440,m:69,oct:0};
+
+/* ---------- 1. la forge : cinq marteaux ---------- */
+const PY_MARTEAUX=[12,11,9,8,6];
+function pyFM(p){ return 220*12/p; }   // le marteau 12 donne 220 Hz… et le marteau 6, 440 Hz
+function pyPgcd(a,b){ return b?pyPgcd(b,a%b):a; }
+function pyPaireNom(a,b){
+  const k=Math.max(a,b)+"-"+Math.min(a,b);
+  return ({"12-6":"une octave","12-8":"une quinte","9-6":"une quinte","12-9":"une quarte","8-6":"une quarte","9-8":"un ton"})[k]||null;
+}
+function pyMarteauSVG(p){
+  const w=16+p*3.2, h=12+p*1.3;   // la tête grossit avec le poids
+  return '<svg viewBox="0 0 80 92" class="py-mart-svg" aria-hidden="true"><rect x="36" y="'+(14+h/2)+'" width="8" height="'+(74-h/2)+'" rx="3" fill="#a0703a"/>'
+    +'<rect x="'+(40-w/2)+'" y="14" width="'+w+'" height="'+h+'" rx="4" fill="#5b6478"/><rect x="'+(40-w/2+3)+'" y="16" width="'+(w-6)+'" height="4" rx="2" fill="#9aa3b5"/></svg>';
+}
+function pyForgeResHTML(){
+  const s=_py.sel;
+  if(!s.length)return '<i class="ph ph-hand-tap"></i> Choisis deux marteaux.';
+  if(s.length===1)return '<i class="ph ph-hammer"></i> Marteau <b>'+s[0]+'</b> choisi&nbsp;: choisis-en un deuxième.';
+  const a=Math.max(s[0],s[1]), b=Math.min(s[0],s[1]), g=pyPgcd(a,b), nom=pyPaireNom(a,b);
+  const btn=pyBtn("Frapper les deux ensemble",{s:[[[pyFM(a),pyFM(b)],2]],tb:"frappe"});
+  if(nom)return '<span class="py-ok"><i class="ph-fill ph-check-circle"></i> <b>'+a+' et '+b+'</b>&nbsp;: '+a+' ÷ '+b+', le rapport est <b>'+(a/g)+'/'+(b/g)+'</b>, donc <b>'+nom+'</b>. Les deux sons s\'accordent.</span> '+btn;
+  return '<span class="py-ko"><i class="ph-fill ph-x-circle"></i> <b>'+a+' et '+b+'</b>&nbsp;: le rapport '+(a/g)+'/'+(b/g)+' n\'est pas simple, les sons se heurtent. C\'est le marteau que Pythagore aurait mis de côté.</span> '+btn;
+}
+function pyForgeMarteauxHTML(){
+  return PY_MARTEAUX.map(function(p){ const on=_py.sel.indexOf(p)>=0;
+    return '<button type="button" class="py-mart'+(on?" on":"")+'" data-p="'+p+'" onclick="pyMarteau('+p+')" aria-pressed="'+on+'" aria-label="Marteau de poids '+p+'">'+pyMarteauSVG(p)+'<b>'+p+'</b></button>'; }).join("");
+}
+function pyForgeHTML(){
+  const paires=[[12,6],[12,8],[12,9],[9,8]];
+  return '<div class="carte py" id="pyForge"><h3><i class="ph-fill ph-hammer"></i> La forge de Pythagore</h3>'
+    +'<p class="py-aide">Touche un marteau pour le frapper, puis un deuxième&nbsp;: tu entends tout de suite s\'ils s\'accordent. Le nombre indique le poids du marteau.</p>'
+    +'<div class="py-enclume"><div class="py-marteaux" id="pyMarteaux" role="group" aria-label="Les cinq marteaux">'+pyForgeMarteauxHTML()+'</div></div>'
+    +'<div class="py-res" id="pyForgeRes" aria-live="polite">'+pyForgeResHTML()+'</div>'
+    +'<div class="py-paires"><span>Les accords de la légende&nbsp;:</span>'+paires.map(function(q){
+      return '<button type="button" class="btn-son" onclick="pyPaire('+q[0]+','+q[1]+')"><i class="ph ph-play"></i> '+q[0]+' et '+q[1]+'</button>'; }).join("")+'</div></div>';
+}
+function pyForgeMaj(frappe){
+  const z=document.getElementById("pyMarteaux"); if(z)z.innerHTML=pyForgeMarteauxHTML();
+  const r=document.getElementById("pyForgeRes"); if(r)r.innerHTML=pyForgeResHTML();
+  if(frappe!=null){ const b=document.querySelector('#pyMarteaux [data-p="'+frappe+'"]'); if(b){ b.classList.add("frappe"); setTimeout(function(){ b.classList.remove("frappe"); },380); b.focus(); } }
+}
+function pyMarteau(p){
+  const s=_py.sel, i=s.indexOf(p);
+  if(i>=0){ s.splice(i,1); pyForgeMaj(p); return; }
+  s.push(p); if(s.length>2)s.shift();
+  if(s.length===2){ const a=s[0]; jouerSonBtn({py:{s:[[[pyFM(p)],0.9],[[pyFM(a),pyFM(p)],2]],tb:"frappe"}}); }
+  else jouerSonBtn({py:{s:[[[pyFM(p)],1]],tb:"frappe"}});
+  pyForgeMaj(p);
+}
+function pyPaire(a,b){ _py.sel=[a,b]; jouerSonBtn({py:{s:[[[pyFM(a)],0.8],[[pyFM(b)],0.8],[[pyFM(a),pyFM(b)],2]],tb:"frappe"}}); pyForgeMaj(); }
+
+/* ---------- 2. le monocorde ---------- */
+const PY_FRACS=[{n:1,d:1,note:"Do",int:"le son de départ"},{n:8,d:9,note:"Ré",int:"un ton au-dessus"},{n:3,d:4,note:"Fa",int:"une quarte au-dessus"},{n:2,d:3,note:"Sol",int:"une quinte au-dessus"},{n:1,d:2,note:"Do aigu",int:"une octave au-dessus"}];
+const PY_NOMS12=["Do","Do♯","Ré","Ré♯","Mi","Fa","Fa♯","Sol","Sol♯","La","La♯","Si"];
+function pyFracDe(L){ for(let i=0;i<PY_FRACS.length;i++){ const f=PY_FRACS[i]; if(Math.abs(L-f.n/f.d)<0.003)return f; } return null; }
+function pyCordeSVG(L,fixe){
+  const x0=30, x1=570, xb=x0+(x1-x0)*L, y=64, A=fixe?0:9;
+  const fr=pyFracDe(L);
+  let s='<svg class="py-corde-svg" viewBox="0 0 600 150" role="img" aria-label="Monocorde : le chevalet est placé '+(fr?"aux "+fr.n+"/"+fr.d+" de":"à "+Math.round(L*100)+" % de")+' la corde">';
+  s+='<rect x="12" y="80" width="576" height="44" rx="10" fill="#c99a5b" stroke="#8a6232" stroke-width="2"/><ellipse cx="300" cy="102" rx="26" ry="11" fill="#6f4a22"/>';
+  [[1,2],[2,3],[3,4],[8,9]].forEach(function(f){ const x=x0+(x1-x0)*f[0]/f[1];
+    s+='<line x1="'+x+'" y1="26" x2="'+x+'" y2="40" stroke="#9aa3b5" stroke-width="2"/><text x="'+x+'" y="20" font-size="15" font-weight="700" font-family="Inter,Arial,sans-serif" fill="#5d6880" text-anchor="middle">'+f[0]+'/'+f[1]+'</text>'; });
+  s+='<path d="M'+x0+' 80 L'+x0+' '+y+'" stroke="#3b2a14" stroke-width="5"/><path d="M'+x1+' 80 L'+x1+' '+y+'" stroke="#3b2a14" stroke-width="5"/>';
+  if(L<0.999)s+='<line x1="'+xb+'" y1="'+y+'" x2="'+x1+'" y2="'+y+'" stroke="#9aa3b5" stroke-width="2" stroke-dasharray="5 4"/>';
+  s+='<g class="py-vib" style="--v:'+(0.05+0.11*L).toFixed(3)+'s"><line class="py-repos" x1="'+x0+'" y1="'+y+'" x2="'+xb+'" y2="'+y+'" stroke="#d4a017" stroke-width="3"/>'
+    +(A?'<path class="py-fil" d="M'+x0+' '+y+' Q'+((x0+xb)/2)+' '+(y-2*A)+' '+xb+' '+y+'" fill="none" stroke="#d4a017" stroke-width="3"/>':'')+'</g>';
+  s+='<path d="M'+(xb-11)+' 80 L'+xb+' '+(y-2)+' L'+(xb+11)+' 80 Z" fill="#1f2440"/>';
+  s+='<text x="'+((x0+xb)/2)+'" y="146" font-size="14" font-weight="700" font-family="Inter,Arial,sans-serif" fill="#8a6408" text-anchor="middle">partie qui vibre</text>';
+  return s+'</svg>';
+}
+function pyNoteProche(f){ const m=Math.round(69+12*Math.log2(f/440)); return PY_NOMS12[((m%12)+12)%12]; }
+function pyCordeInfoHTML(L){
+  const f=PY_DO/L, fr=pyFracDe(L);
+  if(fr&&fr.n===1&&fr.d===1)return '<b>Corde entière</b>&nbsp;: elle vibre à <b>'+pyNb(f)+' Hz</b>. Ce Do est notre son de départ.';
+  if(fr)return 'Longueur qui vibre&nbsp;: <b>'+fr.n+'/'+fr.d+'</b> de la corde. La fréquence est multipliée par <b>'+fr.d+'/'+fr.n+'</b>&nbsp;: '+pyNb(f)+' Hz. C\'est <b>'+fr.int+'</b>&nbsp;: un <b>'+fr.note+'</b>.';
+  return 'Longueur qui vibre&nbsp;: <b>'+Math.round(L*100)+'&nbsp;%</b> de la corde. Fréquence × '+pyNb(1/L)+'&nbsp;: <b>'+pyNb(f)+' Hz</b> (proche d\'un '+pyNoteProche(f)+'). Ce n\'est pas une fraction simple&nbsp;: avec la corde entière, ça sonne moins bien.';
+}
+function pyCordeHTML(){
+  const L=_py.L;
+  return '<div class="carte py" id="pyCorde"><h3><i class="ph-fill ph-ruler"></i> Le monocorde</h3>'
+    +'<p class="py-aide">Place le chevalet sur une fraction de la corde&nbsp;: seule la partie dorée vibre. Écoute, et compare avec la corde entière.</p>'
+    +'<div class="py-fracs" role="group" aria-label="Position du chevalet">'+PY_FRACS.map(function(f){ const v=f.n/f.d;
+      return '<button type="button" class="py-frac'+(Math.abs(L-v)<0.003?" on":"")+'" onclick="pyCorde('+v+')">'+(f.n===1&&f.d===1?"Corde entière":f.n+"/"+f.d)+'</button>'; }).join("")+'</div>'
+    +'<div class="py-corde" id="pyCordeFig">'+pyCordeSVG(L)+'</div>'
+    +'<div class="py-regle"><span>court</span><input type="range" id="pyCurseur" min="25" max="100" step="1" value="'+Math.round(L*100)+'" aria-label="Position du chevalet, en pourcentage de la corde" oninput="pyCorde(+this.value/100,true)"><span>long</span></div>'
+    +'<p class="py-info" id="pyCordeInfo" aria-live="polite">'+pyCordeInfoHTML(L)+'</p>'
+    +'<div class="py-actions"><button type="button" class="btn-son" onclick="pyPincer()"><i class="ph ph-play"></i> Pincer la corde</button>'
+    +'<button type="button" class="btn-son" onclick="pyComparer(false)"><i class="ph ph-play"></i> Corde entière, puis la partie</button>'
+    +'<button type="button" class="btn-son" onclick="pyComparer(true)"><i class="ph ph-play"></i> Les deux en même temps</button></div></div>';
+}
+function pyVibrer(){
+  const g=document.querySelector("#pyCordeFig .py-vib"); if(!g)return;
+  g.classList.remove("on"); void g.getBoundingClientRect(); g.classList.add("on");
+  clearTimeout(_py.vibT); _py.vibT=setTimeout(function(){ g.classList.remove("on"); },1600);
+}
+function pyCordeMaj(){
+  const L=_py.L, fig=document.getElementById("pyCordeFig"); if(!fig)return;
+  fig.innerHTML=pyCordeSVG(L);
+  document.getElementById("pyCordeInfo").innerHTML=pyCordeInfoHTML(L);
+  const c=document.getElementById("pyCurseur"); if(c&&Math.abs(+c.value-L*100)>0.6)c.value=Math.round(L*100);
+  document.querySelectorAll("#pyCorde .py-frac").forEach(function(b,i){ const f=PY_FRACS[i]; b.classList.toggle("on",Math.abs(L-f.n/f.d)<0.003); });
+}
+function pyCorde(L,glisse){
+  _py.L=Math.max(0.25,Math.min(1,L)); pyCordeMaj();
+  if(glisse){ const t=Date.now(); if(t-_py.dernier<130)return; _py.dernier=t; }
+  pyPincer();
+}
+function pyPincer(){ jouerSonBtn({py:{s:[[[PY_DO/_py.L],1.2]]}}); pyVibrer(); }
+function pyComparer(ens){
+  const f=PY_DO/_py.L;
+  jouerSonBtn({py:ens?{s:[[[PY_DO,f],2]]}:{s:[[[PY_DO],0.9],[[f],1.2]]}});
+  setTimeout(pyVibrer,ens?0:1000);
+}
+
+/* ---------- 3. l'école de Pythagore ---------- */
+function pyTetraktysSVG(){
+  let s='<svg class="py-tetra" viewBox="0 0 230 160" role="img" aria-label="La tetraktys : dix points rangés en triangle, 1, 2, 3 puis 4 points">';
+  [1,2,3,4].forEach(function(n,r){
+    for(let i=0;i<n;i++){ const x=100+(i-(n-1)/2)*36, y=26+r*34; s+='<circle cx="'+x+'" cy="'+y+'" r="11" fill="'+["#d4a017","#2f6fb0","#1f7a6e","#a8402a"][r]+'"/>'; }
+    s+='<text x="200" y="'+(31+r*34)+'" font-size="16" font-weight="800" font-family="Inter,Arial,sans-serif" fill="#44506a" text-anchor="middle">'+n+'</text>'; });
+  return s+'</svg>';
+}
+function pyEcoleHTML(){
+  const cartes=[["ph-map-pin","Samos, vers 570 av. J.-C.","Pythagore naît sur l'île grecque de Samos. Il voyage, puis s'installe dans le sud de l'Italie."],
+    ["ph-users-three","Une école à Crotone","Vers 530 av. J.-C., il y fonde une communauté&nbsp;: maîtres et disciples vivent ensemble et gardent leurs découvertes secrètes."],
+    ["ph-hash","« Tout est nombre »","Pour les pythagoriciens, les nombres expliquent tout&nbsp;: les sons, les formes, le mouvement des astres."],
+    ["ph-planet","La musique des sphères","Les planètes, en tournant, produiraient une harmonie que nous n'entendons pas, parce qu'elle sonne depuis toujours."],
+    ["ph-eye-slash","Les acousmatiques","Les nouveaux disciples écoutaient le maître caché derrière un voile, sans le voir et en silence. Le mot «&nbsp;acousmatique&nbsp;» en vient."],
+    ["ph-heart","La musique qui soigne","Ils choisissaient des mélodies pour apaiser la colère ou chasser la tristesse&nbsp;: déjà l'idée que la musique agit sur nous."]];
+  return '<div class="py-ecole">'+cartes.map(function(c){ return '<div class="py-ec"><i class="ph '+c[0]+'"></i><div><b>'+c[1]+'</b><p>'+c[2]+'</p></div></div>'; }).join("")+'</div>'
+    +'<figure class="py-tetra-fig">'+pyTetraktysSVG()+'<figcaption><b>La tetraktys</b>, symbole sacré des pythagoriciens&nbsp;: 1&nbsp;+&nbsp;2&nbsp;+&nbsp;3&nbsp;+&nbsp;4&nbsp;=&nbsp;10. On y lit les trois accords parfaits de Pythagore&nbsp;: <b>1&nbsp;:&nbsp;2</b> (l\'octave), <b>2&nbsp;:&nbsp;3</b> (la quinte) et <b>3&nbsp;:&nbsp;4</b> (la quarte).</figcaption>'
+    +'<div class="py-actions">'+pyBtn("1 : 2, l'octave",pyDuo(PY_DO,PY_DO*2))+pyBtn("2 : 3, la quinte",pyDuo(PY_DO,PY_DO*1.5))+pyBtn("3 : 4, la quarte",pyDuo(PY_DO,PY_DO*4/3))+'</div></figure>';
+}
+
+/* ---------- 4. la spirale des quintes ---------- */
+const PY_CHAINE=["Fa","Do","Sol","Ré","La","Mi","Si","Fa♯","Do♯","Sol♯","Ré♯","La♯","Mi♯"];
+function pyQR(k){ let r=4/3*Math.pow(1.5,k); while(r>=2-1e-9)r/=2; while(r<1-1e-9)r*=2; return r; }
+function pyQFrac(k){ if(k===0)return "4/3"; const n=Math.pow(3,k-1); if(n===1)return "1"; let d=1; while(n/d>=2)d*=2; return n+"/"+d; }
+function pyQuintesSVG(q){
+  const cx=150, cy=152, P=function(k){ const a=(-90+k*30)*Math.PI/180, r=74+k*4.5; return [cx+r*Math.cos(a),cy+r*Math.sin(a),a,r]; };
+  let s='<svg class="py-spirale" viewBox="0 0 300 300" role="img" aria-label="Spirale des quintes : '+PY_CHAINE.slice(0,q+1).join(", ")+(q===12?". Mi dièse ne retombe pas sur Fa : la spirale ne se referme pas.":"")+'">';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="100" fill="none" stroke="#d8dde8" stroke-width="1.5" stroke-dasharray="3 5"/>';
+  for(let k=0;k<12;k++){ const a=(-90+k*30)*Math.PI/180; s+='<circle cx="'+(cx+100*Math.cos(a))+'" cy="'+(cy+100*Math.sin(a))+'" r="2.5" fill="#d8dde8"/>'; }
+  let d=""; for(let k=0;k<=q;k++){ const p=P(k); d+=(k?" L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1); }
+  if(q>0)s+='<path d="'+d+'" fill="none" stroke="#d4a017" stroke-width="2.5" stroke-linejoin="round"/>';
+  if(q===12){ const a=P(0), b=P(12); s+='<line x1="'+(a[0]+12)+'" y1="'+a[1]+'" x2="'+(b[0]+12)+'" y2="'+b[1]+'" stroke="#b4462f" stroke-width="2.5"/><text x="'+(a[0]+18)+'" y="'+((a[1]+b[1])/2+4)+'" font-size="12" font-weight="800" font-family="Inter,Arial,sans-serif" fill="#b4462f">comma</text>'; }
+  for(let k=0;k<=q;k++){ const p=P(k), lr=p[3]+17, lx=cx+lr*Math.cos(p[2]), ly=cy+lr*Math.sin(p[2]), der=k===q;
+    s+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(der?7:5)+'" fill="'+(k>6?"#d4a017":"#1f2440")+'"'+(der?' stroke="#F2C94C" stroke-width="3"':'')+'/>';
+    s+='<text x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" font-size="12.5" font-weight="700" font-family="Inter,Arial,sans-serif" fill="'+(k===12?"#b4462f":"#1f2440")+'" text-anchor="middle">'+PY_CHAINE[k]+'</text>'; }
+  return s+'</svg>';
+}
+function pyEchelleSVG(q){
+  const x=function(r){ return 22+Math.log2(r)*516; };
+  let s='<svg class="py-echelle" viewBox="0 0 560 112" role="img" aria-label="La gamme obtenue, rangée du grave à l\'aigu, entre Do et le Do de l\'octave suivante">';
+  s+='<line x1="22" y1="46" x2="538" y2="46" stroke="#9aa3b5" stroke-width="2"/>';
+  const vus=[]; for(let k=0;k<=q;k++)vus.push({k:k,r:pyQR(k)});
+  if(q>=1)vus.push({k:-1,r:2});
+  vus.forEach(function(v){ const xx=x(v.r), di=v.k>6;
+    s+='<line x1="'+xx+'" y1="'+(di?30:36)+'" x2="'+xx+'" y2="56" stroke="'+(di?"#d4a017":"#1f2440")+'" stroke-width="3"/>';
+    s+='<text x="'+xx+'" y="'+(di?22:76)+'" font-size="13" font-weight="700" font-family="Inter,Arial,sans-serif" fill="'+(v.k===12?"#b4462f":(di?"#8a6408":"#1f2440"))+'" text-anchor="middle">'+(v.k===-1?"Do":PY_CHAINE[v.k])+'</text>'; });
+  if(q>=6){ const bl=vus.filter(function(v){ return v.k<=6; }).sort(function(a,b){ return a.r-b.r; });
+    for(let i=0;i<bl.length-1;i++){ const ra=bl[i+1].r/bl[i].r, ton=Math.abs(ra-9/8)<0.001, xm=(x(bl[i].r)+x(bl[i+1].r))/2;
+      s+='<rect x="'+(xm-12)+'" y="88" width="24" height="18" rx="9" fill="'+(ton?"#e8eef7":"#F2C94C")+'"/><text x="'+xm+'" y="101" font-size="12" font-weight="800" font-family="Inter,Arial,sans-serif" fill="#1f2440" text-anchor="middle">'+(ton?"T":"½")+'</text>'; } }
+  return s+'</svg>';
+}
+function pyQuintesInfoHTML(q){
+  if(q===0)return '<b>Départ&nbsp;: Fa.</b> Touche «&nbsp;Ajouter une quinte&nbsp;»&nbsp;: on multiplie par 3/2.';
+  const repli=pyQR(q-1)*1.5>=2-1e-9;
+  let h='<b>'+PY_CHAINE[q-1]+' × 3/2 → '+PY_CHAINE[q]+'</b>'+(repli?' (puis ÷ 2 pour rester dans l\'octave)':'')+'<br>Rapport avec Do&nbsp;: <b>'+pyQFrac(q)+'</b>'+(q>2?' = '+pyNb(pyQR(q),4):'')+'.';
+  if(q<6)h+='<br><small>Notes trouvées&nbsp;: '+(q+1)+' sur 7.</small>';
+  if(q===6)h+='<br><span class="py-ok"><i class="ph-fill ph-check-circle"></i> Les <b>7 notes</b> de la gamme sont là&nbsp;: Do Ré Mi Fa Sol La Si.</span> Entre elles, deux sortes d\'écarts&nbsp;: le <b>ton</b> (9/8) et un petit <b>demi-ton</b> (256/243). L\'ordre Fa Do Sol Ré La Mi Si te dit quelque chose&nbsp;? C\'est l\'<b>ordre des dièses</b> à l\'armure&nbsp;!';
+  if(q>6&&q<12)h+='<br><small>Les quintes continuent&nbsp;: voici les touches noires.</small>';
+  if(q===12)h+='<br><span class="py-ko"><i class="ph-fill ph-warning"></i> <b>Mi♯</b> devrait retomber sur <b>Fa</b> (sur le piano, c\'est la même touche). Mais 1,3515 au lieu de 4/3 = 1,3333&nbsp;: Mi♯ est un peu trop aigu.</span> Cet écart, environ un quart de demi-ton, c\'est le <b>comma pythagoricien</b>&nbsp;: la spirale ne se referme jamais.';
+  return h;
+}
+function pyQuintesCorps(){
+  const q=_py.q;
+  return '<h3><i class="ph-fill ph-spiral"></i> La spirale des quintes</h3>'
+    +'<p class="py-aide">Pythagore part d\'une note et empile des <b>quintes pures</b> (× 3/2). Quand on dépasse l\'octave, on redescend d\'une octave (÷ 2) pour rester dans la même zone.</p>'
+    +'<div class="py-q-scene"><div class="py-q-fig">'+pyQuintesSVG(q)+'</div><div class="py-q-info" aria-live="polite">'+pyQuintesInfoHTML(q)+'</div></div>'
+    +'<div class="py-ech">'+pyEchelleSVG(q)+'</div>'
+    +'<div class="py-actions"><button type="button" class="btn-son py-go" onclick="pyQuinte()"'+(q>=12?" disabled":"")+'><i class="ph ph-plus"></i> Ajouter une quinte</button>'
+    +'<button type="button" class="btn-son" onclick="pyQuinteTout()"'+(q>=12?" disabled":"")+'><i class="ph ph-fast-forward"></i> Aller jusqu\'au bout</button>'
+    +'<button type="button" class="btn-son" onclick="pyGammeQ()"'+(q<1?" disabled":"")+'><i class="ph ph-play"></i> Écouter la gamme trouvée</button>'
+    +(q===12?pyBtn("Fa puis Mi♯",{s:[[[PY_DO*4/3],1],[[PY_DO*pyQR(12)],1]]})+pyBtn("Fa et Mi♯ ensemble",{s:[[[PY_DO*4/3,PY_DO*pyQR(12)],3.5]],tb:"tenu"}):'')
+    +'<button type="button" class="btn-son" onclick="pyQuinteRaz()"><i class="ph ph-arrow-counter-clockwise"></i> Recommencer</button></div>';
+}
+function pyQuintesHTML(){ return '<div class="carte py" id="pyQuintes">'+pyQuintesCorps()+'</div>'; }
+function pyQuintesMaj(){ const z=document.getElementById("pyQuintes"); if(z)z.innerHTML=pyQuintesCorps(); }
+function pyQuinte(muet){
+  if(_py.q>=12)return; _py.q++;
+  const a=PY_DO*pyQR(_py.q-1);
+  if(!muet){ jouerSonBtn({py:{s:[[[a],0.45],[[a*1.5],0.7]],ec:0.05},groupe:_py.anim?"pyQ":""});
+    if(_py.anim)sonSessionAttacher({arret:pyQuinteStop,actif:function(){ return !!_py.anim; },groupe:"pyQ"}); }
+  pyQuintesMaj();
+}
+function pyQuinteStop(){ if(_py.anim){ clearInterval(_py.anim); _py.anim=null; } }
+function pyQuinteTout(){
+  pyQuinteStop();
+  _py.anim=setInterval(function(){ if(_py.q>=12||!document.getElementById("pyQuintes")){ pyQuinteStop(); return; } pyQuinte(); },850);
+  pyQuinte();
+}
+function pyQuinteRaz(){ pyQuinteStop(); _py.q=0; pyQuintesMaj(); }
+function pyGammeQ(){
+  pyQuinteStop();
+  const r=[]; for(let k=0;k<=_py.q;k++)r.push(pyQR(k)); r.sort(function(a,b){ return a-b; }); if(_py.q>=1)r.push(2);
+  jouerSonBtn({py:{s:r.map(function(x){ return [[PY_DO*x],0.32]; }),ec:0.02}});
+}
+
+/* ---------- 5. battements et accordages ---------- */
+function pyChaine(quinte){ const r=[]; for(let k=-3;k<=8;k++){ let x=Math.pow(quinte,k); while(x>=2-1e-9)x/=2; while(x<1-1e-9)x*=2; r[((7*k)%12+12)%12]=x; } return r; }
+const PY_ACC={
+  pyth:{nom:"Pythagore",ep:"Moyen Âge",r:pyChaine(1.5),
+    txt:"Quintes parfaites, mais tierces dures. Et une quinte est très fausse&nbsp;: la <b>quinte du loup</b>, qui «&nbsp;hurle&nbsp;» dans La♭ majeur."},
+  meso:{nom:"Mésotonique",ep:"XVIᵉ et XVIIᵉ siècles",r:pyChaine(Math.pow(5,0.25)),
+    txt:"On raccourcit un peu les quintes pour avoir des <b>tierces pures</b>&nbsp;: Do majeur est très doux… mais La♭ majeur devient injouable."},
+  werck:{nom:"Werckmeister III",ep:"vers 1691",r:[1,256/243,64/81*Math.SQRT2,32/27,256/243*Math.pow(2,0.25),4/3,1024/729,8/9*Math.pow(8,0.25),128/81,1024/729*Math.pow(2,0.25),16/9,128/81*Math.pow(2,0.25)],
+    txt:"Un tempérament <b>inégal</b>&nbsp;: toutes les tonalités sont jouables, mais chacune garde sa couleur. C'est l'époque de Bach."},
+  egal:{nom:"Tempérament égal",ep:"XIXᵉ siècle à aujourd'hui",r:[0,1,2,3,4,5,6,7,8,9,10,11].map(function(i){ return Math.pow(2,i/12); }),
+    txt:"L'octave coupée en <b>12 demi-tons identiques</b>&nbsp;: rien n'est tout à fait pur, mais toutes les tonalités sonnent de la même façon."}
+};
+const PY_TONAS={do:{nom:"Do majeur",acc:[[48,60,64,67],[53,65,69,72],[55,67,71,74],[48,60,64,67]]},
+  lab:{nom:"La♭ majeur",acc:[[56,68,72,75],[49,61,65,68],[51,63,67,70],[56,68,72,75]]}};
+function pyFreqAcc(m,acc){ return PY_DO*Math.pow(2,Math.floor(m/12)-5)*PY_ACC[acc].r[((m%12)+12)%12]; }
+function pyProgression(acc,tona){ return {s:PY_TONAS[tona].acc.map(function(c){ return [c.map(function(m){ return pyFreqAcc(m,acc); }),1.5]; }),tb:"tenu",ec:0.08,v:0.055}; }
+function pyIntervallesHTML(){
+  const L=[["La quinte",[[1.5,"3/2 = 1,5"],[1.5,"3/2 = 1,5"],[Math.pow(2,7/12),"≈ 1,4983"]]],
+    ["La tierce majeure",[[1.25,"5/4 = 1,25"],[81/64,"81/64 ≈ 1,2656"],[Math.pow(2,4/12),"≈ 1,2599"]]]];
+  return '<table class="gr py-table"><tr><th>Intervalle</th><th>Pur (rapport simple)</th><th>Pythagore</th><th>Tempérament égal (piano)</th></tr>'
+    +L.map(function(l){ return '<tr><td><b>'+l[0]+'</b></td>'+l[1].map(function(c,i){
+      return '<td><span class="py-cel">'+c[1]+' '+pyBtn("",{s:[[[PY_DO,PY_DO*c[0]],3.2]],tb:"tenu"},"Écouter "+l[0].toLowerCase()+" "+["pure","de Pythagore","du tempérament égal"][i])+'</span></td>'; }).join("")+'</tr>'; }).join("")
+    +'<tr><td><b>La quinte du loup</b></td><td colspan="3"><span class="py-cel">≈ 1,4798 au lieu de 1,5&nbsp;: elle «&nbsp;hurle&nbsp;» '+pyBtn("",{s:[[[PY_DO,PY_DO*1.5/1.0136433],3.2]],tb:"tenu"},"Écouter la quinte du loup")+'</span></td></tr></table>';
+}
+function pyAccordagesHTML(){
+  return '<div class="py-accs">'+Object.keys(PY_ACC).filter(function(k){ return k!=="lehman"; }).map(function(k){ const a=PY_ACC[k];
+    return '<div class="py-acc"><div class="py-acc-t"><b>'+a.nom+'</b><small>'+a.ep+'</small></div><p>'+a.txt+'</p><div class="py-acc-b">'
+      +pyBtn("Do majeur",pyProgression(k,"do"),"Écouter Do majeur, accordage "+a.nom)+pyBtn("La♭ majeur",pyProgression(k,"lab"),"Écouter La bémol majeur, accordage "+a.nom)+'</div></div>'; }).join("")+'</div>';
+}
+/* ---------- 6. le tempérament égal ---------- */
+function pyEgalHTML(){
+  let cases=""; for(let i=0;i<12;i++)cases+='<span class="py-dt" style="height:'+(30+i*4)+'px"><i>× 1,0595</i></span>';
+  const noms=PY_NOMS12.concat(["Do"]);
+  return '<div class="py-egal"><div class="py-dts">'+cases+'</div><div class="py-dts-n" aria-hidden="true">'+noms.map(function(n){ return '<span>'+n+'</span>'; }).join("")+'</div>'
+    +'<p class="py-legende">12 marches toutes identiques&nbsp;: 1,0595 multiplié 12 fois par lui-même donne <b>2</b>, l\'octave exacte.</p>'
+    +'<div class="py-actions">'+pyBtn("Les 12 demi-tons du piano",{s:noms.map(function(n,i){ return [[PY_DO*Math.pow(2,i/12)],0.3]; }),ec:0.02})+'</div></div>';
+}
+/* ---------- 7. la calculatrice des notes ---------- */
+function pyNomNote(m){ return PY_NOMS12[((m%12)+12)%12]+(Math.floor(m/12)-2); }
+function pyFreqRef(m){ return _py.ref*Math.pow(2,(m-69)/12); }
+function pyPianoHTML(){
+  const de=48+12*(_py.oct+1), bl=[]; for(let x=de;x<=de+24;x++)if(LN_PAS.indexOf(x%12)>=0)bl.push(x);
+  const lw=100/bl.length;
+  let h='<div class="ax-piano py-piano" role="group" aria-label="Piano : choisis une note">';
+  bl.forEach(function(x,i){ h+='<button type="button" class="ax-b'+(x===_py.m?" arr":"")+(x===69?" py-la":"")+'" style="left:'+(i*lw)+'%;width:'+lw+'%" onclick="pyCalcNote('+x+')" aria-label="'+pyNomNote(x)+'" aria-pressed="'+(x===_py.m)+'"><span>'+pyNomNote(x)+'</span></button>'; });
+  bl.forEach(function(x,i){ if(i===bl.length-1)return; const st=x%12; if(st===4||st===11)return; const n=x+1;
+    h+='<button type="button" class="ax-n'+(n===_py.m?" arr":"")+'" style="left:'+((i+1)*lw-lw*0.32)+'%;width:'+(lw*0.64)+'%" onclick="pyCalcNote('+n+')" aria-label="'+pyNomNote(n)+'" aria-pressed="'+(n===_py.m)+'"></button>'; });
+  return h+'</div>';
+}
+function pyCalcEtapesHTML(){
+  const m=_py.m, n=m-69, ref=_py.ref, f=pyFreqRef(m), a=Math.abs(n), nom=pyNomNote(m);
+  if(n===0)return '<p>C\'est la note de référence&nbsp;: le <b>La3</b> vibre à <b>'+ref+' Hz</b>.</p>';
+  const op=n>0?" × ":" ÷ ";
+  const chaine=a<=4?ref+(op+"1,0595").repeat(a):ref+op+"1,0595"+op+"…"+op+"1,0595 <small>("+a+" fois)</small>";
+  return '<p>Du La3 au '+nom+'&nbsp;: <b>'+(n>0?"+":"−")+a+' demi-ton'+(a>1?"s":"")+'</b>. On '+(n>0?"multiplie":"divise")+' '+a+' fois par 1,0595.</p>'
+    +'<p class="py-formule">'+chaine+' ≈ <b>'+pyNb(f)+' Hz</b></p>'
+    +(a%12===0?'<p class="py-legende">'+(a/12)+' octave'+(a>12?"s":"")+'&nbsp;: c\'est plus simple de '+(n>0?"multiplier":"diviser")+' par '+(a===12?"2":"2 × 2")+'&nbsp;!</p>':'')
+    +'<p class="py-legende">Formule complète&nbsp;: f = '+ref+' × 2<sup>'+(n<0?"−":"")+a+'/12</sup>.</p>';
+}
+function pyCalcCorps(){
+  const m=_py.m, refs=[[415,"baroque"],[432,"à la mode"],[435,"France, 1859"],[440,"norme"],[442,"orchestres"]];
+  const o=Math.floor(m/12)*12;
+  const table=PY_NOMS12.map(function(nm,i){ const x=o+i; return '<button type="button" class="py-oct'+(x===m?" on":"")+'" onclick="pyCalcNote('+x+')"><b>'+nm+(Math.floor(x/12)-2)+'</b><span>'+pyNb(pyFreqRef(x))+' Hz</span></button>'; }).join("");
+  return '<h3><i class="ph-fill ph-calculator"></i> La calculatrice des notes</h3>'
+    +'<p class="py-aide">Touche une note&nbsp;: la calculatrice part du La de référence et compte les demi-tons. Change aussi le La de référence pour entendre la différence.</p>'
+    +'<div class="py-refs" role="group" aria-label="Fréquence du La de référence">'+refs.map(function(r){ return '<button type="button" class="py-ref'+(r[0]===_py.ref?" on":"")+'" aria-pressed="'+(r[0]===_py.ref)+'" onclick="pyCalcRef('+r[0]+')"><b>'+r[0]+' Hz</b><small>'+r[1]+'</small></button>'; }).join("")+'</div>'
+    +'<div class="py-clav-nav"><button type="button" class="btn-son" onclick="pyCalcOct(-1)"'+(_py.oct<=-2?" disabled":"")+' aria-label="Octave plus grave"><i class="ph ph-caret-left"></i> Plus grave</button><button type="button" class="btn-son" onclick="pyCalcOct(1)"'+(_py.oct>=1?" disabled":"")+' aria-label="Octave plus aiguë">Plus aigu <i class="ph ph-caret-right"></i></button></div>'
+    +'<div class="ax-clavier">'+pyPianoHTML()+'</div>'
+    +'<div class="py-calc-res" aria-live="polite"><div class="py-calc-note"><span>'+pyNomNote(m)+'</span><b>'+pyNb(pyFreqRef(m))+' Hz</b></div><div class="py-calc-etapes">'+pyCalcEtapesHTML()+'</div></div>'
+    +'<div class="py-actions">'+pyBtn("Écouter cette note",{s:[[[pyFreqRef(m)],1.2]]})+pyBtn("Le La de référence, puis cette note",{s:[[[_py.ref],0.9],[[pyFreqRef(m)],1.2]]})+'</div>'
+    +'<p class="py-oct-t">Toutes les notes de l\'octave '+(Math.floor(m/12)-2)+' avec un La à '+_py.ref+' Hz&nbsp;:</p><div class="py-octs">'+table+'</div>';
+}
+function pyCalcHTML(){ return '<div class="carte py" id="pyCalc">'+pyCalcCorps()+'</div>'; }
+function pyCalcMaj(){ const z=document.getElementById("pyCalc"); if(z)z.innerHTML=pyCalcCorps(); }
+function pyCalcNote(m){ _py.m=m; pyCalcMaj(); jouerSonBtn({py:{s:[[[pyFreqRef(m)],1.2]]}}); const b=document.querySelector('#pyCalc [aria-label="'+pyNomNote(m)+'"]'); if(b)b.focus(); }
+function pyCalcRef(r){ _py.ref=r; pyCalcMaj(); jouerSonBtn({py:{s:[[[r],1.6]],tb:"diapason"}}); }
+function pyCalcOct(d){ _py.oct=Math.max(-2,Math.min(1,_py.oct+d)); const de=48+12*(_py.oct+1); if(_py.m<de||_py.m>de+24)_py.m=de+9; pyCalcMaj(); }
+/* ---------- 8. la frise du La ---------- */
+function pyFriseHTML(){
+  const F=[["vers 1600","Un La dans chaque ville","Selon les villes, les églises et les orgues, le La varie de moins de 400 à plus de 460 vibrations par seconde. Un musicien qui voyage doit sans cesse s'adapter.",null],
+    ["1711","Le diapason est inventé","Le trompettiste anglais John Shore invente une fourche d'acier qui donne toujours la même note. Il l'appelle en plaisantant son «&nbsp;pitch-fork&nbsp;», sa fourche à son.",null],
+    ["XIXᵉ siècle","La course vers l'aigu","Les orchestres montent leur La pour sonner plus brillant. Les chanteurs s'épuisent et se plaignent.",null],
+    ["1859","Le diapason normal français&nbsp;: 435 Hz","Après l'avis d'une commission où siègent des compositeurs comme Berlioz, Rossini et Meyerbeer, un arrêté fixe en France le La à 435 vibrations par seconde.",435],
+    ["1939","Londres choisit 440 Hz","Une conférence internationale fixe le La à 440 Hz (les États-Unis l'avaient adopté dès 1936). C'est un compromis entre les habitudes des différents pays.",440],
+    ["1955 et 1975","Une norme mondiale","L'Organisation internationale de normalisation (ISO) recommande le La à 440 Hz, puis le confirme&nbsp;: c'est la norme ISO&nbsp;16.",null],
+    ["Aujourd'hui","440, 442… ou 415","Beaucoup d'orchestres s'accordent un peu plus haut, à 442 ou 443 Hz, pour briller. Les ensembles baroques jouent souvent à 415 Hz, un demi-ton plus bas, pour retrouver le son d'autrefois.",415]];
+  return '<ol class="py-frise">'+F.map(function(e){ return '<li><span class="py-an">'+e[0]+'</span><div><b>'+e[1]+'</b><p>'+e[2]+'</p>'
+    +(e[3]?'<div class="py-actions">'+(e[3]===415?pyBtn("415 Hz puis 440 Hz",{s:[[[415],1.4],[[440],1.4]],tb:"diapason",ec:0.3}):pyBtn("Écouter le La à "+e[3]+" Hz",{s:[[[e[3]],1.6]],tb:"diapason"}))+'</div>':'')+'</div></li>'; }).join("")+'</ol>';
+}
+function pyInit(){ pyQuinteStop(); pyAcStop(); _py.sel=[]; _py.L=1; _py.q=0; _py.ref=440; _py.m=69; _py.oct=0; _py.tab="pyth"; _py.tri="quintes"; _pyAc.ex="uni"; pyAcCorde();
+  pyForgeMaj(); pyCordeMaj(); pyQuintesMaj(); pyCalcMaj(); pyTablesMaj(); pyAcMaj(true); }
+
+/* ---------- figures (images libres : Wikimedia Commons, carte Natural Earth) ---------- */
+function pyFig(src,w,h,alt,leg,credit,cls){
+  return '<figure class="py-fig'+(cls?" "+cls:"")+'"><img src="images/'+src+'" width="'+w+'" height="'+h+'" alt="'+alt+'" loading="lazy" decoding="async">'
+    +'<figcaption>'+leg+(credit?'<small class="py-credit">'+credit+'</small>':'')+'</figcaption></figure>';
+}
+function pyOrigineHTML(){
+  return pyFig("py-carte.svg",800,588,"Carte de la Méditerranée orientale : Samos, île de la mer Égée près de la côte turque, et Crotone, dans le sud de l'Italie, reliées par une flèche",
+      "Pythagore naît vers 570 av.&nbsp;J.-C. sur l'île de <b>Samos</b>, en mer Égée, à moins de 2&nbsp;km de la côte de l'actuelle Turquie. Vers 530 av.&nbsp;J.-C., il s'installe à <b>Crotone</b>, dans le sud de l'Italie, où vivent de nombreux colons grecs. Selon la tradition, il aurait aussi voyagé en Égypte.",
+      "Carte MusEduc d'après les contours Natural Earth (domaine public).","py-carte")
+    +'<div class="py-figs">'
+    +pyFig("py-raphael.webp",520,633,"Pythagore, assis, écrit dans un grand livre ; un enfant lui présente une tablette noire couverte de chiffres",
+      "Pythagore peint par <b>Raphaël</b> dans <i>L'École d'Athènes</i> (1509-1511, Vatican), 2&nbsp;000 ans après sa mort&nbsp;: personne ne sait à quoi il ressemblait vraiment. Regarde la tablette noire&nbsp;: on y lit VI, VIII, IX et XII (6, 8, 9, 12), les nombres des marteaux de la légende, et en dessous la tetraktys.",
+      "Raphaël, fresque, domaine public (Wikimedia Commons).")
+    +pyFig("py-samos.webp",960,572,"Le port de Pythagorio à Samos, avec des bateaux de pêche ; au fond, des montagnes sur l'autre rive",
+      "Le port de <b>Pythagorio</b>, sur l'île de Samos&nbsp;: depuis 1955, la ville porte le nom de Pythagore. Au fond, les montagnes de la côte turque, juste en face.",
+      "Photo&nbsp;: Gareth Williams, licence CC BY 2.0 (Wikimedia Commons).")
+    +'</div>';
+}
+function pyGravureHTML(){
+  return pyFig("py-gaffurio.webp",900,1170,"Gravure en quatre cases : des forgerons frappent avec des marteaux numérotés ; Pythagore frappe des cloches et des verres numérotés ; il fait vibrer des cordes tendues par des poids ; il souffle avec un compagnon dans des flûtes de longueurs différentes",
+    "Gravure du livre <i>Theorica musicae</i> de Franchino Gaffurio (Milan, 1492). En haut à gauche, les forgerons et leurs marteaux numérotés (le livre attribue la scène à Jubal, un personnage de la Bible)&nbsp;; puis Pythagore fait sonner des cloches, des verres d'eau, des cordes tendues par des poids et des flûtes, toujours avec les mêmes nombres&nbsp;: <b>4, 6, 8, 9, 12 et 16</b>. Ces nombres ne marchent vraiment que pour des <b>longueurs</b> (cordes, tuyaux)&nbsp;: on a longtemps répété la légende sans la vérifier&nbsp;!",
+    "Gravure de 1492, domaine public (Wikimedia Commons).","py-gravure");
+}
+/* ---------- le code de Bach (lecture de Bradley Lehman, 2005) ---------- */
+function pyBachHTML(){
+  return '<div class="py-bach">'+pyFig("py-bach-titre.webp",560,898,"Page de titre manuscrite du Clavier bien tempéré, écrite à l'encre brune, avec une frise de boucles tout en haut",
+      "La page de titre du <i>Clavier bien tempéré</i>, écrite de la main de Bach en 1722.","Manuscrit, Bibliothèque d'État de Berlin, domaine public (Wikimedia Commons).","py-bach-page")
+    +'<div class="py-bach-txt"><p>Tout en haut de la page, Bach a dessiné une frise de <b>11 boucles</b>. Simple décoration&nbsp;? À la fin des années 1990, puis surtout en <b>2005</b>, le claveciniste américain <b>Bradley Lehman</b> y voit un message codé. Il remarque trois sortes de boucles&nbsp;: des boucles <b>simples</b>, des boucles <b>doubles</b> et des boucles <b>en spirale</b>.</p>'
+    +'<p>En retournant le dessin, il lit chaque boucle comme une <b>quinte</b> du clavier&nbsp;: spirale = quinte raccourcie d\'un sixième de comma, double boucle = raccourcie d\'un douzième, boucle simple = quinte pure. On obtient la recette d\'un accordage où <b>toutes les tonalités</b> sont jouables, chacune avec sa couleur.</p></div></div>'
+    +pyFig("py-bach-boucles.webp",1100,86,"Gros plan sur la frise de onze boucles à l'encre brune, dont certaines contiennent de petites spirales","Les 11 boucles, en gros plan.","","py-bach-zoom")
+    +'<div class="py-actions">'+pyBtn("Bach selon Lehman : Do majeur",pyProgression("lehman","do"),"Écouter Do majeur avec l'accordage de Bach lu par Lehman")+pyBtn("Bach selon Lehman : La♭ majeur",pyProgression("lehman","lab"),"Écouter La bémol majeur avec l'accordage de Bach lu par Lehman")+'</div>'
+    +'<p class="py-legende"><i class="ph ph-seal-question"></i> Attention&nbsp;: c\'est une <b>hypothèse</b>. D\'autres chercheurs lisent les boucles autrement, et certains pensent qu\'il s\'agit d\'une simple décoration. Bach n\'a laissé aucune explication.</p>';
+}
+/* l'accordage de Bach selon Lehman : F-C, C-G, G-D, D-A, A-E raccourcies d'1/6 de comma ; E-B, B-F♯, F♯-C♯ pures ;
+   C♯-G♯, G♯-D♯, D♯-A♯ raccourcies d'1/12 ; A♯-F élargie d'1/12 */
+(function(){
+  const C=1200*Math.log2(Math.pow(1.5,12)/128), Q=1200*Math.log2(1.5), suite=[["G",-1/6],["D",-1/6],["A",-1/6],["E",-1/6],["B",0],["F♯",0],["C♯",0],["G♯",-1/12],["D♯",-1/12],["A♯",-1/12]];
+  const pc={C:0,"C♯":1,D:2,"D♯":3,E:4,F:5,"F♯":6,G:7,"G♯":8,A:9,"A♯":10,B:11}, ct={C:0,F:1200-(Q-C/6)}; let x=0;
+  suite.forEach(function(s){ x=(x+Q+s[1]*C)%1200; ct[s[0]]=x; });
+  const r=[]; Object.keys(ct).forEach(function(n){ r[pc[n]]=Math.pow(2,ct[n]/1200); });
+  PY_ACC.lehman={nom:"Bach selon Lehman",ep:"1722 ?",r:r,txt:""};
+})();
+/* ---------- tableaux complets : 13 notes depuis le La 440 ---------- */
+const PY_TAB_NOMS=[["La",""],["Mi",""],["Si",""],["Fa♯",""],["Do♯",""],["Sol♯",""],["Ré♯",""],["La♯",""],["Fa","Mi♯"],["Do","Si♯"],["Sol","Fa♯♯"],["Ré","Do♯♯"],["La","Sol♯♯"]];
+function pyTabLignes(q){
+  const L=[{k:0,f:440}]; let f=440;
+  for(let k=1;k<13;k++){ const brut=f*q, div=k<12&&brut>440.01; f=div?brut/2:brut; L.push({k:k,prec:L[k-1].f,brut:brut,f:f,div:div}); }
+  return L;
+}
+function pyCents(a,b){ return 1200*Math.log2(a/b); }
+function pyTabNomHTML(k){ const n=PY_TAB_NOMS[k]; return '<b>'+n[0]+'</b>'+(n[1]?'<small> (en fait '+n[1]+')</small>':''); }
+function pyTabSysHTML(sys){
+  const P=sys==="pyth", q=P?1.5:Math.pow(2,7/12), L=pyTabLignes(q), lib=P?"3/2":"1,4983";
+  let h='<table class="gr py-table py-tab"><thead><tr><th>Étape</th><th>Une quinte&nbsp;: × '+lib+'</th><th>Au-dessus de 440&nbsp;? ÷ 2</th><th>Note</th><th>Écouter</th></tr></thead><tbody>';
+  L.forEach(function(l){ const der=l.k===12, faux=der&&P;
+    h+='<tr class="'+(der?(P?"py-tab-ko":"py-tab-ok"):"")+'"><td>'+(l.k?l.k:"Départ")+'</td>'
+      +'<td>'+(l.k?pyNb(l.prec)+' × '+lib+' = '+pyNb(l.brut):'La de référence')+'</td>'
+      +'<td>'+(l.div?pyNb(l.brut)+' ÷ 2 = <b>'+pyNb(l.f)+' Hz</b>':(l.k?'<b>'+pyNb(l.f)+' Hz</b>':'<b>440 Hz</b>'))+'</td>'
+      +'<td>'+pyTabNomHTML(l.k)+(faux?' <span class="py-tab-alerte">au lieu de 440&nbsp;!</span>':(der?' <span class="py-tab-bravo">pile 440&nbsp;!</span>':''))+'</td>'
+      +'<td>'+pyBtn("",{s:[[[l.f],1]]},"Écouter "+PY_TAB_NOMS[l.k][0]+", "+pyNb(l.f)+" hertz")+'</td></tr>'; });
+  h+='</tbody></table>';
+  const fin=L[12].f;
+  h+=P?'<p class="py-tab-bilan ko"><i class="ph-fill ph-warning"></i> Après 12 quintes pures, on devrait retomber sur le La de départ&nbsp;: on trouve <b>'+pyNb(fin)+' Hz</b> au lieu de 440&nbsp;Hz, soit '+pyNb(fin-440)+' Hz de trop. C\'est le <b>comma pythagoricien</b>.</p>'
+      +'<div class="py-actions">'+pyBtn("Le La 440 puis la 13ᵉ note",{s:[[[440],1.2],[[fin],1.2]],ec:0.3})+pyBtn("Les deux ensemble : ça bat !",{s:[[[440,fin],3.5]],tb:"tenu"})+pyBtn("Les 13 notes, dans l'ordre des quintes",{s:L.map(function(l){ return [[l.f],0.42]; }),ec:0.04})+'</div>'
+    :'<p class="py-tab-bilan ok"><i class="ph-fill ph-check-circle"></i> Chaque quinte du piano est un tout petit peu plus petite que la quinte pure (× 1,4983 au lieu de × 1,5). Au bout de 12 quintes, on retombe <b>exactement</b> sur le La 440&nbsp;: le comma a été réparti sur les 12 quintes.</p>'
+      +'<div class="py-actions">'+pyBtn("Les 13 notes, dans l'ordre des quintes",{s:L.map(function(l){ return [[l.f],0.42]; }),ec:0.04})+'</div>';
+  return h;
+}
+function pyTabCompHTML(){
+  const A=pyTabLignes(1.5), B=pyTabLignes(Math.pow(2,7/12)), idx=A.map(function(l,i){ return i; });
+  if(_py.tri==="hauteur")idx.sort(function(i,j){ return (i===12?1e9:B[i].f)-(j===12?1e9:B[j].f); });
+  let h='<div class="py-tri" role="group" aria-label="Ordre du tableau"><button type="button" class="'+(_py.tri!=="hauteur"?"on":"")+'" aria-pressed="'+(_py.tri!=="hauteur")+'" onclick="pyTabTri(\'quintes\')">Dans l\'ordre des quintes</button><button type="button" class="'+(_py.tri==="hauteur"?"on":"")+'" aria-pressed="'+(_py.tri==="hauteur")+'" onclick="pyTabTri(\'hauteur\')">Du grave à l\'aigu</button></div>'
+    +'<table class="gr py-table py-tab py-comp"><thead><tr><th>Note</th><th>Pythagore</th><th>Tempérament égal</th><th>Écart</th><th>Écart en cents <small>(centièmes de demi-ton)</small></th><th>Écouter</th></tr></thead><tbody>';
+  idx.forEach(function(i){ const a=A[i].f, b=B[i].f, c=pyCents(a,b);
+    h+='<tr class="'+(i===12?"py-tab-ko":"")+'"><td>'+pyTabNomHTML(i)+(i===12?' <small>(13ᵉ note)</small>':'')+'</td><td>'+pyNb(a)+' Hz</td><td>'+pyNb(b)+' Hz</td><td>'+(a-b>0.004?'+ '+pyNb(a-b)+' Hz':'0')+'</td>'
+      +'<td><span class="py-ecart"><i style="width:'+Math.min(100,c/23.46*100).toFixed(1)+'%"></i></span><span class="py-ecart-n">'+(c>0.05?"+ "+pyNb(c,1):"0")+'</span></td>'
+      +'<td><span class="py-cel">'+pyBtn("P",{s:[[[a],1]]},"Écouter "+PY_TAB_NOMS[i][0]+" de Pythagore")+pyBtn("É",{s:[[[b],1]]},"Écouter "+PY_TAB_NOMS[i][0]+" du tempérament égal")+pyBtn("Les deux",{s:[[[a,b],3]],tb:"tenu"},"Écouter les deux "+PY_TAB_NOMS[i][0]+" ensemble")+'</span></td></tr>'; });
+  return h+'</tbody></table><p class="py-legende">Dans l\'ordre des quintes, l\'écart grandit régulièrement&nbsp;: environ <b>2 cents</b> de plus à chaque quinte. Au bout de 12 quintes, il atteint 23,5 cents, un quart de demi-ton&nbsp;: le comma. Le tempérament égal raccourcit donc chaque quinte d\'environ 2 cents, presque inaudible.</p>';
+}
+function pyTablesCorps(){
+  const t=_py.tab||"pyth", T=[["pyth","Pythagore"],["egal","Tempérament égal"],["comp","Comparer"]];
+  return '<h3><i class="ph-fill ph-table"></i> 13 notes à partir du La 440</h3>'
+    +'<p class="py-aide">Pour commencer&nbsp;: monter d\'une <b>octave</b>, c\'est multiplier par 2 (220 → 440 → 880). Monter d\'une <b>quinte</b>, c\'est multiplier par 3/2, autrement dit ajouter la moitié (440 + 220 = 660). Redescendre d\'une octave, c\'est diviser par 2 (660 → 330). On part du La 440, on monte de quinte en quinte et on redescend d\'une octave dès qu\'on dépasse 440&nbsp;Hz, pour rester entre 220 et 440&nbsp;Hz.</p>'
+    +'<div class="py-onglets" role="tablist" aria-label="Tableaux">'+T.map(function(x){ return '<button type="button" role="tab" id="pyOng-'+x[0]+'" aria-selected="'+(x[0]===t)+'" aria-controls="pyPan-'+x[0]+'" class="'+(x[0]===t?"on":"")+'" onclick="pyTabOnglet(\''+x[0]+'\')">'+x[1]+'</button>'; }).join("")+'</div>'
+    +T.map(function(x){ return '<div class="pyt-pan" role="tabpanel" id="pyPan-'+x[0]+'" aria-labelledby="pyOng-'+x[0]+'"'+(x[0]===t?'':' hidden')+'>'+(x[0]==="comp"?pyTabCompHTML():pyTabSysHTML(x[0]))+'</div>'; }).join("");
+}
+function pyTablesHTML(){ return '<div class="carte pyt" id="pyTables">'+pyTablesCorps()+'</div>'; }
+function pyTablesMaj(){ const z=document.getElementById("pyTables"); if(z)z.innerHTML=pyTablesCorps(); }
+function pyTabOnglet(t){ _py.tab=t; pyTablesMaj(); const b=document.getElementById("pyOng-"+t); if(b)b.focus(); }
+function pyTabTri(t){ _py.tri=t; pyTablesMaj(); }
+/* ---------- l'accordeur : régler une corde jusqu'à faire disparaître les battements ---------- */
+const PY_AC_EX={uni:{lib:"Unisson sur le La 440",aide:"Ta corde doit donner exactement le même La que le diapason.",ref:440,cible:440,bat:function(f){ return Math.abs(f-440); },piano:null},
+  quinte:{lib:"Quinte au-dessus du La 220",aide:"Règle le Mi au-dessus du La 220 jusqu'à la quinte pure, comme un violoniste.",ref:220,cible:330,bat:function(f){ return Math.abs(2*f-660); },piano:220*Math.pow(2,7/12)}};
+let _pyAc={ex:"uni",f:443.6,on:false,n:null,veille:null,fin:null,onde:null};
+function pyAcCorde(){ const E=PY_AC_EX[_pyAc.ex], d=(2+Math.random()*4)*(Math.random()<0.5?-1:1); _pyAc.f=Math.round((E.cible+d)*20)/20; }
+function pyAcJaugeSVG(c){
+  const a=Math.max(-50,Math.min(50,c))/50*70;
+  let s='<svg class="py-jauge" viewBox="0 0 240 140" role="img" aria-label="Accordeur : écart de '+pyNb(c,1)+' cents">';
+  s+='<path d="M28 120 A92 92 0 0 1 212 120" fill="none" stroke="#e3e8f1" stroke-width="16" stroke-linecap="round"/>';
+  s+='<path d="M'+(120-92*Math.sin(3.5/50*70*Math.PI/180)).toFixed(1)+' '+(120-92*Math.cos(3.5/50*70*Math.PI/180)).toFixed(1)+' A92 92 0 0 1 '+(120+92*Math.sin(3.5/50*70*Math.PI/180)).toFixed(1)+' '+(120-92*Math.cos(3.5/50*70*Math.PI/180)).toFixed(1)+'" fill="none" stroke="#3aa76d" stroke-width="16"/>';
+  [-50,-25,0,25,50].forEach(function(v){ const r=v/50*70*Math.PI/180; s+='<line x1="'+(120+78*Math.sin(r)).toFixed(1)+'" y1="'+(120-78*Math.cos(r)).toFixed(1)+'" x2="'+(120+68*Math.sin(r)).toFixed(1)+'" y2="'+(120-68*Math.cos(r)).toFixed(1)+'" stroke="#9aa3b5" stroke-width="2"/>'; });
+  s+='<text x="24" y="138" font-size="11" font-weight="700" font-family="Inter,Arial,sans-serif" fill="#5d6880">trop grave</text><text x="216" y="138" font-size="11" font-weight="700" font-family="Inter,Arial,sans-serif" fill="#5d6880" text-anchor="end">trop aigu</text>';
+  s+='<g class="py-aiguille" style="transform:rotate('+a.toFixed(1)+'deg)"><line x1="120" y1="120" x2="120" y2="38" stroke="#1f2440" stroke-width="4" stroke-linecap="round"/></g><circle cx="120" cy="120" r="8" fill="#d4a017"/>';
+  return s+'</svg>';
+}
+function pyAcLectHTML(){
+  const E=PY_AC_EX[_pyAc.ex], f=_pyAc.f, c=pyCents(f,E.cible), b=E.bat(f), ok=b<0.4;
+  let h='<b>Ta corde&nbsp;: '+pyNb(f)+' Hz</b> <small>(cible&nbsp;: '+E.cible+' Hz)</small><br>Écart&nbsp;: '+(Math.abs(c)<0.05?"0":(c>0?"+ ":"− ")+pyNb(Math.abs(c),1))+' cent'+(Math.abs(c)>=2?"s":"")+(ok?"":(c>0?" (trop aigu)":" (trop grave)"))+'<br>Battements&nbsp;: <b>'+pyNb(b,1)+' par seconde</b>';
+  if(ok)h+='<br><span class="py-ok"><i class="ph-fill ph-check-circle"></i> Juste&nbsp;! Plus de battements&nbsp;: ta corde est accordée.</span>';
+  else if(E.piano&&Math.abs(f-E.piano)<0.12)h+='<br><span class="py-ok"><i class="ph-fill ph-piano-keys"></i> C\'est la quinte du piano (tempérée)&nbsp;: elle bat très doucement, moins d\'une fois par seconde.</span>';
+  return h;
+}
+function pyAcCorps(){
+  const E=PY_AC_EX[_pyAc.ex], b=E.bat(_pyAc.f);
+  return '<h3><i class="ph-fill ph-gauge"></i> À toi d\'accorder</h3>'
+    +'<p class="py-aide">Fais sonner les deux cordes, puis tourne la «&nbsp;cheville&nbsp;» (le curseur) jusqu\'à ce que les battements disparaissent. Plus c\'est faux, plus ça bat vite. Écoute dans le calme ou avec un casque.</p>'
+    +'<div class="py-ac-ex" role="group" aria-label="Exercice">'+Object.keys(PY_AC_EX).map(function(k){ return '<button type="button" class="'+(k===_pyAc.ex?"on":"")+'" aria-pressed="'+(k===_pyAc.ex)+'" onclick="pyAcExo(\''+k+'\')">'+PY_AC_EX[k].lib+'</button>'; }).join("")+'</div>'
+    +'<p class="py-legende">'+E.aide+'</p>'
+    +'<div class="py-ac-scene"><div class="py-ac-jauge">'+pyAcJaugeSVG(pyCents(_pyAc.f,E.cible))+'</div><div class="py-ac-droite"><span class="py-lampe'+(b<0.4?" ok":"")+(_pyAc.on?" on":"")+'" style="--b:'+(b<0.4?1:Math.max(0.08,Math.min(4,1/b))).toFixed(3)+'s" aria-hidden="true"></span><p class="py-ac-lect" aria-live="polite">'+pyAcLectHTML()+'</p></div></div>'
+    +'<div class="py-regle"><span>plus grave</span><input type="range" id="pyAcCurseur" min="'+(E.cible-8)+'" max="'+(E.cible+8)+'" step="0.05" value="'+_pyAc.f+'" aria-label="Cheville : hauteur de ta corde, en hertz" oninput="pyAcRegler(+this.value)"><span>plus aigu</span></div>'
+    +'<div class="py-actions"><button type="button" class="btn-son py-go" onclick="pyAcJouer()"><i class="ph '+(_pyAc.on?"ph-stop":"ph-play")+'"></i> '+(_pyAc.on?"Arrêter":"Faire sonner les deux cordes")+'</button>'
+    +'<button type="button" class="btn-son" onclick="pyAcRegler(_pyAc.f-0.1)" aria-label="Baisser un tout petit peu"><i class="ph ph-minus"></i></button><button type="button" class="btn-son" onclick="pyAcRegler(_pyAc.f+0.1)" aria-label="Monter un tout petit peu"><i class="ph ph-plus"></i></button>'
+    +'<button type="button" class="btn-son" onclick="pyAcNouvelle()"><i class="ph ph-shuffle"></i> Nouvelle corde désaccordée</button></div>';
+}
+function pyAcHTML(){ return '<div class="carte py" id="pyAcc">'+pyAcCorps()+'</div>'; }
+function pyAcMaj(tout){
+  const z=document.getElementById("pyAcc"); if(!z)return;
+  if(tout){ z.innerHTML=pyAcCorps(); return; }
+  const E=PY_AC_EX[_pyAc.ex], b=E.bat(_pyAc.f), j=z.querySelector(".py-ac-jauge"), l=z.querySelector(".py-ac-lect"), la=z.querySelector(".py-lampe"), c=z.querySelector("#pyAcCurseur");
+  if(j)j.innerHTML=pyAcJaugeSVG(pyCents(_pyAc.f,E.cible));
+  if(l)l.innerHTML=pyAcLectHTML();
+  if(la){ la.classList.toggle("ok",b<0.4); la.style.setProperty("--b",(b<0.4?1:Math.max(0.08,Math.min(4,1/b))).toFixed(3)+"s"); }
+  if(c&&Math.abs(+c.value-_pyAc.f)>0.03)c.value=_pyAc.f;
+}
+function pyAcOnde(ctx){ if(!_pyAc.onde){ const re=new Float32Array(9), im=new Float32Array(9); for(let r=1;r<9;r++)im[r]=1/r; _pyAc.onde=ctx.createPeriodicWave(re,im); } return _pyAc.onde; }
+function pyAcStop(){
+  const n=_pyAc.n; _pyAc.on=false; clearInterval(_pyAc.veille); clearTimeout(_pyAc.fin); _pyAc.n=null;
+  if(!n)return; const ctx=audio(), t=ctx.currentTime;
+  [n.ref,n.corde].forEach(function(x){ try{ x.g.gain.cancelScheduledValues(t); x.g.gain.setValueAtTime(x.g.gain.value,t); x.g.gain.linearRampToValueAtTime(0,t+0.08); x.o.stop(t+0.12); }catch(e){} });
+}
+function pyAcJouer(){
+  if(_pyAc.on){ pyAcStop(); pyAcMaj(true); return; }
+  sonBtnCouper();
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const can=sonBtnCanal(), E=PY_AC_EX[_pyAc.ex], t=ctx.currentTime;
+  const mk=function(f){ const o=ctx.createOscillator(), g=ctx.createGain(); o.setPeriodicWave(pyAcOnde(ctx)); o.frequency.value=f;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.09,t+0.15); o.connect(g).connect(can); o.start(t); return {o:o,g:g}; };
+  _pyAc.n={can:can,ref:mk(E.ref),corde:mk(_pyAc.f)}; _pyAc.on=true;
+  /* une autre écoute coupe le canal, ou l'on a quitté la leçon : on arrête ; et jamais plus d'une minute et demie */
+  _pyAc.veille=setInterval(function(){ if(!document.getElementById("pyAcc")||_sonBtn.canaux.indexOf(can)<0){ pyAcStop(); pyAcMaj(true); } },300);
+  _pyAc.fin=setTimeout(function(){ pyAcStop(); pyAcMaj(true); },90000);
+  /* les commandes de l'accordeur règlent le son en direct : un clic dedans ne l'arrête pas, un clic ailleurs oui */
+  sonSessionDebut({zone:document.getElementById("pyAcc"),actif:function(){ return _pyAc.on; },arret:function(){ pyAcStop(); pyAcMaj(true); }});
+  pyAcMaj(true);
+}
+function pyAcRegler(f){
+  const E=PY_AC_EX[_pyAc.ex]; _pyAc.f=Math.round(Math.max(E.cible-8,Math.min(E.cible+8,f))*100)/100;
+  if(_pyAc.on&&_pyAc.n){ try{ _pyAc.n.corde.o.frequency.setTargetAtTime(_pyAc.f,audio().currentTime,0.03); }catch(e){} }
+  pyAcMaj();
+}
+function pyAcExo(k){ const on=_pyAc.on; pyAcStop(); _pyAc.ex=k; pyAcCorde(); pyAcMaj(true); if(on)pyAcJouer(); }
+function pyAcNouvelle(){ pyAcCorde(); if(_pyAc.on&&_pyAc.n){ try{ _pyAc.n.corde.o.frequency.setTargetAtTime(_pyAc.f,audio().currentTime,0.05); }catch(e){} } pyAcMaj(); }
+function pyAccorderHTML(){
+  const C=[["ph-piano-keys","Le piano","L'accordeur tourne chaque cheville avec une clé d'accord. Il part du La 440 (diapason ou appareil électronique), règle une octave au milieu du clavier en <b>comptant les battements</b>&nbsp;: une quinte tempérée doit battre très lentement, une tierce bien plus vite. Puis il accorde tout le reste par octaves. Il vérifie aussi la mécanique et remplace les pièces usées&nbsp;: cordes, marteaux, étouffoirs, feutres."],
+    ["ph-guitar","La guitare","On tourne les mécaniques, en s'aidant d'un accordeur ou des harmoniques. Les <b>frettes</b> sont déjà placées pour le tempérament égal&nbsp;: chaque case raccourcit la corde d'environ 5,6&nbsp;% (on divise sa longueur par 1,0595)."],
+    ["ph-music-notes","Le violon, l'alto, le violoncelle","On tourne les chevilles et les petits tendeurs du cordier. Les cordes sont accordées en <b>quintes pures</b>, à l'oreille, en écoutant les battements disparaître, à partir du La du hautbois."],
+    ["ph-wind","Les instruments à vent","On allonge ou on raccourcit le tuyau&nbsp;: on tire la tête de la flûte, le barillet de la clarinette, la coulisse d'accord des cuivres. Puis le musicien ajuste encore chaque note avec ses lèvres et son souffle."],
+    ["ph-waveform","Les claviers électroniques","Ils calculent leurs notes à partir du La 440&nbsp;: pas besoin de les accorder. Un simple réglage permet même de passer à 442 ou 415&nbsp;Hz, ou à un accordage ancien."]];
+  return '<div class="py-ecole py-accorder">'+C.map(function(c){ return '<div class="py-ec"><i class="ph '+c[0]+'"></i><div><b>'+c[1]+'</b><p>'+c[2]+'</p></div></div>'; }).join("")+'</div>';
+}
+/* ---------- la voix corrigée : naturelle, corrigée en douceur, corrigée à fond ---------- */
+const PY_VOIX_MEL=[[64,0.45],[67,0.45],[69,0.7],[67,0.3],[64,0.45],[62,0.45],[64,1.1]];
+const PY_VOIX_ECARTS=[14,-12,10,-16,8,-14,12];
+const PY_VOIX_M={nature:{dec:1,scoop:0.13,sp:-80,vib:28,lib:"Voix naturelle",txt:"Chaque note arrive par un petit glissé, ondule (le vibrato) et tombe un peu à côté&nbsp;: c'est vivant."},
+  doux:{dec:0,scoop:0.06,sp:-35,vib:16,lib:"Corrigée en douceur",txt:"Le logiciel recale chaque note sur la bonne hauteur, mais garde un peu de glissé et de vibrato&nbsp;: on ne l'entend presque pas."},
+  robot:{dec:0,scoop:0,sp:0,vib:0,lib:"Corrigée à fond",txt:"Le logiciel colle chaque note instantanément sur la hauteur exacte&nbsp;: la voix saute d'une note à l'autre, comme un robot."}};
+/* hauteur (en demi-tons, numérotation midi) à l'instant t pour un mode donné */
+function pyVoixH(mode,t){
+  const M=PY_VOIX_M[mode]; let x=0;
+  for(let i=0;i<PY_VOIX_MEL.length;i++){ const n=PY_VOIX_MEL[i], d=n[1];
+    if(t<x+d||i===PY_VOIX_MEL.length-1){ const u=t-x; let c=M.dec*PY_VOIX_ECARTS[i];
+      if(M.scoop&&u<M.scoop){ const p=u/M.scoop; c+=M.sp*(1-p)*(1-p); }
+      if(M.vib&&u>0.2)c+=M.vib*Math.min(1,(u-0.2)/0.25)*Math.sin(2*Math.PI*5.6*(u-0.2));
+      return n[0]+c/100; }
+    x+=d; }
+  return 64;
+}
+function pyVoixDuree(){ return PY_VOIX_MEL.reduce(function(a,n){ return a+n[1]; },0); }
+function pyVoix(mode,debut){
+  const ctx=audio(), t0=ctx.currentTime+(debut||0), D=pyVoixDuree(), N=Math.ceil(D*200), courbe=new Float32Array(N);
+  for(let i=0;i<N;i++)courbe[i]=440*Math.pow(2,(pyVoixH(mode,i/200)-69)/12);
+  const o=ctx.createOscillator(); o.type="sawtooth"; o.frequency.value=courbe[0]; o.frequency.setValueCurveAtTime(courbe,t0,D);
+  const g=ctx.createGain(), sortie=ctx.createGain(); sortie.gain.value=0.5; g.connect(sortie).connect(sonSortie());
+  [[800,5,1.3],[1150,6,0.9],[2600,8,0.25]].forEach(function(f){ const b=ctx.createBiquadFilter(), k=ctx.createGain(); b.type="bandpass"; b.frequency.value=f[0]; b.Q.value=f[1]; k.gain.value=f[2]; o.connect(b).connect(k).connect(g); });
+  const lp=ctx.createBiquadFilter(), k=ctx.createGain(); lp.type="lowpass"; lp.frequency.value=900; k.gain.value=0.18; o.connect(lp).connect(k).connect(g);
+  g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(0.5,t0+0.06); g.gain.setValueAtTime(0.5,t0+D-0.18); g.gain.linearRampToValueAtTime(0,t0+D);
+  o.start(t0); o.stop(t0+D+0.05);
+}
+function pyVoixSVG(mode){
+  const D=pyVoixDuree(), W=260, H=110, y=function(m){ return H-14-(m-61.2)/(70-61.2)*(H-28); };
+  let s='<svg class="py-voix-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Courbe de hauteur : '+PY_VOIX_M[mode].lib.toLowerCase()+'">';
+  [62,64,67,69].forEach(function(m){ s+='<line x1="0" y1="'+y(m).toFixed(1)+'" x2="'+W+'" y2="'+y(m).toFixed(1)+'" stroke="#d8dde8" stroke-dasharray="4 4"/><text x="'+(W-3)+'" y="'+(y(m)-3).toFixed(1)+'" font-size="9" font-family="Inter,Arial,sans-serif" fill="#7a8399" text-anchor="end">'+({62:"Ré",64:"Mi",67:"Sol",69:"La"})[m]+'</text>'; });
+  let d=""; for(let i=0;i<=240;i++){ const t=i/240*D; d+=(i?"L":"M")+(i/240*W).toFixed(1)+" "+y(pyVoixH(mode,t)).toFixed(1); }
+  return s+'<path d="'+d+'" fill="none" stroke="'+(mode==="robot"?"#a8402a":(mode==="doux"?"#2d6aa8":"#d4a017"))+'" stroke-width="2.5" stroke-linejoin="round"/></svg>';
+}
+function pyVoixHTML(){
+  return '<div class="carte py" id="pyVoix"><h3><i class="ph-fill ph-microphone-stage"></i> Avant, après le correcteur</h3><p class="py-aide">La même petite mélodie chantée par une voix de synthèse. Les lignes pointillées sont les notes exactes du piano&nbsp;; la courbe montre la hauteur vraiment chantée.</p><div class="py-voix">'
+    +Object.keys(PY_VOIX_M).map(function(k){ const M=PY_VOIX_M[k]; return '<div class="py-voix-c">'+pyVoixSVG(k)+'<b>'+M.lib+'</b><p>'+M.txt+'</p>'+pyBtn("Écouter",{voix:k},"Écouter : "+M.lib.toLowerCase())+'</div>'; }).join("")+'</div></div>';
+}
+
+/* ===== Leçon « Les métiers de la musique » (refaite le 14/10/2026, d'après l'Onisep) =====
+   Pour des collégiens qui ne savent pas encore ce qu'est un CAP, une licence ou un master :
+   le voyage d'une chanson (tous les métiers derrière un titre), un quiz « Trouve ton métier »,
+   le plan des études cliquable (collège, lycée, après le bac), la règle « bac + … » avec les âges,
+   trois histoires de parcours, les fiches de 22 métiers avec leur chemin étape par étape
+   (chaque étape s'explique d'un clic) et le petit dictionnaire de l'orientation. Préfixe mt*. */
+const MT_FAM=[
+  {id:"scene",nom:"Créer et jouer",ic:"ph-microphone-stage",c:"#a8402a"},
+  {id:"transmettre",nom:"Enseigner et accompagner",ic:"ph-chalkboard-teacher",c:"#1f7a6e"},
+  {id:"son",nom:"Le son et la technique",ic:"ph-sliders-horizontal",c:"#2d6aa8"},
+  {id:"atelier",nom:"Fabriquer et réparer les instruments",ic:"ph-wrench",c:"#94650a"},
+  {id:"coulisses",nom:"Organiser, gérer, protéger",ic:"ph-briefcase",c:"#4f55a8"},
+  {id:"science",nom:"Chercher",ic:"ph-flask",c:"#3d3d52"}];
+/* le petit dictionnaire de l'orientation : chaque étape d'un chemin renvoie ici */
+const MT_GL={
+  "3e":{t:"La 3ᵉ",c:"3ᵉ",def:"La dernière année du collège. On y passe le <b>brevet</b> et on prépare son orientation&nbsp;: tu fais des vœux (seconde générale et technologique, seconde professionnelle ou CAP), et le conseil de classe donne son avis."},
+  "stage":{t:"Le stage de 3ᵉ",c:"stage",def:"Une semaine d'<b>observation en milieu professionnel</b>, en 3ᵉ&nbsp;: l'occasion de découvrir un métier de la musique (studio, conservatoire, magasin de musique, salle de concert, atelier de lutherie…)."},
+  "cham":{t:"CHAM",c:"CHAM",def:"<b>Classes à horaires aménagés musique</b>, de l'école primaire au collège&nbsp;: l'emploi du temps est organisé pour laisser plus de place à la musique, en lien avec un conservatoire."},
+  "conservatoire":{t:"Le conservatoire",c:"conservatoire",def:"Une école de musique publique où l'on apprend un instrument ou le chant <b>à côté de l'école</b>, souvent dès 6 ou 7 ans, par cycles de plusieurs années. Le <b>DEM</b> (diplôme d'études musicales) y valide un bon niveau, souvent au lycée."},
+  "2de":{t:"Seconde générale et technologique",c:"seconde",def:"La première année du <b>lycée général et technologique</b>, vers 15 ans. Tout le monde suit à peu près les mêmes cours, avec une ou deux options (par exemple <b>culture et pratique de la musique</b>). À la fin, on choisit la voie générale ou une voie technologique."},
+  "bacg":{t:"Bac général",c:"bac général",def:"En 1ʳᵉ et en terminale, on choisit des <b>spécialités</b>&nbsp;: 3 en 1ʳᵉ, 2 en terminale (par exemple <b>arts&nbsp;: musique</b>, mathématiques, physique-chimie…). Il prépare surtout aux <b>études longues</b>&nbsp;: université, écoles, conservatoires."},
+  "s2tmd":{t:"Bac technologique S2TMD",c:"bac S2TMD",def:"<b>Sciences et techniques du théâtre, de la musique et de la danse.</b> Il commence en <b>1ʳᵉ</b>, après une seconde générale et technologique. Beaucoup d'heures de musique, au lycée et dans un <b>conservatoire partenaire</b> où il faut être inscrit. Pour les jeunes musiciens très motivés qui visent des études artistiques."},
+  "bac":{t:"Le bac",c:"bac",def:"Le <b>baccalauréat</b>, à la fin du lycée, vers 18 ans&nbsp;: général, technologique ou professionnel. C'est la clé des études supérieures. «&nbsp;Bac + 2&nbsp;», «&nbsp;bac + 3&nbsp;»… comptent les années d'études <b>après</b> lui."},
+  "pro":{t:"La voie professionnelle",c:"voie pro",def:"Au <b>lycée professionnel</b> ou en <b>apprentissage</b>, on apprend un métier concret&nbsp;: beaucoup de pratique en atelier et des stages en entreprise. On y prépare un <b>CAP</b> (2 ans) ou un <b>bac pro</b> (3 ans)."},
+  "cap":{t:"CAP",c:"CAP",def:"<b>Certificat d'aptitude professionnelle.</b> Un diplôme pour <b>un métier précis</b>, en <b>2 ans après la 3ᵉ</b>, au lycée professionnel ou en apprentissage&nbsp;: accordeur de pianos, assistant luthier, facture d'instruments… Après, on peut travailler ou continuer (BMA, bac pro)."},
+  "bacpro":{t:"Bac professionnel",c:"bac pro",def:"Un bac en <b>3 ans après la 3ᵉ</b>, au lycée professionnel ou en apprentissage, pour apprendre un métier tout en obtenant le bac. Exemple&nbsp;: bac pro artisanat et métiers d'art, option facteur d'orgues."},
+  "bma":{t:"BMA",c:"BMA",def:"<b>Brevet des métiers d'art.</b> Il se prépare en <b>2 ans après un CAP</b> et vaut un bac. On s'y perfectionne dans un métier d'art, par exemple technicien en facture instrumentale (fabriquer et réparer des instruments)."},
+  "apprentissage":{t:"L'apprentissage",c:"apprentissage",def:"Une formation en <b>alternance</b>&nbsp;: quelques jours en centre de formation (CFA), le reste du temps chez un employeur, avec un contrat de travail et un <b>salaire</b>. Possible pour un CAP, un bac pro, un BTS… et même plus loin."},
+  "bts":{t:"BTS",c:"BTS",def:"<b>Brevet de technicien supérieur.</b> Un diplôme en <b>2 ans après le bac</b> (bac + 2), préparé dans un lycée, très concret, avec des stages. Exemple&nbsp;: BTS métiers de l'audiovisuel, option métiers du son."},
+  "licence":{t:"Licence",c:"licence",def:"Un diplôme de l'<b>université</b> en <b>3 ans après le bac</b> (bac + 3), vers 21 ans&nbsp;: musicologie (l'étude de la musique), droit, physique… Il existe aussi des licences <b>professionnelles</b>, en 1 an après un bac + 2."},
+  "master":{t:"Master",c:"master",def:"Le diplôme qui suit la licence&nbsp;: <b>2 ans de plus</b>, soit <b>bac + 5</b>, vers 23 ans. Il est obligatoire pour devenir professeur au collège ou au lycée."},
+  "doctorat":{t:"Doctorat",c:"doctorat",def:"Le plus haut diplôme&nbsp;: environ <b>3 ans après le master</b> (bac + 8). On mène un vrai travail de <b>recherche</b> et on écrit une thèse. C'est le diplôme des chercheurs."},
+  "concours":{t:"Concours",c:"concours",def:"Un examen où le nombre de places est <b>limité</b>&nbsp;: seuls les mieux classés sont pris. Pour être professeur de musique au collège ou au lycée, il faut réussir le <b>CAPES d'éducation musicale et chant choral</b> (122 postes dans toute la France en 2024)."},
+  "dnmade":{t:"DN MADE",c:"DN MADE",def:"<b>Diplôme national des métiers d'art et du design</b>, en <b>3 ans après le bac</b> (bac + 3). La mention «&nbsp;instrument&nbsp;» forme à la fabrication d'instruments, la mention «&nbsp;spectacle&nbsp;» aux métiers de la scène."},
+  "dumi":{t:"DUMI",c:"DUMI",def:"<b>Diplôme universitaire de musicien intervenant</b>, en 2 ans, dans l'un des 9 centres de formation des musiciens intervenants (CFMI). Il faut déjà être un musicien confirmé."},
+  "dnsp":{t:"DNSP de musicien",c:"DNSP",def:"<b>Diplôme national supérieur professionnel de musicien</b>, en <b>3 ans après le bac</b>, dans un établissement supérieur de musique. On y entre sur <b>concours</b>, avec un très bon niveau d'instrument ou de chant."},
+  "cnsmd":{t:"Conservatoire supérieur",c:"conservatoire supérieur",def:"Les <b>conservatoires nationaux supérieurs de musique et de danse</b> de Paris et de Lyon forment les futurs professionnels jusqu'au master (bac + 5). On y entre sur concours, très sélectif."},
+  "ecole":{t:"École spécialisée",c:"école spécialisée",def:"Certaines écoles forment à un métier précis, souvent sur concours&nbsp;: l'<b>École nationale supérieure Louis-Lumière</b> pour le son, l'<b>École nationale de lutherie</b> de Mirecourt pour les luthiers…"},
+  "intermittent":{t:"Intermittent du spectacle",c:"intermittent",def:"Un artiste ou un technicien qui enchaîne des <b>contrats courts</b> (un concert, une tournée, un film). Entre deux contrats, il touche une <b>assurance chômage adaptée</b>, à condition d'avoir assez travaillé dans l'année."},
+  "psyen":{t:"Psychologue de l'Éducation nationale",c:"psychologue",def:"Il ou elle aide les élèves à <b>construire leur orientation</b>, au collège ou au centre d'information et d'orientation (CIO). Ton <b>professeur principal</b> peut aussi t'aider."},
+  "onisep":{t:"Onisep",c:"Onisep",def:"L'organisme public qui informe sur <b>les métiers et les formations</b>&nbsp;: sur onisep.fr, chaque métier a sa fiche, avec les diplômes et les écoles."}};
+/* les métiers : chemin = étapes [libellé, entrée du dictionnaire, durée] ; note = variante ou conseil */
+const MT=[
+  {id:"musicien",nom:"Musicien, musicienne",fam:"scene",ic:"ph-music-notes",g:["scene","creer"],niv:"variable",nivLib:"Pas de diplôme imposé",onisep:"musicien-musicienne",
+    desc:"Joue d'un instrument, seul ou en groupe&nbsp;: concerts, enregistrements, accompagnement d'autres artistes. Tous les styles sont possibles.",
+    q:"joue d'un instrument en concert ou en studio, seul ou en groupe",lieu:"orchestres, groupes, studios, salles de concert, bals… souvent comme intermittent",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac S2TMD ou général","s2tmd"],["DNSP de musicien","dnsp","3 ans"],["Conservatoire supérieur","cnsmd","2 ans, pour aller plus loin"]],
+    note:"En parallèle, dès l'enfance&nbsp;: le <b>conservatoire</b>. En pop ou en rap, certains apprennent seuls."},
+  {id:"chanteur",nom:"Chanteur, chanteuse",fam:"scene",ic:"ph-microphone",g:["scene"],niv:"variable",nivLib:"Pas de diplôme imposé",onisep:"chanteur-chanteuse",
+    desc:"Opéra, jazz, rock, variétés&nbsp;: sa voix est son instrument. Il faut la travailler sans relâche pour trouver sa place auprès du public.",
+    q:"fait de sa voix son instrument, à l'opéra, dans le jazz ou les variétés",lieu:"opéras, chœurs, groupes, comédies musicales, studios",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac S2TMD ou général","s2tmd"],["DNSP spécialité chant","dnsp","3 ans"],["Conservatoire supérieur ou école d'art lyrique","cnsmd","2 ans"]],
+    note:"La voix se travaille tôt&nbsp;: <b>conservatoire</b>, chorale, CHAM."},
+  {id:"aci",nom:"Auteur-compositeur-interprète",fam:"scene",ic:"ph-pen-nib",g:["scene","creer"],niv:"variable",nivLib:"Pas de diplôme imposé",onisep:"auteur-compositeur-interprete-autrice-compositrice-interprete",
+    desc:"Écrit les paroles, compose la musique et chante ses propres chansons, en studio et sur scène.",
+    q:"écrit ses paroles, compose sa musique et chante ses propres chansons",lieu:"studios, salles de concert, festivals",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac (S2TMD ou autre)","bac"],["DNSP ou formation aux musiques actuelles","dnsp","3 ans, conseillé"]],
+    note:"Aucun diplôme n'est obligatoire&nbsp;: beaucoup se forment en écrivant, en jouant et en enregistrant, encore et encore."},
+  {id:"chef",nom:"Chef, cheffe d'orchestre",fam:"scene",ic:"ph-users-four",g:["scene","organiser"],niv:"bac5",nivLib:"Bac + 5",onisep:"chef-cheffe-d-orchestre",
+    desc:"Dirige un ensemble de musiciens et de chanteurs&nbsp;: elle ou il fait travailler les répétitions et donne sa vision de l'œuvre.",
+    q:"dirige les musiciens et les chanteurs pendant les répétitions et les concerts",lieu:"orchestres, opéras, chœurs, en France et à l'étranger",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac S2TMD ou général","s2tmd"],["DNSP de musicien","dnsp","3 ans"],["Direction d'orchestre en conservatoire supérieur","cnsmd","2 ans"]],
+    note:"Il faut d'abord être un excellent instrumentiste (DEM au conservatoire)."},
+  {id:"dj",nom:"DJ (disc-jockey)",fam:"scene",ic:"ph-vinyl-record",g:["scene","technique","creer"],niv:"variable",nivLib:"Sans diplôme",onisep:"disc-jockey-disque-jockey",
+    desc:"Crée l'ambiance d'une soirée ou d'un événement en enchaînant et en mixant des musiques, parfois les siennes.",
+    q:"enchaîne et mixe des musiques pour faire danser une soirée",lieu:"discothèques, mariages, fêtes, festivals, radios",
+    chemin:[["3ᵉ","3e"],["Formation d'animateur musical (niveau bac)","apprentissage","souvent en apprentissage"]],
+    note:"Pas de diplôme obligatoire&nbsp;: beaucoup se forment en stage, à la radio ou en mixant chez eux."},
+  {id:"prof",nom:"Professeur, professeure de musique",fam:"transmettre",ic:"ph-chalkboard-teacher",g:["transmettre"],niv:"bac5",nivLib:"Bac + 5",onisep:"professeur-professeure-de-musique-ou-de-danse",
+    desc:"Au collège ou au lycée, fait découvrir et pratiquer la musique à tous les élèves&nbsp;: écoute, chant, création, chorale.",
+    q:"enseigne la musique aux élèves d'un collège ou d'un lycée",lieu:"collèges, lycées&nbsp;; ou conservatoires et écoles de musique",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac général (spécialité musique, un plus)","bacg"],["Licence de musicologie","licence","3 ans"],["Concours (CAPES), en fin de licence","concours"],["Master enseignement, payé","master","2 ans"]],
+    note:"Le concours se passe à <b>bac + 3</b>, puis on continue <b>2 ans en master</b> (bac + 5), en étant payé&nbsp;: environ 1&nbsp;400&nbsp;€ par mois la 1ʳᵉ année, 1&nbsp;800&nbsp;€ la 2ᵉ. Au conservatoire, c'est un autre chemin&nbsp;: diplôme d'État (bac + 3) ou certificat d'aptitude (bac + 5)."},
+  {id:"intervenant",nom:"Musicien intervenant, musicienne intervenante",fam:"transmettre",ic:"ph-hand-heart",g:["transmettre","scene"],niv:"bac23",nivLib:"Bac + 2 ou 3",onisep:"musicien-intervenant-musicienne-intervenante",
+    desc:"Musicien et pédagogue, fait chanter et jouer des publics de tous âges&nbsp;: écoles, quartiers, hôpitaux…",
+    q:"fait chanter et jouer des enfants à l'école, des patients à l'hôpital, des habitants d'un quartier",lieu:"écoles, crèches, hôpitaux, centres sociaux",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac","bac"],["DUMI","dumi","2 ans"]],
+    note:"Il faut déjà être un musicien confirmé&nbsp;: le conservatoire, pendant le collège et le lycée, est presque indispensable."},
+  {id:"therapeute",nom:"Art-thérapeute (musicothérapeute)",fam:"transmettre",ic:"ph-heart",g:["transmettre"],niv:"bac5",nivLib:"Bac + 4 ou 5",onisep:"art-therapeute",
+    desc:"Aide des personnes en difficulté à s'exprimer et à aller mieux grâce à la pratique artistique, dont la musique.",
+    q:"aide des personnes en difficulté à aller mieux grâce à la pratique de la musique",lieu:"hôpitaux, cabinets, associations",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac","bac"],["Licence","licence","3 ans"],["Master parcours musicothérapie","master","2 ans"]],
+    note:"Autre possibilité&nbsp;: un certificat d'école d'art-thérapeute, en 4 ans."},
+  {id:"ingenieur",nom:"Ingénieur, ingénieure du son",fam:"son",ic:"ph-sliders-horizontal",g:["technique","sciences"],niv:"bac23",nivLib:"Bac + 2 à 5",onisep:"ingenieur-ingenieure-du-son",
+    desc:"Assure la qualité du son d'un album, d'un concert, d'un film ou d'un spectacle&nbsp;: micros, enregistrement, réglages.",
+    q:"place les micros, enregistre et règle le son d'un album ou d'un concert",lieu:"studios d'enregistrement, salles de concert, télévision, cinéma",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac général ou techno","bac"],["BTS métiers de l'audiovisuel, option son","bts","2 ans"],["Licence pro ou école (Louis-Lumière…)","ecole","1 à 3 ans de plus"]],
+    note:"Il faut à la fois l'<b>oreille musicale</b> et le goût de la <b>technique</b>&nbsp;: les sciences aident beaucoup."},
+  {id:"mixeur",nom:"Mixeur, mixeuse son",fam:"son",ic:"ph-faders",g:["technique","creer"],niv:"bac23",nivLib:"Bac + 2 à 5",onisep:"mixeur-mixeuse-son",
+    desc:"Mélange les voix, les musiques et les ambiances pour donner à un film ou à un disque son équilibre sonore.",
+    q:"mélange les voix, la musique et les bruits pour équilibrer le son final d'un film",lieu:"studios de cinéma, de télévision, de musique&nbsp;; souvent comme intermittent",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac","bac"],["BTS métiers de l'audiovisuel, option son","bts","2 ans"],["Licence pro ou école","ecole","1 à 3 ans de plus"]],note:""},
+  {id:"designer",nom:"Designer sonore",fam:"son",ic:"ph-waveform",g:["technique","creer"],niv:"bac23",nivLib:"Bac + 3 à 5",onisep:"designer-designeuse-sonore",
+    desc:"Invente les univers sonores des films, des jeux vidéo ou de certains lieux&nbsp;: il capte, compose et mixe les sons.",
+    q:"invente l'univers sonore d'un jeu vidéo : ambiances, effets, petites musiques",lieu:"jeux vidéo, cinéma, publicité, musées",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac","bac"],["Licence pro ou école du son","licence","3 ans"],["Master ou école d'art (design sonore)","master","2 ans, pour aller plus loin"]],note:""},
+  {id:"bruiteur",nom:"Bruiteur, bruiteuse",fam:"son",ic:"ph-footprints",g:["technique","mains","creer"],niv:"bac23",nivLib:"Bac + 2 conseillé",onisep:"bruiteur-bruiteuse",
+    desc:"Recrée en studio, avec toutes sortes d'objets, les bruits d'un film&nbsp;: des pas, une porte, le vent, un combat…",
+    q:"recrée en studio, avec des objets, les bruits de pas, de portes ou de pluie d'un film",lieu:"studios de cinéma et de télévision",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac","bac"],["BTS métiers de l'audiovisuel, option son","bts","2 ans"]],
+    note:"On peut aussi apprendre «&nbsp;sur le tas&nbsp;», auprès d'un bruiteur."},
+  {id:"radio",nom:"Technicien réalisateur radio",fam:"son",ic:"ph-radio",g:["technique"],niv:"bac23",nivLib:"Bac + 2",onisep:"technicien-realisateur-technicienne-realisatrice-radio",
+    desc:"Pendant une émission de radio, envoie à l'antenne les voix, les musiques et les jingles, et veille à la qualité du son.",
+    q:"envoie à l'antenne les voix, les jingles et les musiques d'une émission de radio",lieu:"stations de radio",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac","bac"],["BTS métiers de l'audiovisuel, option son","bts","2 ans"]],note:""},
+  {id:"luthier",nom:"Luthier, luthière",fam:"atelier",ic:"ph-guitar",g:["mains"],niv:"cap",nivLib:"CAP",onisep:"luthier-luthiere",
+    desc:"Fabrique, restaure et répare les instruments à cordes&nbsp;: violons, altos, violoncelles, guitares… Il faut de la patience, de l'habileté et une bonne oreille.",
+    q:"fabrique et répare les violons, les violoncelles et les guitares",lieu:"son propre atelier ou l'atelier d'un luthier",
+    chemin:[["3ᵉ","3e"],["CAP assistant luthier du quatuor","cap","2 ans"],["BMA technicien en facture instrumentale","bma","2 ans"]],
+    note:"La plus célèbre&nbsp;: l'École nationale de lutherie de <b>Mirecourt</b>, dans les Vosges. Après le bac, un DN MADE mention instrument (3 ans) est aussi possible."},
+  {id:"archetier",nom:"Archetier, archetière",fam:"atelier",ic:"ph-line-segment",g:["mains"],niv:"cap",nivLib:"CAP",onisep:"archetier-archetiere",
+    desc:"Fabrique, répare et restaure les archets (une baguette de bois et des crins tendus) des violons, altos, violoncelles et contrebasses.",
+    q:"fabrique les archets des violons et des violoncelles, en bois et en crins",lieu:"ateliers d'archèterie",
+    chemin:[["3ᵉ","3e"],["CAP assistant luthier du quatuor","cap","2 ans"],["Formation chez un maître archetier","apprentissage"]],
+    note:"Un métier rare&nbsp;: on l'apprend surtout en atelier, auprès d'un maître."},
+  {id:"facteur",nom:"Facteur, factrice d'instruments",fam:"atelier",ic:"ph-wrench",g:["mains","technique"],niv:"cap",nivLib:"CAP",onisep:"facteur-factrice-d-instruments",
+    desc:"Fabrique, restaure ou entretient des pianos, des orgues, des accordéons, des instruments à vent… entre savoir-faire ancien et techniques modernes.",
+    q:"fabrique et restaure des orgues, des pianos ou des instruments à vent",lieu:"ateliers de facture (pianos, orgues, cuivres, bois…)",
+    chemin:[["3ᵉ","3e"],["CAP (pianos, instruments à vent…)","cap","2 ans"],["BMA technicien en facture instrumentale","bma","2 ans"]],
+    note:"Autre chemin&nbsp;: un <b>bac pro</b> artisanat et métiers d'art, option facteur d'orgues (3 ans)."},
+  {id:"accordeur",nom:"Accordeur, accordeuse de piano",fam:"atelier",ic:"ph-piano-keys",g:["mains","technique"],niv:"cap",nivLib:"CAP",onisep:"accordeur-de-piano-accordeuse-de-piano",
+    desc:"Règle la tension des cordes d'un piano pour qu'il joue juste, et remplace les pièces usées&nbsp;: marteaux, étouffoirs, feutres…",
+    q:"règle la tension des cordes d'un piano pour qu'il joue juste",lieu:"chez les particuliers, dans les écoles de musique, les conservatoires, les salles de concert",
+    chemin:[["3ᵉ","3e"],["CAP accordeur de pianos","cap","2 ans"]],
+    note:"Le CAP est ouvert aussi aux jeunes <b>aveugles et malvoyants</b>. On travaille à son compte ou comme salarié, et on peut ensuite se spécialiser dans les pianos de concert."},
+  {id:"fondeur",nom:"Fondeur, fondeuse de cloches",fam:"atelier",ic:"ph-bell",g:["mains"],niv:"cap",nivLib:"CAP",onisep:"fondeur-fondeuse-de-cloches",
+    desc:"Moule et coule les cloches en bronze, en alliant sens artistique et technique, pour qu'elles sonnent la bonne note.",
+    q:"moule et coule les cloches en bronze des églises et des carillons",lieu:"fonderies de cloches",
+    chemin:[["3ᵉ","3e"],["CAP bronzier ou mouleur-noyauteur","cap","2 ans"],["BMA ferronnier d'art","bma","2 ans, pour aller plus loin"]],
+    note:"Autre chemin&nbsp;: un bac pro fonderie (3 ans)."},
+  {id:"admin",nom:"Administrateur, administratrice de spectacle",fam:"coulisses",ic:"ph-calculator",g:["organiser"],niv:"bac23",nivLib:"Bac + 3 à 5",onisep:"administrateur-administratrice-de-spectacle",
+    desc:"Gère l'argent, les contrats et les équipes d'un festival, d'une salle de concert ou d'une compagnie&nbsp;: sans elle ou lui, pas de spectacle.",
+    q:"gère le budget, les contrats et les équipes d'un festival ou d'une salle de concert",lieu:"salles de concert, festivals, orchestres, théâtres",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac général","bacg"],["Licence pro gestion de projets culturels","licence","3 ans"],["Master spectacle vivant","master","2 ans, conseillé"]],note:""},
+  {id:"agent",nom:"Agent, agente artistique",fam:"coulisses",ic:"ph-handshake",g:["organiser"],niv:"bac23",nivLib:"Bac + 3 à 5",onisep:"agent-agente-artistique",
+    desc:"Gère la carrière des artistes&nbsp;: trouve des concerts, négocie les contrats, fait connaître leur travail.",
+    q:"trouve des concerts à un chanteur et négocie ses contrats",lieu:"agences artistiques",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac général","bacg"],["Licence pro","licence","3 ans"],["Master industries culturelles","master","2 ans, conseillé"]],note:""},
+  {id:"juriste",nom:"Juriste en propriété intellectuelle",fam:"coulisses",ic:"ph-scales",g:["organiser"],niv:"bac5",nivLib:"Bac + 5",onisep:"juriste-en-propriete-intellectuelle",
+    desc:"Protège les créations&nbsp;: les droits d'auteur d'une chanson, d'une musique de film, d'un album. Elle ou il rédige les contrats et défend les auteurs.",
+    q:"protège les droits d'auteur des chansons et rédige les contrats des créateurs",lieu:"sociétés d'auteurs, maisons de disques, cabinets d'avocats",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac général","bacg"],["Licence de droit","licence","3 ans"],["Master de propriété intellectuelle","master","2 ans"]],note:""},
+  {id:"chercheur",nom:"Chercheur, chercheuse en acoustique musicale",fam:"science",ic:"ph-flask",g:["sciences","technique"],niv:"bac5",nivLib:"Bac + 8",onisep:"charge-chargee-de-recherche-en-acoustique-musicale",
+    desc:"Scientifique qui étudie les sons de la musique&nbsp;: il met les vibrations en équations pour comprendre comment sonnent les instruments.",
+    q:"met en équations les vibrations des instruments pour comprendre comment ils sonnent",lieu:"laboratoires&nbsp;: CNRS, universités, IRCAM",
+    chemin:[["3ᵉ","3e"],["Seconde générale","2de"],["Bac général (maths, physique)","bacg"],["Licence","licence","3 ans"],["Master","master","2 ans"],["Doctorat","doctorat","3 ans"]],
+    note:"Et la pratique d'un instrument&nbsp;!"}];
+let _mt={fam:"tous",niv:"tous",ouvert:null,def:null,plan:"3e",quiz:null};
+function mtFam(id){ for(let i=0;i<MT_FAM.length;i++)if(MT_FAM[i].id===id)return MT_FAM[i]; return MT_FAM[0]; }
+function mtMetier(id){ for(let i=0;i<MT.length;i++)if(MT[i].id===id)return MT[i]; return null; }
+/* ---------- le voyage d'une chanson ---------- */
+function mtVoyageHTML(){
+  const E=[["ph-pen-nib","On l'écrit","L'<b>auteur-compositeur</b> invente les paroles et la musique."],
+    ["ph-guitar","On prépare les instruments","Le <b>luthier</b> règle la guitare, l'<b>accordeur</b> accorde le piano."],
+    ["ph-music-notes","On répète","Les <b>musiciens</b> et les <b>chanteurs</b> travaillent ensemble."],
+    ["ph-microphone","On enregistre","L'<b>ingénieur du son</b> place les micros et capte chaque instrument."],
+    ["ph-faders","On mixe","Le <b>mixeur</b> équilibre les voix et les instruments."],
+    ["ph-scales","On protège","Le <b>juriste</b> protège les droits d'auteur&nbsp;: la chanson rapporte à ses créateurs."],
+    ["ph-ticket","On la fait vivre","L'<b>agent</b> trouve les concerts, l'<b>administrateur</b> organise le festival, le <b>technicien radio</b> la diffuse."]];
+  return '<ol class="mt-voyage">'+E.map(function(e,i){ return '<li><span class="mt-v-n">'+(i+1)+'</span><i class="ph-fill '+e[0]+'"></i><b>'+e[1]+'</b><p>'+e[2]+'</p></li>'; }).join("")+'</ol>';
+}
+/* ---------- le quiz : trouve ton métier ---------- */
+const MT_QUIZ=[
+  {q:"Une fête se prépare au collège. Tu préfères…",r:[["monter sur scène pour jouer ou chanter",["scene"]],["installer et régler la sono",["technique"]],["organiser le programme de la soirée",["organiser"]],["apprendre une chorégraphie aux autres",["transmettre"]]]},
+  {q:"Une corde de ta guitare casse. Toi…",r:[["je la change moi-même : j'adore bricoler",["mains"]],["j'en profite pour inventer un nouveau riff",["creer"]],["je me demande pourquoi elle a cassé",["sciences"]],["je montre à un ami comment la changer",["transmettre"]]]},
+  {q:"Parmi ces matières, celle que tu préfères…",r:[["l'éducation musicale",["scene","creer"]],["la technologie",["technique","mains"]],["les maths ou la physique-chimie",["sciences","technique"]],["le français ou les langues",["transmettre","organiser"]]]},
+  {q:"Le soir, tu préfères…",r:[["composer une musique sur l'ordinateur",["creer","technique"]],["jouer de ton instrument pendant une heure",["scene"]],["regarder un documentaire sur les sons",["sciences"]],["aider quelqu'un à faire ses devoirs",["transmettre"]]]},
+  {q:"Plus tard, tu te vois plutôt…",r:[["dans un atelier, avec des outils",["mains"]],["dans un studio, derrière une console",["technique"]],["sur scène, devant un public",["scene"]],["dans un bureau, à monter des projets",["organiser"]],["auprès des gens, pour les aider",["transmettre"]]]}];
+const MT_GOUT_LIB={scene:"la scène",creer:"inventer, composer",transmettre:"transmettre, aider les autres",technique:"la technique du son",mains:"fabriquer de tes mains",organiser:"organiser, gérer",sciences:"les sciences"};
+function mtQuizHTML(){
+  const Q=_mt.quiz;
+  if(!Q)return '<div class="mt-quiz-t"><i class="ph-fill ph-sparkle"></i><div><b>Trouve ton métier en 5 questions</b><small>Réponds spontanément&nbsp;: il n\'y a pas de mauvaise réponse.</small></div></div><button type="button" class="btn-son mt-go" onclick="mtQuizGo()"><i class="ph ph-arrow-right"></i> Commencer</button>';
+  if(Q.i<MT_QUIZ.length){ const it=MT_QUIZ[Q.i];
+    return '<div class="mt-quiz-t"><i class="ph-fill ph-sparkle"></i><div><b>Question '+(Q.i+1)+' sur '+MT_QUIZ.length+'</b><small>'+it.q+'</small></div></div>'
+      +'<div class="mt-quiz-r">'+it.r.map(function(r,k){ return '<button type="button" class="mt-qr" onclick="mtQuizRep('+k+')">'+r[0]+'</button>'; }).join("")+'</div>'
+      +'<div class="mt-quiz-barre" aria-hidden="true"><i style="width:'+Math.round(Q.i/MT_QUIZ.length*100)+'%"></i></div>'; }
+  const sc={}; Q.tags.forEach(function(t){ sc[t]=(sc[t]||0)+1; });
+  const gouts=Object.keys(sc).sort(function(a,b){ return sc[b]-sc[a]; }).slice(0,2);
+  const top=MT.map(function(m,i){ return {m:m,s:m.g.reduce(function(a,g){ return a+(sc[g]||0); },0)/Math.sqrt(m.g.length),i:i}; }).sort(function(a,b){ return b.s-a.s||a.i-b.i; }).slice(0,3);
+  return '<div class="mt-quiz-t"><i class="ph-fill ph-trophy"></i><div><b>Tu aimes surtout '+gouts.map(function(g){ return MT_GOUT_LIB[g]; }).join(" et ")+'.</b><small>Voici trois métiers qui pourraient te plaire&nbsp;: ouvre leur fiche pour voir le chemin.</small></div></div>'
+    +'<div class="mt-quiz-res">'+top.map(function(x){ const F=mtFam(x.m.fam); return '<button type="button" class="mt-qres" style="--m:'+F.c+'" onclick="mtVoir(\''+x.m.id+'\')"><i class="ph-fill '+x.m.ic+'"></i><b>'+x.m.nom+'</b><small>'+x.m.nivLib+' · voir la fiche</small></button>'; }).join("")+'</div>'
+    +'<button type="button" class="btn-son" onclick="mtQuizGo()"><i class="ph ph-arrow-counter-clockwise"></i> Refaire le quiz</button>';
+}
+function mtQuizMaj(){ const z=document.getElementById("mtQuiz"); if(z)z.innerHTML=mtQuizHTML(); const b=z&&z.querySelector(".mt-qr,.mt-qres,.mt-go"); if(b)b.focus(); }
+function mtQuizGo(){ _mt.quiz={i:0,tags:[]}; mtQuizMaj(); }
+function mtQuizRep(k){ const Q=_mt.quiz; if(!Q)return; Q.tags=Q.tags.concat(MT_QUIZ[Q.i].r[k][1]); Q.i++; mtQuizMaj(); }
+/* ---------- le plan des études ---------- */
+const MT_PLAN=[["Au collège","ph-backpack",[["3e"],["cham"],["conservatoire"],["stage"]]],
+  ["Au lycée, de 15 à 18 ans","ph-buildings",[["2de","→ voie générale ou technologique"],["bacg"],["s2tmd"],["pro","→ voie professionnelle"],["cap"],["bacpro"],["bma"],["apprentissage"]]],
+  ["Après le bac","ph-graduation-cap",[["bts"],["licence"],["dnmade"],["dnsp"],["dumi"],["ecole"],["master"],["cnsmd"],["concours"],["doctorat"]]]];
+/* nom court d'un métier : « Chef d'orchestre », « Accordeur de piano », « Musicien intervenant »… */
+function mtCourt(m){ const p=m.nom.split(", "); if(p.length<2||/ /.test(p[0]))return p[0]; const suite=p[1].split(" ").slice(1).join(" "); return p[0]+(suite?" "+suite:""); }
+function mtExemples(k){ if(k==="3e")return []; return MT.filter(function(m){ return m.chemin.some(function(c){ return c[1]===k; }); }); }
+function mtPlanDefHTML(k){
+  const G=MT_GL[k]; if(!G)return "";
+  const ex=mtExemples(k).slice(0,6);
+  return '<b class="mt-def-t">'+G.t+'</b><p>'+G.def+'</p>'+(ex.length?'<div class="mt-def-ex"><span>Par exemple pour&nbsp;:</span>'+ex.map(function(m){ return '<button type="button" onclick="mtVoir(\''+m.id+'\')">'+mtCourt(m)+'</button>'; }).join("")+'</div>':'');
+}
+function mtPlanHTML(){
+  return '<div class="mt-plan">'+MT_PLAN.map(function(col){
+    return '<div class="mt-pcol"><div class="mt-pcol-t"><i class="ph-fill '+col[1]+'"></i> '+col[0]+'</div>'+col[2].map(function(n){
+      const G=MT_GL[n[0]];
+      return (n[1]?'<span class="mt-psous">'+n[1]+'</span>':'')+'<button type="button" class="mt-pn'+(_mt.plan===n[0]?" on":"")+'" aria-pressed="'+(_mt.plan===n[0])+'" onclick="mtPlan(\''+n[0]+'\')">'+G.t+'</button>'; }).join("")+'</div>'; }).join("")
+    +'</div><div class="mt-pdef" id="mtPlanDef" aria-live="polite">'+mtPlanDefHTML(_mt.plan)+'</div>';
+}
+function mtPlan(k){ _mt.plan=k; const z=document.getElementById("mtPlan"); if(z)z.innerHTML=mtPlanHTML(); const b=Array.prototype.find.call(document.querySelectorAll("#mtPlan .mt-pn"),function(x){ return x.getAttribute("onclick").indexOf("'"+k+"'")>=0; }); if(b)b.focus(); }
+/* ---------- la règle « bac + … » ---------- */
+function mtRegleHTML(){
+  const P=[[0,"Bac","vers 18 ans",["bac"]],[2,"Bac + 2","vers 20 ans",["bts","dumi"]],[3,"Bac + 3","vers 21 ans",["licence","dnmade","dnsp"]],[5,"Bac + 5","vers 23 ans",["master"]],[8,"Bac + 8","vers 26 ans",["doctorat"]]];
+  return '<div class="mt-regle" role="img" aria-label="Règle des études après le bac : bac + 2 vers 20 ans (BTS), bac + 3 vers 21 ans (licence), bac + 5 vers 23 ans (master), bac + 8 vers 26 ans (doctorat)"><div class="mt-regle-l"></div>'
+    +P.map(function(p){ return '<div class="mt-rp" style="--x:'+(p[0]/8*100)+'%"><span class="mt-rp-pt"></span><b>'+p[1]+'</b><small>'+p[2]+'</small><em>'+p[3].map(function(k){ return MT_GL[k].c; }).join(", ")+'</em></div>'; }).join("")+'</div>';
+}
+/* ---------- trois histoires de parcours (imaginaires) ---------- */
+function mtHistoiresHTML(){
+  const H=[["Tom","ph-guitar","adore bricoler et répare tout ce qui traîne",[["15 ans","Fin de la 3ᵉ&nbsp;: il demande un CAP."],["15-17 ans","CAP assistant luthier du quatuor, à Mirecourt."],["17-19 ans","BMA technicien en facture instrumentale."],["19 ans","Il entre dans l'atelier d'un luthier."]]],
+    ["Lina","ph-sliders-horizontal","fait des vidéos et passe des heures à régler leur son",[["15 ans","Seconde générale et technologique."],["16-18 ans","Bac général avec maths et physique-chimie."],["18-20 ans","BTS métiers de l'audiovisuel, option métiers du son."],["20-21 ans","Licence professionnelle du son, puis ses premiers concerts comme ingénieure du son."]]],
+    ["Sarah","ph-chalkboard-teacher","joue du piano et aide toujours les autres",[["15 ans","Seconde générale, option musique."],["16-18 ans","Bac général, spécialité musique."],["18-21 ans","Licence de musicologie, à l'université&nbsp;; en 3ᵉ année, elle réussit le concours (CAPES)."],["21-23 ans","Master enseignement, en étant payée&nbsp;: elle devient professeure de musique à 23 ans."]]]];
+  return '<div class="mt-histoires">'+H.map(function(h){ return '<div class="mt-hist"><div class="mt-hist-t"><i class="ph-fill '+h[1]+'"></i><div><b>'+h[0]+'</b><small>'+h[2]+'</small></div></div><ol>'+h[3].map(function(e){ return '<li><span>'+e[0]+'</span>'+e[1]+'</li>'; }).join("")+'</ol></div>'; }).join("")+'</div>';
+}
+/* ---------- les fiches des métiers ---------- */
+function mtCheminHTML(m){
+  return '<div class="mt-chemin" role="list" aria-label="Le chemin pour devenir '+mtCourt(m).toLowerCase()+'">'+m.chemin.map(function(c,i){
+    return (i?'<i class="ph ph-arrow-right mt-fl" aria-hidden="true"></i>':'')+'<button type="button" role="listitem" class="mt-et'+(_mt.def===m.id+"|"+i?" on":"")+'" onclick="mtDef(\''+m.id+'\','+i+')">'+c[0]+(c[2]?'<small>'+c[2]+'</small>':'')+'</button>'; }).join("")
+    +'<i class="ph ph-arrow-right mt-fl" aria-hidden="true"></i><span class="mt-et fin"><i class="ph-fill ph-star"></i> '+mtCourt(m)+'</span></div>';
+}
+function mtCarteHTML(m){
+  const F=mtFam(m.fam), ouvert=_mt.ouvert===m.id;
+  let defi=""; if(ouvert&&_mt.def&&_mt.def.indexOf(m.id+"|")===0){ const c=m.chemin[+_mt.def.split("|")[1]], G=c&&MT_GL[c[1]]; if(G)defi='<div class="mt-defin"><b>'+G.t+'</b> '+G.def+'</div>'; }
+  return '<article class="mt-carte'+(ouvert?" ouverte":"")+'" id="mtC-'+m.id+'" style="--m:'+F.c+'">'
+    +'<div class="mt-c-t"><span class="mt-ic"><i class="ph-fill '+m.ic+'"></i></span><h4>'+m.nom+'</h4><span class="mt-niv">'+m.nivLib+'</span></div>'
+    +'<p class="mt-desc">'+m.desc+'</p><p class="mt-lieu"><i class="ph ph-map-pin"></i> '+m.lieu+'</p>'
+    +(ouvert?'<div class="mt-etudes"><b><i class="ph ph-path"></i> Le chemin pour y arriver</b><p class="mt-aide2">Touche une étape pour savoir ce que c\'est.</p>'+mtCheminHTML(m)+defi+(m.note?'<p class="mt-note">'+m.note+'</p>':'')
+      +'<a href="https://www.onisep.fr/ressources/univers-metier/metiers/'+m.onisep+'" target="_blank" rel="noopener">La fiche complète sur onisep.fr <i class="ph ph-arrow-square-out"></i></a></div>':'')
+    +'<button type="button" class="mt-plus" aria-expanded="'+ouvert+'" onclick="mtOuvrir(\''+m.id+'\')">'+(ouvert?'<i class="ph ph-caret-up"></i> Refermer':'<i class="ph ph-path"></i> Le chemin pour y arriver')+'</button></article>';
+}
+const MT_NIV=[["tous","Toutes les durées"],["cap","CAP, juste après la 3ᵉ"],["bac23","Bac + 2 ou 3"],["bac5","Bac + 5 et plus"],["variable","Sans diplôme imposé"]];
+function mtGrilleHTML(){
+  const L=MT.filter(function(m){ return (_mt.fam==="tous"||m.fam===_mt.fam)&&(_mt.niv==="tous"||m.niv===_mt.niv); });
+  if(!L.length)return '<p class="mt-vide"><i class="ph ph-magnifying-glass"></i> Aucun métier pour ce choix&nbsp;: essaie une autre durée d\'études.</p>';
+  return MT_FAM.map(function(F){ const M=L.filter(function(m){ return m.fam===F.id; }); if(!M.length)return "";
+    return '<section class="mt-fam" style="--m:'+F.c+'"><h3 class="mt-fam-t"><i class="ph-fill '+F.ic+'"></i> '+F.nom+'</h3><div class="mt-grille">'+M.map(mtCarteHTML).join("")+'</div></section>'; }).join("");
+}
+function mtCarteCorps(){
+  return '<h3><i class="ph-fill ph-cards"></i> 5. Les fiches des métiers</h3>'
+    +'<p class="mt-aide">22 métiers, rangés en six familles. Ouvre une fiche pour voir le <b>chemin</b> qui y mène, étape par étape.</p>'
+    +'<div class="mt-filtres" role="group" aria-label="Famille de métiers"><button type="button" class="mt-chip'+(_mt.fam==="tous"?" on":"")+'" aria-pressed="'+(_mt.fam==="tous")+'" onclick="mtFiltre(\'fam\',\'tous\')">Toutes les familles</button>'
+    +MT_FAM.map(function(F){ const on=_mt.fam===F.id; return '<button type="button" class="mt-chip'+(on?" on":"")+'" aria-pressed="'+on+'" onclick="mtFiltre(\'fam\',\''+F.id+'\')"><i class="ph '+F.ic+'"></i> '+F.nom+'</button>'; }).join("")+'</div>'
+    +'<div class="mt-nivs" role="group" aria-label="Durée des études">'+MT_NIV.map(function(n){ const on=_mt.niv===n[0]; return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="mtFiltre(\'niv\',\''+n[0]+'\')">'+n[1]+'</button>'; }).join("")+'</div>'
+    +'<div id="mtGrille">'+mtGrilleHTML()+'</div>'
+    +'<p class="mt-source"><i class="ph ph-info"></i> D\'après les fiches métiers de l\'Onisep (onisep.fr).</p>';
+}
+function mtAtelierHTML(){ return '<div class="carte mt" id="mtAtelier">'+mtCarteCorps()+'</div>'; }
+function mtCarteMaj(){ const z=document.getElementById("mtAtelier"); if(z)z.innerHTML=mtCarteCorps(); }
+function mtFiltre(q,v){ _mt[q]=v; _mt.ouvert=null; _mt.def=null; mtCarteMaj(); const b=Array.prototype.find.call(document.querySelectorAll("#mtAtelier [onclick^='mtFiltre']"),function(x){ return x.getAttribute("onclick").indexOf("'"+q+"','"+v+"'")>=0; }); if(b)b.focus(); }
+function mtGrilleMaj(focus){ const z=document.getElementById("mtGrille"); if(z)z.innerHTML=mtGrilleHTML(); if(focus){ const b=document.querySelector(focus); if(b)b.focus(); } }
+function mtOuvrir(id){ _mt.ouvert=_mt.ouvert===id?null:id; _mt.def=null; mtGrilleMaj('#mtC-'+id+' .mt-plus'); }
+function mtDef(id,i){ const k=id+"|"+i; _mt.def=_mt.def===k?null:k; mtGrilleMaj('#mtC-'+id+' .mt-et:nth-of-type('+(i+1)+')'); const b=document.querySelectorAll('#mtC-'+id+' button.mt-et')[i]; if(b)b.focus(); }
+/* ouvrir la fiche d'un métier depuis le quiz ou le plan */
+function mtVoir(id){
+  const m=mtMetier(id); if(!m)return;
+  if(!(_mt.fam==="tous"||m.fam===_mt.fam)||!(_mt.niv==="tous"||m.niv===_mt.niv)){ _mt.fam="tous"; _mt.niv="tous"; }
+  _mt.ouvert=id; _mt.def=null; mtCarteMaj();
+  const c=document.getElementById("mtC-"+id); if(c){ c.scrollIntoView({block:"center",behavior:"smooth"}); const b=c.querySelector(".mt-plus"); if(b)setTimeout(function(){ b.focus({preventScroll:true}); },350); }
+}
+/* ---------- le petit dictionnaire ---------- */
+function mtGlossaireHTML(){
+  const ordre=["3e","stage","cham","conservatoire","2de","bacg","s2tmd","pro","cap","bacpro","bma","apprentissage","bac","bts","licence","master","doctorat","concours","dnmade","dumi","dnsp","cnsmd","ecole","intermittent","psyen","onisep"];
+  return '<dl class="mt-dico">'+ordre.map(function(k){ const G=MT_GL[k]; return '<div><dt>'+G.t+'</dt><dd>'+G.def+'</dd></div>'; }).join("")+'</dl>';
+}
+function mtInit(){ _mt.fam="tous"; _mt.niv="tous"; _mt.ouvert=null; _mt.def=null; _mt.plan="3e"; _mt.quiz=null; mtCarteMaj(); mtQuizMaj(); const p=document.getElementById("mtPlan"); if(p)p.innerHTML=mtPlanHTML(); }
+
+/* ===== Leçon « Les modes » (14/10/2026) : la palette des sept modes, le jeu
+   « Devine le mode », les touches blanches, du plus lumineux au plus sombre.
+   Préfixe mx*. Même mélodie (MX_MOTIF) dans tous les modes, sur un bourdon :
+   seule la couleur change. Sons via jouerSonBtn({mx:…}). */
+const MX_MODES=[
+  {id:"ionien",nom:"Ionien",de:0,pas:[0,2,4,5,7,9,11],c:"#94650a",lum:6,car:-1,ref:null,hum:"lumineux, joyeux, stable",
+    carTxt:"C'est notre <b>gamme majeure</b>&nbsp;: la référence lumineuse."},
+  {id:"dorien",nom:"Dorien",de:1,pas:[0,2,3,5,7,9,10],c:"#1f7a6e",lum:4,car:5,ref:"eolien",hum:"mélancolique mais pas triste",
+    carTxt:"Un mineur avec une <b>sixte majeure</b>&nbsp;: la 6ᵉ note, plus haute que dans le mineur, apporte une lueur."},
+  {id:"phrygien",nom:"Phrygien",de:2,pas:[0,1,3,5,7,8,10],c:"#a8402a",lum:2,car:1,ref:"eolien",hum:"sombre, tendu, espagnol",
+    carTxt:"Un mineur avec une <b>seconde mineure</b>&nbsp;: la 2ᵉ note colle à la tonique, d'où ce parfum de flamenco."},
+  {id:"lydien",nom:"Lydien",de:3,pas:[0,2,4,6,7,9,11],c:"#9c3f84",lum:7,car:3,ref:"ionien",hum:"féerique, rêveur, flottant",
+    carTxt:"Un majeur avec une <b>quarte augmentée</b>&nbsp;: la 4ᵉ note est haussée d'un demi-ton, le son semble s'envoler."},
+  {id:"mixolydien",nom:"Mixolydien",de:4,pas:[0,2,4,5,7,9,10],c:"#2d6aa8",lum:5,car:6,ref:"ionien",hum:"décontracté, rock, folk",
+    carTxt:"Un majeur avec une <b>septième mineure</b>&nbsp;: la 7ᵉ note, abaissée, ne «&nbsp;tire&nbsp;» plus vers la tonique."},
+  {id:"eolien",nom:"Éolien",de:5,pas:[0,2,3,5,7,8,10],c:"#4f55a8",lum:3,car:2,ref:"ionien",hum:"triste, nostalgique",
+    carTxt:"C'est notre <b>gamme mineure naturelle</b>&nbsp;: tierce, sixte et septième mineures."},
+  {id:"locrien",nom:"Locrien",de:6,pas:[0,1,3,5,6,8,10],c:"#3d3d52",lum:1,car:4,ref:"phrygien",hum:"instable, inquiétant",
+    carTxt:"Le plus sombre&nbsp;: sa <b>quinte diminuée</b> empêche la tonique de se poser. On ne l'utilise presque jamais seul."}];
+const MX_CAR_NOM=["la tonique","la seconde mineure","la tierce mineure","la quarte augmentée","la quinte diminuée","la sixte majeure","la septième mineure"];
+const MX_BLANC=[60,62,64,65,67,69,71];
+/* la même mélodie pour tous les modes : elle passe par tous les degrés (1 à 8) */
+const MX_MOTIF=[[1,1],[2,0.5],[1,0.5],[3,1],[5,1],[4,1],[5,0.5],[6,0.5],[5,1],[3,1],[6,0.5],[7,0.5],[8,1],[7,1],[5,1],[4,0.5],[3,0.5],[2,1],[1,2]];
+function mxMode(id){ for(let i=0;i<MX_MODES.length;i++)if(MX_MODES[i].id===id)return MX_MODES[i]; return null; }
+function mxMidi(pas,t,d){ const i=d-1, o=Math.floor(i/7), k=((i%7)+7)%7; return t+pas[k]+12*o; }
+/* noms des notes : lettres successives depuis la tonique, avec ♯ ou ♭ selon l'écart réel */
+function mxNoms(lettre,pas){
+  return pas.map(function(p,k){ const l=(lettre+k)%7, nat=(LN_PAS[l]-LN_PAS[lettre]+12)%12, d=p-nat;
+    return LN_NOMS[l]+(d===1?"♯":d===-1?"♭":""); });
+}
+/* une suite de degrés jouée sur son bourdon (tonique grave et quinte, ou octave quand la quinte est diminuée) ; rend l'instant de fin */
+function mxSuite(pas,t,seq,x0,spb,car){
+  let x=x0;
+  seq.forEach(function(p){ const f=car!=null&&car>=0&&((p[0]-1)%7)===car; jouerMidi(mxMidi(pas,t,p[0]),x,Math.min(0.9,p[1]*spb*0.95),f?0.29:0.22); x+=p[1]*spb; });
+  [t-12,pas[4]===7?t-5:t].forEach(function(m){ pyTenir(midiVersFreq(m),x0,x-x0+0.7,0.032); });
+  return x;
+}
+/* lecture : {pas, t (tonique midi), quoi:"motif"|"gamme"|"accord"|"comparer"|"motifs", ref:[pas], car} */
+function mxExtrait(o){
+  const pas=o.pas, t=o.t||60, spb=o.spb||0.34;
+  const fort=function(d){ return o.car!=null&&o.car>=0&&((d-1)%7)===o.car; };
+  if(o.quoi==="motifs"){ const x=mxSuite(pas,t,MX_MOTIF,0,spb); mxSuite(o.ref,t,MX_MOTIF,x+1,spb); return; }
+  if(o.quoi==="accord"){
+    const tri=[1,3,5].map(function(d){ return mxMidi(pas,t,d); });
+    tri.forEach(function(m,i){ jouerMidi(m,i*0.34,0.5,0.22); });
+    tri.concat([t+12]).forEach(function(m){ jouerMidi(m,1.1,1.5,0.16); });
+    pyTenir(midiVersFreq(t-12),0,2.9,0.03); return;
+  }
+  if(o.quoi==="comparer"){
+    let x=0; [o.ref,pas].forEach(function(p,j){
+      for(let d=1;d<=8;d++){ jouerMidi(mxMidi(p,t,d),x,0.36,j===1&&fort(d)?0.32:0.2); x+=0.3; }
+      x+=0.6; });
+    return;
+  }
+  mxSuite(pas,t,o.quoi==="gamme"?[1,2,3,4,5,6,7,8,7,6,5,4,3,2,1].map(function(d){ return [d,1]; }):MX_MOTIF,0,spb,o.car);
+}
+function mxJ(o){ return "jouerSonBtn({mx:"+JSON.stringify(o).replace(/"/g,"'")+"})"; }
+let _mx={i:0,surDo:true,jeu:null};
+function mxTonique(M){ return _mx.surDo?60:MX_BLANC[M.de]; }
+/* ruban des tons et demi-tons entre les notes du mode */
+function mxRubanHTML(M,lettre,car){
+  const noms=mxNoms(lettre,M.pas).concat([LN_NOMS[lettre]]), p=M.pas.concat([12]);
+  let h='<div class="mx-ruban" role="img" aria-label="'+noms.join(" ")+' : '+p.slice(1).map(function(v,i){ return v-p[i]===1?"demi-ton":"ton"; }).join(", ")+'">';
+  noms.forEach(function(n,i){
+    h+='<span class="mx-n'+(i===0||i===7?" ton1":"")+(car&&i===M.car?" car":"")+'">'+n+'</span>';
+    if(i<7)h+='<span class="mx-pas'+(p[i+1]-p[i]===1?" demi":"")+'">'+(p[i+1]-p[i]===1?"½":"T")+'</span>'; });
+  return h+'</div>';
+}
+function mxClavierHTML(M){
+  const t=mxTonique(M), mq={};
+  M.pas.forEach(function(p,k){ mq[t+p]={c:k===0?"#F2C94C":(k===M.car?"#f6a58f":"#cfe0f5"),t:String(k+1)}; });
+  mq[t+12]={c:"#F2C94C",t:"1"};
+  return axClavierSVG(mq,{de:t,nb:8,L:34,H:104,noms:true,aria:"Clavier : les notes du mode "+M.nom.toLowerCase()+" sur "+LN_NOMS[_mx.surDo?0:M.de]+(M.car>0?", la note caractéristique est marquée en rose":"")});
+}
+function mxPanneauHTML(){
+  const M=MX_MODES[_mx.i], t=mxTonique(M), lettre=_mx.surDo?0:M.de, R=M.ref?mxMode(M.ref):null;
+  const o=function(q){ return mxJ({pas:M.pas,t:t,quoi:q,car:M.car}); };
+  return '<div class="mx-pan" style="--m:'+M.c+'"><div class="mx-pan-t"><b>'+LN_NOMS[lettre]+' '+M.nom.toLowerCase()+'</b><span class="mx-hum">'+M.hum+'</span>'
+    +'<span class="mx-lum" role="img" aria-label="Luminosité : '+M.lum+' sur 7"><i class="ph-fill ph-sun"></i>'+[1,2,3,4,5,6,7].map(function(k){ return '<span'+(k<=M.lum?' class="on"':'')+'></span>'; }).join("")+'</span></div>'
+    +'<div class="mx-clav">'+mxClavierHTML(M)+'</div>'+mxRubanHTML(M,lettre,true)
+    +'<p class="mx-car">'+M.carTxt+(R?' <small>(Comparé au mode '+R.nom.toLowerCase()+(M.id==="eolien"?', trois notes sont abaissées&nbsp;: la 3ᵉ, la 6ᵉ et la 7ᵉ. La plus importante, la tierce mineure, est en rose.)':', une seule note change&nbsp;: '+MX_CAR_NOM[M.car]+'.)')+'</small>':'')+'</p>'
+    +'<div class="mx-btns"><button type="button" class="btn-son mx-go" onclick="'+o("motif")+'"><i class="ph ph-play"></i> La mélodie</button>'
+    +'<button type="button" class="btn-son" onclick="'+o("gamme")+'"><i class="ph ph-play"></i> La gamme</button>'
+    +'<button type="button" class="btn-son" onclick="'+o("accord")+'"><i class="ph ph-play"></i> L\'accord</button>'
+    +(R?'<button type="button" class="btn-son" onclick="'+mxJ({pas:M.pas,ref:R.pas,t:t,quoi:"comparer",car:M.car})+'"><i class="ph ph-arrows-left-right"></i> '+R.nom+', puis '+M.nom.toLowerCase()+'</button>':'')
+    +'<button type="button" class="btn-son" onclick="sonBtnCouper()" aria-label="Arrêter le son"><i class="ph ph-stop"></i></button></div></div>';
+}
+function mxAtelierCorps(){
+  return '<h3><i class="ph-fill ph-palette"></i> La palette des modes</h3>'
+    +'<p class="mx-aide">Choisis un mode et écoute <b>la même mélodie</b> changer de couleur. Le bourdon grave rappelle la note de départ.</p>'
+    +'<div class="mx-vue" role="group" aria-label="Où commencent les modes"><button type="button" class="'+(_mx.surDo?"on":"")+'" aria-pressed="'+_mx.surDo+'" onclick="mxVue(true)">Tous sur Do</button><button type="button" class="'+(_mx.surDo?"":"on")+'" aria-pressed="'+(!_mx.surDo)+'" onclick="mxVue(false)">Sur les touches blanches</button></div>'
+    +'<div class="mx-modes" role="group" aria-label="Les sept modes">'+MX_MODES.map(function(M,i){
+      return '<button type="button" data-son class="mx-mode'+(i===_mx.i?" on":"")+'" style="--m:'+M.c+'" aria-pressed="'+(i===_mx.i)+'" onclick="mxChoisir('+i+')"><b>'+M.nom+'</b><small>mode de '+LN_NOMS[M.de]+'</small></button>'; }).join("")+'</div>'
+    +'<div id="mxPan">'+mxPanneauHTML()+'</div>'
+    +'<div class="mx-jeu" id="mxJeu">'+mxJeuHTML()+'</div>';
+}
+function mxAtelierHTML(){ return '<div class="carte mx" id="mxAtelier">'+mxAtelierCorps()+'</div>'; }
+function mxMaj(){ const z=document.getElementById("mxAtelier"); if(z)z.innerHTML=mxAtelierCorps(); }
+function mxChoisir(i){ _mx.i=i; mxMaj(); const M=MX_MODES[i]; jouerSonBtn({mx:{pas:M.pas,t:mxTonique(M),quoi:"motif",car:M.car}}); const b=document.querySelectorAll("#mxAtelier .mx-mode")[i]; if(b)b.focus(); }
+function mxVue(surDo){ _mx.surDo=surDo; sonBtnCouper(); mxMaj(); }
+/* ---------- le jeu : devine le mode ---------- */
+const MX_NIV=[{lib:"3 modes",ids:["ionien","eolien","phrygien"]},{lib:"5 modes",ids:["ionien","eolien","phrygien","lydien","dorien"]},{lib:"7 modes",ids:["ionien","dorien","phrygien","lydien","mixolydien","eolien","locrien"]}];
+function mxRecord(n){ try{ return +(localStorage.getItem("museduc-modes-"+n)||0); }catch(e){ return 0; } }
+function mxJeuHTML(){
+  const j=_mx.jeu;
+  if(!j)return '<div class="mx-jeu-t"><i class="ph-fill ph-ear"></i><div><b>Devine le mode</b><small>Une mélodie, un mode mystère&nbsp;: à toi de reconnaître sa couleur. Dix manches.</small></div></div>'
+    +'<div class="mx-jeu-b">'+MX_NIV.map(function(n,i){ const r=mxRecord(i); return '<button type="button" class="btn-son'+(i===0?" mx-go":"")+'" onclick="mxJeu('+i+')"><i class="ph ph-play"></i> '+n.lib+(r?' <small>(record '+r+'/10)</small>':'')+'</button>'; }).join("")+'</div>';
+  if(j.fini){ const r=mxRecord(j.niv);
+    return '<div class="mx-jeu-t"><i class="ph-fill ph-trophy"></i><div><b>'+j.score+' bonne'+(j.score>1?"s":"")+' réponse'+(j.score>1?"s":"")+' sur 10</b><small>Meilleure série&nbsp;: '+j.best+(j.record?" · nouveau record&nbsp;!":(r?" · record&nbsp;: "+r+"/10":""))+'</small></div></div>'
+      +'<p class="mx-retour">'+(j.score>=9?"Une oreille de musicien&nbsp;: passe au niveau suivant&nbsp;!":(j.score>=6?"Très bien. Réécoute les modes qui t'ont piégé dans la palette, puis rejoue.":"Les modes se ressemblent beaucoup&nbsp;: écoute surtout la note qui change (la 2ᵉ, la 3ᵉ, la 4ᵉ, la 6ᵉ ou la 7ᵉ)."))+'</p>'
+      +'<div class="mx-jeu-b"><button type="button" class="btn-son mx-go" onclick="mxJeu('+j.niv+')"><i class="ph ph-arrow-clockwise"></i> Rejouer</button>'+(j.niv<2?'<button type="button" class="btn-son" onclick="mxJeu('+(j.niv+1)+')"><i class="ph ph-arrow-up"></i> Niveau suivant</button>':'')+'<button type="button" class="btn-son" onclick="mxJeuFermer()"><i class="ph ph-x"></i> Fermer</button></div>';
+  }
+  const ids=MX_NIV[j.niv].ids, bon=j.rep!==null&&j.rep===j.mode;
+  let h='<div class="mx-jeu-t"><i class="ph-fill ph-ear"></i><div><b>Manche '+(j.i+1)+' sur 10</b><small>Score&nbsp;: '+j.score+' · série en cours&nbsp;: '+j.serie+'</small></div></div>'
+    +'<div class="mx-jeu-b"><button type="button" class="btn-son" onclick="mxJeuEcouter()"><i class="ph ph-play"></i> Réécouter</button><button type="button" class="btn-son" onclick="mxJeuEcouter(\'gamme\')"><i class="ph ph-lightbulb"></i> Entendre la gamme</button></div>'
+    +'<div class="mx-reps" role="group" aria-label="Quel est ce mode ?">'+ids.map(function(id){ const M=mxMode(id), cl=j.rep===null?"":(id===j.mode?" juste":(id===j.rep?" faux":""));
+      return '<button type="button" class="mx-rep'+cl+'" style="--m:'+M.c+'" onclick="mxJeuRepondre(\''+id+'\')"'+(j.rep!==null?" disabled":"")+'><b>'+M.nom+'</b><small>'+M.hum+'</small></button>'; }).join("")+'</div>';
+  if(j.rep!==null){ const M=mxMode(j.mode), Rp=mxMode(j.rep);
+    h+='<p class="mx-retour '+(bon?"ok":"ko")+'" aria-live="polite">'+(bon?'<i class="ph-fill ph-check-circle"></i> Bravo, c\'était bien le mode <b>'+M.nom.toLowerCase()+'</b>&nbsp;!':'<i class="ph-fill ph-x-circle"></i> C\'était le mode <b>'+M.nom.toLowerCase()+'</b>, pas '+(/^[aeiouéè]/i.test(Rp.nom)?"l'":"le ")+Rp.nom.toLowerCase()+'.')+'</p>'
+      +'<div class="mx-jeu-b">'+(bon?'':'<button type="button" class="btn-son" onclick="'+mxJ({pas:Rp.pas,ref:M.pas,t:j.t,quoi:"motifs"})+'"><i class="ph ph-arrows-left-right"></i> '+Rp.nom+', puis '+M.nom.toLowerCase()+'</button>')
+      +'<button type="button" class="btn-son mx-go mx-suivant" onclick="mxJeuSuivant()"><i class="ph ph-arrow-right"></i> '+(j.i>=9?"Voir le résultat":"Manche suivante")+'</button></div>';
+  }
+  return h;
+}
+function mxJeuMaj(){ const z=document.getElementById("mxJeu"); if(z)z.innerHTML=mxJeuHTML(); }
+function mxJeu(niv){ _mx.jeu={niv:niv,i:0,score:0,serie:0,best:0,mode:null,t:60,rep:null,fini:false,record:false}; mxJeuTirer(); mxJeuMaj(); const b=document.querySelector("#mxJeu .mx-rep"); if(b)b.focus(); }
+function mxJeuFermer(){ _mx.jeu=null; sonBtnCouper(); mxJeuMaj(); }
+function mxJeuTirer(){
+  const j=_mx.jeu, ids=MX_NIV[j.niv].ids; let id;
+  do{ id=ids[Math.floor(Math.random()*ids.length)]; }while(id===j.mode&&ids.length>1);
+  j.mode=id; j.t=55+Math.floor(Math.random()*9); j.rep=null; mxJeuEcouter();
+}
+function mxJeuEcouter(q){ const j=_mx.jeu; if(!j||j.fini)return; const M=mxMode(j.mode); jouerSonBtn({mx:{pas:M.pas,t:j.t,quoi:q||"motif"}}); }
+function mxJeuRepondre(id){
+  const j=_mx.jeu; if(!j||j.rep!==null||j.fini)return;
+  j.rep=id; sonBtnCouper();
+  if(id===j.mode){ j.score++; j.serie++; if(j.serie>j.best)j.best=j.serie; } else j.serie=0;
+  mxJeuMaj(); const b=document.querySelector("#mxJeu .mx-suivant"); if(b)b.focus();
+}
+function mxJeuSuivant(){
+  const j=_mx.jeu; if(!j)return;
+  j.i++;
+  if(j.i>=10){ j.fini=true; sonBtnCouper(); if(j.score>mxRecord(j.niv)){ j.record=true; try{ localStorage.setItem("museduc-modes-"+j.niv,String(j.score)); }catch(e){} } }
+  else mxJeuTirer();
+  mxJeuMaj(); const b=document.querySelector("#mxJeu .mx-rep, #mxJeu .mx-go"); if(b)b.focus();
+}
+function mxInit(){ _mx.jeu=null; mxMaj(); }
+/* ---------- les illustrations de la leçon ---------- */
+function mxBlanchesHTML(){
+  return '<div class="mx-liste">'+MX_MODES.map(function(M){
+    return '<div class="mx-ligne" style="--m:'+M.c+'"><div class="mx-ligne-t"><b>'+M.nom+'</b><small>de '+LN_NOMS[M.de]+' à '+LN_NOMS[M.de]+'</small></div>'+mxRubanHTML(M,M.de,false)
+      +'<button type="button" class="btn-son" onclick="'+mxJ({pas:M.pas,t:MX_BLANC[M.de],quoi:"gamme"})+'" aria-label="Écouter le mode '+M.nom.toLowerCase()+' sur les touches blanches"><i class="ph ph-play"></i></button></div>'; }).join("")+'</div>';
+}
+function mxLumiereHTML(){
+  const tri=MX_MODES.slice().sort(function(a,b){ return b.lum-a.lum; });
+  let prec=null;
+  return '<div class="mx-lumiere"><div class="mx-axe" aria-hidden="true"><i class="ph-fill ph-sun"></i><span></span><i class="ph-fill ph-moon"></i></div><div class="mx-liste">'+tri.map(function(M){
+    const noms=mxNoms(0,M.pas), change=prec?M.pas.map(function(p,k){ return p!==prec.pas[k]; }):[];
+    const h='<div class="mx-ligne" style="--m:'+M.c+'"><div class="mx-ligne-t"><b>'+M.nom+'</b><small>'+M.hum+'</small></div><div class="mx-notes">'+noms.map(function(n,k){
+      return '<span class="'+(change[k]?"chg":"")+(/[♯♭]/.test(n)?" alt":"")+'">'+n+'</span>'; }).join("")+'</div>'
+      +'<button type="button" class="btn-son" onclick="'+mxJ({pas:M.pas,t:60,quoi:"motif"})+'" aria-label="Écouter la mélodie en Do '+M.nom.toLowerCase()+'"><i class="ph ph-play"></i></button></div>';
+    prec=M; return h; }).join("")+'</div></div>';
+}
+function mxCaracteresHTML(){
+  const L=MX_MODES.filter(function(M){ return M.ref&&M.id!=="eolien"; });
+  return '<table class="gr mx-table"><tr><th>Mode</th><th>Comparé à</th><th>La note qui change</th><th>Écouter</th></tr>'+L.map(function(M){ const R=mxMode(M.ref), n0=mxNoms(0,R.pas)[M.car], n1=mxNoms(0,M.pas)[M.car];
+    return '<tr><td><b class="mx-tn" style="--m:'+M.c+'">'+M.nom+'</b></td><td>'+R.nom+'</td><td>'+MX_CAR_NOM[M.car]+' (sur Do&nbsp;: '+n0+' → <b>'+n1+'</b>)</td><td><button type="button" class="btn-son" onclick="'+mxJ({pas:M.pas,ref:R.pas,t:60,quoi:"comparer",car:M.car})+'" aria-label="Écouter '+R.nom.toLowerCase()+' puis '+M.nom.toLowerCase()+'"><i class="ph ph-play"></i></button></td></tr>'; }).join("")+'</table>';
+}
+
 const LECONS={
+ "metiers":{titre:"Les métiers de la musique",html:`
+  <p>Tu aimes la musique&nbsp;? Elle peut devenir ton métier… même si tu ne montes jamais sur une scène. Chaque chanson que tu écoutes est passée entre les mains de <b>dizaines de professionnels</b>&nbsp;: certains l'ont écrite ou jouée, d'autres ont réglé son son, fabriqué les instruments, organisé le concert ou protégé ses auteurs.</p>
+  <p>Dans cette leçon, tu vas découvrir ces métiers, faire un petit quiz pour voir lesquels te ressemblent, et surtout <b>comprendre comment on y arrive</b>&nbsp;: CAP, bac, licence, master… tout est expliqué.</p>
+
+  <h3>1. Le voyage d'une chanson</h3>
+  <p>Suis une chanson, de l'idée jusqu'à tes écouteurs&nbsp;: à chaque étape, quelqu'un travaille.</p>
+  ${mtVoyageHTML()}
+  <div class="cle">Il n'y a pas que la scène&nbsp;! On peut vivre de la musique en la <b>créant</b>, en la <b>transmettant</b>, en réglant son <b>son</b>, en <b>fabriquant</b> les instruments, en <b>organisant</b> les concerts ou en l'<b>étudiant</b> comme un scientifique.</div>
+
+  </div><div class="carte mt-quiz" id="mtQuiz">${mtQuizHTML()}</div><div class="carte">
+  <h3>2. Comprendre les études après la 3ᵉ</h3>
+  <p>Pour choisir un métier, il faut savoir <b>comment on y arrive</b>. À la fin de la 3ᵉ, il y a trois grandes routes&nbsp;:</p>
+  <div class="mt-routes">
+  <div class="mt-route" style="--m:#2d6aa8"><span class="mt-route-n">1</span><b>La seconde générale et technologique</b><p>Au <b>lycée général et technologique</b>. Puis un <b>bac général</b> ou un <b>bac technologique</b> (comme le bac S2TMD, plein de musique), et des études après le bac.</p><small>Pour devenir&nbsp;: musicien, professeur, ingénieur du son, chercheur…</small></div>
+  <div class="mt-route" style="--m:#94650a"><span class="mt-route-n">2</span><b>La voie professionnelle</b><p>Au <b>lycée professionnel</b>&nbsp;: on apprend un métier concret, en atelier, avec des stages. Un <b>CAP</b> en 2 ans ou un <b>bac pro</b> en 3 ans.</p><small>Pour devenir&nbsp;: accordeur de pianos, luthier, facteur d'instruments…</small></div>
+  <div class="mt-route" style="--m:#1f7a6e"><span class="mt-route-n">3</span><b>L'apprentissage</b><p>Les mêmes diplômes que la voie professionnelle, mais en <b>alternance</b>&nbsp;: quelques jours en centre de formation, le reste chez un employeur, <b>avec un salaire</b>.</p><small>Possible aussi plus tard, après le bac.</small></div>
+  </div>
+  <p>Voici le plan complet. <b>Touche une case</b> pour savoir ce que c'est, combien de temps ça dure et pour quels métiers.</p>
+  <div id="mtPlan">${mtPlanHTML()}</div>
+
+  </div><div class="carte">
+  <h3>3. «&nbsp;Bac + 2&nbsp;», «&nbsp;bac + 5&nbsp;»&nbsp;: ça veut dire quoi&nbsp;?</h3>
+  <p>On compte les années d'études <b>après le bac</b>. Si tu obtiens ton bac à 18 ans&nbsp;:</p>
+  ${mtRegleHTML()}
+  <div class="astuce">Des études plus longues ne sont pas «&nbsp;meilleures&nbsp;»&nbsp;: un accordeur de pianos qui a un CAP et une chercheuse qui a un doctorat font tous les deux un métier de passion. Ce qui compte, c'est que le chemin te corresponde.</div>
+
+  </div><div class="carte">
+  <h3>4. Trois histoires de parcours</h3>
+  <p>Voici trois élèves imaginaires qui aiment la musique, chacun à sa façon. Regarde leur chemin, et leur âge à chaque étape.</p>
+  ${mtHistoiresHTML()}
+
+  </div>${mtAtelierHTML()}<div class="carte">
+  <h3>6. Comment travaillent les gens de la musique&nbsp;?</h3>
+  <ul>
+  <li><b>Intermittents du spectacle</b>&nbsp;: beaucoup d'artistes et de techniciens enchaînent des contrats courts (un concert, une tournée, un film). Entre deux contrats, ils touchent une assurance chômage adaptée, s'ils ont assez travaillé dans l'année.</li>
+  <li><b>Salariés</b>&nbsp;: dans un orchestre, une radio, un magasin de musique, une salle de concert.</li>
+  <li><b>Fonctionnaires</b>&nbsp;: les professeurs de collège et de lycée, après leur concours.</li>
+  <li><b>À leur compte</b>&nbsp;: le luthier dans son atelier, l'accordeur de pianos qui va chez ses clients.</li>
+  </ul>
+  <div class="cle">Partout, on retrouve les mêmes qualités&nbsp;: une <b>oreille fine</b>, du <b>travail régulier</b> (un musicien s'entraîne tous les jours), de la <b>précision</b>, de la <b>patience</b> et le goût du <b>travail en équipe</b>&nbsp;: un concert réunit des dizaines de métiers.</div>
+
+  </div><div class="carte">
+  <h3>7. Et toi, dès maintenant&nbsp;?</h3>
+  <ul>
+  <li><b>Pratique</b>&nbsp;: chorale du collège, conservatoire, groupe avec des amis, composition sur ordinateur… Tout compte.</li>
+  <li>Profite du <b>stage de 3ᵉ</b> pour découvrir un métier de la musique&nbsp;: studio, conservatoire, magasin de musique, salle de concert, atelier de lutherie.</li>
+  <li>Parles-en avec ton <b>professeur principal</b>, ton professeur de musique ou le <b>psychologue de l'Éducation nationale</b> de ton collège.</li>
+  <li>Va voir les <b>journées portes ouvertes</b> des lycées, des lycées professionnels et des conservatoires.</li>
+  <li>Sur <b>onisep.fr</b>, chaque métier a sa fiche, avec les formations et les établissements près de chez toi.</li>
+  </ul>
+
+  </div><div class="carte">
+  <h3>8. Le petit dictionnaire de l'orientation</h3>
+  <p>Tous les mots de l'orientation, expliqués simplement.</p>
+  ${mtGlossaireHTML()}
+
+  </div><div class="carte">
+  <h3>9. Récapitulons</h3>
+  <ul>
+  <li>Derrière chaque chanson, des <b>dizaines de métiers</b>&nbsp;: créer, enseigner, régler le son, fabriquer les instruments, organiser, chercher.</li>
+  <li>Après la 3ᵉ, trois routes&nbsp;: la <b>seconde générale et technologique</b> (puis bac général ou technologique, comme le S2TMD), la <b>voie professionnelle</b> (CAP en 2 ans, bac pro en 3 ans) et l'<b>apprentissage</b> (en alternance, avec un salaire).</li>
+  <li>Après le bac&nbsp;: <b>BTS</b> (bac + 2), <b>licence</b> (bac + 3), <b>master</b> (bac + 5), <b>doctorat</b> (bac + 8).</li>
+  <li><b>Professeur de musique au collège</b>&nbsp;: une licence, le <b>concours</b> en fin de licence, puis un <b>master</b> payé&nbsp;: bac + 5.</li>
+  <li><b>Accordeur de pianos, luthier, facteur d'instruments</b>&nbsp;: un CAP en 2 ans juste après la 3ᵉ, puis parfois un BMA.</li>
+  <li>Pour t'informer&nbsp;: ton professeur principal, le psychologue de l'Éducation nationale, le stage de 3ᵉ et onisep.fr.</li>
+  </ul>`},
+
+ "origine-notes":{titre:"D'où viennent les notes ?",html:`
+  <p>Pourquoi notre musique utilise-t-elle <b>sept notes</b>&nbsp;? Pourquoi certains sons s'accordent-ils si bien ensemble&nbsp;? Et pourquoi le La du diapason vibre-t-il <b>440 fois par seconde</b>, et pas 400 ou 450&nbsp;? Pour répondre, il faut remonter à plus de 2&nbsp;500 ans, chez un Grec passionné de nombres&nbsp;: <b>Pythagore</b>.</p>
+
+  <h3>1. La légende des forgerons</h3>
+  <p>Un jour, raconte la légende, Pythagore passe devant une forge. Les forgerons frappent le fer sur l'enclume, chacun avec son marteau, et Pythagore remarque que certains coups <b>sonnent bien ensemble</b>, comme un accord, alors que d'autres se heurtent. Intrigué, il entre et fait peser les marteaux&nbsp;: <b>12, 9, 8 et 6</b>. Les marteaux qui s'accordent ont des poids qui forment des <b>rapports simples</b>&nbsp;: 12 et 6 (le double), 12 et 8 (une fois et demie)… Un cinquième marteau, qui sonnait faux avec tous les autres, est mis de côté.</p>
+
+  </div>${pyForgeHTML()}<div class="carte">
+  <h3>Vrai ou légende&nbsp;?</h3>
+  <p>Cette histoire est racontée par <b>Nicomaque de Gérase</b>, environ six siècles après Pythagore. Elle est <b>fausse sur un point</b>&nbsp;: le son d'une enclume ne dépend presque pas du poids du marteau qui la frappe, et des marteaux de poids 12 et 6 ne donnent pas une octave. Vers 1589, <b>Vincenzo Galilei</b>, le père du savant Galilée, a vérifié avec des cordes tendues par des poids&nbsp;: pour monter d'une octave, il faut un poids <b>quatre fois</b> plus lourd, pas deux fois.</p>
+  <div class="cle">Mais l'idée de fond est juste&nbsp;: les sons qui s'accordent correspondent à des <b>rapports de nombres simples</b>. Pythagore l'a montré avec un instrument bien plus fiable que des marteaux&nbsp;: une simple corde.</div>
+  ${pyGravureHTML()}
+
+  </div><div class="carte">
+  <h3>2. Le monocorde&nbsp;: une corde et des fractions</h3>
+  <p>Le <b>monocorde</b> est un instrument de savant&nbsp;: une seule corde tendue sur une caisse, et un <b>chevalet</b> mobile qui permet de ne faire vibrer qu'une partie de la corde. Plus la partie qui vibre est <b>courte</b>, plus elle vibre <b>vite</b>, et plus le son est <b>aigu</b>.</p>
+
+  </div>${pyCordeHTML()}<div class="carte">
+  <h3>Ce que Pythagore a découvert</h3>
+  <table class="gr py-table"><tr><th>Longueur qui vibre</th><th>Fréquence multipliée par</th><th>On obtient</th><th>Écouter</th></tr>
+  <tr><td><b>1/2</b></td><td>2</td><td>l'<b>octave</b> (Do → Do aigu)</td><td>${pyBtn("",pyDuo(PY_DO,PY_DO*2),"Écouter l'octave")}</td></tr>
+  <tr><td><b>2/3</b></td><td>3/2</td><td>la <b>quinte</b> (Do → Sol)</td><td>${pyBtn("",pyDuo(PY_DO,PY_DO*1.5),"Écouter la quinte")}</td></tr>
+  <tr><td><b>3/4</b></td><td>4/3</td><td>la <b>quarte</b> (Do → Fa)</td><td>${pyBtn("",pyDuo(PY_DO,PY_DO*4/3),"Écouter la quarte")}</td></tr>
+  <tr><td><b>8/9</b></td><td>9/8</td><td>le <b>ton</b> (Do → Ré)</td><td>${pyBtn("",pyDuo(PY_DO,PY_DO*9/8),"Écouter le ton")}</td></tr>
+  </table>
+  <div class="cle">Corde <b>deux fois plus courte</b> = vibrations <b>deux fois plus rapides</b> = son <b>une octave plus aigu</b>. La longueur et la fréquence varient en sens inverse&nbsp;: on <b>retourne la fraction</b> (2/3 de la longueur → fréquence × 3/2).</div>
+  <div class="astuce">C'est exactement ce que fait un guitariste&nbsp;: en appuyant sur une case, il raccourcit la corde qui vibre. La 12ᵉ case se trouve pile au milieu de la corde&nbsp;: elle donne l'octave.</div>
+
+  </div><div class="carte">
+  <h3>3. Qui était Pythagore&nbsp;?</h3>
+  <p>Pythagore est un Grec du VIᵉ siècle avant J.-C. Il ne vient pas d'Athènes, mais d'une île de la mer Égée, <b>Samos</b>, tout près de la côte de l'actuelle Turquie. Il passe ensuite la mer pour s'installer dans le sud de l'Italie, à <b>Crotone</b>, une ville fondée par des colons grecs.</p>
+  ${pyOrigineHTML()}
+  <p>À Crotone, Pythagore n'est pas seulement un mathématicien&nbsp;: il fonde une véritable école, à la fois communauté, lieu de recherche et confrérie religieuse.</p>
+  ${pyEcoleHTML()}
+  <p>Attention&nbsp;: Pythagore n'a laissé <b>aucun écrit</b>. Ce que nous savons vient de ses disciples et d'auteurs qui ont vécu des siècles après lui. Il est souvent difficile de séparer l'histoire de la légende&nbsp;!</p>
+
+  </div><div class="carte">
+  <h3>4. Fabriquer une gamme avec des quintes</h3>
+  <p>Avec ses rapports, Pythagore peut construire toutes les notes. Sa méthode&nbsp;: partir d'une note et <b>empiler des quintes</b>, en multipliant chaque fois la fréquence par 3/2. À toi de construire la gamme&nbsp;!</p>
+
+  </div>${pyQuintesHTML()}<div class="carte">
+  <h3>Le grain de sable&nbsp;: le comma pythagoricien</h3>
+  <p>Douze quintes devraient nous ramener sur la note de départ, sept octaves plus haut. Faisons le calcul&nbsp;: (3/2)<sup>12</sup> ≈ <b>129,75</b>, alors que 2<sup>7</sup> = <b>128</b>. Il reste un petit écart&nbsp;: le <b>comma pythagoricien</b>, environ un quart de demi-ton. Avec des quintes pures, on ne retombe jamais exactement sur les octaves. Tu verras le calcul complet, note par note à partir du La 440, dans la partie 6.</p>
+  <div class="cle">Le casse-tête des musiciens pendant des siècles&nbsp;: on ne peut pas avoir en même temps des <b>octaves</b> parfaites, des <b>quintes</b> parfaites et des <b>tierces</b> parfaites (la tierce pure, de rapport 5/4, que les musiciens adorent depuis la Renaissance). Il faut <b>tricher un peu</b> quelque part. Cette tricherie s'appelle un <b>tempérament</b>.</div>
+
+  </div><div class="carte">
+  <h3>5. Les tempéraments&nbsp;: tricher un peu pour jouer juste</h3>
+  <p>Quand deux sons sont <b>presque</b> justes, on entend une petite ondulation, une sorte de «&nbsp;oua-oua-oua&nbsp;»&nbsp;: ce sont des <b>battements</b>. Plus l'intervalle est faux, plus ils sont rapides. Écoute ces intervalles joués avec un son tenu, comme celui d'un orgue&nbsp;:</p>
+  ${pyIntervallesHTML()}
+  <p>Au fil des siècles, les musiciens ont essayé plusieurs façons d'accorder les claviers. Écoute la même suite d'accords dans deux tonalités&nbsp;: <b>Do majeur</b>, une tonalité simple, et <b>La♭ majeur</b>, une tonalité éloignée.</p>
+  ${pyAccordagesHTML()}
+
+  </div><div class="carte">
+  <h3>Le code secret de Bach&nbsp;?</h3>
+  <p>En 1722, Jean-Sébastien Bach réunit <b>Le Clavier bien tempéré</b>&nbsp;: un prélude et une fugue dans chacune des <b>24 tonalités</b> majeures et mineures (il en écrira un second livre vingt ans plus tard). Il montre ainsi qu'avec un bon tempérament, <b>toutes</b> les tonalités deviennent jouables. Mais quel accordage utilisait-il&nbsp;? Il ne l'a jamais écrit… à moins qu'il ne l'ait dessiné.</p>
+  ${pyBachHTML()}
+
+  </div><div class="carte">
+  <h3>6. Le tempérament égal&nbsp;: la solution du piano</h3>
+  <p>L'idée est simple&nbsp;: couper l'octave en <b>12 demi-tons exactement identiques</b>. Pour qu'en 12 marches la fréquence double, chaque demi-ton doit la multiplier par le même nombre&nbsp;: environ <b>1,0595</b>. C'est le nombre qui, multiplié 12 fois par lui-même, donne 2 (les mathématiciens l'appellent la racine douzième de 2).</p>
+  ${pyEgalHTML()}
+  <p>Comparons maintenant les deux systèmes, note par note, à partir du La 440&nbsp;: d'abord avec les quintes pures de Pythagore, puis avec les quintes du piano.</p>
+
+  </div>${pyTablesHTML()}<div class="carte">
+  <p>Le calcul du tempérament égal a été fait presque en même temps en <b>Chine</b>, par le prince <b>Zhu Zaiyu</b> (1584), et en Europe, notamment par <b>Simon Stevin</b> et <b>Marin Mersenne</b>. Il ne s'impose vraiment sur les pianos qu'au <b>XIXᵉ siècle</b>.</p>
+  <div class="cle">Avec le tempérament égal, les quintes sont <b>un tout petit peu</b> trop petites (presque inaudible) et les tierces un peu trop grandes. Rien n'est tout à fait pur, mais <b>toutes les tonalités sonnent de la même façon</b>&nbsp;: on peut moduler où l'on veut. C'est l'accord de presque tous les pianos, guitares et claviers d'aujourd'hui. Les instruments sans touches, comme le violon ou la voix, font un peu autrement&nbsp;: tu verras pourquoi dans la partie 10.</div>
+
+  </div><div class="carte">
+  <h3>7. Calculer la fréquence de chaque note</h3>
+  <p>Avec le tempérament égal, on peut calculer toutes les notes à partir d'une seule&nbsp;: le <b>La3 à 440 Hz</b>. Monter d'un demi-ton, c'est multiplier par 1,0595&nbsp;; descendre d'un demi-ton, c'est diviser par 1,0595&nbsp;; monter d'une octave, c'est multiplier par 2.</p>
+
+  </div>${pyCalcHTML()}<div class="carte">
+  <h3>Des calculs à refaire</h3>
+  <ul>
+  <li>La3 = <b>440 Hz</b>&nbsp;; La4, une octave au-dessus&nbsp;: 440 × 2 = <b>880 Hz</b>&nbsp;; La2, une octave en dessous&nbsp;: 440 ÷ 2 = <b>220 Hz</b>.</li>
+  <li>La♯3, un demi-ton au-dessus&nbsp;: 440 × 1,0595 ≈ <b>466,16 Hz</b>.</li>
+  <li>Sol♯3, un demi-ton en dessous&nbsp;: 440 ÷ 1,0595 ≈ <b>415,30 Hz</b>. C'est le La des musiciens baroques&nbsp;!</li>
+  <li>Do4, trois demi-tons au-dessus du La3&nbsp;: 440 × 1,0595 × 1,0595 × 1,0595 ≈ <b>523,25 Hz</b>. Et le Do3, une octave plus bas&nbsp;: <b>261,63 Hz</b>.</li>
+  </ul>
+
+  </div><div class="carte">
+  <h3>8. D'où vient le La 440&nbsp;?</h3>
+  <p>Pourquoi s'accorder sur un <b>La</b>&nbsp;? Parce que c'est une note commode&nbsp;: le violon, l'alto, le violoncelle et la contrebasse ont tous une <b>corde de La</b>, et cette note se trouve au milieu de la tessiture de la plupart des instruments. Avant un concert, c'est le <b>hautbois</b> qui la donne à tout l'orchestre.</p>
+  <div class="astuce"><b>Pourquoi le hautbois&nbsp;?</b>
+  <ul>
+  <li><b>On l'entend de partout</b>&nbsp;: son timbre, riche et perçant, passe au-dessus de tout l'orchestre, même pour les musiciens assis au fond.</li>
+  <li><b>Il se règle très peu</b>&nbsp;: la hauteur d'un hautbois dépend surtout de son <b>anche</b>, la petite double lamelle de roseau que le musicien taille souvent lui-même. Il ne peut la corriger que de très peu, alors que les cordes se règlent facilement avec leurs chevilles. C'est donc aux autres de s'accorder sur lui.</li>
+  <li><b>Son son est stable</b>&nbsp;: il tient le La longtemps, sans bouger, ce qui laisse à chacun le temps de s'accorder.</li>
+  <li><b>C'est une tradition</b>&nbsp;: aux XVIIᵉ et XVIIIᵉ siècles, le hautbois faisait partie de presque tous les orchestres.</li>
+  </ul>
+  Aujourd'hui, le hautboïste vérifie souvent son La sur un accordeur électronique. Dans un concerto pour piano, c'est le <b>piano</b> qui donne le La&nbsp;: impossible de le réaccorder en plein concert&nbsp;!</div>
+  ${pyFriseHTML()}
+  <div class="astuce">Décroche un téléphone fixe en France&nbsp;: la tonalité continue que tu entends est un <b>La à 440 Hz</b>.</div>
+  <div class="cle">Le La 440 n'est pas une loi de la nature&nbsp;: c'est une <b>convention</b>, choisie pour que les musiciens du monde entier puissent jouer ensemble. On lit parfois sur Internet que 432 Hz serait plus «&nbsp;naturel&nbsp;» ou meilleur pour la santé&nbsp;: aucune étude sérieuse ne l'a montré.</div>
+
+  </div><div class="carte">
+  <h3>9. Comment on accorde, en vrai</h3>
+  <p>Une fois le La donné, chaque musicien doit régler son instrument. Le principe est toujours le même&nbsp;: on <b>compare</b> deux sons et on écoute les <b>battements</b>. Quand ils ralentissent puis disparaissent, c'est juste.</p>
+  ${pyAccorderHTML()}
+
+  </div>${pyAcHTML()}<div class="carte">
+  <div class="cle">Un accordeur de piano ne cherche pas à supprimer les battements de ses quintes&nbsp;: il les règle pour qu'elles battent <b>très lentement</b>, toutes de la même façon (c'est le tempérament égal). Ses octaves sont même un peu élargies vers l'aigu et vers le grave, parce que les grosses cordes métalliques du piano ne vibrent pas exactement comme une corde idéale.</div>
+  <div class="astuce"><b>Accordeur de piano, un métier.</b> Après la 3ᵉ, on prépare en 2 ans le <b>CAP accordeur de pianos</b>, ouvert aussi aux jeunes aveugles et malvoyants. Il faut une oreille fine, de la précision et de la patience. L'accordeur intervient chez les particuliers, dans les écoles de musique, les conservatoires et les salles de concert, à son compte ou comme salarié d'un magasin de musique, d'un conservatoire ou d'un fabricant de pianos. Avec de l'expérience, il peut se spécialiser dans les pianos de concert ou devenir technicien de piano. Tu retrouveras ce métier, et bien d'autres, dans la leçon «&nbsp;Les métiers de la musique&nbsp;». <small>(Source&nbsp;: Onisep.)</small></div>
+
+  </div><div class="carte">
+  <h3>10. Les instruments sans touches, et les correcteurs de hauteur</h3>
+  <p>Sur un piano, chaque touche donne une hauteur <b>fixée à l'avance</b> par l'accordeur&nbsp;: le pianiste ne peut rien y changer pendant qu'il joue. Un violoniste, lui, n'a pas de cases&nbsp;: il pose son doigt où il veut sur la corde, au millimètre près. Un chanteur règle sa voix en continu, un tromboniste déplace sa coulisse. Ces musiciens peuvent donc <b>ajuster chaque note à l'oreille</b>&nbsp;:</p>
+  <ul>
+  <li>baisser un peu une tierce pour qu'elle soit <b>pure</b> dans un accord&nbsp;: un chœur ou un quatuor à cordes qui chante bien juste sonne plus «&nbsp;rond&nbsp;» qu'un piano&nbsp;;</li>
+  <li>monter un peu la note qui mène à la tonique (la <b>sensible</b>) pour qu'elle «&nbsp;tire&nbsp;» davantage vers elle, par expression&nbsp;;</li>
+  <li>s'adapter au piano quand ils jouent avec lui.</li>
+  </ul>
+  <p>Le revers&nbsp;: leurs notes ne sont <b>jamais parfaitement fixes</b>. Le vibrato les fait onduler, les attaques glissent un peu, et un doigt posé un millimètre trop loin s'entend. C'est ce qui rend une voix ou un violon <b>vivants</b>… et si difficiles à jouer juste&nbsp;!</p>
+  <h3>Les correcteurs de hauteur</h3>
+  <p>Depuis la fin des années 1990, des logiciels savent <b>mesurer la hauteur</b> d'une voix et la <b>corriger</b>&nbsp;: <b>Auto-Tune</b> (1997) le fait en direct, <b>Melodyne</b> (2001) note par note après l'enregistrement, jusqu'à l'intérieur d'un accord, et les <b>pitch shifters</b> (décaleurs de hauteur) transposent un son vers l'aigu ou le grave. Ils ramènent chaque note vers la hauteur «&nbsp;exacte&nbsp;», celle du tempérament égal.</p>
+
+  </div>${pyVoixHTML()}<div class="carte">
+  <ul>
+  <li>Utilisés <b>discrètement</b>, ils corrigent les petites erreurs sans qu'on les entende&nbsp;: c'est le cas dans une grande partie des chansons enregistrées aujourd'hui.</li>
+  <li>Utilisés <b>à fond</b>, ils deviennent un effet&nbsp;: la voix saute de note en note comme un robot. La chanson «&nbsp;Believe&nbsp;» de Cher (1998) l'a rendu célèbre, et beaucoup de chanteurs et de rappeurs l'utilisent depuis.</li>
+  <li>Les instruments enregistrés passent eux aussi par ces corrections, et presque tous les musiciens s'accordent désormais sur des accordeurs électroniques.</li>
+  </ul>
+  <div class="cle">Résultat&nbsp;: nous entendons de plus en plus de musique <b>parfaitement calée</b> sur le tempérament égal et le La 440, sans les petites variations naturelles des voix et des instruments. Nos oreilles s'y habituent, au point qu'une voix naturelle, ou un chœur qui chante en intervalles purs, peut parfois nous sembler «&nbsp;moins juste&nbsp;» alors qu'il ne l'est pas. La justesse dépend aussi de nos <b>habitudes d'écoute</b>.</div>
+
+  </div><div class="carte">
+  <h3>11. Et les noms Do, Ré, Mi&nbsp;?</h3>
+  <p>Les fréquences viennent des nombres&nbsp;; les <b>noms</b> des notes, eux, viennent d'un chant. Vers 1020, le moine <b>Guido d'Arezzo</b> prend les premières syllabes d'un hymne à saint Jean-Baptiste&nbsp;: <i>Ut</i>, <i>Ré</i>, <i>Mi</i>, <i>Fa</i>, <i>Sol</i>, <i>La</i>. Le Si et le Do (qui remplace Ut) arrivent plus tard. Toute l'histoire est dans la leçon «&nbsp;Histoire de l'écriture musicale&nbsp;».</p>
+
+  </div><div class="carte">
+  <h3>12. Récapitulons</h3>
+  <ul>
+  <li><b>Forgerons</b>&nbsp;: les sons qui s'accordent ont des <b>rapports simples</b> (une légende fausse pour les marteaux, vraie pour les cordes).</li>
+  <li><b>Monocorde</b>&nbsp;: 1/2 de corde → <b>octave</b> (× 2)&nbsp;; 2/3 → <b>quinte</b> (× 3/2)&nbsp;; 3/4 → <b>quarte</b> (× 4/3)&nbsp;; 8/9 → <b>ton</b> (× 9/8).</li>
+  <li><b>Pythagore</b>&nbsp;: né à Samos vers 570 av. J.-C., école à Crotone&nbsp;; «&nbsp;Tout est nombre&nbsp;», la tetraktys, la musique des sphères.</li>
+  <li>Empiler 12 quintes pures depuis le La 440 donne <b>446 Hz</b> au lieu de 440&nbsp;: c'est le <b>comma pythagoricien</b>, environ un quart de demi-ton.</li>
+  <li><b>Tempéraments</b>&nbsp;: Pythagore (quinte du loup), mésotonique (tierces pures), inégaux (époque de Bach, peut-être caché dans les boucles de sa page de titre), puis le <b>tempérament égal</b>&nbsp;: 12 demi-tons identiques, × 1,0595 chacun, et la 13ᵉ note retombe pile sur 440.</li>
+  <li><b>La 440</b>&nbsp;: diapason inventé en 1711, 435 Hz en France en 1859, 440 Hz à Londres en 1939, norme ISO&nbsp;; 415 Hz pour la musique baroque. Le <b>hautbois</b> le donne&nbsp;: on l'entend de partout et il se règle très peu.</li>
+  <li><b>Accorder</b>, c'est comparer deux sons et faire disparaître les battements. Les instruments <b>sans touches</b> (voix, violon) ajustent chaque note et peuvent jouer plus pur, mais jamais parfaitement fixe. Les <b>correcteurs de hauteur</b> calent les voix sur le tempérament égal et changent nos habitudes d'écoute.</li>
+  </ul>
+  <div class="cle">Avant les exercices, construis la <b>spirale des quintes</b> jusqu'au bout, compare les deux tableaux de la partie 6 et réussis l'<b>accordage</b> de la partie 9.</div>`},
+
+ "modes":{titre:"Les modes : les couleurs de la musique",html:`
+  <p>Tu connais déjà deux «&nbsp;couleurs&nbsp;» de la musique&nbsp;: le <b>majeur</b>, lumineux, et le <b>mineur</b>, plus sombre. Mais il en existe d'autres&nbsp;! Le générique des <i>Simpson</i>, par exemple, sonne joyeux mais un peu étrange, comme dans un rêve&nbsp;: il utilise le <b>mode lydien</b>, le «&nbsp;mode de Fa&nbsp;». Les mêmes sept notes, et pourtant sept ambiances différentes&nbsp;: ce sont les <b>modes</b>.</p>
+  <p>Commence par la <b>palette des modes</b>&nbsp;: écoute chaque couleur, puis tente le jeu «&nbsp;Devine le mode&nbsp;».</p>
+
+  </div>${mxAtelierHTML()}<div class="carte">
+  <h3>1. Sept modes sur les touches blanches</h3>
+  <p>Joue seulement les touches blanches du piano, mais commence sur une autre note que Do&nbsp;: la gamme change de couleur&nbsp;! Pourquoi&nbsp;? Parce que les deux <b>demi-tons</b> (entre Mi et Fa, et entre Si et Do) ne tombent plus au même endroit de la gamme.</p>
+  ${mxBlanchesHTML()}
+  <div class="cle">Un mode, c'est un <b>ordre</b> de tons (T) et de demi-tons (½). Do ionien&nbsp;: T T ½ T T T ½ (c'est la gamme majeure). Ré dorien&nbsp;: T ½ T T T ½ T. Chaque mode a son propre ordre, donc sa propre couleur.</div>
+  <div class="astuce">Pour retenir l'ordre des modes, de Do à Si&nbsp;: <b>I</b>onien, <b>D</b>orien, <b>P</b>hrygien, <b>L</b>ydien, <b>M</b>ixolydien, <b>É</b>olien, <b>L</b>ocrien. Une phrase pour s'en souvenir&nbsp;: «&nbsp;<b>I</b>ci, <b>D</b>es <b>P</b>ianistes <b>L</b>ancent <b>M</b>ille <b>É</b>toiles <b>L</b>umineuses&nbsp;».</div>
+
+  </div><div class="carte">
+  <h3>2. Ce qui fait la couleur&nbsp;: une seule note</h3>
+  <p>Pour bien entendre un mode, on le compare au majeur (ionien) ou au mineur (éolien) qui lui ressemble le plus&nbsp;: souvent, <b>une seule note</b> change. C'est sa <b>note caractéristique</b>. Écoute la comparaison&nbsp;: la note qui change est jouée un peu plus fort.</p>
+  ${mxCaracteresHTML()}
+  <ul>
+  <li>Le <b>lydien</b> et le <b>mixolydien</b> sont de la famille du <b>majeur</b> (tierce majeure).</li>
+  <li>Le <b>dorien</b>, le <b>phrygien</b> et l'<b>éolien</b> sont de la famille du <b>mineur</b> (tierce mineure).</li>
+  <li>Le <b>locrien</b> est à part&nbsp;: sa quinte diminuée le rend instable.</li>
+  </ul>
+
+  </div><div class="carte">
+  <h3>3. Du plus lumineux au plus sombre</h3>
+  <p>Rangeons les sept modes, tous sur Do, du plus lumineux au plus sombre. Surprise&nbsp;: d'une ligne à l'autre, <b>une seule note</b> descend d'un demi-ton (elle est entourée). Écoute la même mélodie s'assombrir petit à petit.</p>
+  ${mxLumiereHTML()}
+
+  </div><div class="carte">
+  <h3>4. Une très longue histoire</h3>
+  <ul class="mx-histoire">
+  <li><b>Grèce antique</b>&nbsp;: les noms des modes viennent de peuples et de régions grecs (les Doriens, la Phrygie, la Lydie, l'Ionie, l'Éolie, la Locride). Le philosophe <b>Platon</b> pensait que chaque mode agissait sur le caractère&nbsp;: dans sa cité idéale, il ne gardait que le dorien et le phrygien.</li>
+  <li><b>Moyen Âge</b>&nbsp;: le <b>chant grégorien</b> utilise huit modes d'église. Les moines reprennent les noms grecs… mais pas pour les mêmes gammes&nbsp;: notre «&nbsp;dorien&nbsp;» n'est pas celui des Grecs&nbsp;!</li>
+  <li><b>1547</b>&nbsp;: le savant suisse <b>Glaréan</b> ajoute l'<b>ionien</b> et l'<b>éolien</b>, utilisés depuis longtemps dans les chansons.</li>
+  <li><b>XVIIᵉ et XVIIIᵉ siècles</b>&nbsp;: deux modes l'emportent sur tous les autres&nbsp;: l'ionien devient le <b>majeur</b> et l'éolien le <b>mineur</b>.</li>
+  <li><b>Fin du XIXᵉ et XXᵉ siècles</b>&nbsp;: les modes reviennent, chez <b>Debussy</b>, <b>Ravel</b> ou <b>Fauré</b>, dans le <b>jazz modal</b> («&nbsp;So What&nbsp;» de Miles Davis, 1959, en dorien), le rock, la musique de film et de jeux vidéo.</li>
+  </ul>
+
+  </div><div class="carte">
+  <h3>5. Écoute les modes dans de vraies musiques</h3>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> Lydien, le mode de Fa</div><p>Le générique des <i>Simpson</i> (Danny Elfman, 1989)&nbsp;: la mélodie insiste sur la <b>quarte augmentée</b>, la note «&nbsp;magique&nbsp;» qui donne ce côté joyeux et décalé.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="Fttst9dG6Ko" data-lib="Les Simpson, générique · Danny Elfman (1989)"></div></div></div>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> Dorien, le mode de Ré</div><p><i>Oye Como Va</i> (composé par Tito Puente, ici joué par Santana en 1970)&nbsp;: deux accords qui alternent sans fin, un accord mineur puis un accord majeur sur la 4ᵉ note. C'est la <b>sixte majeure</b> du dorien qui crée ce balancement.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="J7ATTjg7tpE" data-lib="Oye Como Va · Santana (1970)"></div></div></div>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> Phrygien, le mode de Mi</div><p><i>White Rabbit</i> (Jefferson Airplane, 1967)&nbsp;: la basse monte et redescend d'un demi-ton, comme un boléro espagnol. C'est la <b>seconde mineure</b> du phrygien, celle du flamenco.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="pnJM_jC7j_4" data-lib="White Rabbit · Jefferson Airplane (1967)"></div></div></div>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> Mixolydien, le mode de Sol</div><p><i>Norwegian Wood</i> (The Beatles, 1965)&nbsp;: une mélodie majeure, mais la 7ᵉ note est abaissée. Ce parfum folk vient des musiques traditionnelles.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="Y_V6y1ZCg_8" data-lib="Norwegian Wood · The Beatles (1965)"></div></div></div>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> Éolien, le mode de La</div><p><i>All Along the Watchtower</i> (Jimi Hendrix, 1968)&nbsp;: trois accords qui descendent en boucle, toujours les mêmes. La couleur sombre et tendue du <b>mineur naturel</b>.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="TLV4_xaYynY" data-lib="All Along the Watchtower · The Jimi Hendrix Experience (1968)"></div></div></div>
+  <p>Et aussi&nbsp;: l'<b>ionien</b> dans presque toutes les comptines («&nbsp;Au clair de la lune&nbsp;», «&nbsp;Joyeux anniversaire&nbsp;»)&nbsp;; le <b>dorien</b> dans la chanson traditionnelle anglaise «&nbsp;Scarborough Fair&nbsp;»&nbsp;; le <b>mixolydien</b> dans beaucoup d'airs de cornemuse&nbsp;; le <b>phrygien</b> dans le flamenco et le métal. Le <b>locrien</b>, lui, est si instable qu'on ne l'entend presque que par passages.</p>
+
+  </div><div class="carte">
+  <h3>6. Récapitulons</h3>
+  <ul>
+  <li>Un <b>mode</b>, c'est un ordre de tons et de demi-tons&nbsp;: il donne une <b>couleur</b> à la musique.</li>
+  <li>Sur les touches blanches&nbsp;: Do <b>ionien</b>, Ré <b>dorien</b>, Mi <b>phrygien</b>, Fa <b>lydien</b>, Sol <b>mixolydien</b>, La <b>éolien</b>, Si <b>locrien</b>.</li>
+  <li><b>Ionien</b> = gamme majeure&nbsp;; <b>éolien</b> = gamme mineure naturelle.</li>
+  <li>Notes caractéristiques&nbsp;: dorien → <b>sixte majeure</b>&nbsp;; phrygien → <b>seconde mineure</b>&nbsp;; lydien → <b>quarte augmentée</b>&nbsp;; mixolydien → <b>septième mineure</b>&nbsp;; locrien → <b>quinte diminuée</b>.</li>
+  <li>Du plus lumineux au plus sombre&nbsp;: lydien, ionien, mixolydien, dorien, éolien, phrygien, locrien.</li>
+  <li>Noms grecs, réutilisés au Moyen Âge (chant grégorien)&nbsp;; Glaréan ajoute ionien et éolien en 1547&nbsp;; majeur et mineur l'emportent aux XVIIᵉ et XVIIIᵉ siècles&nbsp;; retour des modes au XXᵉ siècle.</li>
+  </ul>
+  <div class="cle">Avant les exercices, joue à «&nbsp;Devine le mode&nbsp;»&nbsp;: si tu fais 8 sur 10 avec 5 modes, tu es prêt.</div>`},
+
  "variations":{titre:"Thème et variations : transformer une mélodie",html:`
   <p>Un <b>thème</b>, c'est une mélodie qu'on reconnaît. Une <b>variation</b>, c'est ce même thème <b>transformé</b>&nbsp;: plus vite, en mineur, orné de petites notes, joué par un autre instrument… Le compositeur joue avec le thème, mais on doit toujours pouvoir le <b>reconnaître</b>. Une œuvre en «&nbsp;thème et variations&nbsp;» enchaîne le thème puis plusieurs variations.</p>
 
@@ -6633,54 +8780,50 @@ const LECONS={
   <div class="astuce">Pour t'entraîner efficacement, fais des <b>allers-retours</b>&nbsp;: lis une note, puis essaie de la replacer ailleurs de mémoire, puis relis-la. C'est en passant d'un sens à l'autre que la connaissance des notes devient vraiment automatique.</div>`},
 
  "alterations":{titre:"Le dièse, le bémol et le bécarre",html:`
-  <p>Tu connais les <b>sept noms de notes</b>&nbsp;: Do, Ré, Mi, Fa, Sol, La, Si. Mais si tu regardes un piano, tu remarques qu'il n'y a pas que des touches blanches&nbsp;: il y a aussi des <b>touches noires</b>, glissées entre certaines blanches. Ces touches noires produisent des sons bien réels, qu'il faut bien pouvoir nommer et écrire. C'est tout l'objet de cette leçon&nbsp;: les <b>altérations</b>, ces petits signes qui permettent d'aller chercher les sons «&nbsp;entre&nbsp;» les notes.</p>
-  <p>C'est une notion qui fait peur quand on la découvre, parce qu'elle semble abstraite. Mais tu vas voir&nbsp;: avec le piano comme support visuel, tout devient limpide. Lis bien chaque partie dans l'ordre.</p>
+  <p>Sur un piano, il n'y a pas que des touches blanches&nbsp;: les <b>touches noires</b>, glissées entre elles, donnent des sons bien réels. Pourtant, elles n'ont pas de nom à elles. Pour les écrire, on garde les sept noms de notes et on leur ajoute un petit signe&nbsp;: une <b>altération</b>.</p>
+  <p>Commence par le <b>laboratoire</b>&nbsp;: manipule, écoute, puis lis la suite. Tout deviendra limpide.</p>
+
+  </div>${axAtelierHTML()}<div class="carte">
+  <h3>1. Le demi-ton&nbsp;: le plus petit pas</h3>
+  <p>Passer d'une touche du piano à sa <b>voisine immédiate</b>, blanche ou noire, c'est faire un <b>demi-ton</b>&nbsp;: le plus petit écart entre deux sons de notre musique. Deux demi-tons font un <b>ton</b>.</p>
+  ${axDemiTonHTML()}
+  <div class="cle">Entre <b>Mi et Fa</b>, et entre <b>Si et Do</b>, il n'y a pas de touche noire&nbsp;: ces notes ne sont séparées que d'un demi-ton. Partout ailleurs, deux touches blanches voisines sont à un ton l'une de l'autre.</div>
 
   </div><div class="carte">
-  <h3>1. Le demi-ton&nbsp;: le plus petit pas en musique</h3>
-  <p>Avant de parler des altérations, il faut comprendre une idée simple&nbsp;: le <b>demi-ton</b>. C'est le <b>plus petit écart possible</b> entre deux sons dans notre musique. Sur un piano, passer d'une touche à la touche <b>immédiatement voisine</b> (qu'elle soit blanche ou noire), c'est faire un demi-ton.</p>
-  <p>Une altération, c'est justement un outil pour <b>monter ou descendre une note d'un demi-ton</b>. Au lieu d'inventer de nouveaux noms de notes (ce qui en ferait des dizaines à retenir&nbsp;!), on garde les sept noms connus et on les <b>modifie</b> légèrement avec un petit signe. Élégant, non&nbsp;?</p>
-  <div class="cle">Une altération se place <b>juste devant</b> la note qu'elle modifie, sur la même ligne ou le même interligne. Et attention&nbsp;: elle reste valable jusqu'à la fin de la <b>mesure</b> en cours. On dit qu'elle est «&nbsp;accidentelle&nbsp;».</div>
+  <h3>2. Les trois signes</h3>
+  <p>Une altération s'écrit <b>devant</b> la note, sur la même ligne ou dans le même interligne. On la lit avant la note, mais on la <b>dit après</b>&nbsp;: on écrit ♯ devant le Fa, et on dit «&nbsp;Fa dièse&nbsp;».</p>
+  ${axTrioHTML()}
+  <div class="astuce">Pour retenir&nbsp;: le <b>dièse</b> fait monter&nbsp;; le <b>bémol</b> fait baisser (le «&nbsp;b&nbsp;» de bémol comme «&nbsp;bas&nbsp;»)&nbsp;; le <b>bécarre</b> remet tout à zéro.</div>
 
   </div><div class="carte">
-  <h3>2. Les trois altérations, une par une</h3>
-  <p><b>Le dièse</b> (♯) fait <b>monter</b> la note d'un demi-ton&nbsp;: le son devient un peu plus <b>aigu</b>. Un «&nbsp;Do dièse&nbsp;» (Do♯) est donc juste un cran au-dessus du Do&nbsp;: sur le piano, c'est la touche noire immédiatement à droite du Do.</p>
-  <p><b>Le bémol</b> (♭) fait l'inverse&nbsp;: il fait <b>descendre</b> la note d'un demi-ton&nbsp;; le son devient un peu plus <b>grave</b>. Un «&nbsp;Si bémol&nbsp;» (Si♭) est juste un cran en dessous du Si&nbsp;: la touche noire immédiatement à gauche du Si.</p>
-  <p><b>Le bécarre</b> (♮) est le signe «&nbsp;annulateur&nbsp;». Il <b>supprime</b> un dièse ou un bémol posé précédemment, et ramène la note à son état <b>naturel</b>, ni montée ni baissée. Il sert à dire&nbsp;: «&nbsp;attention, redeviens la note normale&nbsp;».</p>
-  <table class="gr"><tr><th>Signe</th><th>Nom</th><th>Effet sur la note</th></tr>
-  <tr><td>♯</td><td>dièse</td><td>monte d'un demi-ton (plus aigu)</td></tr>
-  <tr><td>♭</td><td>bémol</td><td>baisse d'un demi-ton (plus grave)</td></tr>
-  <tr><td>♮</td><td>bécarre</td><td>annule&nbsp;: retour à la note naturelle</td></tr></table>
-  <div class="astuce">Moyen mnémotechnique&nbsp;: le dièse <b>monte</b> (pense à une flèche qui monte <i class="ph ph-arrow-up"></i>), le bémol <b>baisse</b> (le «&nbsp;b&nbsp;» de bémol comme «&nbsp;bas&nbsp;»). Le bécarre, lui, remet tout à zéro.</div>
+  <h3>3. Deux noms pour un même son</h3>
+  <p>La touche noire entre le Do et le Ré, on peut l'atteindre de deux façons&nbsp;: en <b>montant</b> depuis le Do (c'est un <b>Do♯</b>) ou en <b>descendant</b> depuis le Ré (c'est un <b>Ré♭</b>). C'est la même touche, donc le <b>même son</b>&nbsp;: on dit que Do♯ et Ré♭ sont <b>enharmoniques</b>.</p>
+  ${axEnharmonieHTML()}
+  <div class="cle">Chaque touche noire a <b>deux noms</b>&nbsp;: Do♯ = Ré♭, Ré♯ = Mi♭, Fa♯ = Sol♭, Sol♯ = La♭, La♯ = Si♭. On choisit l'écriture selon le morceau, mais le son ne change pas.</div>
 
   </div><div class="carte">
-  <h3>3. Une surprise&nbsp;: deux noms pour le même son</h3>
-  <p>Voici un fait étonnant mais fondamental. Regarde la touche noire située <b>entre le Do et le Ré</b>. On peut y arriver de deux façons&nbsp;:</p>
+  <h3>4. Combien de temps dure une altération&nbsp;?</h3>
+  <p>Une altération écrite devant une note s'appelle une altération <b>accidentelle</b>. Elle vaut pour la même note (même nom, même hauteur) <b>jusqu'à la barre de mesure</b>. Après la barre, on l'oublie&nbsp;: la note redevient naturelle.</p>
+  ${axMesureHTML()}
+  <div class="astuce">Devant une note sans signe, regarde toujours <b>en arrière dans la mesure</b>&nbsp;: un ♯, un ♭ ou un ♮ écrit plus tôt sur la même note vaut encore pour elle.</div>
+
+  </div><div class="carte">
+  <h3>5. L'armure&nbsp;: des altérations pour tout le morceau</h3>
+  <p>Parfois, des dièses ou des bémols sont écrits <b>juste après la clé</b>, au début de chaque ligne. C'est l'<b>armure</b>. Ces altérations valent pour <b>tout le morceau</b> et dans toutes les octaves, sans qu'on ait à les réécrire.</p>
+  ${axArmureHTML()}
+  <p>L'armure indique la <b>tonalité</b> du morceau&nbsp;: avec un Fa♯ à la clé, on est souvent en <b>Sol majeur</b>&nbsp;; avec un Si♭, souvent en <b>Fa majeur</b>. Tu l'approfondiras avec la leçon sur les modulations.</p>
+  <div class="cle">À la clé&nbsp;: l'altération vaut pour <b>tout le morceau</b>. Devant une note&nbsp;: elle ne vaut que <b>jusqu'à la fin de la mesure</b>.</div>
+
+  </div><div class="carte">
+  <h3>6. Récapitulons</h3>
   <ul>
-  <li>en partant du Do et en <b>montant</b> d'un demi-ton&nbsp;: c'est un <b>Do dièse</b> (Do♯)&nbsp;;</li>
-  <li>en partant du Ré et en <b>descendant</b> d'un demi-ton&nbsp;: c'est un <b>Ré bémol</b> (Ré♭).</li>
+  <li>Un <b>demi-ton</b>, ce sont deux touches voisines du piano. Pas de touche noire entre <b>Mi-Fa</b> et <b>Si-Do</b>.</li>
+  <li><b>♯ dièse</b>&nbsp;: un demi-ton plus aigu. <b>♭ bémol</b>&nbsp;: un demi-ton plus grave. <b>♮ bécarre</b>&nbsp;: retour à la note naturelle.</li>
+  <li>L'altération s'écrit <b>devant</b> la note et se dit <b>après</b> son nom.</li>
+  <li>Une touche noire a deux noms&nbsp;: Do♯ = Ré♭ (notes <b>enharmoniques</b>).</li>
+  <li>Accidentelle&nbsp;: valable jusqu'à la <b>barre de mesure</b>. À la clé (l'<b>armure</b>)&nbsp;: valable pour <b>tout le morceau</b>.</li>
   </ul>
-  <p>Or, c'est exactement la <b>même touche</b>, donc <b>exactement le même son</b>&nbsp;! Do♯ et Ré♭ sonnent pareil&nbsp;: on dit qu'ils sont <b>enharmoniques</b>. C'est comme un objet qui aurait deux noms selon le chemin par lequel on y arrive. Le choix entre les deux écritures dépend du contexte musical (de la tonalité du morceau)&nbsp;: pour l'instant, retiens simplement que c'est possible et normal.</p>
-  <div class="cle">Pourquoi pas de touche noire entre <b>Mi et Fa</b>, ni entre <b>Si et Do</b>&nbsp;? Parce que ces notes-là sont <b>déjà</b> séparées d'un seul demi-ton&nbsp;: il n'y a pas de place pour un son intermédiaire&nbsp;! C'est une particularité à connaître absolument.</div>
-
-  </div><div class="carte">
-  <h3>4. Les altérations «&nbsp;à la clé&nbsp;»&nbsp;: l'armure</h3>
-  <p>Jusqu'ici on a parlé d'altérations <b>accidentelles</b> (devant une note, valables une mesure). Mais il existe un autre cas, très important. Parfois, on trouve un ou plusieurs dièses (ou bémols) écrits <b>juste après la clé</b>, tout au début de la portée, avant même la musique. C'est l'<b>armure</b> (on dit aussi «&nbsp;armature&nbsp;»).</p>
-  <p>L'armure donne une <b>consigne valable pour tout le morceau</b>&nbsp;: toutes les notes concernées seront altérées, du début à la fin, sans qu'on ait besoin de le réécrire à chaque fois. Par exemple, un morceau qui porte <b>un Fa dièse à la clé</b> jouera <b>tous ses Fa en Fa dièse</b>, automatiquement.</p>
-  <p>L'armure sert en fait à indiquer la <b>tonalité</b> du morceau, c'est-à-dire la «&nbsp;famille de notes&nbsp;» dans laquelle il est écrit. Le morceau avec un Fa♯ à la clé est en <b>Sol majeur</b>. Tu approfondiras tout cela avec les leçons sur les gammes et les tons.</p>
-  <div class="astuce">Comment distinguer les deux cas&nbsp;? Si l'altération est <b>collée à la clé</b>, au tout début, elle vaut pour tout le morceau (armure). Si elle est <b>devant une note</b> au milieu de la musique, elle est accidentelle et ne vaut que pour la mesure.</div>
-
-  </div><div class="carte">
-  <h3>5. Récapitulons</h3>
-  <ul>
-  <li>Un <b>demi-ton</b> est le plus petit écart entre deux sons (touches voisines au piano).</li>
-  <li>Le <b>dièse ♯</b> monte d'un demi-ton, le <b>bémol ♭</b> baisse d'un demi-ton, le <b>bécarre ♮</b> annule et revient à la note naturelle.</li>
-  <li>Une altération se place <b>devant</b> la note et vaut jusqu'à la fin de la mesure.</li>
-  <li>Deux écritures peuvent désigner le même son&nbsp;: ce sont des notes <b>enharmoniques</b> (Do♯ = Ré♭).</li>
-  <li>Il n'y a pas de demi-ton intermédiaire entre <b>Mi-Fa</b> et entre <b>Si-Do</b>.</li>
-  <li>À la clé, une altération devient l'<b>armure</b> et s'applique à tout le morceau&nbsp;: elle indique la tonalité.</li>
-  </ul>
-  <div class="cle">Si tu retiens ces six points, tu maîtrises les altérations mieux que beaucoup d'élèves&nbsp;! Relis-les avant de passer aux exercices.</div>`},
+  <div class="cle">Avant les exercices, fais le <b>défi du laboratoire</b>&nbsp;: si tu trouves cinq touches d'affilée, tu es prêt.</div>`},
 
  "fr-en":{titre:"Les noms des notes en français et en anglais",html:`
   <p>Savais-tu qu'il existe <b>deux façons de nommer les notes</b> dans le monde&nbsp;? En France, on dit «&nbsp;Do, Ré, Mi&nbsp;»&nbsp;; dans les pays anglo-saxons, on dit «&nbsp;C, D, E&nbsp;». Si tu veux jouer du rock, de la pop ou du jazz, lire des tablatures de guitare ou des grilles d'accords sur internet, tu <b>dois</b> connaître le système anglais. Cette leçon va te rendre capable de passer de l'un à l'autre sans hésiter.</p>
@@ -7258,20 +9401,45 @@ const LECONS={
   </div>
   <p style="text-align:center;margin-top:10px;color:var(--encre-doux,#777);font-size:.92rem">Le bouton vert «&nbsp;S'entraîner&nbsp;» ci-dessous mélange, lui, les deux sens.</p>`},
 
- "dictee-aigu":{titre:"Plus aigu ou plus grave ?",html:`
-  <p>Voici la toute première marche de la <b>formation de l'oreille</b>, l'exercice le plus fondamental de tous&nbsp;: savoir dire si un son est plus <b>aigu</b> ou plus <b>grave</b> qu'un autre. Cela peut sembler facile dit comme ça, mais c'est le socle sur lequel se construit toute l'écoute musicale. Avant de reconnaître des mélodies ou des accords, il faut d'abord entendre clairement si «&nbsp;ça monte&nbsp;» ou si «&nbsp;ça descend&nbsp;».</p>
+ "dictee-aigu":{titre:"Plus aigu ou plus grave ?",html:`
+  <p>Une souris qui couine, un lion qui rugit&nbsp;: tu entends tout de suite que ces deux sons ne sont pas à la même <b>hauteur</b>. Dire si un son est plus <b>aigu</b> ou plus <b>grave</b> qu'un autre, c'est la toute première compétence de l'oreille musicale.</p>
+  <p>Commence par l'<b>ascenseur des sons</b>, puis lance le jeu&nbsp;: tu vas découvrir jusqu'où va ton oreille.</p>
+
+  </div>${hxAtelierHTML()}<div class="carte">
+  <h3>1. Aigu, médium, grave</h3>
+  <p>La <b>hauteur</b> est l'un des quatre paramètres du son, avec la durée, l'intensité et le timbre. Du plus aigu au plus grave, voici des exemples&nbsp;: appuie sur ▶ pour les entendre.</p>
+  ${hxEchelleHTML()}
+  <div class="cle"><b>Aigu</b>&nbsp;: un son haut, fin, perçant. <b>Grave</b>&nbsp;: un son bas, profond, épais. Attention&nbsp;: aigu ne veut pas dire <b>fort</b>&nbsp;! Un oiseau au loin chante aigu mais doucement&nbsp;; le tonnerre gronde grave et très fort.</div>
 
   </div><div class="carte">
-  <h3>1. Aigu, grave&nbsp;: de quoi parle-t-on&nbsp;?</h3>
-  <p>La <b>hauteur</b> d'un son, c'est ce qui le rend «&nbsp;haut&nbsp;» ou «&nbsp;bas&nbsp;». C'est l'un des quatre paramètres fondamentaux du son (avec la durée, l'intensité et le timbre).</p>
-  <p>Un son <b>aigu</b> est un son haut, fin, perçant. Pense au chant d'un petit oiseau, au sifflet d'un train, à une voix d'enfant, ou aux fines cordes aiguës d'une guitare.</p>
-  <p>Un son <b>grave</b> est un son bas, profond, épais. Pense au tonnerre qui gronde, à une grosse voix d'homme, au tuba, ou aux grosses cordes graves d'une guitare.</p>
-  <div class="cle">Petit truc d'images&nbsp;: l'<b>aigu</b> évoque le petit, le léger, le pointu&nbsp;; le <b>grave</b> évoque le gros, le lourd, le profond. Une souris couine (aigu), un lion rugit (grave).</div>
+  <h3>2. Pourquoi un son est-il aigu ou grave&nbsp;?</h3>
+  <p>Un son, c'est une <b>vibration</b>. Plus l'objet vibre <b>vite</b>, plus le son est <b>aigu</b>&nbsp;; plus il vibre <b>lentement</b>, plus le son est <b>grave</b>. On compte les vibrations par seconde en <b>hertz</b> (Hz)&nbsp;: le La du diapason vibre <b>440 fois par seconde</b>, soit 440&nbsp;Hz.</p>
+  ${hxDeuxOndesHTML()}
+  <ul>
+  <li>Une corde <b>courte, fine et tendue</b> vibre vite&nbsp;: son aigu (le violon). Une corde <b>longue et épaisse</b> vibre lentement&nbsp;: son grave (la contrebasse).</li>
+  <li>Dans une même famille, le <b>petit</b> instrument sonne plus aigu que le <b>grand</b>&nbsp;: la flûte piccolo et la grande flûte, le violon et le violoncelle.</li>
+  <li>Les cordes vocales d'un enfant sont plus courtes que celles d'un adulte&nbsp;: sa voix est plus aiguë.</li>
+  </ul>
 
   </div><div class="carte">
-  <h3>2. Ce qu'on te demande, et comment réussir</h3>
-  <p>Le logiciel joue <b>deux sons l'un après l'autre</b>. Tu dois simplement dire si le <b>second</b> est plus aigu (il «&nbsp;monte&nbsp;») ou plus grave (il «&nbsp;descend&nbsp;») par rapport au premier. Mets le son, et réécoute autant de fois que nécessaire.</p>
-  <div class="astuce">Ne cherche pas à nommer les notes&nbsp;! Concentre-toi uniquement sur le <b>mouvement</b> entre les deux sons&nbsp;: ton corps le ressent souvent avant ta tête. Tu peux même accompagner le geste avec ta main qui monte ou qui descend. Avec un peu d'habitude, cette perception devient immédiate : et tu auras posé la première pierre de ton oreille musicale.</div>`},
+  <h3>3. Sur la portée et sur le piano</h3>
+  ${hxPorteePianoHTML()}
+  <div class="astuce">Deux Do voisins sur le piano portent le même nom, mais celui de droite est <b>plus aigu</b>&nbsp;: il vibre <b>deux fois plus vite</b>. Cet écart s'appelle une <b>octave</b>.</div>
+
+  </div><div class="carte">
+  <h3>4. Le dessin d'une mélodie</h3>
+  <p>Une mélodie peut <b>monter</b>, <b>descendre</b>, <b>rester</b> sur la même note ou faire des <b>vagues</b>. Ce dessin s'appelle son <b>contour</b>. Écoute chaque exemple en suivant la ligne des yeux.</p>
+  ${hxContoursHTML()}
+
+  </div><div class="carte">
+  <h3>5. Comment réussir les exercices</h3>
+  <div class="astuce">Ne cherche pas à nommer les notes&nbsp;: écoute seulement le <b>mouvement</b>. Garde le premier son en tête, puis compare. Accompagne avec ta <b>main</b> qui monte ou qui descend, ou chante les deux sons tout bas&nbsp;: ta voix monte toute seule quand le son monte.</div>
+  <ul>
+  <li>Le son <b>aigu</b> est haut et fin, le son <b>grave</b> est bas et profond.</li>
+  <li>Aigu&nbsp;: vibrations <b>rapides</b>. Grave&nbsp;: vibrations <b>lentes</b>. On les compte en hertz.</li>
+  <li>Plus <b>haut</b> sur la portée, plus à <b>droite</b> sur le piano&nbsp;: plus aigu.</li>
+  <li>Une mélodie a un <b>contour</b>&nbsp;: elle monte, descend, reste ou fait des vagues.</li>
+  </ul>`},
 
  "ecoute":{titre:"L'écoute active",html:`
   <p>Il y a une grande différence entre <b>entendre</b> et <b>écouter</b>. Entendre, c'est laisser la musique passer dans nos oreilles sans y penser. <b>Écouter</b>, c'est repérer activement ce qui se passe&nbsp;: est-ce gai ou triste&nbsp;? Ça monte ou ça descend&nbsp;? C'est fort ou doux&nbsp;? C'est ce qu'on appelle l'<b>écoute active</b>, et c'est une compétence qui transforme complètement ta façon de vivre la musique. Mets le son&nbsp;: tu peux réécouter chaque extrait autant de fois que tu veux.</p>
@@ -9811,8 +11979,15 @@ function jouerSon(i){const s=exercices[i].sonBtn;try{audio().resume();}catch(e){
 /* Les boutons « Écouter » des exercices : chaque lecture passe par son propre
    canal (un gain), qu'on coupe net quand on rejoue (avant, deux clics
    superposaient deux lectures) ou quand on quitte la question. */
-let _sonBtn={canaux:[],ancre:null,veille:null,dest:null};
-function sonBtnCouper(){
+/* ===== Les écoutes : un seul son à la fois, qu'on arrête en recliquant sur son bouton ou en
+   cliquant ailleurs (14/10/2026). Toute écoute lancée par jouerSonBtn, ou par un bouton d'écoute qui
+   joue directement ses notes (jouerFreq), ouvre une « session » : elle connaît le bouton qui l'a lancée
+   et l'instant où son dernier son se termine. Un clic sur ce même bouton l'arrête sans la relancer ; un
+   clic n'importe où ailleurs l'arrête aussi, sauf dans la « zone » d'un atelier dont les commandes
+   règlent le son en direct (l'accordeur). Échap l'arrête. Les boucles des ateliers (boîte à rythmes,
+   polyrythmie…) ont leurs propres canaux et ne sont pas concernées. */
+let _sonBtn={canaux:[],ancre:null,veille:null,dest:null,session:null,jusqua:0,suivre:false,clic:null,bis:false,auto:null,muet:null,minuteur:null};
+function sonBtnCouper(groupe){
   const ctx=audio(), now=ctx.currentTime;
   _sonBtn.canaux.forEach(function(g){
     try{ g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value,now); g.gain.linearRampToValueAtTime(0,now+0.04); }catch(e){}
@@ -9821,13 +11996,74 @@ function sonBtnCouper(){
   _sonBtn.canaux=[];
   if(_sonBtn.veille){ clearInterval(_sonBtn.veille); _sonBtn.veille=null; }
   if(typeof meArret==="function")meArret();
+  sonSessionFin(false,groupe);
 }
 function sonBtnCanal(vers){ const ctx=audio(), g=ctx.createGain(); g.gain.value=1; g.connect(vers||ctx.destination); _sonBtn.canaux.push(g); return g; }
-function jouerSonBtn(s){
+/* un bouton d'écoute : son icône le dit (lecture, haut-parleur…), quel que soit son habillage ;
+   « Ajouter », « Recommencer »… même habillés en btn-son, n'en sont pas */
+const SON_ICONES=/\bph-(play|speaker-high|headphones|arrows-left-right|lightbulb|wave-sine)\b/;
+function sonEstEcoute(el){ return !!el&&(el.hasAttribute("data-son")||(el.tagName==="BUTTON"&&SON_ICONES.test(el.innerHTML))); }
+function sonActif(){
+  const S=_sonBtn.session; if(!S)return false;
+  if(S.actif){ try{ if(S.actif())return true; }catch(e){} }
+  return !!actx&&actx.currentTime<_sonBtn.jusqua+0.05;
+}
+function sonSessionDebut(o){
+  const P=_sonBtn.session; if(P&&P.el)P.el.classList.remove("son-actif");
+  const c=_sonBtn.clic, el=c&&c.ecoute?c.el:null;
+  _sonBtn.session=Object.assign({el:el,cle:el?(el.getAttribute("onclick")||""):null},o||{});
+  if(el)el.classList.add("son-actif");
+  if(!_sonBtn.minuteur)_sonBtn.minuteur=setInterval(function(){ if(!sonActif())sonSessionFin(true); },200);
+}
+function sonSessionAttacher(o){ if(_sonBtn.session)Object.assign(_sonBtn.session,o); else sonSessionDebut(o); }
+/* naturel : le son s'est éteint de lui-même ; groupe : l'écoute suivante appartient à la même suite (on ne l'arrête pas) */
+function sonSessionFin(naturel,groupe){
+  const S=_sonBtn.session; _sonBtn.session=null; _sonBtn.jusqua=0;
+  if(_sonBtn.minuteur){ clearInterval(_sonBtn.minuteur); _sonBtn.minuteur=null; }
+  if(!S)return;
+  if(S.el)S.el.classList.remove("son-actif");
+  if(!naturel&&S.arret&&!(groupe&&S.groupe===groupe)){ try{ S.arret(); }catch(e){} }
+}
+/* où brancher un son : le canal de l'écoute en cours, ou celui d'un bouton d'écoute qu'on vient de cliquer */
+function sonSortie(){
+  const ctx=audio();
+  if(_sonBtn.dest)return _sonBtn.dest;
+  const c=_sonBtn.clic;
+  if(c&&c.ecoute){
+    if(_sonBtn.bis){ if(!_sonBtn.muet||_sonBtn.muet.context!==ctx){ _sonBtn.muet=ctx.createGain(); _sonBtn.muet.gain.value=0; _sonBtn.muet.connect(ctx.destination); } return _sonBtn.muet; }
+    if(!_sonBtn.auto){ sonBtnCouper(); _sonBtn.auto=sonBtnCanal(); sonSessionDebut(); }
+    _sonBtn.suivre=true; return _sonBtn.auto;
+  }
+  return ctx.destination;
+}
+/* on note l'instant où se termine chaque son programmé pendant une écoute */
+(function(){
+  const P=window.AudioScheduledSourceNode&&AudioScheduledSourceNode.prototype; if(!P||P.__museduc)return; P.__museduc=1;
+  const arreter=P.stop, lancer=P.start;
+  P.stop=function(w){ if(_sonBtn.suivre)_sonBtn.jusqua=Math.max(_sonBtn.jusqua,w||this.context.currentTime); return arreter.apply(this,arguments); };
+  P.start=function(w,dec,dur){
+    if(_sonBtn.suivre&&this.buffer&&!this.loop){ const r=(this.playbackRate&&this.playbackRate.value)||1; _sonBtn.jusqua=Math.max(_sonBtn.jusqua,(w||this.context.currentTime)+(dur!=null?dur:this.buffer.duration-(dec||0))/r); }
+    return lancer.apply(this,arguments); };
+})();
+/* le clic est vu AVANT les boutons (phase de capture) : on sait ainsi s'il faut arrêter, et si le bouton relancerait le même son */
+document.addEventListener("click",function(e){
+  const el=e.target&&e.target.closest?e.target.closest("button,a,input,select,textarea,label,summary,[onclick],[role=button],[data-son]"):null;
+  _sonBtn.clic={el:el,ecoute:sonEstEcoute(el)};
+  setTimeout(function(){ _sonBtn.clic=null; _sonBtn.bis=false; _sonBtn.auto=null; _sonBtn.suivre=false; },0);
+  if(!sonActif())return;
+  const S=_sonBtn.session;
+  if(S.zone&&S.zone.isConnected&&S.zone.contains(e.target))return;
+  if(el&&S.el&&(el===S.el||(!S.el.isConnected&&S.cle&&el.getAttribute("onclick")===S.cle)))_sonBtn.bis=true;
   sonBtnCouper();
+},true);
+document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&sonActif())sonBtnCouper(); });
+function jouerSonBtn(s){
+  if(_sonBtn.bis)return;   /* on vient de recliquer sur le bouton qui jouait : c'était pour l'arrêter */
+  const groupe=s&&s.groupe;
+  sonBtnCouper(groupe);
   const z=document.getElementById("zone"), debut=Date.now(); _sonBtn.ancre=z&&z.firstElementChild;
-  _sonBtn.dest=sonBtnCanal();
-  try{ jouerSonBtnInterne(s); }finally{ _sonBtn.dest=null; }
+  _sonBtn.dest=sonBtnCanal(); sonSessionDebut(groupe?{groupe:groupe}:null); _sonBtn.suivre=true;
+  try{ jouerSonBtnInterne(s); }finally{ _sonBtn.dest=null; _sonBtn.suivre=false; }
   /* la question a disparu (suivante, autre écran) : on coupe ; au-delà d'une minute, on arrête de surveiller */
   _sonBtn.veille=setInterval(function(){
     if((_sonBtn.ancre&&!_sonBtn.ancre.isConnected)||Date.now()-debut>60000){ if(Date.now()-debut>60000){ clearInterval(_sonBtn.veille); _sonBtn.veille=null; } else sonBtnCouper(); }
@@ -9841,6 +12077,8 @@ function jouerSonBtnInterne(s){
   if(s.param){psExtrait(s.param);return;}
   if(s.oeuvre){meExtrait(s.oeuvre,s.limite);return;}
   if(s.vocab){veExtrait(s.vocab);return;}
+  if(s.py){pyExtrait(s.py);return;}
+  if(s.mx){mxExtrait(s.mx);return;}
   /* suite d'accords : [[midis], durée en secondes] */
   if(s.accords){let t=0;s.accords.forEach(a=>{(a[0]||[]).forEach(m=>jouerMidi(m,t,(a[1]||1)*0.92,0.14));t+=(a[1]||1);});return;}
   if(s.rythme){jouerRythme(s.rythme,s.secTemps);return;}
@@ -9875,7 +12113,7 @@ function jouerRythme(figs,secTemps){
     g.gain.setValueAtTime(0,t0);
     g.gain.linearRampToValueAtTime(fort?0.3:0.22,t0+0.005);
     g.gain.exponentialRampToValueAtTime(0.001,t0+0.13);
-    osc.connect(g).connect(_sonBtn.dest||ctx.destination);
+    osc.connect(g).connect(sonSortie());
     osc.start(t0);osc.stop(t0+0.16);
   };
   figs.forEach(d=>{clic(t,d>=2);t+=d*secTemps;}); // accent sur les valeurs longues
@@ -10267,7 +12505,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-12a";
+const VERSION_APP="2026-10-14f";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -10711,6 +12949,11 @@ function afficherLecon(id){
   if(document.getElementById("bjAtelier"))bjInit();
   if(document.getElementById("meJeu"))meInit();
   if(document.getElementById("veAtelier"))veInit();
+  if(document.getElementById("axAtelier"))axInit();
+  if(document.getElementById("hxAtelier"))hxInit();
+  if(document.getElementById("pyForge"))pyInit();
+  if(document.getElementById("mxAtelier"))mxInit();
+  if(document.getElementById("mtAtelier"))mtInit();
   /* les tableaux larges défilent : on doit pouvoir les atteindre au clavier pour les faire défiler */
   document.querySelectorAll(".lecon table.gr").forEach(function(t){ t.tabIndex=0; });
   remonter();
@@ -15394,6 +17637,124 @@ function ecranBonusInfoProf(){
 }
 
 /* ---------- Prof : élèves + codes + noms locaux ---------- */
+/* ===== Recherche d'un élève (14/10/2026) : par son nom ou son code, dans TOUTES les classes du
+   professeur. Une loupe discrète dans Élèves et codes, Notes et bulletins et Classement : on tape,
+   la liste de la page se filtre aussitôt, et les élèves trouvés (de toutes les classes) sont proposés
+   juste dessous ; on en choisit un et la page ouvre sa classe, filtrée sur lui et mis en évidence.
+   Les noms restent sur l'appareil (lireLabels) ; le serveur ne fournit que les codes. */
+let _rq={index:null,quand:0,charge:null,q:"",ecran:null,garde:false};
+function rqNorm(t){ return String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
+/* l'index : un code et sa classe (les noms sont relus à chaque frappe, ils peuvent changer) */
+function rqCharger(){
+  if(_rq.index&&Date.now()-_rq.quand<300000)return Promise.resolve(_rq.index);
+  if(_rq.charge)return _rq.charge;
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
+  if(!s||!u)return Promise.resolve([]);
+  _rq.charge=Promise.all([(_profClasses&&_profClasses.length)?Promise.resolve(_profClasses):chargerClassesProf(),
+      s.collection("eleveCodes").where("ownerUid","==",u.uid).get()]).then(function(r){
+    const cls=r[0]||[], nomCl={}; cls.forEach(function(c){ nomCl[c.id]=c.nom||"Classe"; });
+    const L=[], vu={};
+    const ajout=function(code,cid){ const k=code+"|"+cid; if(vu[k]||!nomCl[cid])return; vu[k]=1; L.push({code:code,cid:cid,cnom:nomCl[cid]}); };
+    r[1].forEach(function(d){ const v=d.data()||{}; if(v.classId)ajout(d.id,v.classId); });
+    cls.forEach(function(c){ (c.membres||[]).forEach(function(code){ ajout(code,c.id); }); });   /* élèves invités (chorale…) */
+    _rq.index=L; _rq.quand=Date.now(); _rq.charge=null; return L;
+  }).catch(function(){ _rq.charge=null; return _rq.index||[]; });
+  return _rq.charge;
+}
+function rqClasseAffichee(ecran){
+  if(ecran==="notes")return typeof _evClasse!=="undefined"?_evClasse:null;
+  if(ecran==="clas")return _classProfSel;
+  return _classeProfSel;
+}
+function rqTrouver(q,ecran){
+  const n=rqNorm(q).trim(); if(!n)return [];
+  const cur=rqClasseAffichee(ecran), mots=n.split(/\s+/);
+  return (_rq.index||[]).map(function(e){
+    const nom=labelDe(e.cid,e.code), cle=rqNorm(nom+" "+e.code), codeN=rqNorm(e.code);
+    if(!mots.every(function(m){ return cle.indexOf(m)>=0; }))return null;
+    const score=(codeN===n?0:(codeN.indexOf(n)===0?1:(rqNorm(nom).indexOf(n)===0?2:3)))+(e.cid===cur?0:0.5);
+    return {code:e.code,cid:e.cid,cnom:e.cnom,nom:nom,score:score,ici:e.cid===cur};
+  }).filter(Boolean).sort(function(x,y){ return x.score-y.score||String(x.nom||x.code).localeCompare(String(y.nom||y.code),"fr"); }).slice(0,8);
+}
+/* la loupe ; « large » : déjà ouverte (Élèves et codes) ; « sombre » : sur un bandeau foncé (Notes) */
+function rqHTML(ecran,o){
+  o=o||{}; const v=o.valeur!=null?o.valeur:(_rq.ecran===ecran?_rq.q:"");
+  if(v&&ecran==="clas")setTimeout(function(){ rqFiltrer(ecran,v); },0);   /* les deux autres pages filtrent elles-mêmes */
+  return '<div class="rq'+(o.large?" large":"")+(o.sombre?" sombre":"")+(v?" plein":"")+'" data-ecran="'+ecran+'">'
+    +'<label class="rq-champ" title="Chercher un élève ou un code, dans toutes vos classes"><i class="ph ph-magnifying-glass" aria-hidden="true"></i>'
+    +'<input type="search" class="rq-in" placeholder="'+(o.large?"Chercher un élève ou un code":"Élève ou code")+'" aria-label="Chercher un élève ou un code, dans toutes vos classes" autocomplete="off" spellcheck="false" value="'+escapeHtml(v)+'" oninput="rqTaper(this)" onfocus="rqTaper(this,true)" onkeydown="rqTouche(event,this)" onblur="rqQuitter(this)"></label>'
+    +'<div class="rq-res" hidden></div></div>';
+}
+function rqBoite(el){ return el&&el.closest?el.closest(".rq"):null; }
+function rqTaper(inp,focus){
+  const b=rqBoite(inp); if(!b)return;
+  const ecran=b.getAttribute("data-ecran"), q=inp.value;
+  b.classList.toggle("plein",!!q);
+  if(!focus||q!==_rq.q){ _rq.q=q; _rq.ecran=ecran; rqFiltrer(ecran,q); }
+  rqCharger().then(function(){ rqResultats(b,q,ecran); });
+}
+function rqResultats(b,q,ecran){
+  const res=b.querySelector(".rq-res"), inp=b.querySelector(".rq-in"); if(!res||!inp||document.activeElement!==inp&&!b.contains(document.activeElement))return;
+  if(!q.trim()){ res.hidden=true; res.innerHTML=""; return; }
+  const L=rqTrouver(q,ecran);
+  res.innerHTML=L.length?L.map(function(e){
+      return '<button type="button" class="rq-o" onmousedown="event.preventDefault()" onclick="rqChoisir(\''+e.code+'\',\''+e.cid+'\',this)">'
+        +'<span class="rq-o-nom">'+(e.nom?echapH(e.nom):'<i>sans nom</i>')+'</span><span class="rq-o-code">'+e.code+'</span><span class="rq-o-cl">'+echapH(e.cnom)+(e.ici?' <i class="ph ph-check" aria-label="classe affichée"></i>':'')+'</span></button>'; }).join("")
+    :'<p class="rq-vide">Aucun élève trouvé dans vos classes.</p>';
+  res.hidden=false;
+  res.style.left=""; res.style.right="";
+  const r=res.getBoundingClientRect(); if(r.right>window.innerWidth-8){ res.style.left="auto"; res.style.right="0"; }
+}
+function rqTouche(e,inp){
+  const b=rqBoite(inp), res=b&&b.querySelector(".rq-res");
+  if(e.key==="Escape"){ if(res&&!res.hidden){ res.hidden=true; } else if(inp.value){ inp.value=""; rqTaper(inp); } e.preventDefault(); return; }
+  if(e.key==="ArrowDown"&&res&&!res.hidden){ const o=res.querySelector(".rq-o"); if(o){ o.focus(); e.preventDefault(); } return; }
+  if(e.key==="Enter"&&res&&!res.hidden){ const o=res.querySelector(".rq-o"); if(o){ o.click(); e.preventDefault(); } }
+}
+function rqQuitter(inp){ setTimeout(function(){ const b=rqBoite(inp); if(b&&!b.contains(document.activeElement)){ const r=b.querySelector(".rq-res"); if(r)r.hidden=true; } },180); }
+/* flèches haut / bas dans la liste des élèves trouvés */
+document.addEventListener("keydown",function(e){
+  const o=e.target&&e.target.closest&&e.target.closest(".rq-o"); if(!o)return;
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){ const s=e.key==="ArrowDown"?o.nextElementSibling:o.previousElementSibling; if(s&&s.classList.contains("rq-o"))s.focus(); else if(e.key==="ArrowUp"){ const i=rqBoite(o).querySelector(".rq-in"); if(i)i.focus(); } e.preventDefault(); }
+  if(e.key==="Escape"){ const b=rqBoite(o), i=b&&b.querySelector(".rq-in"); if(i)i.focus(); const r=b&&b.querySelector(".rq-res"); if(r)r.hidden=true; }
+});
+/* la liste affichée se filtre à chaque frappe */
+function rqFiltrer(ecran,q){
+  const n=rqNorm(q).trim(), mots=n?n.split(/\s+/):[];
+  const garde=function(txt){ const t=rqNorm(txt); return mots.every(function(m){ return t.indexOf(m)>=0; }); };
+  if(ecran==="roster"){ if(typeof elcChercher==="function")elcChercher(q); return; }
+  if(ecran==="notes"){ if(typeof evGbChercher==="function"&&q!==_gbNom)evGbChercher(q); return; }
+  if(ecran==="clas")document.querySelectorAll(".clx2-liste .clx2-l").forEach(function(l){ l.hidden=!!n&&!garde(l.textContent); });
+}
+/* un élève choisi : sa classe s'ouvre dans la page en cours, filtrée sur lui */
+function rqChoisir(code,cid,btn){
+  const b=rqBoite(btn), ecran=b?b.getAttribute("data-ecran"):"roster", r=b&&b.querySelector(".rq-res");
+  if(r)r.hidden=true;
+  _rq.q=code; _rq.ecran=ecran; _rq.garde=true;
+  if(ecran==="roster"){ _elcCherche=code; if(cid!==_classeProfSel||!document.querySelector(".elc-table"))rosterClasse(cid); else { const i=b.querySelector(".rq-in"); if(i){ i.value=code; b.classList.add("plein"); } elcChercher(code); _rq.garde=false; } }
+  else if(ecran==="notes"){ _gbNom=code; _evVue="eleves"; if(cid!==_evClasse)evalsClasse(cid); else { _rq.garde=false; const i=b.querySelector(".rq-in"); if(i){ i.value=code; b.classList.add("plein"); } evGbChercher(code); } }
+  else if(ecran==="clas"){ const sel=document.getElementById("clProfSel");
+    if(_classProfSel==="__tout__"||cid===_classProfSel){ _rq.garde=false; const i=b.querySelector(".rq-in"); if(i){ i.value=code; b.classList.add("plein"); } rqFiltrer("clas",code); }
+    else { _classProfSel=cid; if(sel)sel.value=cid; const i=b.querySelector(".rq-in"); if(i){ i.value=code; b.classList.add("plein"); } classementProfRendre(cid); _rq.garde=false; } }
+  rqViser(ecran,code);
+}
+/* la ligne de l'élève, une fois la page affichée : mise en évidence */
+function rqViser(ecran,code){
+  let n=0;
+  const essai=function(){
+    let el=null;
+    if(ecran==="roster")el=Array.prototype.find.call(document.querySelectorAll(".elc-table tbody tr"),function(tr){ return (tr.getAttribute("data-cherche")||"").indexOf(String(code).toLowerCase())>=0; });
+    else if(ecran==="notes")el=Array.prototype.find.call(document.querySelectorAll("table.gbx tbody tr"),function(tr){ const b=tr.querySelector(".gbx-n"); return b&&(b.getAttribute("onclick")||"").indexOf("'"+code+"'")>=0; });
+    else el=Array.prototype.find.call(document.querySelectorAll(".clx2-liste .clx2-l"),function(l){ return l.textContent.indexOf(code)>=0; });
+    if(!el){ if(++n<40)setTimeout(essai,150); return; }
+    el.classList.add("rq-cible"); try{ el.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){}
+    setTimeout(function(){ el.classList.remove("rq-cible"); },3200);
+  };
+  setTimeout(essai,60);
+}
+/* changer de classe autrement (flèches, menu) efface la recherche ; choisir un élève la garde */
+function rqNouvellePage(){ if(!_rq.garde)_rq.q=""; _rq.garde=false; }
+
 /* ---------- Élèves et codes (refait le 10/10/2026, charte Ruban & Médaille) ----------
    Ruban marine (classe avec flèches), quatre compteurs, une rangée de vignettes
    d'action (les rares : menu « Plus »), puis un tableau aéré : pastille d'initiales,
@@ -15422,6 +17783,7 @@ function elcRibanHTML(classId,nom){
     +'<div class="ev-rib-nav"><div class="ev-rib-g"><span class="ev-rib-lab">Classe</span><div class="ev-rib-l">'+nav+'</div></div></div></div>';
 }
 function rosterClasse(classId){
+  if(!_rq.garde)_elcCherche=""; rqNouvellePage();
   if(classId)_classeProfSel=classId;   /* la classe suit d'une page à l'autre */
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   const s=fbStore(); if(!s)return;
@@ -15482,7 +17844,7 @@ function rosterClasse(classId){
       +'<button type="button" class="elc-tuile elc-plus2" style="--d:var(--dom-eval)" aria-haspopup="menu" onclick="elcPlusMenu(event,this,\''+classId+'\')"><span class="elc-tuile-ic"><i class="ph-fill ph-dots-three-outline"></i></span><b>Plus</b></button>'
       +'</div>';
     h+='<section class="elc-carte">'
-      +'<div class="elc-barre"><label class="elc-cherche"><i class="ph ph-magnifying-glass"></i><input type="search" placeholder="Chercher un élève" value="'+escapeHtml(_elcCherche)+'" oninput="elcChercher(this.value)" aria-label="Chercher un élève"></label>'
+      +'<div class="elc-barre">'+rqHTML("roster",{large:true,valeur:_elcCherche})
       +'<span class="elc-prive" title="Le serveur ne reçoit que les codes"><i class="ph ph-lock"></i> '+nNoms+' nom'+(nNoms>1?"s":"")+' sur cet appareil</span>'
       +'<button class="pres-badge" id="presBadge" onclick="presenceToggle(\''+classId+'\')" title="Élèves connectés en ce moment (cliquez pour voir les codes)"><span class="pres-pt"></span> <i class="ph ph-broadcast"></i> <b id="presCount">…</b> en ligne</button></div>'
       +'<div id="presPanel" class="pres-panel" hidden></div>'
@@ -22098,7 +24460,7 @@ const AP_TUILES={
     ["Mes leçons","Écrire une leçon et ses exercices","chalkboard-teacher","perso","ecranLeconsProf()"],
     ["Badges &amp; niveaux","Ce que gagnent les élèves, et comment","medal","loin","ecranBonusInfoProf()"],
     ["Imprimer","Évaluations QCM sur papier, exercices, recueils de leçons","printer","eval","ecranImpressionProf()"],
-    ["Centre de correction","Copies papier : les lettres entourées donnent la note","check-square-offset","rythme","ecranCorrectionPapier()"]],
+    ["Centre de correction","Copies papier : les cases cochées donnent la note","check-square-offset","rythme","ecranCorrectionPapier()"]],
   classe:[
     ["Faire une séance","Projeter une leçon, écran par écran","presentation","lire","ecranLecons()"],
     ["Cours de collège","Les parcours interactifs","graduation-cap","ecoute","ecranCoursCollege()"],
@@ -22270,14 +24632,14 @@ function classementProf(){
           <select id="clProfSel" onchange="classementProfChoisir(this.value)">
             <option value="__tout__"${_classProfSel==="__tout__"?" selected":""}>Toutes mes classes (le collège)</option>
             ${classes.map(function(c){return `<option value="${c.id}"${c.id===_classProfSel?" selected":""}>${echapH(c.nom||"Classe")}</option>`;}).join("")}
-          </select></div>
+          </select>${rqHTML("clas")}</div>
       <div id="clProfZone" class="clx"><p style="color:var(--encre-doux);text-align:center"><i class="ph ph-spinner-gap"></i> Chargement…</p></div>
       <p class="clx-rgpd"><i class="ph ph-lock"></i> Le serveur ne connaît que les codes&nbsp;: les noms viennent de votre liste, sur cet appareil.</p>
     </div>`;
     classementProfRendre(_classProfSel);
   }).catch(function(){ z.innerHTML=svcIndispo("Impossible de charger le classement."); });
 }
-function classementProfChoisir(id){ _classProfSel=id; classementProfRendre(id); }
+function classementProfChoisir(id){ _classProfSel=id; rqNouvellePage(); const i=document.querySelector('.rq[data-ecran="clas"] .rq-in'); if(i){ i.value=""; i.closest(".rq").classList.remove("plein"); } classementProfRendre(id); }
 function classementProfRendre(classId){
   const z=document.getElementById("clProfZone"); if(!z)return;
   const s=fbStore(); if(!s)return;
@@ -22321,6 +24683,7 @@ function classementProfRendre(classId){
       return clxLigneHTML(x,k+1,max,nomDe(x),sous,ev,false);
     }).join("")+'</div>';
     z.innerHTML=h;
+    if(_rq.ecran==="clas"&&_rq.q)rqFiltrer("clas",_rq.q);
   }).catch(function(){ z.innerHTML=svcIndispo(tout?"Impossible de charger le classement de vos classes.":"Impossible de charger cette classe."); });
 }
 
@@ -23933,7 +26296,7 @@ function evBarre(classId){
       +'<i class="ph'+(on?"-fill":"")+' ph-'+t[2]+'"></i>'+t[1]+(t[3]?'<span class="cn-pt">'+t[3]+'</span>':'')+'</button>'; }).join("")+'</nav>';
   let o="";
   if(_evVue==="eleves")
-    o+='<label class="cn-cherche"><i class="ph ph-magnifying-glass"></i><input id="gbRech" type="search" placeholder="Élève…" value="'+escapeHtml(_gbNom)+'" oninput="evGbChercher(this.value)" aria-label="Chercher un élève"></label>';
+    o+=rqHTML("notes",{large:true,valeur:_gbNom});
   if(_evVue==="eleves"||_evVue==="chant")
     o+='<button class="cn-btn or" onclick="evManuelEditer(\''+classId+'\',\''+(_evVue==="chant"?"chant":"cours")+'\')" title="Ajouter une évaluation (notes saisies à la main)"><i class="ph ph-plus"></i><span>Ajouter</span></button>';
   if(_evVue==="eleves")
@@ -25595,7 +27958,7 @@ function evalsClasse(classId){
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   const a=fbAuth(), s=fbStore(); const u=a&&a.currentUser;
   if(!estProf(u)){ecranProf();return;}
-  _evClasse=classId; _evFiltre="";
+  _evClasse=classId; _evFiltre=""; if(!_rq.garde)_gbNom=""; rqNouvellePage();
   /* Refonte « Option A » : le bandeau-ruban (dans la zone) fait office de titre,
      on masque donc le titre/sous-titre standard de la barre pour cet écran. */
   const _t=document.getElementById("titre"), _i=document.getElementById("intro");
@@ -25890,32 +28253,29 @@ function exosImprimables(catId,diff,nb){
   const exos=genererExosPourImpression(catId,diff,Math.min(50,cible*3));
   return exos.filter(function(e){return !e.sonBtn;}).slice(0,cible);
 }
-/* Liste d'énoncés avec une ligne de réponse (feuille à remplir). */
-function exoImprimerListeHTML(exos){
-  return exos.map(function(ex,i){
-    const vis=ex.visuel?('<div style="margin:8px 0">'+ex.visuel+'</div>'):"";
-    return '<div class="q"><div class="qnum">Question '+(i+1)+'</div><div class="qtxt">'+ex.consigne+'</div>'+vis
-      +'<div class="qrep">Réponse&nbsp;: ______________________________________________</div></div>';
-  }).join("");
+/* Feuille d'exercices ou d'évaluation imprimée seule : même présentation que le
+   cahier de leçons (bandeau à la couleur du domaine, bande nom et classe, exercices
+   sur deux colonnes avec leurs choix à cocher), corrigé sur une page à part. */
+function rcFeuilleExos(id,titre,exos,eval_,diff){
+  const dom=rcDomaineDe(id), st=rcVars(dom.c), niv=NIV_NOMS[diff]||"";
+  const ic=eval_?"exam":"pencil-simple-line", lib=(eval_?"Évaluation":"Exercices")+(niv?" · "+niv:"");
+  const sujet='<section class="rc-page" style="'+st+'">'
+    +'<header class="rc-tete"><span class="rc-num"><i class="ph-fill ph-'+ic+'"></i></span><div class="rc-tt"><span class="rc-dom">'+echapH(dom.nom)+'</span><h1>'+echapH(titre)+'</h1></div>'
+    +'<span class="rc-part"><i class="ph-fill ph-'+ic+'"></i> '+lib+'</span></header>'
+    +'<div class="rc-ident"><span>Nom</span><span>Prénom</span><span class="court">Classe</span><span class="court">Date</span>'+(eval_?'<span class="rc-note">Note<b>/ 20</b></span>':'')+'</div>'
+    +rcExosHTML(exos)+'</section>';
+  const corr='<section class="rc-page" style="'+st+'"><div class="rc-corr-t"><i class="ph-fill ph-key"></i><h2>Corrigé</h2><small>Réservé au professeur</small></div>'
+    +'<div class="rc-cb" style="'+st+'"><h3><b><i class="ph-fill ph-'+ic+'"></i></b>'+echapH(titre)+(niv?' · '+niv:'')+'</h3>'+rcCorrigeHTML(exos)+'</div></section>';
+  return sujet+corr;
 }
-function corrigeImprimerHTML(exos){
-  return '<h2>Corrigé</h2>'+exos.map(function(ex,i){
-    return '<div class="q ok"><div class="qnum">Q'+(i+1)+'</div><div class="qsol">'+(ex.solution||"(voir énoncé)")+'</div></div>';
-  }).join("");
-}
-const _impEnteteNom='<p class="mini">Nom&nbsp;: ____________________&nbsp;&nbsp; Classe&nbsp;: ______&nbsp;&nbsp; Date&nbsp;: __________</p>';
 /* Bouton « Imprimer ces exercices » du panneau de réglages (professeur). */
 function imprimerExercicesCat(){
   if(!categorieCourante){toast("Ouvre d'abord un thème.");return;}
   const nb=parseInt((document.getElementById("selNb")||{}).value,10)||nbQuestions||10;
   const exos=exosImprimables(categorieCourante,difficulte,nb);
   if(!exos.length){toast("Ce thème repose sur le son : rien à imprimer sur papier.");return;}
-  const titre=nomCatTxt(categorieCourante), diffNom=NIV_NOMS[difficulte]||"";
-  const corps='<h1>'+echapH(titre)+'</h1>'+_impEnteteNom
-    +'<p class="mini">'+exos.length+' exercices'+(diffNom?" · "+diffNom:"")+'</p>'
-    +exoImprimerListeHTML(exos)
-    +'<div style="page-break-before:always"></div>'+corrigeImprimerHTML(exos);
-  ouvrirImpression("Exercices : "+titre, corps);
+  const titre=nomCatTxt(categorieCourante);
+  rcImprimer("Exercices : "+titre, rcFeuilleExos(categorieCourante,titre,exos,false,difficulte));
 }
 /* Bouton « Imprimer l'évaluation » (professeur), sur l'écran de lancement d'éval. */
 function imprimerEvalDomaine(domId,diff){
@@ -25924,11 +28284,7 @@ function imprimerEvalDomaine(domId,diff){
   const exos=exosImprimables(domId,diff||2,nb);
   if(!exos.length){toast("Cette évaluation repose sur le son : rien à imprimer sur papier.");return;}
   const titre=nomCatTxt(domId);
-  const corps='<h1>Évaluation : '+echapH(titre)+'</h1>'+_impEnteteNom
-    +'<p class="mini">'+exos.length+' questions · '+(NIV_NOMS[diff||2]||"")+' · note&nbsp;: ____ / 20</p>'
-    +exoImprimerListeHTML(exos)
-    +'<div style="page-break-before:always"></div>'+corrigeImprimerHTML(exos);
-  ouvrirImpression("Évaluation : "+titre, corps);
+  rcImprimer("Évaluation : "+titre, rcFeuilleExos(domId,titre,exos,true,diff||2));
 }
 /* =====================================================================
    ÉVALUATIONS QCM SUR PAPIER (10/10/2026)
@@ -25937,7 +28293,7 @@ function imprimerEvalDomaine(domId,diff){
    Chaque copie porte une RÉFÉRENCE (K7QM, ou K7QM-3 quand les copies sont toutes
    différentes) qui renvoie à son corrigé, imprimé à part : même grille, bonnes
    lettres noircies, à poser à côté de la copie pour corriger d'un coup d'œil.
-   Le centre de correction fait le calcul : référence + lettres entourées → note,
+   Le centre de correction fait le calcul : référence + lettres cochées → note,
    rangée directement dans le carnet (avec, au besoin, des points retirés pour un
    oubli de tablette). Les clés (lettres justes) sont gardées sur le compte du
    professeur (teachers/{uid}.copiesPapier) : elles servent sur tout appareil.
@@ -26031,13 +28387,23 @@ function ppPreparer(){
     });
   });
 }
-/* la grille à entourer : colonnes de 10 questions ; dans le corrigé, bonnes lettres noircies */
+/* La grille de réponses, comme celles des examens : les lettres UNE fois en tête de
+   colonne, une case vide à cocher par choix (colonnes de 10 questions). Une case
+   cochée se lit sans hésiter, ce qu'un rond autour d'une lettre déjà cerclée ne
+   permettait pas. Dans le corrigé, la bonne case est noircie à la même place :
+   posé sur la copie (ou à côté), il se compare d'un coup d'œil. Une question à
+   moins de choix a ses cases en trop grisées. */
 function ppGrilleHTML(qs,corrige){
   let h='<div class="pp-grilles">';
   for(let d=0;d<qs.length;d+=10){
-    h+='<table class="pp-grille"><tbody>'+qs.slice(d,d+10).map(function(q,j){
-      return '<tr><td class="n">'+(d+j+1)+'</td><td class="ls">'+q.opts.map(function(_,k){
-        return '<span class="pp-l'+(corrige&&k===q.r?" ok":"")+'">'+PP_L[k]+'</span>'; }).join("")+'</td></tr>'; }).join("")+'</tbody></table>';
+    const bloc=qs.slice(d,d+10), nl=Math.max.apply(null,bloc.map(function(q){ return q.opts.length; }));
+    h+='<table class="pp-grille"><thead><tr><th class="n">N°</th>'
+      +PP_L.slice(0,nl).split("").map(function(L){ return '<th>'+L+'</th>'; }).join("")+'</tr></thead><tbody>'
+      +bloc.map(function(q,j){
+        let tr='<tr><td class="n">'+(d+j+1)+'</td>';
+        for(let k=0;k<nl;k++)tr+=(k<q.opts.length)?'<td><span class="pp-c'+(corrige&&k===q.r?" ok":"")+'"></span></td>':'<td class="x"></td>';
+        return tr+'</tr>'; }).join("")
+      +'</tbody></table>';
   }
   return h+'</div>';
 }
@@ -26046,10 +28412,10 @@ function ppSujetHTML(L,c){
     +'<div class="pp-tete"><div><h1>Évaluation : '+echapH(L.titre)+'</h1><div class="mini">'+c.qs.length+' questions · '+(NIV_NOMS[L.diff]||"")+' · note&nbsp;: ______ / 20</div></div>'
     +'<div class="pp-ref">Référence<b>'+c.ref+'</b></div></div>'
     +'<p class="pp-ident">Nom&nbsp;: ________________________ Prénom&nbsp;: ____________________ Classe&nbsp;: ________</p>'
-    +'<p class="pp-consigne"><b>Grille de réponses</b> : pour chaque question, entoure <b>une seule lettre</b>. Seule la grille est corrigée.</p>'
+    +'<p class="pp-consigne"><b>Grille de réponses</b> : pour chaque question, coche <b>une seule case</b> (✗). Pour changer d’avis, noircis entièrement la case à annuler, puis coche la bonne. Seule la grille est corrigée.</p>'
     +ppGrilleHTML(c.qs,false)
     +c.qs.map(function(q,i){ return '<div class="q"><div class="qnum">Question '+(i+1)+'</div><div class="qtxt">'+q.q+'</div><ol class="pp-opts">'
-      +q.opts.map(function(o,k){ return '<li><b>'+PP_L[k]+'</b><span>'+o+'</span></li>'; }).join("")+'</ol></div>'; }).join("")
+      +q.opts.map(function(o,k){ return '<li><b>'+PP_L[k]+'.</b><span>'+o+'</span></li>'; }).join("")+'</ol></div>'; }).join("")
     +'</section>';
 }
 function ppCorrigeHTML(L,c,combien){
@@ -26069,13 +28435,16 @@ const PP_CSS=".pp-copie{break-before:page;page-break-before:always}.pp-copie:fir
   +".pp-ref b{display:block;font-size:1.35rem;letter-spacing:2px;text-transform:none}"
   +".pp-ident{margin:12px 0 8px;font-size:.92rem}.pp-consigne{margin:4px 0;font-size:.86rem}"
   +".pp-grilles{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin:6px 0 14px}"
-  +".pp-grille{width:auto;margin:0;font-family:Arial,sans-serif}.pp-grille td{border:1px solid #888;padding:3px 6px;text-align:left}"
-  +".pp-grille td.n{font-weight:bold;background:#eee;width:26px;text-align:center}"
-  +".pp-l{display:inline-block;width:21px;height:21px;line-height:20px;margin:0 2px;border:1.4px solid #333;border-radius:50%;font-size:.76rem;text-align:center}"
-  +".pp-l.ok{background:#111;color:#fff;font-weight:bold}"
+  +".pp-grille{width:auto;margin:0;border-collapse:collapse;font-family:Arial,sans-serif}"
+  +".pp-grille th,.pp-grille td{border:1px solid #888;padding:3px 7px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+  +".pp-grille th{background:#eee;font-size:.82rem}"
+  +".pp-grille .n{font-weight:bold;background:#eee;width:30px;font-size:.8rem}"
+  +".pp-grille td.x{background:#d9d9d9}"
+  +".pp-c{display:block;width:15px;height:15px;margin:0 auto;border:1.5px solid #222;border-radius:2px;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+  +".pp-c.ok{background:#111}"
   +".pp-opts{list-style:none;padding:0;margin:6px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}"
   +".pp-opts li{display:flex;gap:7px;align-items:flex-start;font-size:.9rem}"
-  +".pp-opts li>b{flex:none;width:20px;height:20px;line-height:19px;border:1px solid #333;border-radius:50%;text-align:center;font-size:.72rem;font-family:Arial,sans-serif}"
+  +".pp-opts li>b{flex:none;min-width:18px;font-family:Arial,sans-serif}"
   +".pp-corr{page-break-inside:avoid;break-inside:avoid;border:1px dashed #999;border-radius:8px;padding:10px 12px;margin:0 0 14px}"
   +".pp-sol{columns:2;column-gap:28px;font-size:.84rem;margin:6px 0 0;padding-left:22px}.pp-sol b{font-family:Arial,sans-serif}";
 function ppImprimerSujets(){
@@ -26106,9 +28475,9 @@ function ecranCorrectionPapier(ref){
     +'<section class="imp-panneau">'+tete("file-text","rythme","La copie")
     +'<label class="imp-champ"><span>Référence</span><input id="ccRef" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="K7QM-3" value="'+escapeHtml(ref||"")+'" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();document.getElementById(\'ccRep\').focus();}"></label>'
     +'<div id="ccRefEtat" class="cc-etat" aria-live="polite"></div>'
-    +'<label class="imp-champ"><span>Lettres entourées</span><input id="ccRep" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="BADC CABD…" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();ppCcEntree();}"></label>'
+    +'<label class="imp-champ"><span>Lettres cochées</span><input id="ccRep" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="BADC CABD…" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();ppCcEntree();}"></label>'
     +'<div id="ccGrille" class="cc-cases"></div>'
-    +'<p class="cc-aide"><i class="ph ph-info"></i> Un tiret « - » pour une question sans réponse.</p>'
+    +'<p class="cc-aide"><i class="ph ph-info"></i> Un tiret « - » pour une question sans réponse ou avec deux cases cochées.</p>'
     +'</section>'
     +'<section class="imp-panneau">'+tete("user","lire","L’élève")
     +'<label class="imp-champ"><span>Classe</span><select id="ccClasse" onchange="ppCcClasse(this.value)"><option value="">Choisir…</option>'
@@ -26248,7 +28617,7 @@ function ppCcCalcul(){
   const brut=String((document.getElementById("ccRep")||{}).value||"").toUpperCase().replace(/[\s,;\/]+/g,"");
   const reps=brut.split("").map(function(ch){ return /[-._?0*]/.test(ch)?"":ch; });
   const n=cle.k.length, R={ok:false,ref:ref,cle:cle,n:n,reps:reps};
-  if(!brut){ R.msg=n+" questions : tape les "+n+" lettres entourées, dans l’ordre."; return R; }
+  if(!brut){ R.msg=n+" questions : tape les "+n+" lettres cochées, dans l’ordre."; return R; }
   for(let i=0;i<reps.length;i++){ const L=reps[i]; if(!L)continue;
     const max=+(cle.o||"")[i]||PP_L.length, k=PP_L.indexOf(L);
     if(k<0||k>=max){ R.msg="Question "+(i+1)+" : « "+L+" » n’existe pas (choix de A à "+PP_L[max-1]+")."; return R; } }
@@ -26266,7 +28635,7 @@ function ppCcCalcul(){
    cartes illustrées), leçons en pastilles colorées par domaine, barre d'action en
    bas. Les identifiants lus par ppPreparer et imprimerRecueil sont conservés. */
 let _impVue="qcm", _impDom=0;
-const IMP_VUES=[["qcm","Évaluation QCM","Copies à entourer et corrigés","exam","rythme"],
+const IMP_VUES=[["qcm","Évaluation QCM","Copies à cocher et corrigés","exam","rythme"],
                 ["recueil","Recueil de leçons","Cours et exercices","book-open-text","lire"],
                 ["registre","Registre des codes","Le code de chaque élève","identification-card","culture"]];
 function impSegHTML(name,opts,val,lib){
@@ -26292,8 +28661,8 @@ function impIllHTML(diff){
 function impQcmHTML(){
   return '<ol class="imp-etapes" aria-label="Comment ça marche">'
     +'<li><i class="ph-fill ph-printer"></i> Tu imprimes</li>'
-    +'<li><i class="ph-fill ph-pencil-circle"></i> L’élève entoure</li>'
-    +'<li><i class="ph-fill ph-check-square-offset"></i> Tu tapes ses lettres : la note est calculée</li></ol>'
+    +'<li><i class="ph-fill ph-check-square"></i> L’élève coche une case</li>'
+    +'<li><i class="ph-fill ph-check-square-offset"></i> Tu tapes les lettres cochées : la note est calculée</li></ol>'
     +'<label class="imp-champ"><span>Thème</span><select id="ppDom" onchange="impMaj()"><optgroup label="Cours de collège">'
     +Object.keys(typeof EVALCOURS_DEF!=="undefined"?EVALCOURS_DEF:{}).filter(function(k){ return COURS_DEF[k]; }).map(function(k){ return '<option value="evalcours-'+k+'">'+echapH(COURS_DEF[k].titre)+'</option>'; }).join("")
     +'</optgroup>'+devoirOptionsCible()+'</select></label>'
@@ -26315,7 +28684,8 @@ function impRecueilHTML(){
   }).filter(function(g){ return g.items.length; });
   if(_impDom>=gs.length)_impDom=0;
   const pill=function(id,ic,lib){ return '<label class="imp-chip imp-pill"><input type="checkbox" id="'+id+'" checked onchange="impMaj()"><span><i class="ph ph-'+ic+'"></i> '+lib+'</span></label>'; };
-  return '<div class="imp-reglages">'
+  return '<label class="imp-champ"><span>Titre du cahier</span><input id="impTitre" type="text" maxlength="60" placeholder="Recueil de leçons" value="'+escapeHtml(_impTitre)+'" oninput="_impTitre=this.value"></label>'
+    +'<div class="imp-reglages">'
     +'<div class="imp-reg"><span>Contenu</span><div class="imp-chips">'+pill("impCours","book-open","Cours")+pill("impExos","pencil-simple-line","Exercices")+pill("impCorrige","check-circle","Corrigé")+'</div></div>'
     +'<div class="imp-reg" id="impRegNb"><span>Exercices par leçon</span>'+impStepHTML("impNb",8,1,30,1,"Exercices par leçon")+'</div>'
     +'<div class="imp-reg" id="impRegDiff"><span>Difficulté</span>'+impSegHTML("impDiff",[[1,"Facile"],[2,"Intermédiaire"],[3,"Difficile"]],2,"Difficulté des exercices")+'</div>'
@@ -26331,7 +28701,7 @@ function impRecueilHTML(){
           return '<label class="imp-chip"><input type="checkbox" class="imp-chk" value="'+it.id+'" onchange="impMaj()"><span>'+echapH(nomThemePropre(it.nom))+'</span></label>'; }).join("")+'</div></div>'; }).join("")
     +'<div class="imp-barre"><span id="impBarreTxt">Aucune leçon choisie</span>'
     +'<button type="button" class="action btn-nouv" id="impVider" onclick="impDomTout(-1,false)"><i class="ph ph-x"></i> Vider</button>'
-    +'<button type="button" class="rm-cta" id="impGo" onclick="imprimerRecueil()"><i class="ph-fill ph-printer"></i> Générer le recueil</button></div>';
+    +'<button type="button" class="rm-cta" id="impGo" onclick="imprimerRecueil()"><i class="ph-fill ph-printer"></i> Créer le cahier</button></div>';
 }
 function impRegistreHTML(){
   return '<div class="imp-registre-c"><span class="imp-tuile-ic" style="--d:var(--dom-culture)"><i class="ph-fill ph-identification-card"></i></span>'
@@ -26394,6 +28764,298 @@ function impMaj(){
   ["impRegNb","impRegDiff"].forEach(function(id){ const e=document.getElementById(id); if(e)e.hidden=!exo; });
   const co=document.getElementById("impCorrige"); if(co){ co.disabled=!exo; co.closest(".imp-chip").classList.toggle("off",!exo); }
 }
+/* ---------- Recueil de leçons imprimé (refait le 12/10/2026) ----------
+   Un vrai cahier : page de garde (titre, Maestro, domaines au programme, nom de
+   l'élève), sommaire, puis chaque leçon ouverte par un bandeau à la couleur de son
+   domaine (numéro, domaine, titre). Encadrés « À retenir » et « À écouter » mis en
+   forme, portraits légendés, extraits YouTube devenus une liste d'écoute (titre +
+   adresse courte) ; exercices numérotés avec leurs choix à cocher ou une ligne de
+   réponse ; corrigés compacts à la fin, réservés au professeur. */
+let _impTitre="";
+const RC_TEINTES={lire:"#2b70ab",rythme:"#a44f40",ecoute:"#007f80",culture:"#765ba4",theorie:"#307e46",styles:"#9e4d6f",loin:"#985b0b",eval:"#5e6d80",perso:"#647519"};
+function rcDomaineDe(id){
+  const gs=CATEGORIES.filter(function(g){ return !g.special; });
+  for(let i=0;i<gs.length;i++){
+    if((gs[i].items||[]).some(function(it){ return it.id===id; })){
+      const t=(typeof LEC_TEINTES!=="undefined"&&LEC_TEINTES[gs[i].groupe])||"perso";
+      return {nom:gs[i].groupe, c:RC_TEINTES[t]||RC_TEINTES.perso};
+    }
+  }
+  const t=String(id||"");
+  if(t.indexOf("evalcours-")===0)return {nom:"Cours de collège", c:RC_TEINTES.eval};
+  if(t.indexOf("compo-")===0)return {nom:"Compositeurs", c:RC_TEINTES.culture};
+  return {nom:"Leçon", c:RC_TEINTES.perso};
+}
+function rcTeinte(hex,a){ const n=parseInt(String(hex).slice(1),16)||0; return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")"; }
+function rcVars(c){ return '--d:'+c+';--dt:'+rcTeinte(c,.09)+';--db:'+rcTeinte(c,.35); }
+/* Le cours tel qu'il se lit sur papier : sans boutons ni lecteurs, images chargées
+   tout de suite (pas de chargement différé : l'impression partirait sans elles). */
+function rcCoursPapier(html){
+  /* Le texte d'une leçon est écrit pour la page écran, qui l'enveloppe d'une carte :
+     beaucoup ferment cette carte puis en ouvrent d'autres. On l'enveloppe de même et
+     on garde TOUT le corps (garder le premier élément seul ne laissait que l'introduction). */
+  let d=null;
+  try{ d=new DOMParser().parseFromString('<div class="carte">'+(html||"")+'</div>',"text/html").body; }catch(e){ d=null; }
+  if(!d)return "";
+  /* les ateliers à manipuler (portée et piano, rythmes, piano des modulations,
+     laboratoire des altérations, ascenseur des sons, forge, monocorde, spirale des
+     quintes, calculatrice, palette des modes) ne s'impriment pas : un renvoi vers
+     l'application prend leur place */
+  d.querySelectorAll(".carte.ln,.pm,.tx-atelier,.carte.ax,.carte.hx,.carte.py,.carte.mx,.carte.mt-quiz").forEach(function(a){
+    const h=a.querySelector("h3"), ch=/^Chargement\s+(?:de\s+|du\s+)?(.+?)\s*…?$/.exec(a.textContent.replace(/\s+/g," ").trim());
+    let t=((h&&h.textContent)||"").replace(/\s+/g," ").trim();
+    if(!t&&ch){ t=ch[1]; t=t.charAt(0).toUpperCase()+t.slice(1); }
+    if(!t)t="Atelier interactif";
+    const r=document.createElement("div"); r.className="rc-atelier";
+    r.innerHTML='<i class="ph-fill ph-hand-tap"></i><span><b>'+echapH(t)+'</b><small>Atelier interactif : à faire sur MusEduc, à l’écran.</small></span>';
+    a.replaceWith(r);
+  });
+  d.querySelectorAll(".pyt-pan[hidden]").forEach(function(n){ n.removeAttribute("hidden"); });
+  /* le plan des études et les chemins des métiers sont faits de boutons : sur papier, ce sont des étiquettes */
+  d.querySelectorAll(".mt-pn,button.mt-et").forEach(function(n){ const e=document.createElement("span"); e.className=n.className; e.innerHTML=n.innerHTML; n.replaceWith(e); });
+  d.querySelectorAll("button,iframe,script,audio,video,input,select,textarea,label:empty,.enr-controls,.enx-btns,.cils-controls").forEach(function(n){ n.remove(); });
+  d.querySelectorAll("img").forEach(function(i){ i.removeAttribute("loading"); });
+  d.querySelectorAll("[onclick]").forEach(function(n){ n.removeAttribute("onclick"); });
+  d.querySelectorAll(".ce-yt").forEach(function(y){
+    const id=y.getAttribute("data-yt")||"", lib=y.getAttribute("data-lib")||"Extrait à écouter";
+    const r=document.createElement("div"); r.className="rc-yt";
+    r.innerHTML='<i class="ph-fill ph-play-circle"></i><span><b>'+echapH(lib)+'</b>'+(id?'<small>youtu.be/'+echapH(id)+'</small>':'')+'</span>';
+    y.replaceWith(r);
+  });
+  /* galerie d'instruments : cartes de même taille, deux par ligne, avec le nom et la
+     famille de chaque instrument (la famille n'était qu'un petit titre au-dessus) */
+  d.querySelectorAll(".instr-gal").forEach(function(g){
+    let f=g.previousElementSibling; if(f&&!f.classList.contains("instr-gal-fam"))f=null;
+    const fam=f?f.textContent.replace(/\s+/g," ").trim():"";
+    const figs=g.querySelectorAll("figure");
+    if(f)f.innerHTML='<span>'+echapH(fam)+'</span><small>'+figs.length+' instrument'+(figs.length>1?"s":"")+'</small>';
+    figs.forEach(function(fg){
+      const img=fg.querySelector("img"), cap=fg.querySelector("figcaption");
+      const nom=((cap&&cap.textContent)||(img&&img.getAttribute("alt"))||"").replace(/\s+/g," ").trim();
+      fg.innerHTML='<span class="rc-iv-img">'+(img?img.outerHTML:'')+'</span>'
+        +'<figcaption><b>'+echapH(nom.charAt(0).toUpperCase()+nom.slice(1))+'</b>'+(fam?'<span class="rc-fam">'+echapH(fam)+'</span>':'')+'</figcaption>';
+    });
+  });
+  d.querySelectorAll(".cle").forEach(function(c){ c.insertAdjacentHTML("afterbegin",'<span class="rc-et"><i class="ph-fill ph-push-pin"></i> À retenir</span>'); });
+  d.querySelectorAll(".astuce").forEach(function(c){ c.insertAdjacentHTML("afterbegin",'<span class="rc-et"><i class="ph-fill ph-lightbulb"></i> Astuce</span>'); });
+  /* ce que l'écran remplit en direct (claviers, pastilles, zones de jeu) resterait vide sur papier */
+  const garde="img,svg,table,hr,figure,canvas,i.ph,i.ph-fill";
+  for(let tour=0;tour<6;tour++){ let retire=0;
+    d.querySelectorAll("div,span,p,ul,ol,li,section,small,b,strong,em,h3,h4,label").forEach(function(e){
+      if(!e.isConnected||e.textContent.replace(/ /g," ").trim()||e.matches(garde)||e.querySelector(garde))return;
+      e.remove(); retire++; });
+    if(!retire)break; }
+  return d.innerHTML;
+}
+/* Les blocs propres à certaines leçons (schémas animés, frises, galerie d'instruments,
+   tableaux d'époques…) ne se lisent bien qu'avec LEURS styles de l'application. On
+   reprend dans la feuille de l'écran les règles qui nomment une classe présente dans
+   le document (et les couleurs de base), sauf celles du thème sombre et ce que le
+   cahier met en forme lui-même. Sans cela : images en pleine taille une par ligne,
+   textes de schéma trop gros, et toutes les vues d'un schéma superposées. */
+const RC_DEJA_FAIT=/^(ce-yt|compo-yt-grille|lec-|bio-portrait|bpi-|instr-|btn-|bt-lien|rc-|me-marque|me-pied)/;
+function rcCssApp(html){
+  const S={};
+  (String(html).match(/class="[^"]*"/g)||[]).forEach(function(a){
+    a.slice(7,-1).split(/\s+/).forEach(function(k){
+      if(k&&(k.indexOf("-")>0||k==="enx")&&!/^ph(-|$)/.test(k)&&!RC_DEJA_FAIT.test(k))S[k]=1; }); });
+  const cles=Object.keys(S); if(!cles.length)return "";
+  const re=new RegExp("\\.("+cles.map(function(k){ return k.replace(/[^\w-]/g,""); }).join("|")+")(?![\\w-])");
+  let racine="", out=[];
+  [].forEach.call(document.styleSheets,function(sh){
+    if(!sh.href||sh.href.indexOf("museduc7.css")<0)return;
+    let regles=null; try{ regles=sh.cssRules; }catch(e){ regles=null; }
+    if(!regles)return;
+    [].forEach.call(regles,function(x){
+      if(x.type!==1)return;
+      const sel=x.selectorText||"";
+      if(sel===":root"){ if(!racine)racine=x.cssText; return; }
+      if(sel.indexOf("data-theme")>=0||sel.indexOf("body.")>=0||sel.indexOf(":hover")>=0)return;
+      if(re.test(sel))out.push(x.cssText);
+    });
+  });
+  return racine+out.join("");
+}
+/* la fenêtre d'impression au style du cahier : polices de l'application, styles des blocs */
+function rcImprimer(titre,corps){
+  const base=location.href.replace(/[#?].*$/,"").replace(/[^/]*$/,"");
+  const tete='<base href="'+escapeHtml(base)+'"><link rel="stylesheet" href="polices/polices.css">'
+    +'<link rel="stylesheet" href="polices/phosphor/regular.css"><link rel="stylesheet" href="polices/phosphor/fill.css">';
+  ouvrirImpression(titre, corps, rcCssApp(corps)+RC_CSS, tete);
+}
+/* les choix d'un exercice (boutons, liste ou images) : imprimés avec une case à cocher */
+function rcChoix(ex){
+  if(Array.isArray(ex.visuel))return ex.visuel.map(function(v){ return (v&&v.html)||""; });
+  const d=document.createElement("div"); d.innerHTML=ex.champ||"";
+  const bt=d.querySelectorAll(".choix-btns .opt");
+  if(bt.length)return [].map.call(bt,function(b){ return b.innerHTML; });
+  const sel=d.querySelector("select");
+  if(sel)return [].filter.call(sel.options,function(o){ return o.value!==""; }).map(function(o){ return echapH(o.textContent); });
+  return [];
+}
+/* Une image en chargement différé (loading="lazy") ne se charge jamais dans la
+   fenêtre d'impression : la feuille partait sans les images (instruments). Appliqué
+   aussi par ouvrirImpression à TOUT document imprimé. */
+function rcPapier(h){ return String(h==null?"":h).replace(/\s+loading\s*=\s*(["'])lazy\1/gi,""); }
+function rcExosHTML(exos){
+  return '<ol class="rc-exos">'+exos.map(function(ex,i){
+    const ch=rcChoix(ex), vis=(typeof ex.visuel==="string"&&ex.visuel)?'<div class="rc-vis">'+rcPapier(ex.visuel)+'</div>':'';
+    const long=/<textarea/i.test(ex.champ||"");
+    return '<li class="rc-ex"><span class="rc-exn">'+(i+1)+'</span><div class="rc-exc"><div class="rc-q">'+rcPapier(ex.consigne)+'</div>'+vis
+      +(ch.length?'<div class="rc-choix">'+ch.map(function(o){ return '<span class="rc-ch"><i></i><span>'+rcPapier(o)+'</span></span>'; }).join("")+'</div>'
+                 :'<div class="rc-lignes"><span></span>'+(long?'<span></span><span></span>':'')+'</div>')
+      +'</div></li>'; }).join("")+'</ol>';
+}
+function rcCorrigeHTML(exos){
+  const sol=function(s){ return htmlSur(String(s||"").replace(/^\s*R[ée]ponse\s*(&nbsp;|\s)*:\s*/i,"")); };
+  return '<ol class="rc-sols">'+exos.map(function(ex){ return '<li>'+(ex.solution?sol(ex.solution):'<i>voir l’énoncé</i>')+'</li>'; }).join("")+'</ol>';
+}
+/* une portée décorative pour la page de garde (lignes et quelques notes) */
+function rcPorteeSVG(){
+  let s='<svg class="rc-c-portee" viewBox="0 0 600 90" preserveAspectRatio="none" aria-hidden="true">';
+  for(let i=0;i<5;i++)s+='<line x1="0" x2="600" y1="'+(10+i*17)+'" y2="'+(10+i*17)+'" stroke="#F2C94C" stroke-width="1.6"/>';
+  [[90,61],[150,44],[210,53],[270,27],[330,36],[390,19],[450,44],[510,27]].forEach(function(p){
+    s+='<ellipse cx="'+p[0]+'" cy="'+p[1]+'" rx="9" ry="6.5" transform="rotate(-20 '+p[0]+' '+p[1]+')" fill="#F2C94C"/>'
+      +'<line x1="'+(p[0]+8)+'" x2="'+(p[0]+8)+'" y1="'+p[1]+'" y2="'+(p[1]-36)+'" stroke="#F2C94C" stroke-width="1.8"/>'; });
+  return s+'</svg>';
+}
+const RC_CSS=[
+  "@page{size:A4;margin:13mm 14mm 15mm}",
+  "@page:first{@bottom-left{content:none}@bottom-right{content:none}}",
+  "*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}",
+  "body{margin:0;font-family:Inter,system-ui,sans-serif;font-size:10.4pt;line-height:1.5;color:#16233a;background:#fff}",
+  ".me-marque{display:none}",
+  "h1,h2,h3{font-family:'Baloo 2',Inter,sans-serif;line-height:1.15}",
+  "h2{border-bottom:0;padding-bottom:0}",
+  "img,svg{max-width:100%;height:auto}",
+  "@media screen{body{background:#d9e0e8;padding:24px 0}.rc-page{width:210mm;min-height:297mm;margin:0 auto 22px;padding:13mm 14mm 15mm;background:#fff;box-shadow:0 8px 30px rgba(15,27,46,.22)}}",
+  "@media print{.rc-page{break-before:page;page-break-before:always}.rc-page:first-of-type{break-before:auto;page-break-before:auto}}",
+  /* page de garde */
+  ".rc-couv{display:flex;flex-direction:column;gap:8mm}",
+  "@media print{.rc-couv{height:266mm;overflow:hidden}}",
+  ".rc-c-haut{position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:150mm;padding:13mm 13mm 18mm;border-radius:6mm;background:linear-gradient(155deg,#244a7c 0%,#1e3a63 45%,#16233a 100%);color:#fff}",
+  ".rc-c-portee{position:absolute;left:0;top:68mm;width:100%;height:24mm;opacity:.45}",
+  ".rc-c-marque{position:relative;display:flex;align-items:center;gap:3mm;font:800 16pt 'Baloo 2',sans-serif;letter-spacing:.3px}",
+  ".rc-c-marque img{width:11mm;height:11mm;border-radius:2.6mm}",
+  ".rc-c-kicker{position:relative;margin-top:auto;font:800 8.5pt Inter,sans-serif;letter-spacing:2.6px;text-transform:uppercase;color:#F2C94C}",
+  ".rc-c-haut h1{position:relative;margin:2.5mm 0 0;max-width:100mm;font-size:33pt;line-height:1.02;color:#fff}",
+  ".rc-c-sous{position:relative;margin:3.5mm 0 0;max-width:100mm;font-size:11.5pt;color:#c9d8ea}",
+  ".rc-c-maestro{position:absolute;right:4mm;bottom:9mm;width:56mm;height:auto}",
+  ".rc-c-ruban{position:absolute;left:0;right:0;bottom:0;height:9mm;background:#F2C94C;clip-path:polygon(0 55%,100% 0,100% 40%,0 100%)}",
+  ".rc-c-prog h2,.rc-c-ident h2{margin:0 0 3mm;font-size:12.5pt;color:#1e3a63}",
+  ".rc-c-doms{display:flex;flex-wrap:wrap;gap:2.5mm}",
+  ".rc-c-dom{display:inline-flex;align-items:center;gap:2mm;padding:1.4mm 4mm 1.4mm 1.6mm;border-radius:99px;background:var(--dt);color:var(--d);font-weight:700;font-size:9.5pt}",
+  ".rc-c-dom b{display:inline-grid;place-items:center;min-width:6.4mm;height:6.4mm;padding:0 1.6mm;border-radius:99px;background:var(--d);color:#fff;font-size:8.5pt}",
+  ".rc-c-ident{margin-top:auto;padding:5mm 7mm 6mm;border:1.6px solid #1e3a63;border-radius:5mm}",
+  ".rc-c-ligne{display:flex;align-items:flex-end;gap:3mm;margin-top:5mm;font-size:10pt;font-weight:600;color:#40506a}",
+  ".rc-c-ligne i{flex:1;height:5mm;border-bottom:1px dotted #8a97a8}",
+  ".rc-c-pied{display:flex;justify-content:space-between;gap:6mm;font-size:8.5pt;color:#566782}",
+  ".rc-c-pied b{color:#1e3a63}",
+  /* titres de partie */
+  ".rc-h2{display:flex;align-items:center;gap:4mm;margin:0 0 6mm;font-size:22pt;color:#1e3a63}",
+  ".rc-h2::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#F2C94C,rgba(242,201,76,0))}",
+  /* sommaire */
+  ".rc-som{list-style:none;margin:0;padding:0}",
+  ".rc-som li{display:flex;align-items:center;gap:4mm;padding:2.6mm 0;border-bottom:1px solid #e3e8ee;break-inside:avoid}",
+  ".rc-som-n{flex:none;display:grid;place-items:center;width:9mm;height:9mm;border-radius:2.6mm;background:var(--d);color:#fff;font:800 11pt 'Baloo 2',sans-serif}",
+  ".rc-som-t{flex:1;min-width:0;display:flex;flex-direction:column}",
+  ".rc-som-t b{font-size:11pt;line-height:1.25}",
+  ".rc-som-t small{color:var(--d);font-weight:800;font-size:7.8pt;letter-spacing:.8px;text-transform:uppercase}",
+  ".rc-som-p{flex:none;display:flex;gap:1.5mm}",
+  ".rc-som-p span{padding:.6mm 2.6mm;border-radius:99px;background:#eef2f7;color:#40506a;font-size:8.3pt;font-weight:700}",
+  /* bandeau d'une leçon */
+  ".rc-tete{display:flex;align-items:center;gap:5mm;margin:0 0 6mm;padding:0 0 4mm;border-bottom:2.5px solid var(--d)}",
+  ".rc-num{flex:none;display:grid;place-items:center;width:15mm;height:15mm;border-radius:4mm;background:var(--d);color:#fff;font:800 20pt 'Baloo 2',sans-serif;line-height:1}",
+  ".rc-tt{flex:1;min-width:0}",
+  ".rc-dom{display:block;color:var(--d);font-weight:800;font-size:8.3pt;letter-spacing:1.2px;text-transform:uppercase}",
+  ".rc-tt h1{margin:.6mm 0 0;font-size:20pt;color:#16233a}",
+  ".rc-part{flex:none;display:inline-flex;align-items:center;gap:1.6mm;padding:1.6mm 4mm;border-radius:99px;background:var(--dt);color:var(--d);font-weight:800;font-size:9pt}",
+  /* le cours */
+  ".rc-cours p{margin:0 0 2.6mm}",
+  ".rc-cours h3{margin:5mm 0 2mm;padding-left:3mm;border-left:3px solid var(--d);font-size:13pt;color:var(--d);break-after:avoid;page-break-after:avoid}",
+  ".rc-cours ul,.rc-cours ol{margin:0 0 3mm;padding-left:6mm}",
+  ".rc-cours li{margin:.8mm 0}",
+  ".rc-cours b,.rc-cours strong{color:#0f1b2e}",
+  ".rc-cours .cle,.rc-cours .astuce,.rc-cours .encart,.rc-cours .encart-gamme{margin:3.5mm 0;padding:3.2mm 4.5mm;border-radius:3mm;background:var(--dt);border-left:4px solid var(--d);break-inside:avoid}",
+  ".rc-et{display:flex;align-items:center;gap:1.5mm;margin:0 0 1.2mm;color:var(--d);font:800 8.3pt Inter,sans-serif;letter-spacing:1px;text-transform:uppercase}",
+  ".rc-cours .lec-ecoute{margin:4mm 0;padding:3.2mm 4.5mm;border:1.5px solid var(--db);border-radius:3mm;break-inside:avoid}",
+  ".rc-cours .lec-ecoute-t{display:flex;align-items:center;gap:1.5mm;margin:0 0 1.5mm;color:var(--d);font:800 8.3pt Inter,sans-serif;letter-spacing:1px;text-transform:uppercase}",
+  ".rc-cours .lec-ecoute p{margin:0 0 1.5mm}",
+  ".rc-yt{display:flex;align-items:flex-start;gap:2.4mm;margin:1.4mm 0;font-size:9.4pt;line-height:1.35;break-inside:avoid}",
+  ".rc-yt i{flex:none;color:var(--d);font-size:13pt;line-height:1}",
+  ".rc-yt small{display:block;color:#566782;font-size:8pt}",
+  ".rc-cours .compo-yt-grille,.rc-cours .lec-compare{display:grid;grid-template-columns:1fr 1fr;gap:1mm 6mm}",
+  ".rc-cours figure{margin:3mm 0;break-inside:avoid}",
+  ".rc-cours .lec-portrait{float:right;width:44mm;margin:0 0 3mm 5mm}",
+  ".rc-cours .lec-portrait img{display:block;width:100%;border-radius:3mm}",
+  ".rc-cours figcaption{margin-top:1.2mm;font-size:8.4pt;line-height:1.35;color:#40506a}",
+  ".rc-cours .lec-portraits{display:flex;gap:4mm;clear:both;margin:3mm 0}",
+  ".rc-cours .lec-portraits .lec-portrait{float:none;flex:1;width:auto;margin:0}",
+  ".rc-cours .bio-portrait{display:flex;align-items:center;gap:5mm;margin:0 0 4mm;padding:3mm;border-radius:3mm;background:var(--dt);break-inside:avoid}",
+  ".rc-cours .bio-portrait img{width:30mm;border-radius:2.6mm}",
+  ".rc-cours .bpi-nom{font:800 14pt 'Baloo 2',sans-serif;color:#16233a}",
+  ".rc-cours img{max-height:95mm;object-fit:contain}",
+  ".rc-cours .instr-orchestre{display:block;margin:3mm auto;border-radius:3mm}",
+  ".rc-cours table{border-collapse:collapse;width:100%;margin:3mm 0;font-size:9.4pt}",
+  ".rc-cours th,.rc-cours td{border:1px solid #cfd7e1;padding:1.6mm 2.4mm;text-align:left}",
+  ".rc-cours th{background:var(--dt)}",
+  ".rc-cours::after{content:'';display:block;clear:both}",
+  ".rc-cours .carte{margin:0 0 4mm}",
+  ".rc-cours *,.rc-cours *::before,.rc-cours *::after{animation:none!important;transition:none!important}",
+  ".rc-cours .instr-gal-fam{display:flex;align-items:baseline;gap:2.5mm;margin:6mm 0 2.5mm;padding-bottom:1.4mm;border-bottom:1.5px solid var(--db);font:800 10.5pt Inter,sans-serif;letter-spacing:1px;text-transform:uppercase;color:var(--d);break-after:avoid;page-break-after:avoid}",
+  ".rc-cours .instr-gal-fam small{font-weight:600;font-size:8.5pt;letter-spacing:0;text-transform:none;color:#566782}",
+  ".rc-cours .instr-gal{display:grid;grid-template-columns:1fr 1fr;gap:3mm 4mm;margin:0 0 2mm}",
+  ".rc-cours figure.instr-vign{display:flex;align-items:center;gap:4mm;height:30mm;margin:0;padding:2.5mm 4mm 2.5mm 2.5mm;border:1.4px solid var(--db);border-left:4px solid var(--d);border-radius:3.5mm;background:#fff;break-inside:avoid;page-break-inside:avoid}",
+  ".rc-iv-img{flex:none;display:grid;place-items:center;width:34mm;height:100%;border-radius:2.5mm;background:var(--dt)}",
+  ".rc-iv-img img{max-width:30mm!important;max-height:22mm!important;width:auto;height:auto;object-fit:contain;border-radius:0}",
+  ".rc-cours .instr-vign figcaption{flex:1;min-width:0;display:flex;flex-direction:column;gap:1.6mm;margin:0;font:inherit;color:#16233a}",
+  ".rc-cours .instr-vign figcaption b{font:800 12pt Inter,sans-serif;line-height:1.2;color:#16233a}",
+  ".rc-fam{align-self:flex-start;padding:.6mm 2.6mm;border-radius:99px;background:var(--dt);color:var(--d);font:800 7.8pt Inter,sans-serif;letter-spacing:.8px;text-transform:uppercase}",
+  ".rc-cours svg text{font-family:Inter,sans-serif}",
+  ".rc-cours .enx,.rc-cours .vocal-sim,.rc-cours .oreille-sim,.rc-cours .enr-sim{break-inside:avoid}",
+  ".rc-cours .carte::after{content:'';display:block;clear:both}",
+  ".rc-cours h4{margin:3mm 0 1mm;font:700 10.6pt Inter,sans-serif;color:#16233a}",
+  ".rc-cours h4 small{font-weight:500;color:#566782}",
+  ".rc-atelier{display:flex;align-items:center;gap:3mm;margin:4mm 0;padding:3mm 4.5mm;border:1.5px dashed var(--db);border-radius:3mm;break-inside:avoid}",
+  ".rc-atelier>i{flex:none;color:var(--d);font-size:15pt}",
+  ".rc-atelier b{display:block;font-size:10pt}",
+  ".rc-atelier small{display:block;color:#566782;font-size:8.6pt}",
+  /* exercices */
+  ".rc-ident{display:flex;gap:6mm;margin:0 0 5mm;padding:2.6mm 4mm;border-radius:2.6mm;background:#f2f5f9;font-size:9pt;font-weight:600;color:#40506a}",
+  ".rc-ident span{flex:1;display:flex;gap:2mm}",
+  ".rc-ident span::after{content:'';flex:1;border-bottom:1px dotted #8a97a8}",
+  ".rc-ident span.court{flex:.55}",
+  ".rc-ident span.rc-note{flex:none;gap:3mm;padding:0 0 0 4mm;border-left:1.5px solid #cfd7e1}",
+  ".rc-ident span.rc-note::after{display:none}",
+  ".rc-ident .rc-note b{padding-left:12mm;color:#16233a}",
+  ".rc-num i{font-size:17pt}",
+  ".rc-cb h3 b i{font-size:9pt}",
+  ".rc-exos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;column-gap:8mm}",
+  ".rc-ex{display:flex;gap:3.5mm;padding:3mm 0;border-bottom:1px solid #e6ebf1;break-inside:avoid;page-break-inside:avoid}",
+  ".rc-exn{flex:none;display:grid;place-items:center;width:7.4mm;height:7.4mm;border-radius:50%;background:var(--d);color:#fff;font:800 10pt 'Baloo 2',sans-serif}",
+  ".rc-exc{flex:1;min-width:0}",
+  ".rc-q .grand{font-weight:700}",
+  ".rc-q img{max-height:30mm!important;max-width:100%!important;width:auto;box-shadow:none!important;border:1px solid #e3e8ee}",
+  ".rc-q svg.portee,.rc-vis svg{display:block;margin:2mm 0;max-width:62mm;height:auto}",
+  ".rc-vis{margin:2mm 0}",
+  ".rc-choix{display:flex;flex-wrap:wrap;gap:2mm 5.5mm;margin-top:2.2mm}",
+  ".rc-ch{display:inline-flex;align-items:center;gap:2mm;font-size:9.8pt}",
+  ".rc-ch>i{flex:none;width:3.8mm;height:3.8mm;border:1.4px solid #2a3a52;border-radius:1mm}",
+  ".rc-ch svg{max-width:28mm}",
+  ".rc-lignes span{display:block;height:7.5mm;border-bottom:1px dotted #8a97a8}",
+  ".rc-rien{padding:4mm 5mm;border-radius:3mm;background:#f2f5f9;color:#40506a}",
+  /* corrigés */
+  ".rc-corr-t{display:flex;align-items:center;gap:3mm;margin:0 0 6mm;padding:4mm 5mm;border-radius:3mm;background:#1e3a63;color:#fff}",
+  ".rc-corr-t h2{margin:0;font-size:17pt;color:#fff}",
+  ".rc-corr-t i{color:#F2C94C;font-size:16pt}",
+  ".rc-corr-t small{margin-left:auto;color:#F2C94C;font-weight:700;font-size:9pt}",
+  ".rc-cb{margin:0 0 5mm;break-inside:avoid;page-break-inside:avoid}",
+  ".rc-cb h3{display:flex;align-items:center;gap:2.4mm;margin:0 0 2mm;padding-bottom:1.4mm;border-bottom:1.5px solid var(--db);font-size:11.5pt;color:#16233a}",
+  ".rc-cb h3 b{display:inline-grid;place-items:center;min-width:6.4mm;height:6.4mm;border-radius:1.8mm;background:var(--d);color:#fff;font-size:9pt}",
+  ".rc-sols{columns:2;column-gap:9mm;margin:0;padding-left:6mm;font-size:9.2pt;line-height:1.4}",
+  ".rc-sols li{break-inside:avoid;margin:0 0 1.1mm}",
+  ".rc-sols svg{max-width:40mm}"
+].join("");
 function imprimerRecueil(){
   const ids=[].map.call(document.querySelectorAll(".imp-chk:checked"),function(c){return c.value;});
   if(!ids.length){toast("Coche au moins une leçon.");return;}
@@ -26403,32 +29065,49 @@ function imprimerRecueil(){
   const nb=Math.max(1,Math.min(30,parseInt((document.getElementById("impNb")||{}).value,10)||8));
   const rdi=document.querySelector('input[name="impDiff"]:checked');
   const diff=(rdi?parseInt(rdi.value,10):0)||2;
-  /* Une « feuille » par partie : chacune commence sur une nouvelle page. */
-  const feuilles=[], corriges=[];
-  ids.forEach(function(id){
-    const lec=LECONS[id]||{}, titre=lec.titre||nomCatTxt(id);
-    if(avecCours&&lec.html)
-      feuilles.push('<h1>'+echapH(titre)+'</h1><p class="mini imp-part">Cours</p><div class="lecon">'+lec.html+'</div>');
+  const titreDoc=String((document.getElementById("impTitre")||{}).value||_impTitre||"").trim()||"Recueil de leçons";
+  const pages=[], corriges=[], som=[], doms={};
+  ids.forEach(function(id,i){
+    const lec=LECONS[id]||{}, titre=lec.titre||nomCatTxt(id), dom=rcDomaineDe(id), num=(i<9?"0":"")+(i+1);
+    const st=rcVars(dom.c), parts=[];
+    (doms[dom.nom]=doms[dom.nom]||{c:dom.c,n:0}).n++;
+    const tete=function(part,ic){ return '<header class="rc-tete"><span class="rc-num">'+num+'</span><div class="rc-tt"><span class="rc-dom">'+echapH(dom.nom)+'</span><h1>'+echapH(titre)+'</h1></div>'
+      +'<span class="rc-part"><i class="ph-fill ph-'+ic+'"></i> '+part+'</span></header>'; };
+    if(avecCours&&lec.html){ parts.push("Cours");
+      pages.push('<section class="rc-page" style="'+st+'">'+tete("Cours","book-open-text")+'<div class="rc-cours lecon">'+rcCoursPapier(lec.html)+'</div></section>'); }
     if(avecExos){
       const exos=exosImprimables(id,diff,nb);
-      if(exos.length){
-        feuilles.push('<h1>'+echapH(titre)+'</h1><p class="mini imp-part">Exercices</p>'+_impEnteteNom+exoImprimerListeHTML(exos));
-        if(avecCorr)corriges.push('<h1>'+echapH(titre)+'</h1><p class="mini imp-part">Corrigé des exercices</p>'
-          +corrigeImprimerHTML(exos).replace(/^<h2>Corrigé<\/h2>/,""));
-      }
-      else feuilles.push('<h1>'+echapH(titre)+'</h1><p class="mini">(Exercices non imprimables pour cette leçon : ils reposent sur l\'écoute de sons.)</p>');
+      if(exos.length){ parts.push("Exercices");
+        pages.push('<section class="rc-page" style="'+st+'">'+tete("Exercices","pencil-simple-line")
+          +'<div class="rc-ident"><span>Nom</span><span>Prénom</span><span class="court">Classe</span><span class="court">Date</span></div>'
+          +rcExosHTML(exos)+'</section>');
+        if(avecCorr)corriges.push('<div class="rc-cb" style="'+st+'"><h3><b>'+num+'</b>'+echapH(titre)+'</h3>'+rcCorrigeHTML(exos)+'</div>');
+      }else if(!(avecCours&&lec.html))
+        pages.push('<section class="rc-page" style="'+st+'">'+tete("Exercices","pencil-simple-line")+'<p class="rc-rien">Les exercices de cette leçon se font à l’écoute : ils ne s’impriment pas.</p></section>');
     }
+    som.push('<li style="'+st+'"><span class="rc-som-n">'+num+'</span><span class="rc-som-t"><b>'+echapH(titre)+'</b><small>'+echapH(dom.nom)+'</small></span>'
+      +'<span class="rc-som-p">'+parts.map(function(p){ return '<span>'+p+'</span>'; }).join("")+'</span></li>');
   });
+  if(!pages.length){toast("Rien à imprimer avec ces options.");return;}
+  const quoi=[avecCours?"cours":"",avecExos?"exercices":""].filter(Boolean).join(" et ");
+  const couv='<section class="rc-page rc-couv">'
+    +'<div class="rc-c-haut">'+rcPorteeSVG()
+    +'<div class="rc-c-marque"><img src="icons/icon-192.png" alt="">MusEduc</div>'
+    +'<span class="rc-c-kicker">Éducation musicale</span>'
+    +'<h1>'+echapH(titreDoc)+'</h1>'
+    +'<p class="rc-c-sous">'+ids.length+' leçon'+(ids.length>1?"s":"")+(quoi?' · '+quoi:'')+'</p>'
+    +'<img class="rc-c-maestro" src="'+IMG_LECON+'" alt="">'
+    +'<span class="rc-c-ruban"></span></div>'
+    +'<div class="rc-c-prog"><h2>Au programme</h2><div class="rc-c-doms">'
+    +Object.keys(doms).map(function(k){ return '<span class="rc-c-dom" style="'+rcVars(doms[k].c)+'"><b>'+doms[k].n+'</b>'+echapH(k)+'</span>'; }).join("")+'</div></div>'
+    +'<div class="rc-c-ident"><h2>Ce cahier appartient à</h2>'
+    +'<div class="rc-c-ligne">Nom<i></i></div><div class="rc-c-ligne">Prénom<i></i></div><div class="rc-c-ligne">Classe<i></i>Année<i></i></div></div>'
+    +'<div class="rc-c-pied"><span><b>MusEduc</b> · '+MUSEDUC_AUTEUR+' · '+MUSEDUC_SITE+'</span><span>'+new Date().toLocaleDateString("fr-FR",{month:"long",year:"numeric"})+'</span></div>'
+    +'</section>';
+  const sommaire=ids.length>1?'<section class="rc-page"><h2 class="rc-h2">Sommaire</h2><ol class="rc-som">'+som.join("")+'</ol></section>':'';
   /* les corrigés à la fin : le cahier des élèves s'imprime sans les réponses */
-  if(corriges.length)feuilles.push('<div class="imp-sep"><h1>Corrigés</h1><p class="mini">Pages réservées au professeur.</p></div>');
-  const corps=feuilles.concat(corriges).map(function(f,i){ return '<section class="feuille'+(i?" saut":"")+'">'+f+'</section>'; }).join("");
-  if(!feuilles.length){toast("Rien à imprimer avec ces options.");return;}
-  const cssSup=".lecon .carte{border:1px solid #ccc;border-radius:6px;padding:8px 12px;margin:8px 0;page-break-inside:avoid}"
-    +".lecon h3{font-size:1rem;margin:10px 0 4px}.lecon ul{margin:6px 0 6px 18px}.lecon p{margin:6px 0}"
-    +".lecon .astuce,.lecon .cle,.lecon .encart,.lecon .encart-gamme{background:#f4f4f4;border-left:4px solid #999;padding:6px 10px;margin:8px 0;font-size:.9rem}"
-    +"h1{font-size:1.5rem}h2{margin-top:14px}.feuille.saut{break-before:page;page-break-before:always}"
-    +".imp-part{text-transform:uppercase;letter-spacing:.8px;margin:0 0 10px}.imp-sep{text-align:center;padding-top:30vh}";
-  ouvrirImpression("Recueil MusEduc", corps, cssSup);
+  const corr=corriges.length?'<section class="rc-page"><div class="rc-corr-t"><i class="ph-fill ph-key"></i><h2>Corrigés</h2><small>Réservé au professeur</small></div>'+corriges.join("")+'</section>':'';
+  rcImprimer(titreDoc, couv+sommaire+pages.join("")+corr);
 }
 /* Signature de tous les documents produits par le logiciel (10/10/2026) : sans
    elle, n'importe qui pouvait s'approprier copies, corrigés, recueils ou bulletins. */
@@ -26443,7 +29122,9 @@ function marquePiedCSS(){
       +'@bottom-right{content:"Page " counter(page) " / " counter(pages);font:7.5pt Arial,sans-serif;color:#555}}';
   return '@media print{.me-pied{display:block;position:fixed;left:0;right:0;bottom:0}}';
 }
-function ouvrirImpression(titre,corps,cssSup){
+/* tete : ce qu'on ajoute en tête du document (base des adresses, feuilles de polices) */
+function ouvrirImpression(titre,corps,cssSup,tete){
+  corps=rcPapier(corps);   /* images différées : voir rcPapier (copies QCM, fiches, recueils) */
   const w=window.open("","_blank","width=820,height=920");
   if(!w){toast("Autorise les fenêtres pop-up pour imprimer.");return;}
   const css="body{font-family:Georgia,serif;margin:32px;color:#111}h1{font-size:1.4rem;margin:0 0 4px}"
@@ -26460,9 +29141,20 @@ function ouvrirImpression(titre,corps,cssSup){
     +".me-marque b{color:#1e3a63}.me-pied{display:none;font:7.5pt Arial,sans-serif;color:#555;text-align:center;background:#fff}"
     +marquePiedCSS();
   const marque='<div class="me-marque"><span><b>MusEduc</b> · '+MUSEDUC_AUTEUR+'</span><span>'+MUSEDUC_SITE+'</span></div>';
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+titre+' · MusEduc</title><style>'+css+(cssSup||"")+'</style></head><body>'
+  w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8">'+(tete||"")+'<title>'+echapH(titre)+' · MusEduc</title><style>'+css+(cssSup||"")+'</style></head><body>'
     +'<div class="me-pied">'+marqueDoc()+'</div>'+marque+corps+'</body></html>');
-  w.document.close(); w.focus(); setTimeout(function(){try{w.print();}catch(e){}},350);
+  w.document.close(); w.focus();
+  /* l'impression attend les polices et les images (6 s au plus) : sans cela, un
+     document illustré partait avec des images vides */
+  let fait=false, n=0;
+  const imprimer=function(){ if(fait)return; fait=true; try{ w.focus(); w.print(); }catch(e){} };
+  (function attendre(){ n++; let d=null; try{ d=w.document; }catch(e){ d=null; }
+    if(!d||n>60){ imprimer(); return; }
+    if(d.readyState==="complete"){ const f=d.fonts&&d.fonts.ready;
+      if(f&&f.then)f.then(function(){ setTimeout(imprimer,150); },function(){ setTimeout(imprimer,150); });
+      else setTimeout(imprimer,250);
+      return; }
+    setTimeout(attendre,100); })();
 }
 function dateComplete(ts){ try{return new Date(ts||0).toLocaleDateString("fr-FR");}catch(e){return "";} }
 /* Correction question par question : énoncé, réponse de l'élève, bonne réponse si erreur. */
@@ -36809,15 +39501,15 @@ function donCarteAccueilHTML(){
 const LEC_ICONES={"Lire la musique":"<i class='ph ph-music-note'></i>","Rythme":"<i class='ph ph-metronome'></i>",
  "Écoute (avec son)":"<i class='ph ph-ear'></i>","Vocabulaire & culture":"<i class='ph ph-books'></i>",
  "Théorie":"<i class='ph ph-compass-tool'></i>","Styles de musique":"<i class='ph ph-vinyl-record'></i>","Pour aller plus loin (hors collège)":"<i class='ph ph-rocket-launch'></i>",
- "Évaluations des cours de collège":"<i class='ph ph-exam'></i>"};
+ "Évaluations des cours de collège":"<i class='ph ph-exam'></i>","Métiers de la musique":"<i class='ph ph-briefcase'></i>"};
 const LEC_COURTS={"Écoute (avec son)":"Écoute","Vocabulaire & culture":"Vocabulaire & culture",
  "Pour aller plus loin (hors collège)":"Pour aller plus loin","Évaluations des cours de collège":"Évaluations des cours"};
 /* Couleur de chaque domaine (tokens --dom-* de la feuille de style) : même luminosité
    et même intensité que le bleu du site, seule la teinte change ; l'or reste commun. */
 const LEC_TEINTES={"Lire la musique":"lire","Rythme":"rythme","Écoute (avec son)":"ecoute","Vocabulaire & culture":"culture",
- "Théorie":"theorie","Styles de musique":"styles","Pour aller plus loin (hors collège)":"loin","Évaluations des cours de collège":"eval"};
+ "Théorie":"theorie","Styles de musique":"styles","Pour aller plus loin (hors collège)":"loin","Évaluations des cours de collège":"eval","Métiers de la musique":"metiers"};
 /* libellé court du ruban (la vignette est étroite) */
-const LEC_RUBAN={"Vocabulaire & culture":"Culture","Styles de musique":"Styles","Pour aller plus loin (hors collège)":"Plus loin","Évaluations des cours de collège":"Évaluations"};
+const LEC_RUBAN={"Métiers de la musique":"Métiers","Vocabulaire & culture":"Culture","Styles de musique":"Styles","Pour aller plus loin (hors collège)":"Plus loin","Évaluations des cours de collège":"Évaluations"};
 function lxTeinte(g){ return "var(--dom-"+((g&&LEC_TEINTES[g.nom])||"perso")+")"; }
 /* couleur du domaine d'une leçon donnée ("" si elle n'est rangée dans aucun domaine) */
 function lxTeinteDe(id){
@@ -37092,7 +39784,7 @@ function ccSuiviOuvrir(cid,id,codes,n,d){
   }).catch(function(){ toast("Échec de l'enregistrement : vérifie ta connexion."); });
 }
 function lecGroupes(){
-  const base=CATEGORIES.filter(x=>!x.special).map(x=>({nom:x.groupe,items:x.items,perso:!!x.perso}));
+  const base=CATEGORIES.filter(x=>!x.special).map(x=>({nom:x.groupe,items:x.items,perso:!!x.perso,direct:!!x.direct}));
   /* Évaluations des cours de collège : le PROF y a toujours accès ; l'ÉLÈVE ne
      voit un cours que lorsqu'il l'a TERMINÉ en entier, pour s'entraîner ensuite. */
   if(typeof EVALCOURS_DEF!=="undefined"){
@@ -37122,6 +39814,7 @@ function lecPoserRetour(id){
            ? lecDernierDomaine : lecDomaineDe(id);
   if(gi<0){ majRetour(accueil,"Accueil"); return; }
   const g=lecGroupes()[gi];
+  if(g.direct){ majRetour(function(){ ecranLecons(-1); },"Les leçons"); return; }
   majRetour(function(){ecranLeconsCat(gi);}, LEC_COURTS[g.nom]||g.nom);
 }
 /* Avancement d'un groupe : part des leçons maîtrisées (trois niveaux validés). */
@@ -37169,11 +39862,11 @@ function lxDomainesHTML(gs){
     const a=lecAvancement(g.items), n=g.items.length;
     const enCours=g.items.filter(function(it){ return lxEtat(it.id)==="cours"; }).length;
     const ic=LEC_ICONES[g.nom]||'<i class="ph ph-book-open"></i>';
-    return '<button class="lx-carte lx-dt" style="--d:'+lxTeinte(g)+'" onclick="lxOnglet('+gi+')">'
+    return '<button class="lx-carte lx-dt" style="--d:'+lxTeinte(g)+'" onclick="'+(g.direct?"lecOuvrir('"+g.items[0].id+"',"+gi+")":"lxOnglet("+gi+")")+'">'
       +'<span class="lx-cov"><span class="lx-emb" aria-hidden="true">'+ic+'</span><span class="lx-med">'+ic+'</span>'
       +(enCours?'<span class="lx-pill cours">'+enCours+' en cours</span>':'')+'</span>'
       +'<span class="lx-dt-b"><b>'+(LEC_COURTS[g.nom]||g.nom)+'</b>'
-      +'<small>'+n+' leçon'+(n>1?"s":"")+' · '+a.faits+' maîtrisée'+(a.faits>1?"s":"")+'</small>'
+      +'<small>'+(g.direct?"Pour découvrir les métiers et t'orienter":n+' leçon'+(n>1?"s":"")+' · '+a.faits+' maîtrisée'+(a.faits>1?"s":""))+'</small>'
       +'<span class="lx-jauge" title="'+a.pct+' % maîtrisé"><i style="width:'+a.pct+'%"></i></span></span></button>';
   }).join("")+'</div>';
 }
