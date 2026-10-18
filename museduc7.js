@@ -365,6 +365,7 @@ const CATEGORIES=[
     {id:"tons",nom:"Tons et demi-tons",ic:"½",niv:"3e"},
     {id:"origine-notes",nom:"D'où viennent les notes ?",ic:"<i class='ph ph-hammer'></i>",niv:"4e"},
     {id:"accords",nom:"Accords majeur / mineur",ic:"⑊",niv:"3e"},
+    {id:"cadences",nom:"Les cadences",ic:"<i class='ph ph-flag-checkered'></i>",niv:"3e"},
     {id:"modulation",nom:"Les modulations",ic:"<i class='ph ph-arrows-down-up'></i>",niv:"3e"},
     {id:"modes",nom:"Les modes",ic:"<i class='ph ph-palette'></i>",niv:"3e"},
     {id:"formes",nom:"Formes musicales",ic:"⌗",niv:"3e"},
@@ -2947,6 +2948,104 @@ const GEN={
   /* Modulations : banque de questions rédigées, environ 33 par difficulté
      (MOD_BANQUE, définie avec les outils de la leçon). Les réponses contiennent ♯ et ♭ :
      on compare le texte EXACT (norm() retire ces signes, « Fa♯ » deviendrait « Fa »). */
+  /* LES CADENCES (18/10/2026) : reconnaître une cadence à l'oreille (phrases jouées
+     dans des tonalités variées) et sur la partition, formules, ponctuation et
+     phrases, accords et sensible, usages, exemples réels, histoire. */
+  "cadences":()=>mapEx(nbQuestions,()=>{
+    const d=difficulte, exact=r=>v=>String(v)===String(r);
+    const types=d===1?["ecoute","ecoute","ponct","phrase","formule","accord","savoir","savoir"]
+      :d===2?["ecoute","ecoute","partition","ponct","phrase","formule","accord","exemple","savoir","usage"]
+      :["ecoute","ecoute","partition","partition","formule","accord","exemple","histoire","plus","usage"];
+    const t=pick(types), nomDe=id=>cdType(id).nom.toLowerCase();
+    const ids=d===1?["parfaite","demi","rompue"]:(d===2?["parfaite","demi","rompue","plagale"]:CD_TYPES.map(x=>x.id));
+    if(t==="ecoute"){
+      const L=CD_JEU_NIV[d], id=pick(L), tr=pick([-5,-3,-2,0,2,3,4]);
+      return {emp:"cde-"+id+tr,groupe:"cde"+id,consigne:"Écoute la phrase jusqu’au bout. Comment se termine-t-elle&nbsp;?",
+        sonBtn:{label:"<i class='ph ph-play'></i> Écouter la phrase",cd:"j:"+id+":"+tr},champ:choixBoutons(L.map(nomDe)),verif:exact(nomDe(id)),rejouable:true,
+        solution:`C’était une <b>${nomDe(id)}</b> (${cdType(id).formule})&nbsp;: ${cdType(id).bref}.`};
+    }
+    if(t==="partition"){
+      const id=pick(ids), T=cdType(id), nu=d===3;
+      const ac=T.acc.slice(-2).map(k=>CD_ACC[k]);
+      return {emp:"cdp-"+id+(nu?"n":""),groupe:"cdp"+id,consigne:`Voici une phrase écrite pour piano${nu?"":", avec le nom de ses accords"}. Comment se termine-t-elle&nbsp;?<div class="cd-qp">${cdPartitionSVG(T.acc,{nu:nu,aria:"Partition d’une phrase de "+T.acc.length+" accords, à analyser."})}</div>`,
+        champ:selListe(ids.map(nomDe),nomDe(id)),verif:exact(nomDe(id)),
+        solution:`Les deux derniers accords sont <b>${ac[0].nom} (${ac[0].deg})</b> puis <b>${ac[1].nom} (${ac[1].deg}${ac[1].inv?", "+ac[1].inv:""})</b>&nbsp;: c’est une <b>${nomDe(id)}</b> (${T.formule}).`};
+    }
+    if(t==="ponct"){
+      const id=pick(ids), T=cdType(id);
+      if(Math.random()<0.5)return {emp:"cdo-"+id,groupe:"cdo"+id,consigne:`En musique, quelle cadence ressemble le plus à <b>${T.ponctNom}</b>&nbsp;?`,
+        champ:selListe(ids.map(nomDe),nomDe(id)),verif:exact(nomDe(id)),solution:`C’est la <b>${nomDe(id)}</b>&nbsp;: ${T.bref}.`};
+      return {emp:"cdq-"+id,groupe:"cdo"+id,consigne:`La <b>${nomDe(id)}</b> ressemble à…`,
+        champ:selListe(ids.map(x=>cdType(x).ponctNom),T.ponctNom),verif:exact(T.ponctNom),solution:`La ${nomDe(id)} ressemble à <b>${T.ponctNom}</b>&nbsp;: ${T.bref}.`};
+    }
+    if(t==="phrase"){
+      const id=pick(ids), T=cdType(id), ph="«&nbsp;"+T.phrase+T.fin.replace(/^ /,"&nbsp;")+"&nbsp;»";
+      return {emp:"cdf-"+id,groupe:"cdf"+id,consigne:`Si une cadence était une phrase, laquelle correspondrait à ${ph}&nbsp;?`,
+        champ:selListe(ids.map(nomDe),nomDe(id)),verif:exact(nomDe(id)),solution:`${ph}&nbsp;: c’est la <b>${nomDe(id)}</b> (${T.bref}).`};
+    }
+    if(t==="formule"){
+      const id=pick(ids), T=cdType(id);
+      if(Math.random()<0.5)return {emp:"cdm-"+id,groupe:"cdm"+id,consigne:`Quels accords enchaîne une <b>${nomDe(id)}</b>&nbsp;?`,
+        champ:selListe(ids.map(x=>cdType(x).formule),T.formule),verif:exact(T.formule),solution:`Une ${nomDe(id)}, c’est <b>${T.formule}</b>.`};
+      return {emp:"cdn-"+id,groupe:"cdm"+id,consigne:`Un enchaînement <b>${T.formule}</b> à la fin d’une phrase, c’est…`,
+        champ:selListe(ids.map(nomDe),nomDe(id)),verif:exact(nomDe(id)),solution:`${T.formule}&nbsp;: c’est une <b>${nomDe(id)}</b>.`};
+    }
+    if(t==="accord"){
+      const Q=[
+        {q:"En do majeur, l’accord construit sur le degré <b>I</b> est…",r:"Do (Do, Mi, Sol)",o:["Fa (Fa, La, Do)","Sol (Sol, Si, Ré)","La m (La, Do, Mi)"]},
+        {q:"En do majeur, l’accord construit sur le degré <b>IV</b> est…",r:"Fa (Fa, La, Do)",o:["Do (Do, Mi, Sol)","Sol (Sol, Si, Ré)","La m (La, Do, Mi)"]},
+        {q:"En do majeur, l’accord construit sur le degré <b>V</b> est…",r:"Sol (Sol, Si, Ré)",o:["Do (Do, Mi, Sol)","Fa (Fa, La, Do)","La m (La, Do, Mi)"]},
+        {q:"En do majeur, quelle note est la <b>sensible</b>&nbsp;?",r:"Si",o:["Ré","Fa","La"]},
+        {q:"La sensible (Si en do majeur) est attirée vers…",r:"la tonique, Do",o:["la dominante, Sol","la quarte, Fa","la sixte, La"]}];
+      const Q2=[{q:"En do majeur, l’accord construit sur le degré <b>VI</b> est…",r:"La m (La, Do, Mi)",o:["Do (Do, Mi, Sol)","Fa (Fa, La, Do)","Sol (Sol, Si, Ré)"]},
+        {q:"Pourquoi l’accord V veut-il aller vers l’accord I&nbsp;?",r:"il contient la sensible",o:["il est le plus grave","il contient la tonique","il est toujours mineur"]},
+        {q:"Le degré V s’appelle aussi…",r:"la dominante",o:["la tonique","la sous-dominante","la sus-dominante"]},
+        {q:"Le degré IV s’appelle aussi…",r:"la sous-dominante",o:["la tonique","la dominante","la sus-dominante"]}];
+      const b=pick(d===1?Q:Q.concat(Q2));
+      return {emp:"cda-"+b.r,consigne:b.q,champ:selListe([b.r].concat(b.o),b.r),verif:exact(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+    }
+    const BANQUES={
+      savoir:[
+        {q:"En musique, une cadence, c’est…",r:"la fin d’une phrase musicale",o:["le début d’un morceau de musique","une note très longue et aiguë","la vitesse de la pulsation"]},
+        {q:"Le mot « cadence » vient du latin <i>cadentia</i>, qui veut dire…",r:"une chute",o:["une danse","un chant","une marche"]},
+        {q:"Quelle cadence donne l’impression que tout est vraiment fini&nbsp;?",r:"la cadence parfaite",o:["la demi-cadence","la cadence rompue","la cadence suspendue"]},
+        {q:"Une demi-cadence se termine sur l’accord…",r:"de dominante (V)",o:["de tonique (I)","de sous-dominante (IV)","de sus-dominante (VI)"]},
+        {q:"Après une demi-cadence, l’oreille…",r:"attend la suite",o:["sent que tout est fini","entend une fausse note","n’entend plus rien"]},
+        {q:"La cadence plagale est souvent chantée sur le mot…",r:"Amen",o:["Bonjour","Encore","Silence"]},
+        {q:"Une cadence rompue crée…",r:"une surprise",o:["un silence","une accélération","une fin définitive"]},
+        {q:"Dans l’Hymne à la joie, la première phrase se termine par…",r:"une demi-cadence",o:["une cadence parfaite","une cadence rompue","une cadence plagale"]},
+        {q:"Dans l’Hymne à la joie, la deuxième phrase se termine par…",r:"une cadence parfaite",o:["une demi-cadence","une cadence rompue","une cadence plagale"]}],
+      usage:[
+        {q:"Pourquoi placer une cadence rompue juste avant la fin&nbsp;?",r:"pour retarder la conclusion",o:["pour changer d’instrument","pour accélérer le tempo","pour finir plus vite"]},
+        {q:"Une phrase « question » puis une phrase « réponse » se terminent par…",r:"une demi-cadence puis une parfaite",o:["une parfaite puis une demi-cadence","deux cadences rompues de suite","deux demi-cadences de suite"]},
+        {q:"À la fin d’un couplet, une demi-cadence sert à…",r:"donner envie d’entendre la suite",o:["arrêter définitivement la chanson","faire taire les instruments","changer de chanteur"]},
+        {q:"Pour donner un caractère solennel à une fin, on choisit souvent…",r:"une cadence plagale",o:["une cadence rompue","une demi-cadence","une cadence imparfaite"]},
+        {q:"Pour que personne ne doute que le morceau est fini, on enchaîne…",r:"plusieurs cadences parfaites",o:["plusieurs demi-cadences","plusieurs cadences rompues","plusieurs silences"]}],
+      exemple:[
+        {q:"Comment Beethoven termine-t-il sa 5ᵉ symphonie&nbsp;?",r:"par six cadences parfaites d’affilée",o:["par une seule cadence rompue","par une demi-cadence en suspens","par un long silence sans accord"]},
+        {q:"Le chœur « Hallelujah » de Haendel se termine par une cadence…",r:"plagale",o:["rompue","imparfaite","phrygienne"]},
+        {q:"Dans le Canon de Pachelbel, la même suite d’accords se termine par…",r:"une cadence parfaite",o:["une cadence rompue","une demi-cadence","une cadence plagale"]},
+        {q:"La 1ʳᵉ symphonie de Brahms se termine par une cadence…",r:"plagale",o:["rompue","imparfaite","phrygienne"]},
+        {q:"Dans le 2ᵉ mouvement de sa sonate pour piano n° 10, Mozart utilise une cadence…",r:"rompue",o:["plagale","picarde","phrygienne"]}],
+      histoire:[
+        {q:"Quel compositeur du XIVᵉ siècle a donné son nom à une cadence&nbsp;?",r:"Francesco Landini",o:["Jean-Sébastien Bach","Ludwig van Beethoven","Gabriel Fauré"]},
+        {q:"Le nom « plagale » vient…",r:"des modes plagaux de l’Église",o:["d’un compositeur italien","d’un instrument du Moyen Âge","d’une danse de la Renaissance"]},
+        {q:"Dans les chorals de Bach, la fin de chaque phrase est marquée par…",r:"un point d’orgue",o:["un coup de cymbale","un changement de tempo","un silence de deux mesures"]},
+        {q:"Quel moine du XIᵉ siècle explique déjà comment deux voix se rejoignent pour finir&nbsp;?",r:"Guido d’Arezzo",o:["Francesco Landini","Jean-Philippe Rameau","Hildegarde de Bingen"]},
+        {q:"Rameau explique l’harmonie par les enchaînements d’accords dans un traité publié en…",r:"1722",o:["1422","1822","1922"]},
+        {q:"Dans la cadence de Landini, la voix du haut…",r:"fait un détour avant la note finale",o:["reste sur la même note","descend d’une octave","se tait avant la fin"]}],
+      plus:[
+        {q:"Un morceau en mineur qui se termine sur un accord majeur&nbsp;: c’est…",r:"une tierce picarde",o:["une cadence rompue","une demi-cadence","une cadence plagale"]},
+        {q:"Dans la demi-cadence phrygienne, la basse descend…",r:"d’un demi-ton (Fa → Mi)",o:["d’une octave (Mi → Mi)","d’une quinte (Sol → Do)","d’une tierce (Do → La)"]},
+        {q:"Dans un concerto, la « cadence » est aussi…",r:"un passage du soliste seul",o:["le premier accord du chœur","un changement de chef","une danse au milieu"]},
+        {q:"Dans le jazz, la cadence la plus courante enchaîne…",r:"II, V, I",o:["I, IV, I","V, VI, I","IV, II, V"]},
+        {q:"La cadence italienne (ou complète) enchaîne…",r:"IV, V, I",o:["V, IV, I","I, V, VI","VI, V, I"]},
+        {q:"La cadence fauréenne porte le nom de…",r:"Gabriel Fauré",o:["Gabriel Pierné","Maurice Ravel","Claude Debussy"]},
+        {q:"Une cadence imparfaite finit sur l’accord I, mais…",r:"renversé ou moins stable",o:["joué beaucoup plus fort","sans aucune basse","dans une autre tonalité"]}]};
+    const b=pick(BANQUES[t]);
+    return {emp:"cdb-"+t+b.r,consigne:b.q,champ:selListe([b.r].concat(b.o),b.r),verif:exact(b.r),solution:`<b>${b.r.charAt(0).toUpperCase()+b.r.slice(1)}</b>.`};
+  }),
+
   "modulation":()=>mapEx(nbQuestions,()=>{
     const niv=(difficulte===1||difficulte===3)?difficulte:2;
     const banque=MOD_BANQUE[niv], i=rnd(banque.length), it=banque[i];
@@ -8226,6 +8325,326 @@ function mxCaracteresHTML(){
     return '<tr><td><b class="mx-tn" style="--m:'+M.c+'">'+M.nom+'</b></td><td>'+R.nom+'</td><td>'+MX_CAR_NOM[M.car]+' (sur Do&nbsp;: '+n0+' → <b>'+n1+'</b>)</td><td><button type="button" class="btn-son" onclick="'+mxJ({pas:M.pas,ref:R.pas,t:60,quoi:"comparer",car:M.car})+'" aria-label="Écouter '+R.nom.toLowerCase()+' puis '+M.nom.toLowerCase()+'"><i class="ph ph-play"></i></button></td></tr>'; }).join("")+'</table>';
 }
 
+/* ===== Leçon « Les cadences » (18/10/2026) =====
+   La ponctuation de la musique. On les ENTEND et on les VOIT en même temps : chaque
+   partition (portée de piano, accords en rondes) s'éclaire accord par accord pendant
+   l'écoute. Cinq cadences (parfaite, imparfaite, demi-cadence, plagale, rompue),
+   comparées à la ponctuation et à des phrases ; l'Hymne à la joie (question et
+   réponse) ; une frise historique ; des exemples réels (vidéos déjà vérifiées) ; un
+   arbre pour les reconnaître ; un jeu d'écoute à trois niveaux.
+   Faits vérifiés (Wikipédia FR « Cadence harmonique », EN « Cadence ») : étymologie
+   latine cadentia (« une chute ») ; Guido d'Arezzo (Micrologus) ; cadence de Landini
+   (XIVᵉ siècle) ; plagal = modes plagaux ; Beethoven 5ᵉ, finale : six cadences
+   parfaites puis 29 mesures sur l'accord de do ; Pachelbel, Canon : formule finie
+   par une cadence parfaite, répétée 28 fois ; Haendel, « Hallelujah » et Brahms,
+   1ʳᵉ symphonie : cadence plagale finale ; Mozart, sonate n° 10 (2ᵉ mvt) : rompue ;
+   Bach, BWV 227 : tierce picarde ; BWV 153 : demi-cadence phrygienne. */
+const CD_LETTRES=["Do","Ré","Mi","Fa","Sol","La","Si"], CD_DEMI=[0,2,4,5,7,9,11];
+function cdNote(s){
+  const m=/^(Do|Ré|Mi|Fa|Sol|La|Si)(#|b)?(\d)$/.exec(s); if(!m)return null;
+  const l=CD_LETTRES.indexOf(m[1]), alt=m[2]==="#"?1:(m[2]==="b"?-1:0), o=+m[3];
+  return {d:o*7+l, alt:alt, midi:12*(o+1)+CD_DEMI[l]+alt};
+}
+/* accords : b = main gauche (clé de fa), h = main droite (clé de sol) */
+const CD_ACC={
+  I:{nom:"Do",deg:"I",b:["Do3"],h:["Mi4","Sol4","Do5"]},
+  I6:{nom:"Do",deg:"I",inv:"basse Mi",b:["Mi3"],h:["Do4","Sol4","Do5"]},
+  IV:{nom:"Fa",deg:"IV",b:["Fa2"],h:["Fa4","La4","Do5"]},
+  V:{nom:"Sol",deg:"V",b:["Sol2"],h:["Ré4","Sol4","Si4"]},
+  VI:{nom:"La m",deg:"VI",b:["La2"],h:["Mi4","La4","Do5"]},
+  mi:{nom:"La m",deg:"I",b:["La2"],h:["Do4","Mi4","La4"]},
+  miv:{nom:"Ré m",deg:"IV",b:["Ré3"],h:["Ré4","Fa4","La4"]},
+  miv6:{nom:"Ré m",deg:"IV",inv:"basse Fa",b:["Fa2"],h:["Ré4","Fa4","La4"]},
+  mV:{nom:"Mi",deg:"V",b:["Mi2"],h:["Mi4","Sol#4","Si4"]},
+  mIpic:{nom:"La",deg:"I",b:["La2"],h:["Do#4","Mi4","La4"]},
+  la1:{nom:"",deg:"",h:["Ré4","Si4"],b:[]}, la2:{nom:"",deg:"",h:["Ré4","La4"],b:[]}, la3:{nom:"",deg:"",h:["Do4","Do5"],b:[]}
+};
+const CD_TYPES=[
+  {id:"parfaite",nom:"Cadence parfaite",formule:"V → I",acc:["I","IV","V","I"],de:2,ponct:".",ponctNom:"le point final",bref:"repos complet : c’est fini",
+   phrase:"Je rentre à la maison",fin:".",effet:"C’est fini : repos complet, on est arrivé à la maison.",
+   oreille:"La basse descend de Sol à Do, et la mélodie monte de Si à Do : la note Si (la sensible) « tire » vers Do.",
+   ou:"À la fin de presque toutes les œuvres classiques, des chansons et des comptines.",c:"#13704c",ic:"flag-checkered"},
+  {id:"imparfaite",nom:"Cadence imparfaite",formule:"V → I renversé",acc:["I","IV","V","I6"],de:2,ponct:";",ponctNom:"le point-virgule",bref:"une pause moins nette",
+   phrase:"Je rentre à la maison",fin:" ;",effet:"On s’arrête, mais pas tout à fait : la phrase pourrait continuer.",
+   oreille:"Le dernier accord est bien Do, mais la basse joue Mi au lieu de Do : le repos est moins solide.",
+   ou:"Au milieu d’un morceau, pour une pause plus légère qu’un vrai point.",c:"#1f6f7a",ic:"pause"},
+  {id:"demi",nom:"Demi-cadence",formule:"… → V",acc:["I","IV","I","V"],de:3,ponct:",",ponctNom:"la virgule (ou le point d’interrogation)",bref:"suspension, une question",
+   phrase:"Tu rentres à la maison",fin:" ?",effet:"On reste « en l’air », comme une question : on attend la suite.",
+   oreille:"La phrase s’arrête sur l’accord de Sol (V). Il voudrait aller vers Do… mais n’y va pas.",
+   ou:"À la fin d’une première phrase (la question), à la fin d’un couplet pour lancer le refrain.",c:"#a14f00",ic:"question"},
+  {id:"plagale",nom:"Cadence plagale",formule:"IV → I",acc:["I","V","I","IV","I"],de:3,ponct:"Amen.",ponctNom:"un point solennel",bref:"fin douce et solennelle (Amen)",
+   phrase:"Ainsi soit-il",fin:".",effet:"Un point final doux et solennel : c’est l’« Amen » qui termine les chants religieux.",
+   oreille:"Pas de Si : on rentre à Do depuis Fa, sans tension, comme un apaisement.",
+   ou:"À la fin des cantiques (« A-men »), du chœur « Hallelujah » de Haendel, de la 1ʳᵉ symphonie de Brahms.",c:"#6a4fb3",ic:"hands-praying"},
+  {id:"rompue",nom:"Cadence rompue",formule:"V → VI",acc:["I","IV","V","VI"],de:2,ponct:"… !",ponctNom:"la surprise (points de suspension)",bref:"surprise : la phrase repart",
+   phrase:"Je rentre à la maison… mais la porte est fermée",fin:" !",effet:"Surprise : l’oreille attendait Do, elle tombe sur La mineur. La phrase doit repartir.",
+   oreille:"Après Sol, au lieu de Do, on entend La mineur : un accord qui ressemble à Do (il a Do et Mi en commun) mais en plus sombre.",
+   ou:"Juste avant la fin, pour retarder la conclusion : chez Bach, Mozart, Beethoven… et jusque chez Pink Floyd.",c:"#b43a0b",ic:"lightning"}
+];
+function cdType(id){ return CD_TYPES.filter(function(t){ return t.id===id; })[0]; }
+function cdCourt(T){ const n=T.nom.replace("Cadence ",""); return n.charAt(0).toUpperCase()+n.slice(1); }
+/* ---- La partition : portée de piano (clé de sol + clé de fa), accords en rondes ---- */
+function cdPartitionSVG(accs,o){
+  o=o||{};
+  const e=10, pas=o.pas||74, xD=o.solSeul?70:84, n=accs.length, W=xD+n*pas+18;
+  const topT=36, botT=topT+4*e, topB=botT+48, botB=topB+4*e, bas=o.solSeul?botT:botB;
+  const H=bas+(o.cad?76:48);
+  const yT=function(p){ return botT-p*e/2; }, yB=function(p){ return botB-p*e/2; };
+  const lab=o.aria||("Partition : "+accs.map(function(k){ const A=CD_ACC[k]; return A.nom?A.nom+" ("+A.deg+")":""; }).filter(Boolean).join(", ")+(o.cad?". "+o.cad.lib+" sur les derniers accords.":""));
+  let s='<svg class="cd-svg" viewBox="0 0 '+W+' '+H+'"'+(o.cle?' data-cdp="'+o.cle+'"':'')+' role="img" aria-label="'+echapH(lab)+'">';
+  if(o.cad){ const a=xD+o.cad.de*pas+5, b=xD+n*pas-5; s+='<rect class="cd-zone" x="'+a+'" y="'+(topT-28)+'" width="'+(b-a)+'" height="'+(bas-topT+54)+'" rx="12"/>'; }
+  accs.forEach(function(_,i){ s+='<rect class="cd-col" data-i="'+i+'" x="'+(xD+i*pas+6)+'" y="'+(topT-28)+'" width="'+(pas-12)+'" height="'+(bas-topT+54)+'" rx="10"/>'; });
+  (o.solSeul?[topT]:[topT,topB]).forEach(function(t){ for(let i=0;i<5;i++)s+='<line x1="12" y1="'+(t+i*e)+'" x2="'+(W-8)+'" y2="'+(t+i*e)+'" class="cd-trait"/>'; });
+  s+='<line x1="12" y1="'+topT+'" x2="12" y2="'+bas+'" class="cd-trait" stroke-width="2"/>';
+  s+='<line x1="'+(W-13)+'" y1="'+topT+'" x2="'+(W-13)+'" y2="'+bas+'" class="cd-trait"/><line x1="'+(W-9)+'" y1="'+topT+'" x2="'+(W-9)+'" y2="'+bas+'" class="cd-trait" stroke-width="3.5"/>';
+  s+=cleSVG("sol",e,function(m){ return topT+(4-m)*e; });
+  if(!o.solSeul)s+=cleSVG("fa",e,function(m){ return topB+(4-m)*e; });
+  const ledger=function(x,y){ return '<line x1="'+(x-12)+'" y1="'+y+'" x2="'+(x+12)+'" y2="'+y+'" class="cd-trait"/>'; };
+  accs.forEach(function(k,i){
+    const A=CD_ACC[k], x=xD+i*pas+pas/2;
+    const dess=function(lst,clefa){
+      const P=(lst||[]).map(function(nm){ const N=cdNote(nm); return {N:N,p:clefa?N.d-18:N.d-30}; }).sort(function(a,b){ return a.p-b.p; });
+      const Y=clefa?yB:yT;
+      P.forEach(function(q,j){
+        const y=Y(q.p); let dx=0;
+        if(j>0&&q.p-P[j-1].p===1&&!P[j-1].dx){ dx=15; q.dx=1; }
+        for(let l=-2;l>=q.p;l-=2)s+=ledger(x,Y(l));
+        for(let l=10;l<=q.p;l+=2)s+=ledger(x,Y(l));
+        if(q.N.alt)s+='<text class="cd-alt" x="'+(x-17)+'" y="'+(y+5)+'">'+(q.N.alt>0?"♯":"♭")+'</text>';
+        s+='<ellipse class="cd-tete" cx="'+(x+dx)+'" cy="'+y+'" rx="7.4" ry="5.2" transform="rotate(-24 '+(x+dx)+' '+y+')"/>';
+      });
+    };
+    dess(A.h,false); if(!o.solSeul)dess(A.b,true);
+    if(A.nom&&!o.nu)s+='<text class="cd-nom" x="'+x+'" y="'+(topT-12)+'">'+A.nom+'</text>';
+    if(A.deg&&!o.nu)s+='<text class="cd-deg" x="'+x+'" y="'+(bas+31)+'">'+A.deg+'</text>';
+    if(A.inv&&!o.nu)s+='<text class="cd-inv" x="'+x+'" y="'+(bas+44)+'">'+A.inv+'</text>';
+  });
+  if(o.cad){ const a=xD+o.cad.de*pas+12, b=xD+n*pas-12, y=bas+(accs.some(function(k){ return CD_ACC[k].inv; })?53:46);
+    s+='<path class="cd-crochet" d="M'+a+' '+(y-6)+' V'+y+' H'+b+' V'+(y-6)+'" style="stroke:'+(o.cad.c||"#b8860b")+'"/>'
+      +'<text class="cd-cad" x="'+((a+b)/2)+'" y="'+(y+16)+'" style="fill:'+(o.cad.c||"#8a6a00")+'">'+o.cad.lib+'</text>'; }
+  return s+'</svg>';
+}
+/* ---- L'Hymne à la joie (transcription vérifiée de MELODIES, transposée en do) ---- */
+const CD_HYMNE=[[64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[64,1.5],[62,0.5],[62,2],
+                [64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[62,1.5],[60,0.5],[60,2]];
+const CD_HYMNE_GRILLE=["I","I","V","V","I","I","I","V","I","I","V","V","I","I","V","I"];   /* un accord par demi-mesure */
+const CD_HYMNE_P={60:-2,62:-1,64:0,65:1,67:2};
+function cdHymneSVG(){
+  const e=10, u=27, xD=62, top=44, bot=top+4*e, H=bot+58;
+  const ligne=function(k){
+    const notes=CD_HYMNE.slice(k*15,k*15+15), W=xD+16*u+40;
+    let s='<svg class="cd-svg cd-hymne" viewBox="0 0 '+W+' '+H+'" data-cdp="h" role="img" aria-label="'+(k?"Deuxième phrase, la réponse : elle finit sur Do, cadence parfaite.":"Première phrase, la question : elle finit sur Ré, au-dessus de l’accord de Sol, demi-cadence.")+'">';
+    for(let i=0;i<5;i++)s+='<line x1="10" y1="'+(top+i*e)+'" x2="'+(W-8)+'" y2="'+(top+i*e)+'" class="cd-trait"/>';
+    s+=cleSVG("sol",e,function(m){ return top+(4-m)*e; });
+    s+='<text class="cd-phr" x="10" y="16">'+(k?"2. La réponse":"1. La question")+'</text>';
+    let t=0, x=xD;
+    notes.forEach(function(nn,j){
+      const i=k*15+j, d=nn[1], p=CD_HYMNE_P[nn[0]], y=bot-p*e/2;
+      if(t>0&&t%4===0){ s+='<line x1="'+(x-u/2+4)+'" y1="'+top+'" x2="'+(x-u/2+4)+'" y2="'+bot+'" class="cd-trait"/>'; }
+      if(t%2===0){ const h=k*8+Math.floor(t/2), A=CD_ACC[CD_HYMNE_GRILLE[h]];
+        s+='<text class="cd-sym" data-i="'+h+'" x="'+x+'" y="'+(top-14)+'">'+A.nom+'</text>'; }
+      let g='<g class="cd-n" data-i="'+i+'">';
+      if(p<=-2)g+='<line x1="'+(x-12)+'" y1="'+(bot+e)+'" x2="'+(x+12)+'" y2="'+(bot+e)+'" class="cd-trait"/>';
+      g+='<ellipse cx="'+x+'" cy="'+y+'" rx="7" ry="5" transform="rotate(-24 '+x+' '+y+')" class="'+(d>=2?"cd-blanche":"cd-noire")+'"/>';
+      g+='<line x1="'+(x+6.4)+'" y1="'+(y-1)+'" x2="'+(x+6.4)+'" y2="'+(y-33)+'" class="cd-hampe"/>';
+      if(d===0.5)g+='<path d="M'+(x+6.4)+' '+(y-33)+' q 10 8 6 20" class="cd-crochet-n"/>';
+      if(d===1.5)g+='<circle cx="'+(x+13)+'" cy="'+(y-(p%2===0?4:0))+'" r="2.2" class="cd-point"/>';
+      s+=g+'</g>';
+      x+=d===0.5?u*0.75:u*Math.max(1,d); t+=d;
+    });
+    s+='<line x1="'+(W-13)+'" y1="'+top+'" x2="'+(W-13)+'" y2="'+bot+'" class="cd-trait"/>'+(k?'<line x1="'+(W-9)+'" y1="'+top+'" x2="'+(W-9)+'" y2="'+bot+'" class="cd-trait" stroke-width="3.5"/>':'');
+    s+='<text class="cd-cad" x="'+(W-12)+'" y="'+(bot+38)+'" text-anchor="end" style="fill:'+(k?"#1a7a52":"#b45309")+'">'+(k?"cadence parfaite ( . )":"demi-cadence ( , )")+'</text>';
+    return s+'</svg>';
+  };
+  return ligne(0)+ligne(1);
+}
+/* ---- Le son, et la partition qui s'éclaire en même temps ---- */
+let _cd={min:[]};
+function cdVisuelStop(){ _cd.min.forEach(clearTimeout); _cd.min=[]; document.querySelectorAll(".cd-svg .on").forEach(function(x){ x.classList.remove("on"); }); }
+function cdMarquer(cle,sel,i,duree){
+  _cd.min.push(setTimeout(function(){
+    document.querySelectorAll('[data-cdp="'+cle+'"] '+sel).forEach(function(x){ x.classList.toggle("on",+x.getAttribute("data-i")===i); });
+  },i<0?0:duree*1000));
+}
+/* joue une suite d'accords (clés de CD_ACC), en marquant la partition data-cdp=cle */
+function cdJouerAccords(accs,t0,cle,transp,dur){
+  let t=t0; const tr=transp||0, dd=dur||1.05;
+  accs.forEach(function(k,i){
+    const A=CD_ACC[k], der=(i===accs.length-1), d=der?1.9:dd;
+    (A.b||[]).forEach(function(nm){ jouerMidi(cdNote(nm).midi+tr,t,d*0.95,0.17); });
+    (A.h||[]).forEach(function(nm){ jouerMidi(cdNote(nm).midi+tr,t,d*0.95,0.12); });
+    if(cle){ const ii=i; _cd.min.push(setTimeout(function(){ document.querySelectorAll('[data-cdp="'+cle+'"] .cd-col').forEach(function(x){ x.classList.toggle("on",+x.getAttribute("data-i")===ii); }); },t*1000)); }
+    t+=d;
+  });
+  if(cle)_cd.min.push(setTimeout(function(){ document.querySelectorAll('[data-cdp="'+cle+'"] .cd-col.on').forEach(function(x){ x.classList.remove("on"); }); },t*1000+300));
+  return t;
+}
+function cdExtrait(cle){
+  try{ audio().resume(); }catch(e){}
+  cdVisuelStop();
+  sonSessionAttacher({arret:cdVisuelStop});
+  const P=String(cle).split(":");
+  if(P[0]==="p"||P[0]==="j"){ const T=cdType(P[1]); if(T)cdJouerAccords(T.acc,0,P[0]==="p"?cle:null,+(P[2]||0)); return; }
+  if(P[0]==="c"){ const T=cdType(P[1]); if(!T)return; const t=cdJouerAccords(T.acc,0,"p:"+T.id); cdJouerAccords(cdType("parfaite").acc,t+0.8,"p:parfaite"); return; }
+  if(P[0]==="a"){ cdJouerAccords([P[1]],0,cle); return; }
+  if(P[0]==="sens"){ jouerMidi(71,0,0.9,0.25); jouerMidi(72,1,1.4,0.25); return; }
+  if(P[0]==="ch"){ const fin=P[1]; cdJouerAccords(fin==="V"?["I","IV","V"]:["I","IV","V",fin],0,cle); return; }
+  if(P[0]==="land"){ cdJouerAccords(["la1","la2","la3"],0,cle,0,0.7); return; }
+  if(P[0]==="pic"){ cdJouerAccords(P[1]==="1"?["mi","miv","mV","mIpic"]:["mi","miv","mV","mi"],0,cle); return; }
+  if(P[0]==="phr"){ cdJouerAccords(["mi","miv6","mV"],0,cle); return; }
+  if(P[0]==="jazz"){ let t=0; [[50,60,65,69],[43,59,62,65],[48,59,64,67]].forEach(function(a,i){ a.forEach(function(m){ jouerMidi(m,t,(i===2?1.9:1)*0.95,0.13); }); t+=i===2?1.9:1; }); return; }
+  if(P[0]==="h"){
+    const deb=P[1]==="2"?15:0, fin=P[1]==="1"?15:30, spb=0.5; let t=0;
+    for(let i=deb;i<fin;i++){ const n=CD_HYMNE[i]; jouerMidi(n[0],t,Math.min(1.1,n[1]*spb*0.92),0.24); cdMarquer("h",".cd-n",i,t); t+=n[1]*spb; }
+    for(let h=deb/15*8;h<fin/15*8;h++){ const A=CD_HYMNE_GRILLE[h], tt=(h-deb/15*8)*2*spb;
+      (A==="I"?[48,52,55]:[43,50,55,59]).forEach(function(m){ jouerMidi(m,tt,2*spb*0.95,0.1); }); cdMarquer("h",".cd-sym",h,tt); }
+    _cd.min.push(setTimeout(cdVisuelStop,t*1000+400));
+  }
+}
+/* ---- L'atelier des cinq cadences ---- */
+let _cdSel="parfaite";
+function cdCarteHTML(T){
+  const P=cdType("parfaite");
+  return '<div class="cd-fiche" style="--c:'+T.c+'">'
+    +'<div class="cd-fiche-t"><span class="cd-ponct" aria-hidden="true">'+T.ponct+'</span><div><h4>'+T.nom+'</h4><span class="cd-formule">'+T.formule+'</span></div></div>'
+    +'<div class="cd-part">'+cdPartitionSVG(T.acc,{cle:"p:"+T.id,cad:{de:T.de,lib:T.nom,c:T.c}})+'</div>'
+    +'<div class="cd-boutons"><button type="button" class="btn-son" onclick="jouerSonBtn({cd:\'p:'+T.id+'\'})"><i class="ph ph-play"></i> Écouter</button>'
+    +(T.id!=="parfaite"?'<button type="button" class="btn-son" onclick="cdComparer(\''+T.id+'\')"><i class="ph ph-arrows-left-right"></i> Comparer avec la parfaite</button>':'')+'</div>'
+    +'<p class="cd-phrase">« '+T.phrase+'<b>'+T.fin+'</b> »<small>'+T.ponctNom+'</small></p>'
+    +'<ul class="cd-infos"><li><i class="ph ph-heart" aria-hidden="true"></i><span><b>Ce qu’on ressent</b> '+T.effet+'</span></li>'
+    +'<li><i class="ph ph-ear" aria-hidden="true"></i><span><b>Ce qu’on entend</b> '+T.oreille+'</span></li>'
+    +'<li><i class="ph ph-map-pin" aria-hidden="true"></i><span><b>Où on la trouve</b> '+T.ou+'</span></li></ul>'
+    +(T.id!=="parfaite"?'<div class="cd-part cd-part-ref" hidden>'+cdPartitionSVG(P.acc,{cle:"p:parfaite",cad:{de:P.de,lib:P.nom,c:P.c}})+'</div>':'')
+    +'</div>';
+}
+function cdAtelierHTML(){
+  return '<div class="cd-atelier" id="cdAtelier"><div class="cd-chips" role="tablist" aria-label="Les cinq cadences">'
+    +CD_TYPES.map(function(T){ return '<button type="button" role="tab" aria-selected="'+(T.id===_cdSel)+'" class="cd-chip'+(T.id===_cdSel?" on":"")+'" style="--c:'+T.c+'" onclick="cdChoisir(\''+T.id+'\')">'
+      +'<i class="ph ph-'+T.ic+'" aria-hidden="true"></i> '+cdCourt(T)+'</button>'; }).join("")+'</div>'
+    +'<div id="cdFiche" role="tabpanel">'+cdCarteHTML(cdType(_cdSel))+'</div></div>';
+}
+function cdComparer(id){
+  const r=document.querySelector("#cdFiche .cd-part-ref"); if(r)r.hidden=false;
+  jouerSonBtn({cd:"c:"+id});
+}
+function cdChoisir(id){
+  _cdSel=id; try{ sonBtnCouper(); }catch(e){}
+  const z=document.getElementById("cdFiche"); if(z)z.innerHTML=cdCarteHTML(cdType(id));
+  document.querySelectorAll("#cdAtelier .cd-chip").forEach(function(b){ const on=b.getAttribute("onclick").indexOf("'"+id+"'")>0; b.classList.toggle("on",on); b.setAttribute("aria-selected",String(on)); });
+}
+/* ---- Les accords en jeu ---- */
+function cdDegresHTML(){
+  const D=[["I","Tonique","la maison : le repos","house"],["IV","Sous-dominante","on s’éloigne de la maison","sign-out"],["V","Dominante","la tension : on veut rentrer","lightning"],["VI","Sus-dominante","la « fausse maison », plus sombre","moon"]];
+  return '<div class="cd-degres">'+D.map(function(x){ const A=CD_ACC[x[0]];
+    return '<div class="cd-deg-c"><div class="cd-deg-t"><b>'+x[0]+'</b><span>'+A.nom+(x[0]==="VI"?"":" majeur")+'</span></div>'
+      +'<div class="cd-part cd-mini">'+cdPartitionSVG([x[0]],{cle:"a:"+x[0],pas:66,aria:"Accord de "+A.nom+" ("+x[0]+")"})+'</div>'
+      +'<p><i class="ph ph-'+x[3]+'" aria-hidden="true"></i> <b>'+x[1]+'</b> : '+x[2]+'</p>'
+      +'<button type="button" class="btn-son mini" onclick="jouerSonBtn({cd:\'a:'+x[0]+'\'})" aria-label="Écouter l’accord '+x[0]+'"><i class="ph ph-play"></i></button></div>'; }).join("")+'</div>';
+}
+/* ---- Même début, fins différentes ---- */
+function cdCheminsHTML(){
+  const F=[["I","→ Do","Je rentre à la maison","."," cadence parfaite","#13704c"],["V","on s’arrête sur Sol","Tu rentres à la maison"," ?"," demi-cadence","#a14f00"],["VI","→ La m","Je rentre à la maison… mais la porte est fermée"," !"," cadence rompue","#b43a0b"]];
+  return '<div class="cd-chemins"><div class="cd-depart"><span class="cd-acc-bulle">Do</span><span class="cd-acc-bulle">Fa</span><span class="cd-acc-bulle or">Sol</span><small>Le même début : I, IV, V… puis trois fins possibles</small></div>'
+    +'<div class="cd-fleches" aria-hidden="true"><i class="ph ph-arrow-down"></i></div>'
+    +'<div class="cd-fins">'+F.map(function(f){ return '<button type="button" class="cd-fin" style="--c:'+f[5]+'" onclick="jouerSonBtn({cd:\'ch:'+f[0]+'\'})">'
+      +'<span class="cd-fin-acc"><i class="ph ph-play" aria-hidden="true"></i> '+f[1]+'</span><span class="cd-fin-p">« '+f[2]+'<b>'+f[3]+'</b> »</span><span class="cd-fin-n">'+f[4]+'</span></button>'; }).join("")+'</div></div>';
+}
+/* ---- Les reconnaître : trois questions ---- */
+function cdArbreHTML(){
+  return '<div class="cd-arbre">'
+    +'<div class="cd-q">1. Est-ce que ça sonne <b>fini</b>&nbsp;?</div>'
+    +'<div class="cd-branches"><div class="cd-br"><span class="cd-oui">Oui</span><div class="cd-q">2. Entends-tu la tension de la <b>sensible</b> (Si qui monte à Do)&nbsp;?</div>'
+      +'<div class="cd-feuilles"><span class="cd-f" style="--c:#13704c"><b>Oui</b> : parfaite <small>(imparfaite si c’est un peu moins net)</small></span><span class="cd-f" style="--c:#6a4fb3"><b>Non, c’est doux</b> : plagale <small>(Amen)</small></span></div></div>'
+    +'<div class="cd-br"><span class="cd-non">Non</span><div class="cd-q">2. La musique reste-t-elle <b>en l’air</b>, en attente&nbsp;?</div>'
+      +'<div class="cd-feuilles"><span class="cd-f" style="--c:#a14f00"><b>Oui</b> : demi-cadence <small>(une question)</small></span><span class="cd-f" style="--c:#b43a0b"><b>Non, surprise</b> : rompue <small>(un accord plus sombre)</small></span></div></div></div></div>';
+}
+/* ---- Pour aller plus loin : picarde, phrygienne ---- */
+function cdPlusHTML(){
+  return '<div class="cd-plus">'
+    +'<div class="cd-plus-c"><h4>La cadence picarde (tierce picarde)</h4><p>Un morceau en <b>mineur</b> qui se termine… sur un accord <b>majeur</b>&nbsp;! Un rayon de lumière à la toute fin. Bach l’utilise souvent, par exemple dans le motet «&nbsp;Jesu, meine Freude&nbsp;».</p>'
+      +'<div class="cd-duo"><div><div class="cd-part">'+cdPartitionSVG(["mi","miv","mV","mi"],{cle:"pic:0",pas:62,cad:{de:2,lib:"fin mineure",c:"#5b6478"}})+'</div><button type="button" class="btn-son" onclick="jouerSonBtn({cd:\'pic:0\'})"><i class="ph ph-play"></i> Fin mineure</button></div>'
+      +'<div><div class="cd-part">'+cdPartitionSVG(["mi","miv","mV","mIpic"],{cle:"pic:1",pas:62,cad:{de:2,lib:"tierce picarde",c:"#b45309"}})+'</div><button type="button" class="btn-son" onclick="jouerSonBtn({cd:\'pic:1\'})"><i class="ph ph-play"></i> Fin picarde (Do♯)</button></div></div></div>'
+    +'<div class="cd-plus-c"><h4>La demi-cadence phrygienne</h4><p>En mineur, la basse descend d’un <b>demi-ton</b> (Fa → Mi) pour s’arrêter sur l’accord de dominante. Un son ancien, solennel, très utilisé à l’époque baroque, par exemple dans les chorals de Bach.</p>'
+      +'<div class="cd-part">'+cdPartitionSVG(["mi","miv6","mV"],{cle:"phr",pas:66,cad:{de:1,lib:"phrygienne",c:"#0f766e"}})+'</div><button type="button" class="btn-son" onclick="jouerSonBtn({cd:\'phr\'})"><i class="ph ph-play"></i> Écouter</button></div>'
+    +'</div>';
+}
+/* ---- La frise : d'où viennent les cadences ---- */
+function cdFriseHTML(){
+  return '<ol class="cd-frise">'
+    +'<li><span class="cd-ep">XIᵉ siècle</span><div><b>Guido d’Arezzo</b>, le moine qui a donné leur nom aux notes, explique dans son traité <i>Micrologus</i> comment deux voix se rejoignent pour finir une phrase.</div></li>'
+    +'<li><span class="cd-ep">Moyen Âge</span><div>Dans le <b>chant grégorien</b>, les phrases «&nbsp;retombent&nbsp;» sur la note principale du mode. Le mot <b>cadence</b> vient d’ailleurs du latin <i>cadentia</i>&nbsp;: «&nbsp;une chute&nbsp;». Et «&nbsp;plagale&nbsp;» vient des <b>modes plagaux</b> de l’Église.</div></li>'
+    +'<li><span class="cd-ep">XIVᵉ siècle</span><div>La <b>cadence de Landini</b>, du nom du compositeur florentin <b>Francesco Landini</b> qui l’employait sans cesse&nbsp;: la voix du haut fait un petit détour (Si, La… Do) avant d’arriver sur la note finale.'
+      +'<div class="cd-part cd-mini">'+cdPartitionSVG(["la1","la2","la3"],{cle:"land",solSeul:true,pas:58,aria:"Cadence de Landini : Si, La puis Do à la voix du haut, Ré puis Do à la voix du bas."})+'</div><button type="button" class="btn-son mini" onclick="jouerSonBtn({cd:\'land\'})" aria-label="Écouter la cadence de Landini"><i class="ph ph-play"></i></button></div></li>'
+    +'<li><span class="cd-ep">XVIᵉ siècle</span><div>À la Renaissance, dans la musique à plusieurs voix (Josquin, Palestrina), les voix se rejoignent sur l’octave à chaque fin de phrase du texte. Les théoriciens français commencent à parler de «&nbsp;cadence&nbsp;».</div></li>'
+    +'<li><span class="cd-ep">XVIIᵉ et XVIIIᵉ</span><div>Naissance de la <b>tonalité</b> (majeur, mineur) et des accords&nbsp;: les cadences deviennent des <b>enchaînements d’accords</b>. Dans les chorals de <b>Bach</b>, chaque phrase finit sur une cadence, marquée d’un point d’orgue. <b>Rameau</b> explique l’harmonie par les enchaînements d’accords dans son <i>Traité de l’harmonie</i> (1722).</div></li>'
+    +'<li><span class="cd-ep">Époque classique</span><div><b>Mozart, Haydn, Beethoven</b> construisent leurs phrases en <b>question et réponse</b>&nbsp;: une demi-cadence, puis une cadence parfaite. Beethoven termine sa 5ᵉ symphonie (1808) par six cadences parfaites d’affilée.</div></li>'
+    +'<li><span class="cd-ep">XXᵉ et aujourd’hui</span><div>Le <b>jazz</b> a sa propre cadence, l’enchaînement «&nbsp;II, V, I&nbsp;». Dans la pop et le rock, la cadence plagale (IV, I) et la demi-cadence en fin de couplet sont partout.'
+      +' <button type="button" class="btn-son mini" onclick="jouerSonBtn({cd:\'jazz\'})" aria-label="Écouter une cadence de jazz II V I"><i class="ph ph-play"></i></button></div></li>'
+    +'</ol>';
+}
+/* ---- Les compositeurs : exemples réels (vidéos déjà vérifiées) ---- */
+function cdExemplesHTML(){
+  const E=[
+    ["Ludwig van Beethoven","Symphonie n° 5 (1808)","parfaite","jv2WJMVPQi8","La fin du dernier mouvement enchaîne <b>six cadences parfaites</b> d’affilée, puis 29 mesures sur le seul accord de do&nbsp;: impossible de ne pas comprendre que c’est fini&nbsp;! (Écoute la toute fin de la vidéo.)"],
+    ["Georg Friedrich Haendel","Le Messie, « Hallelujah » (1741)","plagale","IUZEtVbJT5c","Les derniers «&nbsp;Hal-le-lu-jah&nbsp;» forment une <b>cadence plagale</b>, répétée&nbsp;: l’«&nbsp;Amen&nbsp;» le plus célèbre de la musique. (À la fin de la vidéo.)"],
+    ["Johann Pachelbel","Canon en ré","parfaite","aQxVE6d3Yj8","La même suite d’accords, terminée par une <b>cadence parfaite</b>, revient 28 fois pendant que les violons se poursuivent."],
+    ["Ludwig van Beethoven","Hymne à la joie, 9ᵉ symphonie (1824)","demi","kbJcQYVtZMo","Une phrase qui pose une <b>question</b> (demi-cadence), puis une phrase qui y <b>répond</b> (cadence parfaite). Tu la vois en partition plus haut."]];
+  const A=[["Wolfgang Amadeus Mozart","Sonate pour piano n° 10, 2ᵉ mouvement : une <b>cadence rompue</b>."],["Johannes Brahms","Symphonie n° 1 : elle se termine par une <b>cadence plagale</b>."],
+    ["Jean-Sébastien Bach","Ses chorals : une cadence à chaque fin de phrase ; la <b>tierce picarde</b> dans «&nbsp;Jesu, meine Freude&nbsp;»."],["Pink Floyd","«&nbsp;Bring the Boys Back Home&nbsp;» se termine par une <b>cadence rompue</b>."]];
+  return '<div class="cd-ex">'+E.map(function(x){ const T=cdType(x[2]);
+      return '<div class="cd-ex-c" style="--c:'+T.c+'"><div class="cd-ex-t"><b>'+x[0]+'</b><span>'+x[1]+'</span><span class="cd-badge">'+T.nom+'</span></div>'
+        +'<div class="compo-yt-grille"><div class="ce-yt" data-yt="'+x[3]+'" data-lib="'+echapH(x[1].replace(/<[^>]+>/g,"")+" · "+x[0])+'"></div></div><p>'+x[4]+'</p></div>'; }).join("")+'</div>'
+    +'<ul class="cd-autres">'+A.map(function(a){ return '<li><b>'+a[0]+'</b> · '+a[1]+'</li>'; }).join("")+'</ul>';
+}
+/* ---- Le jeu : quelle cadence entends-tu ? ---- */
+const CD_JEU_NIV={1:["parfaite","demi"],2:["parfaite","demi","rompue"],3:["parfaite","imparfaite","demi","plagale","rompue"]};
+const CD_JEU_TOURS=8;
+let _cdj={niv:1,tour:0,bons:0,att:null,tr:0,rep:false};
+function cdJeuHTML(){
+  return '<div class="cd-jeu" id="cdJeu"><div class="cd-jeu-niv" role="radiogroup" aria-label="Niveau">'
+    +[1,2,3].map(function(n){ return '<button type="button" role="radio" aria-checked="'+(n===_cdj.niv)+'" class="cd-chip'+(n===_cdj.niv?" on":"")+'" onclick="cdJeuNiv('+n+')">Niveau '+n+' <small>'+CD_JEU_NIV[n].length+' cadences</small></button>'; }).join("")+'</div>'
+    +'<div id="cdJeuZone" class="cd-jeu-z">'+cdJeuAccueil()+'</div></div>';
+}
+function cdJeuAccueil(){ return '<p>'+CD_JEU_TOURS+' phrases, jouées dans des tonalités différentes. À toi de dire comment chacune se termine.</p><button type="button" class="action btn-corr" onclick="cdJeuDemarrer()"><i class="ph ph-play-circle"></i> Commencer</button>'; }
+function cdJeuNiv(n){ _cdj.niv=n; try{ sonBtnCouper(); }catch(e){} const z=document.getElementById("cdJeu"); if(z)z.outerHTML=cdJeuHTML(); }
+function cdJeuDemarrer(){ _cdj.tour=0; _cdj.bons=0; cdJeuTour(); }
+function cdJeuTour(){
+  const L=CD_JEU_NIV[_cdj.niv];
+  let t; do{ t=pick(L); }while(L.length>1&&t===_cdj.att&&Math.random()<0.6);
+  _cdj.att=t; _cdj.tr=pick([-5,-3,-2,0,2,3,4]); _cdj.rep=false; _cdj.tour++;
+  const z=document.getElementById("cdJeuZone"); if(!z)return;
+  z.innerHTML='<p class="cd-jeu-num">Phrase '+_cdj.tour+' sur '+CD_JEU_TOURS+' · '+_cdj.bons+' bonne'+(_cdj.bons>1?"s":"")+' réponse'+(_cdj.bons>1?"s":"")+'</p>'
+    +'<button type="button" class="btn-son" onclick="jouerSonBtn({cd:\'j:'+t+':'+_cdj.tr+'\'})"><i class="ph ph-play"></i> Écouter la phrase</button>'
+    +'<div class="cd-jeu-rep">'+L.map(function(id){ const T=cdType(id); return '<button type="button" class="cd-jeu-b" style="--c:'+T.c+'" onclick="cdJeuRepondre(\''+id+'\')"><span class="cd-ponct" aria-hidden="true">'+T.ponct+'</span>'+T.nom+'</button>'; }).join("")+'</div>'
+    +'<div id="cdJeuRetour" role="status" aria-live="polite"></div>';
+  setTimeout(function(){ const b=z.querySelector(".btn-son"); if(b)b.click(); },250);
+}
+function cdJeuRepondre(id){
+  if(_cdj.rep)return; _cdj.rep=true;
+  const T=cdType(_cdj.att), ok=id===_cdj.att; if(ok)_cdj.bons++;
+  try{ sonBtnCouper(); }catch(e){} try{ jouerEffet(ok?"bon":"mauvais"); }catch(e){}
+  document.querySelectorAll("#cdJeuZone .cd-jeu-b").forEach(function(b){ const i=b.getAttribute("onclick").match(/'([a-z]+)'/)[1];
+    b.disabled=true; if(i===_cdj.att)b.classList.add("bon"); else if(i===id)b.classList.add("faux"); });
+  const r=document.getElementById("cdJeuRetour"); if(!r)return;
+  r.innerHTML='<p class="cd-jeu-v '+(ok?"ok":"ko")+'"><b>'+(ok?"Bravo !":"Non :")+'</b> c’était une <b>'+T.nom.toLowerCase()+'</b> ('+T.formule+'). «&nbsp;'+T.phrase+'<b>'+T.fin+'</b>&nbsp;»</p>'
+    +'<div class="cd-part">'+cdPartitionSVG(T.acc,{cle:"p:"+T.id,cad:{de:T.de,lib:T.nom,c:T.c}})+'</div>'
+    +'<p class="cd-st">La même phrase, écrite en do majeur (tu l’as entendue dans une autre tonalité).</p>'
+    +'<div class="cd-boutons"><button type="button" class="btn-son" onclick="jouerSonBtn({cd:\'p:'+T.id+'\'})"><i class="ph ph-play"></i> Réécouter en do</button>'
+    +'<button type="button" class="action btn-corr" onclick="'+(_cdj.tour>=CD_JEU_TOURS?"cdJeuFin()":"cdJeuTour()")+'">'+(_cdj.tour>=CD_JEU_TOURS?"Voir mon score":"Phrase suivante")+' <i class="ph ph-arrow-right"></i></button></div>';
+}
+function cdJeuFin(){
+  const z=document.getElementById("cdJeuZone"); if(!z)return;
+  const n=_cdj.bons, msg=n===CD_JEU_TOURS?"Parfait : tes oreilles ponctuent comme un compositeur !":(n>=CD_JEU_TOURS*0.75?"Très bien ! Tente le niveau suivant.":(n>=CD_JEU_TOURS/2?"Pas mal : réécoute l’atelier des cadences, puis réessaie.":"Réécoute chaque cadence dans l’atelier, puis retente ta chance."));
+  z.innerHTML='<p class="cd-jeu-score"><b>'+n+' / '+CD_JEU_TOURS+'</b></p><p>'+msg+'</p><button type="button" class="action btn-corr" onclick="cdJeuDemarrer()"><i class="ph ph-arrow-counter-clockwise"></i> Rejouer</button>'
+    +(_cdj.niv<3&&n>=CD_JEU_TOURS*0.75?' <button type="button" class="action btn-nouv" onclick="cdJeuNiv('+(_cdj.niv+1)+')">Niveau '+(_cdj.niv+1)+'</button>':'');
+  try{ if(n>=CD_JEU_TOURS*0.75)jouerEffet("valider"); }catch(e){}
+}
+function cdRetenirHTML(){
+  return '<div class="cd-table-w" tabindex="0" role="region" aria-label="Tableau récapitulatif des cadences"><table class="cd-table"><thead><tr><th>Cadence</th><th>Formule</th><th>Effet</th><th>Ponctuation</th></tr></thead><tbody>'
+    +CD_TYPES.map(function(T){ return '<tr style="--c:'+T.c+'"><td><b>'+T.nom+'</b></td><td>'+T.formule+'</td><td>'+T.bref+'</td><td><span class="cd-ponct-p">'+T.ponct+'</span> '+T.ponctNom+'</td></tr>'; }).join("")
+    +'</tbody></table></div>';
+}
+
 const LECONS={
  "metiers":{titre:"Les métiers de la musique",html:`
   <p>Tu aimes la musique&nbsp;? Elle peut devenir ton métier… même si tu ne montes jamais sur une scène. Chaque chanson que tu écoutes est passée entre les mains de <b>dizaines de professionnels</b>&nbsp;: certains l'ont écrite ou jouée, d'autres ont réglé son son, fabriqué les instruments, organisé le concert ou protégé ses auteurs.</p>
@@ -9107,6 +9526,88 @@ const LECONS={
   </ul>
   <p>Dans l'exercice, le logiciel te fait écouter deux notes et te demande de reconnaître si c'est un ton ou un demi-ton.</p>
   <div class="astuce">Le demi-ton sonne «&nbsp;collé&nbsp;», presque grinçant, un peu dissonant&nbsp;; le ton sonne plus «&nbsp;ouvert&nbsp;» et reposé. Réécoute plusieurs fois et <b>chante</b> les deux notes&nbsp;: en les fredonnant, tu sentiras tout de suite si l'écart est serré (demi-ton) ou plus large (ton).</div>`},
+
+ "cadences":{titre:"Les cadences : la ponctuation de la musique",html:`
+  <p>Quand tu parles, tu fais des pauses&nbsp;: une <b>virgule</b> pour respirer, un <b>point d’interrogation</b> pour poser une question, un <b>point</b> pour finir. La musique aussi a sa ponctuation&nbsp;! La façon dont une phrase musicale se termine s’appelle une <b>cadence</b>.</p>
+  <div class="cle">Une <b>cadence</b>, c’est la <b>fin d’une phrase musicale</b>&nbsp;: deux accords qui disent à l’oreille «&nbsp;c’est fini&nbsp;», «&nbsp;ça continue&nbsp;» ou «&nbsp;surprise&nbsp;!&nbsp;». Le mot vient du latin <i>cadentia</i>, «&nbsp;une chute&nbsp;»&nbsp;: la musique <b>retombe</b> sur une note de repos.</div>
+
+  </div><div class="carte">
+  <h3>1. Une question, puis une réponse</h3>
+  <p>Tu connais l’<b>Hymne à la joie</b> de Beethoven. Ses deux phrases commencent pareil… mais ne finissent pas pareil. Écoute en suivant la partition&nbsp;: les notes s’allument pendant qu’elles sonnent.</p>
+  <div class="cd-part cd-part-l">${cdHymneSVG()}</div>
+  <div class="cd-boutons"><button type="button" class="btn-son" onclick="jouerSonBtn({cd:'h:1'})"><i class="ph ph-play"></i> La question</button><button type="button" class="btn-son" onclick="jouerSonBtn({cd:'h:2'})"><i class="ph ph-play"></i> La réponse</button><button type="button" class="btn-son" onclick="jouerSonBtn({cd:'h:12'})"><i class="ph ph-play"></i> Les deux</button></div>
+  <div class="cd-duo-phr">
+  <p><span class="cd-ponct-p" style="--c:#a14f00">,</span> La 1ʳᵉ phrase s’arrête sur <b>Ré</b>, au-dessus de l’accord de <b>Sol</b>&nbsp;: elle reste en l’air, comme <b>«&nbsp;Tu viens avec moi&nbsp;?&nbsp;»</b> C’est une <b>demi-cadence</b>.</p>
+  <p><span class="cd-ponct-p" style="--c:#13704c">.</span> La 2ᵉ phrase finit sur <b>Do</b>, sur l’accord de <b>Do</b>&nbsp;: c’est la réponse, <b>«&nbsp;Oui, je viens avec toi.&nbsp;»</b> C’est une <b>cadence parfaite</b>.</p>
+  </div>
+
+  </div><div class="carte">
+  <h3>2. Les accords qui font les cadences</h3>
+  <p>Dans la gamme de <b>Do majeur</b>, on peut construire un accord sur chaque note. On les numérote en chiffres romains&nbsp;: <b>I</b> sur Do, <b>IV</b> sur Fa, <b>V</b> sur Sol, <b>VI</b> sur La. Ces quatre accords suffisent pour comprendre toutes les cadences.</p>
+  ${cdDegresHTML()}
+  <div class="astuce">La 7ᵉ note de la gamme, <b>Si</b>, est juste en dessous de Do&nbsp;: elle est attirée vers lui comme par un aimant. On l’appelle la <b>sensible</b>. Elle fait partie de l’accord de Sol (V)&nbsp;: voilà pourquoi l’accord <b>V veut aller vers I</b>. <button type="button" class="btn-son mini" onclick="jouerSonBtn({cd:'sens'})" aria-label="Écouter la sensible qui monte vers Do"><i class="ph ph-play"></i></button></div>
+
+  </div><div class="carte">
+  <h3>3. Les cinq cadences</h3>
+  <p>Choisis une cadence et écoute-la en regardant la partition s’éclairer, accord après accord. La zone dorée, ce sont les accords de la cadence. Chaque cadence a sa ponctuation et sa phrase.</p>
+  ${cdAtelierHTML()}
+  <div class="astuce">Pour bien entendre la différence, utilise le bouton <b>«&nbsp;Comparer avec la parfaite&nbsp;»</b>&nbsp;: tu entends la cadence choisie, puis la cadence parfaite juste après.</div>
+
+  </div><div class="carte">
+  <h3>4. Même début, fins différentes</h3>
+  <p>Après l’accord de <b>Sol</b> (V), trois chemins sont possibles. Le début est identique, seule la fin change… exactement comme dans une phrase. Touche chaque fin pour l’écouter.</p>
+  ${cdCheminsHTML()}
+
+  </div><div class="carte">
+  <h3>5. Reconnaître une cadence à l’oreille</h3>
+  <p>Pas besoin de lire la partition&nbsp;: pose-toi ces questions dans l’ordre.</p>
+  ${cdArbreHTML()}
+  <ul>
+  <li>Le plus facile à entendre&nbsp;: <b>fini</b> ou <b>pas fini</b>. Commence toujours par là.</li>
+  <li>Chante la dernière note de la mélodie&nbsp;: si elle tombe sur la note de départ du morceau, c’est souvent une cadence parfaite.</li>
+  <li>Une cadence rompue te fait presque sursauter&nbsp;: «&nbsp;Hein&nbsp;? Ce n’est pas fini&nbsp;?&nbsp;»</li>
+  </ul>
+
+  </div><div class="carte">
+  <h3>6. À quoi servent les cadences&nbsp;?</h3>
+  <ul class="cd-usages">
+  <li><i class="ph ph-scissors" aria-hidden="true"></i><span><b>Découper la musique en phrases</b>, comme un texte&nbsp;: on respire, on sait où on en est.</span></li>
+  <li><i class="ph ph-chats-circle" aria-hidden="true"></i><span><b>Poser une question et y répondre</b>&nbsp;: une demi-cadence, puis une cadence parfaite (l’Hymne à la joie).</span></li>
+  <li><i class="ph ph-flag-checkered" aria-hidden="true"></i><span><b>Annoncer la fin</b>&nbsp;: plusieurs cadences parfaites d’affilée, pour que personne ne doute que c’est terminé.</span></li>
+  <li><i class="ph ph-lightning" aria-hidden="true"></i><span><b>Créer une surprise</b> ou <b>retarder la fin</b>&nbsp;: une cadence rompue juste avant la vraie conclusion.</span></li>
+  <li><i class="ph ph-hands-praying" aria-hidden="true"></i><span><b>Donner un caractère solennel</b>&nbsp;: la cadence plagale, l’«&nbsp;Amen&nbsp;» des chants religieux.</span></li>
+  <li><i class="ph ph-microphone-stage" aria-hidden="true"></i><span><b>Lancer le refrain</b>&nbsp;: dans une chanson, un couplet qui finit sur une demi-cadence donne envie d’entendre la suite.</span></li>
+  </ul>
+
+  </div><div class="carte">
+  <h3>7. D’où viennent les cadences&nbsp;?</h3>
+  <p>Les cadences sont presque aussi vieilles que la musique écrite. Leur forme a changé avec les siècles, mais leur rôle est resté le même&nbsp;: finir une phrase.</p>
+  ${cdFriseHTML()}
+
+  </div><div class="carte">
+  <h3>8. Les compositeurs et leurs cadences</h3>
+  <p>Des exemples célèbres, à écouter. Repère à chaque fois la ponctuation de la musique.</p>
+  ${cdExemplesHTML()}
+
+  </div><div class="carte">
+  <h3>9. Pour aller plus loin</h3>
+  ${cdPlusHTML()}
+  <ul>
+  <li>La <b>cadence italienne</b> (ou complète)&nbsp;: une cadence parfaite précédée de l’accord IV (IV, V, I). C’est celle de l’atelier&nbsp;!</li>
+  <li>La <b>cadence fauréenne</b>, du nom de <b>Gabriel Fauré</b>&nbsp;: une demi-cadence au son très doux, qu’on entend par exemple dans le «&nbsp;Pie Jesu&nbsp;» de son Requiem.</li>
+  <li><b>Attention, faux ami</b>&nbsp;: dans un <b>concerto</b>, la «&nbsp;cadence&nbsp;» est aussi un passage où le soliste joue <b>seul</b>, pour montrer sa virtuosité, avant que l’orchestre ne revienne.</li>
+  </ul>
+
+  </div><div class="carte">
+  <h3>10. Jeu&nbsp;: quelle cadence entends-tu&nbsp;?</h3>
+  <p>Chaque phrase est jouée dans une tonalité différente&nbsp;: c’est la fin qui compte. Après chaque réponse, tu vois la phrase en partition.</p>
+  ${cdJeuHTML()}
+
+  </div><div class="carte">
+  <h3>11. À retenir</h3>
+  ${cdRetenirHTML()}
+  <div class="cle">Une cadence, c’est la <b>ponctuation</b> de la musique. <b>Parfaite</b> (V → I) = point final. <b>Demi-cadence</b> (→ V) = virgule ou question. <b>Rompue</b> (V → VI) = surprise. <b>Plagale</b> (IV → I) = «&nbsp;Amen&nbsp;». <b>Imparfaite</b> = point-virgule.</div>
+  `},
 
  "accords":{titre:"Les accords majeurs et mineurs",html:`
   <p>Jusqu'ici, tu as surtout vu des notes jouées <b>l'une après l'autre</b> (les mélodies). Voici maintenant l'autre grande dimension de la musique&nbsp;: les notes jouées <b>ensemble</b>, en même temps. C'est ce qu'on appelle un <b>accord</b>, et c'est le fondement de l'<b>harmonie</b>. Comprendre les accords, surtout la différence entre majeur et mineur, c'est accéder au secret de l'émotion en musique.</p>
@@ -12079,6 +12580,7 @@ function jouerSonBtnInterne(s){
   if(s.vocab){veExtrait(s.vocab);return;}
   if(s.py){pyExtrait(s.py);return;}
   if(s.mx){mxExtrait(s.mx);return;}
+  if(s.cd){cdExtrait(s.cd);return;}
   /* suite d'accords : [[midis], durée en secondes] */
   if(s.accords){let t=0;s.accords.forEach(a=>{(a[0]||[]).forEach(m=>jouerMidi(m,t,(a[1]||1)*0.92,0.14));t+=(a[1]||1);});return;}
   if(s.rythme){jouerRythme(s.rythme,s.secTemps);return;}
@@ -12237,6 +12739,7 @@ async function corriger(){
 
   // ---- progression persistante ----
   const pct=Math.round(bons/total*100);
+  try{ if(modeDefi)actEvt("dj"); else { actEvt("ex"); actEvt("exP",pct); } }catch(e){}
   // points : 10 par bonne réponse, bonus de niveau (×1 / ×1.3 / ×1.6), bonus sans-faute
   const mult=difficulte===1?1:difficulte===2?1.3:1.6;
   let gain=Math.round(bons*3*mult)+(bons===total?10:0);
@@ -12505,7 +13008,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-14f";
+const VERSION_APP="2026-10-18b";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -12769,6 +13272,7 @@ function armerLeconLue(id){
     const z=document.getElementById("zone");
     if(!z||!z.querySelector(".lecon"))return;             /* l'élève est parti ailleurs */
     try{ if(typeof devoirFait==="function")devoirFait(id,"lu",null); }catch(e){}
+    try{ actEvt("lu"); }catch(e){}
   },25000);
 }
 /* Carte « Évaluation » en bas d'une leçon : demandée (compte), libre (bonus),
@@ -12939,6 +13443,7 @@ function afficherLecon(id){
      </div>
    </div>`;
   if(typeof ceMonterYT==="function")ceMonterYT();
+  if(typeof lpMonter==="function")lpMonter();
   if(document.getElementById("onde8"))onde8Monter();
   if(document.getElementById("pmPiano")&&typeof pmMaj==="function"){ _pm={ton:"Do",mel:[],dec:0}; pmMaj(); }
   if(document.getElementById("plAtelier"))plAjuster();
@@ -16298,7 +16803,7 @@ function snapshotEleve(){
       ajustementsVus:profil.ajustementsVus||[], tempsMin:tm,
       /* progression des cours de collège : sans elle, un élève qui se déconnecte
          (ou change d'appareil) repartait de la première étape */
-      cours:profil.cours||{}, coursDebloVus:profil.coursDebloVus||{},
+      cours:profil.cours||{}, coursDebloVus:profil.coursDebloVus||{}, coursValidVus:profil.coursValidVus||{},
       /* aussi le vocabulaire, le mode Histoire, Clapping Music, les objectifs et
          ateliers du jour, et les récompenses de chant déjà touchées (sinon elles
          seraient comptées une seconde fois) : rien ne se perd en changeant d'appareil */
@@ -16572,7 +17077,7 @@ function restaurerEleve(){
           if(sv){
             ["points","exercices","sansFaute","serie","dernierJour","badges","badgesTousVu","best","vus",
              "defisBest","survieBest","survieHist","diffParCat","reussiteParCat","sfDiff","notesEval",
-             "evalBonus","entrainOK","niveauMax","serieNiv","evalLibreMois","evalLibreLe","tempsTheme","histEntrain","bonusNiveau","bonusBadge","bonusActuel","bonusNiveauVu","jokersSurvie","refaireVus","defisSemaine","defisAccSemaine","defisEnvoyes","defisHist","echelleV2","jourPts","ptsJour","ajustementsVus","devoirs","cours","coursDebloVus",
+             "evalBonus","entrainOK","niveauMax","serieNiv","evalLibreMois","evalLibreLe","tempsTheme","histEntrain","bonusNiveau","bonusBadge","bonusActuel","bonusNiveauVu","jokersSurvie","refaireVus","defisSemaine","defisAccSemaine","defisEnvoyes","defisHist","echelleV2","jourPts","ptsJour","ajustementsVus","devoirs","cours","coursDebloVus","coursValidVus",
              "voc","histoire","chantRecomp","clapRec","clapMotifs","polyRec","batterie","obj","atelierLe"]
               .forEach(function(k){ if(sv[k]!==undefined&&sv[k]!==null)profil[k]=sv[k]; });
             try{ migrerBonus(profil); }catch(e){}   /* données serveur d'avant les 2 emplacements */
@@ -16605,6 +17110,8 @@ function restaurerEleve(){
         }
         /* entraînements de cours ouverts par le professeur (lus tels quels) */
         if(coursDebloAppliquer(d.coursDeblo))change=true;
+        /* étapes de cours validées à distance par le professeur */
+        if(coursValidAppliquer(d.coursValid))change=true;
         /* « Faire refaire » demandé par le professeur : rouvre le volet eval du devoir
            (jeton « devId|timestamp », appliqué une seule fois chacun). */
         const refaire=Array.isArray(d.refaire)?d.refaire:[];
@@ -16696,7 +17203,7 @@ function syncEleve(){
      arrivait au carnet, mais pas dans le suivi du travail. */
   if(_syncEnCours){ _syncARefaire=true; return Promise.resolve(false); }
   _syncEnCours=true; _syncARefaire=false;
-  const ecrire=(uid)=>{ const d=snapshotEleve(); d.maitrise=maitriseParTheme();
+  const ecrire=(uid)=>{ const d=snapshotEleve(); d.maitrise=maitriseParTheme(); d.journal=actJournalEnvoi();
     return s.collection("classes").doc(profil.classeId).collection("eleves").doc(profil.eleveCode)
       .set(d,{merge:true}).then(()=>{ syncNoter(true); return true; }).catch(()=>{ syncNoter(false); return false; }); };
   /* élève invité : son suivi du travail doit aussi arriver dans la classe qui
@@ -17550,7 +18057,7 @@ function reinitExecuter(classId,codes,o,tous){
   p=p.then(function(){
     const maj={};
     if(o.prog)Object.assign(maj,{resetAt:now,points:0,niveau:1,grade:"",badges:0,exercices:0,serie:0,tempsMin:0,tempsEntrain:0,nbEvals:0,
-      notes:[],sauv:null,maitrise:{},devoirs:{},ajustements:[],refaire:[],resetNotesAt:FV.delete()});
+      notes:[],sauv:null,maitrise:{},devoirs:{},ajustements:[],refaire:[],resetNotesAt:FV.delete(),coursValid:FV.delete()});
     else if(o.evals)Object.assign(maj,{notes:[],nbEvals:0,resetNotesAt:now,sauv:{notesEval:[]}});
     if(o.carnet)maj.carnet=FV.delete();
     if(!Object.keys(maj).length)return;
@@ -18525,8 +19032,8 @@ function maestroDemarrer(){
   maestroAjouter(maestroMessagesLocaux());
   if(estSolo())maestroMessagesAmis().then(maestroAjouter).catch(function(){});
   if(profil.eleveCode){
-    chargerDevoirs().then(function(){ maestroAjouter(maestroMessagesDevoirs()); }).catch(function(){});
-    coursDebloRafraichir().then(function(ch){ if(ch)maestroAjouter(coursDebloMessages()); }).catch(function(){});
+    chargerDevoirs().then(function(){ coursValidDevoirs(); maestroAjouter(maestroMessagesDevoirs()); }).catch(function(){});
+    coursDebloRafraichir().then(function(ch){ if(ch)maestroAjouter(coursDebloMessages().concat(coursValidMessages())); }).catch(function(){});
     maestroChargerVotes();
   }
 }
@@ -18625,6 +19132,7 @@ function maestroMessagesLocaux(){
     });
   }
   try{ l.push.apply(l,coursDebloMessages()); }catch(e){}
+  try{ l.push.apply(l,coursValidMessages()); }catch(e){}
   const nv=(typeof vocDus==="function")?vocDus().length:0;
   if(nv)l.push({id:"voc",prio:50,ic:"bell-ringing",titre:nv+" mot"+(nv>1?"s":"")+" de vocabulaire à revoir",
     corps:"C\u2019est le bon moment pour les revoir, avant de les oublier. Fais le petit test maintenant&nbsp;: quelques minutes suffisent.",
@@ -21336,6 +21844,20 @@ function bulFaits(e){
   if(f.faibles.length)l.push(["À consolider",f.faibles.slice(0,3).join(", ")]);
   return l;
 }
+/* Compétences du programme (onglet Compétences : choix du professeur, sinon niveau
+   proposé), en tableau à quatre colonnes comme sur le livret scolaire. Seules les
+   compétences positionnées sur la période y figurent. */
+function bulCompetencesHTML(e){
+  const classId=_appClasse; if(!classId||typeof lsuNiveaux!=="function")return "";
+  const p=evPeriodeCourante(classId), cyc=lsuCycle(classId), comp=LSU_COMP[cyc];
+  const nv=lsuNiveaux(classId,p,e.code);
+  const lignes=nv.map(function(x,i){ return x.v?'<tr><td>'+echapH(comp[i])+'</td>'+[1,2,3,4].map(function(k){
+      return '<td>'+(k===x.v?'<span class="pt n'+k+'" role="img" aria-label="'+LSU_NIV[k]+'"></span>':'<span class="vide"></span>')+'</td>'; }).join("")+'</tr>':''; }).join("");
+  if(!lignes)return "";
+  return '<div><h3>Compétences du programme <small>('+(cyc==="c3"?"cycle 3":"cycle 4")+')</small></h3>'
+    +'<table class="bul-comp"><thead><tr><th>Maîtrise</th><th>Insuffisante</th><th>Fragile</th><th>Satisfaisante</th><th>Très bonne</th></tr></thead>'
+    +'<tbody>'+lignes+'</tbody></table></div>';
+}
 function bulPage(e,classeNom,notes){
   const en=bulEntete();
   const f=e.faits;
@@ -21355,6 +21877,7 @@ function bulPage(e,classeNom,notes){
     +'</div>'
     +'<div class="bul-body">'
       +'<div><h3>Appréciation</h3><p class="bul-appr">'+echapH(appr)+'</p></div>'
+      +bulCompetencesHTML(e)
       +(faits?'<div><h3>Le trimestre en chiffres</h3><ul class="bul-list">'+faits+'</ul></div>':'')
       +(bulCourbe(notes)?'<div><h3>Évolution des notes</h3>'+bulCourbe(notes)+'</div>':'')
     +'</div>'
@@ -21371,6 +21894,11 @@ function bulImprimer(code){
   const nom=(cl&&cl.nom)||"";
   const liste=code?_appDonnees.filter(function(e){return e.code===code;}):_appDonnees;
   if(!liste.length){ toast("Élève introuvable."); return; }
+  /* les choix de l'onglet Compétences doivent être lus avant d'imprimer (l'onglet
+     Bilan les demande dès son ouverture : ce cas est rare) */
+  const p=evPeriodeCourante(_appClasse);
+  if(typeof lsuCharger==="function"&&!_lsuPret[lsuCle(_appClasse,p)]){
+    lsuCharger(_appClasse,p); toast("Un instant : chargement des compétences… Relancez l’impression."); return; }
   const html='<div class="bul-multi">'
     +liste.map(function(e){ return bulPage(e,nom,(_appNotes||{})[e.code]||[]); }).join("")
     +'</div>';
@@ -21392,6 +21920,14 @@ const BUL_CSS=
 +".bul-appr{font-size:12pt;text-align:justify;margin:0}"
 +".bul-list{list-style:none;padding:0;margin:0;font-size:11pt}"
 +".bul-list li{padding:4px 0;border-bottom:1px dashed rgba(35,116,176,.18)}"
++".bul-body h3 small{font-size:9.5pt;text-transform:none;letter-spacing:0;color:#5c6d84;font-weight:500}"
++".bul-comp{width:100%;border-collapse:collapse;font-size:10.5pt}"
++".bul-comp th{font-size:8.5pt;font-weight:600;color:#5c6d84;text-align:center;padding:0 4px 4px;width:13%}"
++".bul-comp th:first-child,.bul-comp td:first-child{text-align:left;width:auto}"
++".bul-comp td{padding:5px 4px;text-align:center;border-bottom:1px dashed rgba(35,116,176,.18);line-height:1.3}"
++".bul-comp .pt,.bul-comp .vide{display:inline-block;width:13px;height:13px;border-radius:50%;vertical-align:middle;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
++".bul-comp .vide{border:1px solid #c5ced9}"
++".bul-comp .n1{background:#dc2626}.bul-comp .n2{background:#e08a00}.bul-comp .n3{background:#2374b0}.bul-comp .n4{background:#1a9c6b}"
 +".bul-sig{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}"
 +".bul-sig .bul-cadre{border-bottom:1px solid #16233a;height:36px;margin-bottom:4px}"
 +".bul-sig small{color:#5c6d84;font-size:10pt}"
@@ -22444,6 +22980,7 @@ function lpGras(s){ return s.replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>"); }
 
 /* Construit le HTML de la leçon, au format attendu par afficherLecon. */
 function lpHtmlLecon(l){
+  if(Array.isArray(l.sections))return lpHtmlV2(l);
   return `<div class="carte"><h3>${echapH(l.titre||"Leçon")}</h3>${lpRendre(l.texte)}</div>`;
 }
 /* Générateur d'exercices : uniquement les questions écrites par le professeur
@@ -22497,16 +23034,248 @@ function lpCharger(){
   const s=fbStore(), a=fbAuth(); if(!s||!a)return Promise.resolve([]);
   return profProprietaire().then(function(uid){
     if(!uid){ _lecPerso=[]; lpInjecter(); return []; }
+    _lpUid=uid;
     return s.collection("teachers").doc(uid).collection("lecons").get().then(function(snap){
       const l=[]; snap.forEach(function(d){
         const v=d.data()||{};
-        l.push({id:d.id,titre:v.titre||"Leçon",texte:v.texte||"",ic:v.ic||"chalkboard-teacher",cree:v.cree||0});
+        l.push({id:d.id,titre:v.titre||"Leçon",texte:v.texte||"",ic:v.ic||"chalkboard-teacher",cree:v.cree||0,maj:v.maj||0,
+                sections:(+v.v===2&&Array.isArray(v.sections))?v.sections:null});
       });
       l.sort(function(x,y){ return (x.cree||0)-(y.cree||0); });
       _lecPerso=l; lpInjecter();
       return l;
     });
   }).catch(function(){ return _lecPerso; });
+}
+
+/* =====================================================================
+   LEÇONS DU PROFESSEUR, FORMAT 2 (17/10/2026)
+   Avant : une zone de texte et des codes à retenir (## titre, - liste, **gras**).
+   Désormais la leçon est faite de PARTIES (une carte, donc un écran en séance au
+   tableau), chacune faite de BLOCS : texte mis en forme (éditeur visuel),
+   encadré, image, vidéo YouTube, et cinq activités interactives (question à
+   choix, vrai ou faux, texte à trous, remettre dans l'ordre, relier).
+   Document : teachers/{uid}/lecons/{id} = {titre, ic, v:2, sections:[{id,titre,
+   blocs:[...]}], texte (version texte brut, lue par les anciennes versions et
+   exigée par les règles), cree, maj}. Les images sont à part
+   (teachers/{uid}/images/{id} = {d:"data:image/...", lecon}) et ne se chargent
+   qu'à l'ouverture de la leçon : un élève ne télécharge pas toutes les images de
+   toutes les leçons au démarrage.
+   ===================================================================== */
+/* ---- Nettoyage du texte mis en forme : on ne garde qu'une liste blanche ----
+   Analysé dans un document inerte (DOMParser) : rien ne s'exécute, aucune image ne
+   se charge. Sert à l'enregistrement ET à l'affichage (le document a pu être
+   modifié ailleurs). */
+const LP_GARDE={P:"p",BR:"br",B:"b",STRONG:"b",I:"i",EM:"i",U:"u",H4:"h4",H1:"h4",H2:"h4",H3:"h4",UL:"ul",OL:"ol",LI:"li",A:"a",MARK:"mark",DIV:"p",BLOCKQUOTE:"p"};
+const LP_JETTE=/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|SVG|MATH|IMG|VIDEO|AUDIO|CANVAS|FORM|INPUT|BUTTON|SELECT|TEXTAREA|LINK|META|TEMPLATE|NOSCRIPT|HEAD|TITLE)$/;
+let _lpParseur=null;
+function lpNettoyer(html){
+  if(html==null||html==="")return "";
+  _lpParseur=_lpParseur||new DOMParser();
+  const src=_lpParseur.parseFromString("<body>"+String(html)+"</body>","text/html").body;
+  const sortie=document.implementation.createHTMLDocument("").body;
+  const copier=function(n,dans){
+    n.childNodes.forEach(function(c){
+      if(c.nodeType===3){ dans.appendChild(sortie.ownerDocument.createTextNode(c.nodeValue)); return; }
+      if(c.nodeType!==1)return;
+      const tag=c.tagName;
+      if(LP_JETTE.test(tag))return;
+      let nom=LP_GARDE[tag]||"";
+      /* surlignage posé par l'éditeur (fond coloré) : un <mark> */
+      if(!nom&&tag==="SPAN"){ const f=(c.getAttribute("style")||"").match(/background(?:-color)?\s*:\s*([^;]+)/i);
+        if(f&&!/transparent|initial|inherit|none|rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/i.test(f[1]))nom="mark"; }
+      if(!nom&&tag==="SPAN"&&/font-weight\s*:\s*(bold|[6-9]00)/i.test(c.getAttribute("style")||""))nom="b";
+      if(!nom&&tag==="SPAN"&&/font-style\s*:\s*italic/i.test(c.getAttribute("style")||""))nom="i";
+      if(!nom){ copier(c,dans); return; }           /* balise inconnue : on garde son texte */
+      const e=sortie.ownerDocument.createElement(nom);
+      if(nom==="a"){
+        const h=(c.getAttribute("href")||"").trim();
+        if(/^(https?:|mailto:)/i.test(h)){ e.setAttribute("href",h); e.setAttribute("target","_blank"); e.setAttribute("rel","noopener noreferrer"); }
+        else { copier(c,dans); return; }
+      }
+      copier(c,e); dans.appendChild(e);
+    });
+  };
+  copier(src,sortie);
+  /* paragraphes vides en série, et <p> imbriqués (DIV dans DIV) */
+  let h=sortie.innerHTML.replace(/<p>\s*<\/p>/g,"").replace(/(<br>\s*){3,}/g,"<br><br>");
+  return h.trim();
+}
+/* texte brut d'un morceau de HTML (pour la version texte et les vérifications) */
+function lpBrut(html){
+  if(!html)return "";
+  _lpParseur=_lpParseur||new DOMParser();
+  const b=_lpParseur.parseFromString("<body>"+String(html).replace(/<(p|h4|ul|ol)\b/gi,"\n<$1").replace(/<\/(p|h4|li)>/gi,"\n</$1>").replace(/<br\s*\/?>/gi,"\n")+"</body>","text/html").body;
+  b.querySelectorAll("li").forEach(function(li){ li.insertBefore(document.createTextNode("- "),li.firstChild); });
+  b.querySelectorAll("h4").forEach(function(h){ h.insertBefore(document.createTextNode("## "),h.firstChild); });
+  return (b.textContent||"").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
+}
+const LP_ENCADRES={retenir:["À retenir","bookmark-simple"],astuce:["Astuce","lightbulb"],attention:["Attention","warning"],plus:["Pour aller plus loin","compass"]};
+let _lpActs={}, _lpActN=0, _lpUid="", _lpImgCache={};
+/* une leçon au format 2, au HTML attendu par afficherLecon (une carte par partie) */
+function lpHtmlV2(l){
+  const S=(l.sections||[]).filter(function(s){ return s&&((s.titre||"").trim()||(s.blocs||[]).length); });
+  if(!S.length)return '<div class="carte"><h3>'+echapH(l.titre||"Leçon")+'</h3><p>(Leçon vide)</p></div>';
+  return S.map(function(s,i){
+    const t=(s.titre||"").trim()||(i===0?(l.titre||""):"");
+    return '<div class="carte lp-sec">'+(t?'<h3>'+echapH(t)+'</h3>':'')+(s.blocs||[]).map(lpBlocRendu).join("")+'</div>';
+  }).join("");
+}
+function lpMelange(arr,graine){
+  let h=0; String(graine).split("").forEach(function(c){ h=(h*31+c.charCodeAt(0))|0; });
+  const a=arr.slice(); for(let i=a.length-1;i>0;i--){ h=(h*1103515245+12345)|0; const j=Math.abs(h)%(i+1); const t=a[i]; a[i]=a[j]; a[j]=t; }
+  /* l'ordre de départ ne doit pas être la solution */
+  if(a.length>1&&a.every(function(x,i){ return x===arr[i]; })){ const t=a[0]; a[0]=a[1]; a[1]=t; }
+  return a;
+}
+/* mots d'une phrase à trous : [{x:texte, mot:true|false}] */
+function lpMots(t){
+  const out=[], re=/[\p{L}\p{N}][\p{L}\p{N}’'\-]*/gu; let m, i=0;
+  t=String(t||"");
+  while((m=re.exec(t))){ if(m.index>i)out.push({x:t.slice(i,m.index),mot:false}); out.push({x:m[0],mot:true}); i=m.index+m[0].length; }
+  if(i<t.length)out.push({x:t.slice(i),mot:false});
+  return out;
+}
+function lpNorm(s){ return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[’']/g,"'").replace(/\s+/g," ").trim(); }
+function lpBlocRendu(b){
+  if(!b||!b.t)return "";
+  const e=function(x){ return echapH(String(x==null?"":x)); };
+  switch(b.t){
+    case "texte": { const h=lpNettoyer(b.html); return h?'<div class="lp-texte">'+h+'</div>':""; }
+    case "encadre": { const h=lpNettoyer(b.html); if(!h)return ""; const st=LP_ENCADRES[b.style]?b.style:"retenir";
+      return '<div class="lp-encadre '+st+'"><div class="lp-encadre-t"><i class="ph-fill ph-'+LP_ENCADRES[st][1]+'" aria-hidden="true"></i> '+LP_ENCADRES[st][0]+'</div>'+h+'</div>'; }
+    case "image": { if(!/^[a-z0-9]{6,40}$/i.test(b.img||""))return "";
+      return '<figure class="lp-fig"><img class="lp-img" data-lpimg="'+b.img+'" alt="'+e(b.leg||"Illustration")+'">'+(b.leg?'<figcaption>'+e(b.leg)+'</figcaption>':'')+'</figure>'; }
+    case "video": { if(!/^[A-Za-z0-9_-]{11}$/.test(b.yt||""))return "";
+      return '<div class="compo-yt-grille"><div class="ce-yt" data-yt="'+b.yt+'" data-lib="'+e(b.leg||"Vidéo")+'"></div></div>'; }
+  }
+  /* les activités : le bloc est gardé en mémoire, la correction se fait sur place */
+  const k="a"+(++_lpActN); _lpActs[k]=b;
+  const tete=function(ic,lib){ return '<div class="lp-act-t"><i class="ph-fill ph-'+ic+'" aria-hidden="true"></i> '+lib+'</div>'; };
+  const pied='<div class="lp-act-pied"><button type="button" class="lp-verif" data-lpa="verif">Vérifier</button>'
+    +'<button type="button" class="lp-refaire" data-lpa="refaire" hidden><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i> Recommencer</button></div>'
+    +'<div class="lp-retour" role="status" aria-live="polite"></div>';
+  if(b.t==="qcm"){
+    const ch=(b.choix||[]).filter(function(c){ return c&&String(c.x||"").trim(); }); if(!ch.length||!(b.q||"").trim())return "";
+    const plus=ch.filter(function(c){ return c.ok; }).length>1;
+    const ordre=lpMelange(ch.map(function(_,i){ return i; }),k+b.q);
+    return '<div class="lp-act" data-act="qcm" data-k="'+k+'">'+tete("list-checks",plus?"Question · plusieurs réponses possibles":"Question")
+      +'<p class="lp-q">'+e(b.q)+'</p><div class="lp-opts">'+ordre.map(function(i){
+        return '<button type="button" class="lp-opt" data-lpa="opt" data-i="'+i+'" aria-pressed="false"><span class="lp-coche" aria-hidden="true"></span>'+e(ch[i].x)+'</button>'; }).join("")+'</div>'+pied+'</div>';
+  }
+  if(b.t==="vf"){ if(!(b.q||"").trim())return "";
+    return '<div class="lp-act" data-act="vf" data-k="'+k+'">'+tete("scales","Vrai ou faux ?")+'<p class="lp-q">'+e(b.q)+'</p>'
+      +'<div class="lp-opts lp-vf"><button type="button" class="lp-opt" data-lpa="vf" data-v="1" aria-pressed="false">Vrai</button><button type="button" class="lp-opt" data-lpa="vf" data-v="0" aria-pressed="false">Faux</button></div>'
+      +'<div class="lp-retour" role="status" aria-live="polite"></div></div>';
+  }
+  if(b.t==="trous"){
+    const M=lpMots(b.texte), T=(b.trous||[]); let n=-1, nb=0;
+    const html=M.map(function(m){ if(!m.mot)return e(m.x); n++;
+      if(T.indexOf(n)<0)return e(m.x); nb++;
+      return '<input type="text" class="lp-trou" data-n="'+n+'" size="'+Math.max(3,m.x.length+1)+'" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Mot manquant '+nb+'">'; }).join("");
+    if(!nb)return "";
+    return '<div class="lp-act" data-act="trous" data-k="'+k+'">'+tete("textbox","Complète")+(b.consigne?'<p class="lp-consigne">'+e(b.consigne)+'</p>':'')
+      +'<p class="lp-phrase">'+html+'</p>'+pied+'</div>';
+  }
+  if(b.t==="ordre"){
+    const it=(b.items||[]).filter(function(x){ return String(x||"").trim(); }); if(it.length<2)return "";
+    const ordre=lpMelange(it.map(function(_,i){ return i; }),k+it.join("|"));
+    return '<div class="lp-act" data-act="ordre" data-k="'+k+'">'+tete("sort-ascending","Remets dans l’ordre")+(b.consigne?'<p class="lp-consigne">'+e(b.consigne)+'</p>':'')
+      +'<ol class="lp-ordre">'+ordre.map(function(i){ return '<li data-i="'+i+'"><span class="lp-ordre-x">'+e(it[i])+'</span>'
+        +'<span class="lp-ordre-b"><button type="button" data-lpa="haut" aria-label="Monter « '+e(it[i])+' »"><i class="ph ph-caret-up"></i></button>'
+        +'<button type="button" data-lpa="bas" aria-label="Descendre « '+e(it[i])+' »"><i class="ph ph-caret-down"></i></button></span></li>'; }).join("")+'</ol>'+pied+'</div>';
+  }
+  if(b.t==="relier"){
+    const P=(b.paires||[]).filter(function(p){ return p&&String(p[0]||"").trim()&&String(p[1]||"").trim(); }); if(P.length<2)return "";
+    const droite=lpMelange(P.map(function(_,i){ return i; }),k+"d");
+    return '<div class="lp-act" data-act="relier" data-k="'+k+'">'+tete("arrows-left-right","Relie")+(b.consigne?'<p class="lp-consigne">'+e(b.consigne)+'</p>':'')
+      +'<div class="lp-relier">'+P.map(function(p,i){
+        return '<label class="lp-paire"><span class="lp-g">'+e(p[0])+'</span><select class="lp-d" data-i="'+i+'" aria-label="Associer « '+e(p[0])+' »"><option value="">Choisir…</option>'
+          +droite.map(function(j){ return '<option value="'+j+'">'+e(P[j][1])+'</option>'; }).join("")+'</select></label>'; }).join("")+'</div>'+pied+'</div>';
+  }
+  return "";
+}
+/* ---- Les activités : une seule écoute des clics pour toute l'application ---- */
+function lpActRetour(act,ok,b,suite){
+  const r=act.querySelector(".lp-retour"); act.classList.toggle("ok",ok); act.classList.toggle("ko",!ok);
+  if(r)r.innerHTML='<b>'+(ok?'<i class="ph-fill ph-check-circle" aria-hidden="true"></i> Bravo !':'<i class="ph-fill ph-x-circle" aria-hidden="true"></i> Pas tout à fait.')+'</b>'
+    +(suite?' '+suite:'')+(b.expl&&(ok||act._essais>=2)?'<span class="lp-expl">'+echapH(b.expl)+'</span>':'');
+  const v=act.querySelector(".lp-verif"), re=act.querySelector(".lp-refaire");
+  if(v)v.hidden=true; if(re)re.hidden=false;
+  try{ jouerEffet(ok?"bon":"mauvais"); }catch(e){}
+}
+document.addEventListener("click",function(ev){
+  const btn=ev.target.closest&&ev.target.closest("[data-lpa]"); if(!btn)return;
+  const act=btn.closest(".lp-act"); if(!act)return;
+  const b=_lpActs[act.getAttribute("data-k")]; if(!b)return;
+  const a=btn.getAttribute("data-lpa");
+  if(a==="opt"){ if(act.classList.contains("fini"))return;
+    const plus=(b.choix||[]).filter(function(c){ return c&&c.ok; }).length>1;
+    if(!plus)act.querySelectorAll(".lp-opt").forEach(function(o){ if(o!==btn)o.setAttribute("aria-pressed","false"); });
+    btn.setAttribute("aria-pressed",btn.getAttribute("aria-pressed")==="true"?"false":"true"); return; }
+  if(a==="vf"){ if(act.classList.contains("fini"))return;
+    act.classList.add("fini"); act._essais=2;
+    const choix=btn.getAttribute("data-v")==="1", ok=(choix===!!b.ok);
+    btn.setAttribute("aria-pressed","true"); btn.classList.add(ok?"bon":"faux");
+    if(!ok)act.querySelector('.lp-opt[data-v="'+(b.ok?1:0)+'"]').classList.add("bon");
+    lpActRetour(act,ok,b,ok?"":"C’était <b>"+(b.ok?"vrai":"faux")+"</b>.");
+    return; }
+  if(a==="haut"||a==="bas"){ const li=btn.closest("li"), ol=li.parentNode;
+    if(a==="haut"&&li.previousElementSibling)ol.insertBefore(li,li.previousElementSibling);
+    else if(a==="bas"&&li.nextElementSibling)ol.insertBefore(li.nextElementSibling,li);
+    btn.focus(); act.classList.remove("ok","ko"); return; }
+  if(a==="refaire"){ act.classList.remove("ok","ko","fini");
+    act.querySelectorAll(".lp-opt").forEach(function(o){ o.setAttribute("aria-pressed","false"); o.classList.remove("bon","faux"); });
+    act.querySelectorAll(".lp-trou,.lp-d").forEach(function(x){ x.classList.remove("bon","faux"); x.disabled=false; if(x.tagName==="INPUT")x.value=""; else x.value=""; });
+    act.querySelectorAll(".lp-ordre li").forEach(function(li){ li.classList.remove("bon","faux"); });
+    act.querySelectorAll(".lp-sol").forEach(function(x){ x.remove(); });
+    const r=act.querySelector(".lp-retour"); if(r)r.innerHTML="";
+    const v=act.querySelector(".lp-verif"); if(v)v.hidden=false; btn.hidden=true; return; }
+  if(a!=="verif")return;
+  act._essais=(act._essais||0)+1;
+  const typ=act.getAttribute("data-act");
+  if(typ==="qcm"){
+    const sel=[].map.call(act.querySelectorAll('.lp-opt[aria-pressed="true"]'),function(o){ return +o.getAttribute("data-i"); });
+    if(!sel.length){ const r=act.querySelector(".lp-retour"); if(r)r.textContent="Choisis d’abord une réponse."; act._essais--; return; }
+    const ch=(b.choix||[]).filter(function(c){ return c&&String(c.x||"").trim(); });
+    let ok=true;
+    act.querySelectorAll(".lp-opt").forEach(function(o){ const i=+o.getAttribute("data-i"), pris=o.getAttribute("aria-pressed")==="true", bon=!!(ch[i]&&ch[i].ok);
+      if(pris&&bon)o.classList.add("bon"); else if(pris&&!bon){ o.classList.add("faux"); ok=false; } else if(!pris&&bon){ ok=false; if(act._essais>=2)o.classList.add("bon"); } });
+    act.classList.add("fini");
+    lpActRetour(act,ok,b,ok?"":(act._essais>=2?"La bonne réponse est en vert.":"Recommence pour retenter ta chance."));
+    return;
+  }
+  if(typ==="trous"){
+    const M=lpMots(b.texte).filter(function(m){ return m.mot; }); let ok=true;
+    act.querySelectorAll(".lp-trou").forEach(function(inp){ const att=M[+inp.getAttribute("data-n")], bon=att&&lpNorm(inp.value)===lpNorm(att.x);
+      inp.classList.toggle("bon",bon); inp.classList.toggle("faux",!bon); inp.disabled=true; if(!bon)ok=false;
+      if(!bon&&act._essais>=2){ const s=document.createElement("span"); s.className="lp-sol"; s.textContent=att?att.x:""; inp.insertAdjacentElement("afterend",s); } });
+    lpActRetour(act,ok,b,ok?"":(act._essais>=2?"Les bons mots sont indiqués.":"Les mots en rouge sont à revoir."));
+    return;
+  }
+  if(typ==="ordre"){ let ok=true;
+    act.querySelectorAll(".lp-ordre li").forEach(function(li,pos){ const bon=+li.getAttribute("data-i")===pos; li.classList.toggle("bon",bon); li.classList.toggle("faux",!bon); if(!bon)ok=false; });
+    lpActRetour(act,ok,b,ok?"":"Les éléments en rouge ne sont pas à leur place.");
+    return;
+  }
+  if(typ==="relier"){ let ok=true;
+    act.querySelectorAll(".lp-d").forEach(function(s){ const bon=s.value!==""&&+s.value===+s.getAttribute("data-i"); s.classList.toggle("bon",bon); s.classList.toggle("faux",!bon); s.disabled=true; if(!bon)ok=false; });
+    lpActRetour(act,ok,b,ok?"":"Les associations en rouge sont fausses.");
+  }
+});
+/* ---- Images des leçons : chargées à l'ouverture, gardées en mémoire ---- */
+function lpMonter(){
+  document.querySelectorAll("img.lp-img[data-lpimg]:not([src])").forEach(function(im){
+    const id=im.getAttribute("data-lpimg");
+    const local=(typeof _led!=="undefined"&&_led&&_led.imgs&&_led.imgs[id])||_lpImgCache[id];
+    if(local){ im.src=local; return; }
+    const s=fbStore(); if(!s||!_lpUid)return;
+    im.classList.add("charge");
+    s.collection("teachers").doc(_lpUid).collection("images").doc(id).get().then(function(d){
+      const v=d&&d.exists&&(d.data()||{}).d;
+      if(v&&/^data:image\/(webp|jpeg|png);base64,/.test(v)){ _lpImgCache[id]=v; document.querySelectorAll('img.lp-img[data-lpimg="'+id+'"]').forEach(function(x){ x.src=v; x.classList.remove("charge"); }); }
+    }).catch(function(){ im.classList.remove("charge"); });
+  });
 }
 
 /* ---------- Écrans du professeur ---------- */
@@ -22522,8 +23291,11 @@ function ecranLeconsProf(){
   z.innerHTML=`<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>`;
   lpCharger().then(function(l){
     let h=`<div class="accueil" style="max-width:820px">
-      <div style="text-align:center;margin-bottom:20px">
+      <div class="lpx-barre">
         <button class="rm-cta" onclick="ecranLeconProfEdit('')"><i class="ph-fill ph-plus"></i> Créer une leçon</button>
+        <button class="led-btn" onclick="lpxChoisir()" title="Ajouter des leçons depuis un fichier MusEduc (export d’un collègue, sauvegarde)"><i class="ph ph-upload-simple"></i> Importer</button>
+        ${l.length?`<button class="led-btn" onclick="lpxExporter()" title="Un fichier avec toutes vos leçons, leurs images et leurs questions"><i class="ph ph-download-simple"></i> Tout exporter</button>`:""}
+        <input type="file" id="lpxFichier" accept="application/json,.json" hidden onchange="lpxImporter(this)">
       </div>`;
     if(!l.length){
       h+=`<div class="ex">
@@ -22547,6 +23319,7 @@ function ecranLeconsProf(){
           <button class="action btn-nouv" onclick="ecranLeconProfEdit('${x.id}')"><i class="ph ph-pencil-simple"></i> Modifier</button>
           <button class="action btn-corr" onclick="ecranQuestionsProf('perso-${x.id}')"><i class="ph ph-list-plus"></i> Ses questions</button>
           <button class="btn-son mini" title="Voir comme un élève" onclick="afficherLecon('perso-${x.id}')"><i class="ph ph-eye"></i></button>
+          <button class="btn-son mini" title="Exporter (fichier à garder ou à partager)" aria-label="Exporter ${echapH(x.titre)}" onclick="lpxExporter('${x.id}')"><i class="ph ph-download-simple"></i></button>
           <button class="btn-son mini" title="Supprimer" onclick="lpSupprimer('${x.id}')"><i class="ph ph-trash" style="color:var(--faux)"></i></button>
         </div>`;
       });
@@ -22554,115 +23327,653 @@ function ecranLeconsProf(){
     z.innerHTML=h+`</div>`;
   }).catch(function(){ z.innerHTML=svcIndispo("Impossible de charger vos leçons."); });
 }
+/* ---------- Exporter et importer des leçons du professeur (17/10/2026) ----------
+   Un fichier .json (app « MUSEDUC », type « lecons ») qui contient TOUT : parties et
+   blocs, images, et questions des exercices. Pour garder une copie, changer de
+   compte, ou partager une leçon avec un collègue. À l'import, tout est recréé avec
+   de NOUVEAUX identifiants (rien n'écrase une leçon existante), et le contenu est
+   vérifié et nettoyé comme s'il avait été saisi dans l'éditeur. */
+function lpxTelecharger(obj,nom){
+  const blob=new Blob([JSON.stringify(obj)],{type:"application/json"});
+  const url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=nom; document.body.appendChild(a); a.click();
+  setTimeout(function(){ try{ URL.revokeObjectURL(url); }catch(e){} a.remove(); },1500);
+}
+function lpxSlug(t){ return String(t||"lecon").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"lecon"; }
+/* ids : les leçons à exporter (toutes si absent) */
+function lpxCollecter(ids){
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
+  if(!s||!u)return Promise.reject(new Error("hors-ligne"));
+  const T=s.collection("teachers").doc(u.uid);
+  return Promise.all([T.collection("lecons").get(),T.collection("questions").get()]).then(function(r){
+    const qs={}, lecons=[];
+    r[1].forEach(function(d){ const v=d.data()||{};
+      if(String(v.cat||"").indexOf("perso-")===0)(qs[v.cat]=qs[v.cat]||[]).push({q:v.q,r:v.r,o:v.o,diff:v.diff||2,expl:v.expl||""}); });
+    r[0].forEach(function(d){ if(ids&&ids.indexOf(d.id)<0)return; const v=d.data()||{};
+      lecons.push({id:d.id,titre:v.titre||"Leçon",ic:v.ic||"chalkboard-teacher",v:+v.v===2?2:1,
+        sections:(+v.v===2&&Array.isArray(v.sections))?v.sections:null,texte:v.texte||"",cree:v.cree||0,questions:qs["perso-"+d.id]||[]}); });
+    lecons.sort(function(x,y){ return (x.cree||0)-(y.cree||0); });
+    const ims=[]; lecons.forEach(function(l){ if(l.sections)ledImagesDe(l.sections).forEach(function(i){ if(ims.indexOf(i)<0)ims.push(i); }); });
+    return Promise.all(ims.map(function(i){ return T.collection("images").doc(i).get()
+        .then(function(d){ return [i,(d&&d.exists)?(d.data()||{}).d:null]; }).catch(function(){ return [i,null]; }); }))
+      .then(function(L){ const images={}; L.forEach(function(x){ if(x[1])images[x[0]]=x[1]; });
+        return {app:"MUSEDUC",type:"lecons",version:2,cree:Date.now(),dateLisible:new Date().toLocaleString("fr-FR"),lecons:lecons,images:images}; });
+  });
+}
+function lpxExporter(id){
+  const p=unSeul("lpx",function(){ return pendant("Préparation du fichier…",lpxCollecter(id?[id]:null)); });
+  if(!p)return;
+  p.then(function(o){
+    if(!o.lecons.length){ toast("Aucune leçon à exporter."); return; }
+    lpxTelecharger(o,o.lecons.length===1?"museduc-lecon-"+lpxSlug(o.lecons[0].titre)+".json":"museduc-lecons-"+new Date().toISOString().slice(0,10)+".json");
+    toast(o.lecons.length===1?"Leçon exportée, avec ses images et ses questions.":o.lecons.length+" leçons exportées, avec leurs images et leurs questions.");
+  }).catch(function(){ toast("L’export a échoué : vérifiez votre connexion."); });
+}
+function lpxChoisir(){ const i=document.getElementById("lpxFichier"); if(i)i.click(); }
+function lpxImporter(input){
+  const f=input&&input.files&&input.files[0]; if(input)input.value=""; if(!f)return;
+  if(f.size>40*1024*1024){ toast("Fichier trop volumineux."); return; }
+  const r=new FileReader();
+  r.onload=function(){
+    let d=null; try{ d=JSON.parse(r.result); }catch(e){}
+    const o=lpxDepuisFichier(d);
+    if(!o){ toast("Ce fichier n’est pas un export de leçons MusEduc."); return; }
+    if(!o.lecons.length){ toast("Ce fichier ne contient aucune leçon."); return; }
+    const titres=o.lecons.map(function(l){ return "• "+String(l.titre||"Leçon").slice(0,70); });
+    dlgConfirmer("Importer "+(o.lecons.length>1?"ces "+o.lecons.length+" leçons":"cette leçon")+" ?\n\n"+titres.slice(0,12).join("\n")+(titres.length>12?"\n…":"")
+      +"\n\n"+(o.lecons.length>1?"Elles s’ajoutent à vos leçons, avec leurs images et leurs questions":"Elle s’ajoute à vos leçons, avec ses images et ses questions")+" : rien n’est remplacé.").then(function(ok){
+      if(ok)lpxCreer(o.lecons,o.images,true).then(function(n){ if(n){ toast(n>1?n+" leçons importées.":"Leçon importée."); ecranLeconsProf(); } });
+    });
+  };
+  r.onerror=function(){ toast("Lecture du fichier impossible."); };
+  r.readAsText(f);
+}
+/* un export de leçons, ou une sauvegarde complète du professeur */
+function lpxDepuisFichier(d){
+  if(!d||d.app!=="MUSEDUC")return null;
+  if((d.type==="lecons"||d.type==="lecon")&&Array.isArray(d.lecons))return {lecons:d.lecons,images:(d.images&&typeof d.images==="object")?d.images:{}};
+  if(d.type==="sauvegarde"&&d.serveur&&Array.isArray(d.serveur.lecons)){
+    const qs=Array.isArray(d.serveur.questions)?d.serveur.questions:[], images={};
+    (Array.isArray(d.serveur.images)?d.serveur.images:[]).forEach(function(x){ if(x&&x.id&&x.d)images[x.id]=x.d; });
+    return {lecons:d.serveur.lecons.map(function(l){ return Object.assign({},l,{
+      sections:(+l.v===2&&Array.isArray(l.sections))?l.sections:null,
+      questions:qs.filter(function(q){ return q&&q.cat==="perso-"+l.id; })}); }),images:images};
+  }
+  return null;
+}
+/* les parties d'un fichier, vérifiées bloc par bloc (mêmes règles que l'éditeur) */
+function lpxSections(sections,imgMap){
+  const T=function(x,n){ return String(x==null?"":x).slice(0,n||300); };
+  const out=[];
+  (Array.isArray(sections)?sections:[]).slice(0,40).forEach(function(s){
+    if(!s||typeof s!=="object")return;
+    const blocs=[];
+    (Array.isArray(s.blocs)?s.blocs:[]).slice(0,60).forEach(function(b){
+      if(!b||typeof b!=="object")return;
+      const o={id:ledId(),t:b.t};
+      if(b.t==="texte"||b.t==="encadre"){ o.html=lpNettoyer(T(b.html,60000)); if(b.t==="encadre")o.style=LP_ENCADRES[b.style]?b.style:"retenir"; if(!lpBrut(o.html))return; }
+      else if(b.t==="image"){ if(!imgMap[b.img])return; o.img=imgMap[b.img]; o.leg=T(b.leg,160); }
+      else if(b.t==="video"){ if(!/^[A-Za-z0-9_-]{11}$/.test(b.yt||""))return; o.yt=b.yt; o.leg=T(b.leg,120); }
+      else if(b.t==="qcm"){ o.q=T(b.q); o.choix=(Array.isArray(b.choix)?b.choix:[]).slice(0,6).map(function(c){ return {x:T(c&&c.x,160).trim(),ok:!!(c&&c.ok)}; }).filter(function(c){ return c.x; });
+        o.expl=T(b.expl); if(!o.q.trim()||o.choix.length<2||!o.choix.some(function(c){ return c.ok; }))return; }
+      else if(b.t==="vf"){ o.q=T(b.q); o.ok=!!b.ok; o.expl=T(b.expl); if(!o.q.trim())return; }
+      else if(b.t==="trous"){ o.consigne=T(b.consigne,160); o.texte=T(b.texte,600); const nb=lpMots(o.texte).filter(function(m){ return m.mot; }).length;
+        o.trous=(Array.isArray(b.trous)?b.trous:[]).map(Number).filter(function(i){ return i>=0&&i<nb&&Math.floor(i)===i; }); if(!o.trous.length)return; }
+      else if(b.t==="ordre"){ o.consigne=T(b.consigne,160); o.items=(Array.isArray(b.items)?b.items:[]).slice(0,10).map(function(x){ return T(x,140).trim(); }).filter(Boolean); if(o.items.length<2)return; }
+      else if(b.t==="relier"){ o.consigne=T(b.consigne,160); o.paires=(Array.isArray(b.paires)?b.paires:[]).slice(0,8).map(function(p){ return [T(p&&p[0],120).trim(),T(p&&p[1],120).trim()]; }).filter(function(p){ return p[0]&&p[1]; }); if(o.paires.length<2)return; }
+      else return;
+      blocs.push(o);
+    });
+    const titre=T(s.titre,90).trim();
+    if(titre||blocs.length)out.push({id:ledId(),titre:titre,blocs:blocs});
+  });
+  return out;
+}
+/* crée les leçons (nouveaux identifiants) ; renvoie le nombre de leçons créées */
+function lpxCreer(lecons,images,suffixe){
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
+  if(!s||!u){ toast("Service indisponible : vérifiez votre connexion."); return Promise.resolve(0); }
+  const base=s.collection("teachers").doc(u.uid), titres=(_lecPerso||[]).map(function(l){ return l.titre; });
+  let faites=0, imgRefus=false;
+  const une=function(l){
+    const ref=base.collection("lecons").doc(), imgMap={}, nouvelles=[];
+    (l.sections?ledImagesDe(l.sections):[]).forEach(function(i){
+      const d=images&&images[i];
+      if(typeof d==="string"&&d.length<=700000&&/^data:image\/(webp|jpeg|png);base64,/.test(d)){ const n=ledId(); imgMap[i]=n; nouvelles.push([n,d]); } });
+    let titre=String(l.titre||"Leçon").slice(0,70).trim()||"Leçon";
+    if(suffixe&&titres.indexOf(titre)>=0)titre=(titre.slice(0,58)+" (importée)");
+    let doc;
+    if(Array.isArray(l.sections)){
+      const sections=lpxSections(l.sections,imgMap);
+      if(!sections.some(function(x){ return x.blocs.length; })||JSON.stringify(sections).length>300000)return Promise.resolve();
+      doc={titre:titre,ic:LP_ICONES.some(function(i){ return i[0]===l.ic; })?l.ic:"chalkboard-teacher",v:2,sections:sections,texte:ledTexteBrut(sections)||titre,cree:Date.now(),maj:Date.now()};
+    } else {
+      const texte=String(l.texte||"").slice(0,20000); if(texte.trim().length<5)return Promise.resolve();
+      doc={titre:titre,ic:LP_ICONES.some(function(i){ return i[0]===l.ic; })?l.ic:"chalkboard-teacher",texte:texte,cree:Date.now(),maj:Date.now()};
+    }
+    const qs=(Array.isArray(l.questions)?l.questions:[]).slice(0,300).filter(function(q){ return q&&typeof q.q==="string"&&typeof q.r==="string"&&Array.isArray(q.o)&&q.q.trim()&&q.r.trim(); });
+    return Promise.all(nouvelles.map(function(x){ return base.collection("images").doc(x[0]).set({d:x[1],lecon:ref.id,maj:Date.now()}).catch(function(){ imgRefus=true; }); }))
+      .then(function(){ return ref.set(doc); })
+      .then(function(){ return Promise.all(qs.map(function(q){
+        return base.collection("questions").add({cat:"perso-"+ref.id,diff:[1,2,3].indexOf(+q.diff)>=0?+q.diff:2,q:q.q.slice(0,400),r:q.r.slice(0,200),
+          o:q.o.slice(0,6).map(function(x){ return String(x||"").slice(0,200); }),expl:String(q.expl||"").slice(0,400),cree:Date.now()}).catch(function(){}); })); })
+      .then(function(){ faites++; titres.push(titre); });
+  };
+  /* l'une après l'autre : un gros fichier ne sature pas le serveur */
+  return (lecons||[]).slice(0,100).reduce(function(p,l){ return p.then(function(){ return une(l).catch(function(){}); }); },Promise.resolve())
+    .then(function(){ if(imgRefus)toast("Certaines images n’ont pas pu être envoyées (le serveur doit peut-être être mis à jour).");
+      _qProfCharge=false; return qProfCharger(true).then(lpCharger); })
+    .then(function(){ return faites; });
+}
+/* ---------- L'éditeur de leçon (format 2) ----------
+   Ce que l'on voit est ce que l'élève verra : texte mis en forme à la barre
+   d'outils (plus aucun code à retenir), blocs ajoutés depuis un menu, activités
+   remplies par de simples champs. Un brouillon est gardé sur l'appareil à chaque
+   modification ; « Aperçu élève » montre la leçon exactement comme en classe. */
+const LED_TYPES={
+  texte:{lib:"Texte",ic:"text-aa",desc:"Paragraphes, sous-titres, listes, gras, liens",g:"c"},
+  encadre:{lib:"Encadré",ic:"note",desc:"À retenir, astuce, attention…",g:"c"},
+  image:{lib:"Image",ic:"image",desc:"Photo, partition, schéma pris sur l’appareil",g:"c"},
+  video:{lib:"Vidéo YouTube",ic:"youtube-logo",desc:"Collez le lien d’une vidéo",g:"c"},
+  qcm:{lib:"Question à choix",ic:"list-checks",desc:"Une ou plusieurs bonnes réponses",g:"a"},
+  vf:{lib:"Vrai ou faux",ic:"scales",desc:"Une affirmation à juger",g:"a"},
+  trous:{lib:"Texte à trous",ic:"textbox",desc:"Touchez les mots à cacher",g:"a"},
+  ordre:{lib:"Remettre dans l’ordre",ic:"sort-ascending",desc:"Étapes, dates, notes à classer",g:"a"},
+  relier:{lib:"Relier",ic:"arrows-left-right",desc:"Associer des paires (œuvre et compositeur…)",g:"a"}
+};
+const LED_MODELES=[
+  {id:"vide",nom:"Page blanche",ic:"file",desc:"Une partie avec un bloc de texte : vous construisez le reste.",
+   sections:[{titre:"",blocs:[{t:"texte",ph:"Écrivez votre leçon ici. Sélectionnez un mot pour le mettre en gras, en sous-titre, en liste…"}]}]},
+  {id:"oeuvre",nom:"Découvrir une œuvre",ic:"music-notes",desc:"Présentation, écoute guidée, l’essentiel à retenir, vérification.",
+   sections:[{titre:"Présentation",blocs:[{t:"texte",ph:"Qui a composé l’œuvre, quand, pour quelle occasion ? Quelques phrases suffisent."},{t:"image"}]},
+     {titre:"Écoute",blocs:[{t:"video"},{t:"texte",ph:"Ce qu’il faut écouter : instruments, tempo, nuances, forme…"}]},
+     {titre:"À retenir",blocs:[{t:"encadre",style:"retenir",ph:"Les trois ou quatre idées essentielles."}]},
+     {titre:"Vérifie que tu as compris",blocs:[{t:"qcm"},{t:"vf"}]}]},
+  {id:"artiste",nom:"Portrait d’un artiste",ic:"user-circle",desc:"Sa vie, son style, une œuvre à écouter, ses dates à remettre dans l’ordre.",
+   sections:[{titre:"Qui est-ce ?",blocs:[{t:"image"},{t:"texte",ph:"Dates, pays, parcours, ce qui l’a rendu célèbre."}]},
+     {titre:"Son style",blocs:[{t:"texte",ph:"Ce qui rend sa musique reconnaissable."},{t:"video"}]},
+     {titre:"Sa vie en quelques dates",blocs:[{t:"ordre",consigne:"Remets ces événements dans l’ordre chronologique."}]},
+     {titre:"À retenir",blocs:[{t:"encadre",style:"retenir"}]}]},
+  {id:"notion",nom:"Comprendre une notion",ic:"lightbulb",desc:"Définition, exemples, astuce, exercices de vocabulaire.",
+   sections:[{titre:"Définition",blocs:[{t:"encadre",style:"retenir",ph:"La définition en une ou deux phrases."},{t:"texte",ph:"Une explication simple, avec un exemple."}]},
+     {titre:"Des exemples",blocs:[{t:"video"},{t:"encadre",style:"astuce",ph:"Un moyen de s’en souvenir."}]},
+     {titre:"Entraîne-toi",blocs:[{t:"trous"},{t:"relier"}]}]}
+];
+const LED_BROUILLON="museduc.lpBrouillon";
+let _led=null;
+function ledId(){ return (Date.now().toString(36)+Math.random().toString(36).slice(2,8)).slice(-12); }
+function ledBloc(o){ const b=Object.assign({id:ledId()},o);
+  if(b.t==="qcm"&&!b.choix)b.choix=[{x:"",ok:true},{x:"",ok:false},{x:"",ok:false}];
+  if(b.t==="vf"&&b.ok==null)b.ok=true;
+  if(b.t==="ordre"&&!b.items)b.items=["","",""];
+  if(b.t==="relier"&&!b.paires)b.paires=[["",""],["",""],["",""]];
+  if(b.t==="trous"&&!b.trous)b.trous=[];
+  if(b.t==="encadre"&&!b.style)b.style="retenir";
+  return b; }
+function ledDepuisModele(m){ return m.sections.map(function(s){ return {id:ledId(),titre:s.titre,blocs:s.blocs.map(function(b){ return ledBloc(JSON.parse(JSON.stringify(b))); })}; }); }
+/* une ancienne leçon (texte avec ## et -) devient des parties et des blocs de texte */
+function ledDepuisTexte(l){
+  const S=[]; let cur={id:ledId(),titre:"",blocs:[]}; S.push(cur);
+  String(l.texte||"").split(/\n{2,}/).forEach(function(bloc){
+    const lignes=bloc.split("\n").map(function(x){ return x.trim(); }).filter(Boolean); if(!lignes.length)return;
+    if(lignes.length===1&&lignes[0].indexOf("## ")===0){ cur={id:ledId(),titre:lignes[0].slice(3),blocs:[]}; S.push(cur); return; }
+    const h=lpRendre(lignes.join("\n"));
+    const der=cur.blocs[cur.blocs.length-1];
+    if(der&&der.t==="texte")der.html+=h; else cur.blocs.push(ledBloc({t:"texte",html:h}));
+  });
+  return S.filter(function(s){ return s.titre||s.blocs.length; });
+}
+/* dans l'éditeur, le surlignage est un fond coloré (l'outil du navigateur sait l'ôter) */
+function ledVersEditeur(html){ return lpNettoyer(html).replace(/<mark>/g,'<span style="background-color: rgb(253, 230, 138);">').replace(/<\/mark>/g,"</span>"); }
+function ledImagesDe(sections){ const l=[]; (sections||[]).forEach(function(s){ (s.blocs||[]).forEach(function(b){ if(b.t==="image"&&b.img)l.push(b.img); }); }); return l; }
+
+/* Entrée : modifier une leçon (id) ou en créer une */
 function ecranLeconProfEdit(id,depuisGrille){
   if(depuisGrille!==undefined)_lpRetourGrille=!!depuisGrille;
-  masquerInterfaceNormale(); majRetour(lpRetour,"Mes leçons");
+  masquerInterfaceNormale(); majRetour(ledQuitter,"Mes leçons");
   titreProf(id?'<i class="ph ph-pencil-simple"></i> Modifier la leçon':'<i class="ph ph-plus-circle"></i> Nouvelle leçon');
-  const l=_lecPerso.filter(function(x){return x.id===id;})[0]||{titre:"",texte:"",ic:"chalkboard-teacher"};
-  document.getElementById("zone").innerHTML=`
-    <div class="accueil" style="max-width:800px">
-      <div class="ex">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;align-items:end">
-          <label style="display:block;font-size:.86rem;color:var(--encre-doux)">Titre de la leçon
-            <input id="lpTitre" type="text" maxlength="70" value="${echapH(l.titre)}" placeholder="Ex : Le tango argentin"
-              style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;font-size:1rem;background:var(--surface);color:var(--encre)"></label>
-          <label style="display:block;font-size:.86rem;color:var(--encre-doux)">Icône
-            <select id="lpIc" style="margin-top:4px;padding:10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;font-size:1rem;background:var(--surface);color:var(--encre)">
-              ${LP_ICONES.map(function(i){return `<option value="${i[0]}"${l.ic===i[0]?" selected":""}>${i[1]}</option>`;}).join("")}
-            </select></label>
-        </div>
-        <label style="display:block;font-size:.86rem;color:var(--encre-doux);margin-top:14px">Contenu de la leçon
-          <textarea id="lpTexte" rows="14" placeholder="Écrivez votre leçon ici…"
-            style="width:100%;margin-top:4px;padding:12px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;font-size:.98rem;line-height:1.6;background:var(--surface);color:var(--encre);resize:vertical">${echapH(l.texte)}</textarea></label>
-        <details style="margin-top:8px">
-          <summary style="cursor:pointer;color:var(--encre-doux);font-size:.88rem">
-            <i class="ph ph-question"></i> Comment mettre en forme le texte&nbsp;?</summary>
-          <div style="margin-top:8px;font-size:.88rem;line-height:1.7">
-            <p style="margin:0 0 8px">Écrivez normalement. Si vous voulez aller plus loin&nbsp;:</p>
-            <table style="width:100%;border-collapse:collapse">
-              <tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid var(--ligne)">Vous tapez</th>
-                  <th style="text-align:left;padding:4px 8px;border-bottom:1px solid var(--ligne)">L'élève voit</th></tr>
-              <tr><td style="padding:6px 8px"><code>## Les instruments</code></td>
-                  <td style="padding:6px 8px"><b style="font-size:1.1em">Les instruments</b> (sous-titre)</td></tr>
-              <tr><td style="padding:6px 8px"><code>- le violon</code></td>
-                  <td style="padding:6px 8px">• le violon (liste à puces)</td></tr>
-              <tr><td style="padding:6px 8px"><code>C'est **important**</code></td>
-                  <td style="padding:6px 8px">C'est <b>important</b></td></tr>
-              <tr><td style="padding:6px 8px">Une ligne vide</td>
-                  <td style="padding:6px 8px">un nouveau paragraphe</td></tr>
-            </table>
-          </div>
-        </details>
-        <div id="lpErr" style="color:var(--faux);font-size:.86rem;margin-top:8px;display:none"></div>
-        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
-          <button class="action btn-nouv" onclick="lpApercu()"><i class="ph ph-eye"></i> Aperçu</button>
-          <button class="rm-cta" onclick="lpEnregistrer('${id}')"><i class="ph-fill ph-floppy-disk"></i> Enregistrer</button>
-        </div>
-        <div id="lpApercu" style="margin-top:16px"></div>
-      </div>
-      ${lpBlocExercices(id)}
-    </div>`;
+  const l=id?_lecPerso.filter(function(x){ return x.id===id; })[0]:null;
+  _led={id:id||"", titre:l?l.titre:"", ic:l?l.ic:"chalkboard-teacher", cree:l?l.cree:0, maj:l?(l.maj||0):0, imgs:{}, modifie:false,
+        sections:l?(l.sections?JSON.parse(JSON.stringify(l.sections)).map(function(s){ s.blocs=(s.blocs||[]).map(function(b){ if(b.html)b.html=ledVersEditeur(b.html); return b; }); return s; })
+                   :ledDepuisTexte(l).map(function(s){ s.blocs.forEach(function(b){ if(b.html)b.html=ledVersEditeur(b.html); }); return s; })):null};
+  _led.imgsAvant=ledImagesDe(_led.sections);
+  const br=ledBrouillonLire();
+  _led.brouillon=(br&&(br.id||"")===_led.id&&br.t>(_led.maj||0))?br:null;
+  if(!_led.sections){ if(_led.brouillon){ ledReprendre(); return; } ledChoixModele(); return; }
+  if(!_led.sections.length)_led.sections=[{id:ledId(),titre:"",blocs:[ledBloc({t:"texte"})]}];
+  ledRendre();
 }
-/* Les exercices d'une leçon, juste sous son contenu : c'est là qu'on y pense,
-   une fois le texte écrit. Une leçon sans exercice n'est qu'à lire. */
+function ledChoixModele(){
+  document.getElementById("zone").innerHTML='<div class="led led-modeles"><p class="led-intro">Par quoi commencer ? Tout reste modifiable ensuite.</p><div class="led-modeles-g">'
+    +LED_MODELES.map(function(m,i){ return '<button type="button" class="led-modele" onclick="ledPartir('+i+')"><span class="led-modele-ic"><i class="ph-fill ph-'+m.ic+'" aria-hidden="true"></i></span>'
+      +'<b>'+m.nom+'</b><span>'+m.desc+'</span></button>'; }).join("")+'</div></div>';
+  if(typeof remonter==="function")remonter();
+}
+function ledPartir(i){ _led.sections=ledDepuisModele(LED_MODELES[i]); ledRendre(); const t=document.getElementById("ledTitre"); if(t)t.focus(); }
+function ledQuitter(){
+  if(_led&&_led.modifie){
+    dlgConfirmer("Vos dernières modifications ne sont pas enregistrées.\n\nElles restent en brouillon sur cet appareil : vous pourrez les reprendre en rouvrant la leçon. Quitter quand même ?")
+      .then(function(ok){ if(ok){ _led=null; lpRetour(); } });
+    return;
+  }
+  _led=null; lpRetour();
+}
+/* ---- Brouillon gardé sur l'appareil ---- */
+function ledBrouillonLire(){ try{ return JSON.parse(localStorage.getItem(LED_BROUILLON)||"null"); }catch(e){ return null; } }
+function ledBrouillonSauver(){
+  if(!_led)return;
+  const o={id:_led.id||"", t:Date.now(), titre:_led.titre, ic:_led.ic, cree:_led.cree, sections:_led.sections, imgs:_led.imgs};
+  try{ localStorage.setItem(LED_BROUILLON,JSON.stringify(o)); }
+  catch(e){ try{ o.imgs={}; localStorage.setItem(LED_BROUILLON,JSON.stringify(o)); }catch(x){} }
+}
+function ledBrouillonEffacer(){ try{ localStorage.removeItem(LED_BROUILLON); }catch(e){} }
+function ledReprendre(){
+  const b=_led.brouillon; if(!b)return;
+  _led.titre=b.titre||""; _led.ic=b.ic||_led.ic; _led.sections=b.sections||[]; _led.imgs=b.imgs||{}; _led.brouillon=null; _led.modifie=true;
+  ledRendre(); ledEtat();
+}
+function ledIgnorerBrouillon(){ ledBrouillonEffacer(); _led.brouillon=null; const x=document.getElementById("ledBrouillon"); if(x)x.remove(); }
+let _ledMinuteur=null;
+function ledModifie(){
+  if(!_led)return; _led.modifie=true; ledEtat();
+  clearTimeout(_ledMinuteur); _ledMinuteur=setTimeout(ledBrouillonSauver,800);
+}
+function ledEtat(){ const e=document.getElementById("ledEtat"); if(!e||!_led)return;
+  e.className="led-etat"+(_led.modifie?" mod":"");
+  e.innerHTML=_led.modifie?'<i class="ph ph-pencil-simple" aria-hidden="true"></i> Non enregistré':(_led.id?'<i class="ph ph-check" aria-hidden="true"></i> Enregistré':'');
+  /* sur téléphone, l'état est masqué : un point doré sur « Enregistrer » le remplace */
+  const b=document.querySelector(".led-barre .led-btn.prim");
+  if(b){ b.classList.toggle("mod",!!_led.modifie); b.setAttribute("aria-label",_led.modifie?"Enregistrer (modifications non enregistrées)":"Enregistrer"); } }
+
+/* ---- Rendu de l'éditeur ---- */
+function ledRendre(focusSel){
+  const z=document.getElementById("zone"); if(!z||!_led)return;
+  const y=(document.scrollingElement||document.documentElement).scrollTop, m=document.querySelector("main"), ym=m?m.scrollTop:0;
+  const br=_led.brouillon;
+  z.innerHTML='<div class="led">'
+    +'<div class="led-barre">'
+      +'<button type="button" class="led-ic" onclick="ledIcones(this)" aria-haspopup="menu" title="Changer l’icône" aria-label="Icône de la leçon"><i class="ph ph-'+_led.ic+'"></i></button>'
+      +'<input id="ledTitre" class="led-titre" value="'+echapH(_led.titre)+'" maxlength="70" placeholder="Titre de la leçon" aria-label="Titre de la leçon" oninput="_led.titre=this.value;ledModifie()">'
+      +'<span id="ledEtat" class="led-etat"></span>'
+      +'<span class="led-barre-b"><button type="button" class="led-btn" onclick="ledApercu()"><i class="ph ph-eye" aria-hidden="true"></i><span>Aperçu élève</span></button>'
+      +'<button type="button" class="led-btn prim" onclick="ledEnregistrer()"><i class="ph-fill ph-floppy-disk" aria-hidden="true"></i><span>Enregistrer</span></button></span>'
+    +'</div>'
+    +'<div id="ledMsg" class="led-msg" role="alert" hidden></div>'
+    +(br?'<div id="ledBrouillon" class="led-brouillon"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span>Un brouillon non enregistré du '+fmtDate(br.t)+' à '+new Date(br.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+' a été retrouvé sur cet appareil.</span>'
+      +'<button type="button" class="led-btn prim" onclick="ledReprendre()">Le reprendre</button><button type="button" class="led-btn" onclick="ledIgnorerBrouillon()">L’ignorer</button></div>':'')
+    +'<div id="ledSections">'+_led.sections.map(ledSectionHTML).join("")+'</div>'
+    +'<button type="button" class="led-sec-ajout" onclick="ledSecAjouter()"><i class="ph ph-plus-circle" aria-hidden="true"></i> Ajouter une partie</button>'
+    +'<p class="led-aide"><i class="ph ph-info" aria-hidden="true"></i> Chaque <b>partie</b> devient une carte de la leçon et un écran en <b>séance au tableau</b>. Les <b>activités</b> (question, vrai ou faux, texte à trous…) se font pendant la lecture, avec correction immédiate.</p>'
+    +lpBlocExercices(_led.id)
+    +'</div>';
+  ledEtat();
+  z.querySelectorAll(".led-rt").forEach(ledVide);
+  try{ document.execCommand("defaultParagraphSeparator",false,"p"); }catch(e){}
+  if(typeof ceMonterYT==="function")ceMonterYT();
+  lpMonter();
+  (document.scrollingElement||document.documentElement).scrollTop=y; if(m)m.scrollTop=ym;
+  if(focusSel){ const f=z.querySelector(focusSel); if(f){ f.focus(); if(f.scrollIntoView)f.scrollIntoView({block:"center",behavior:"smooth"}); } }
+}
+function ledOutils(fn,id,i,n){
+  return '<span class="led-outils">'
+    +'<button type="button" onclick="'+fn+'(\''+id+'\',-1)" '+(i===0?"disabled ":"")+'aria-label="Monter" title="Monter"><i class="ph ph-caret-up"></i></button>'
+    +'<button type="button" onclick="'+fn+'(\''+id+'\',1)" '+(i===n-1?"disabled ":"")+'aria-label="Descendre" title="Descendre"><i class="ph ph-caret-down"></i></button>';
+}
+function ledSectionHTML(s,i){
+  const n=_led.sections.length;
+  return '<section class="led-sec" data-s="'+s.id+'">'
+    +'<div class="led-sec-t"><span class="led-sec-n">Partie '+(i+1)+'</span>'
+      +'<input class="led-sec-titre" value="'+echapH(s.titre||"")+'" maxlength="90" placeholder="Titre de la partie" aria-label="Titre de la partie '+(i+1)+'" oninput="ledSecTitre(\''+s.id+'\',this.value)">'
+      +ledOutils("ledSecBouger",s.id,i,n)
+      +'<button type="button" onclick="ledSecSupprimer(\''+s.id+'\')" aria-label="Supprimer la partie" title="Supprimer la partie"><i class="ph ph-trash"></i></button></span></div>'
+    +'<div class="led-blocs">'+(s.blocs||[]).map(function(b,j){ return ledBlocHTML(b,j,s.blocs.length); }).join("")+'</div>'
+    +'<div class="led-ajout"><button type="button" onclick="ledAjoutMenu(this,\''+s.id+'\')" aria-haspopup="menu"><i class="ph ph-plus" aria-hidden="true"></i> Ajouter un bloc</button></div>'
+    +'</section>';
+}
+function ledTB(){
+  const B=function(cmd,ic,lib){ return '<button type="button" onmousedown="event.preventDefault()" onclick="ledCmd(\''+cmd+'\')" title="'+lib+'" aria-label="'+lib+'"><i class="ph ph-'+ic+'"></i></button>'; };
+  return '<div class="led-tb" role="toolbar" aria-label="Mise en forme">'
+    +B("h4","text-h-two","Sous-titre")+B("bold","text-b","Gras")+B("italic","text-italic","Italique")+B("underline","text-underline","Souligné")
+    +B("mark","highlighter","Surligner")+'<span class="led-tb-sep"></span>'+B("ul","list-bullets","Liste à puces")+B("ol","list-numbers","Liste numérotée")
+    +B("lien","link","Lien")+B("effacer","eraser","Enlever la mise en forme")+'</div>';
+}
+function ledRTHTML(b,ph){
+  return ledTB()+'<div class="led-rt" contenteditable="true" role="textbox" aria-multiline="true" aria-label="'+echapH(ph)+'" data-b="'+b.id+'" data-ph="'+echapH(ph)+'" oninput="ledRT(this)" onpaste="ledColler(event)">'+(b.html||"")+'</div>';
+}
+function ledChampHTML(b,f,ph,max,tag){
+  const v=echapH(String(b[f]==null?"":b[f]));
+  if(tag==="textarea")return '<textarea class="led-in" rows="2" maxlength="'+(max||400)+'" placeholder="'+echapH(ph)+'" aria-label="'+echapH(ph)+'" oninput="ledChamp(\''+b.id+'\',\''+f+'\',this.value)">'+v+'</textarea>';
+  return '<input class="led-in" value="'+v+'" maxlength="'+(max||300)+'" placeholder="'+echapH(ph)+'" aria-label="'+echapH(ph)+'" oninput="ledChamp(\''+b.id+'\',\''+f+'\',this.value)">';
+}
+function ledBlocHTML(b,j,n){
+  const T=LED_TYPES[b.t]||{lib:b.t,ic:"square"};
+  let c="";
+  if(b.t==="texte")c=ledRTHTML(b,b.ph||"Écrivez ici…");
+  else if(b.t==="encadre")c='<div class="led-chips" role="radiogroup" aria-label="Type d’encadré">'+Object.keys(LP_ENCADRES).map(function(k){
+      return '<button type="button" role="radio" aria-checked="'+(b.style===k)+'" class="led-chip enc-'+k+(b.style===k?" on":"")+'" onclick="ledChamp(\''+b.id+'\',\'style\',\''+k+'\',true)"><i class="ph-fill ph-'+LP_ENCADRES[k][1]+'" aria-hidden="true"></i> '+LP_ENCADRES[k][0]+'</button>'; }).join("")+'</div>'
+      +'<div class="led-encadre enc-'+b.style+'">'+ledRTHTML(b,b.ph||"Le contenu de l’encadré…")+'</div>';
+  else if(b.t==="image"){
+    const src=b.img&&(_led.imgs[b.img]||_lpImgCache[b.img]);
+    c=(b.img?'<figure class="led-fig"><img class="lp-img" data-lpimg="'+b.img+'" alt=""'+(src?' src="'+src+'"':'')+'></figure>':'')
+      +'<label class="led-depot"><input type="file" accept="image/*" onchange="ledImageFichier(this,\''+b.id+'\')"><i class="ph ph-upload-simple" aria-hidden="true"></i> '+(b.img?'Remplacer l’image':'Choisir une image sur l’appareil')+'</label>'
+      +ledChampHTML(b,"leg","Légende (facultatif) : ce que montre l’image, sa source",160);
+  }
+  else if(b.t==="video"){
+    c='<input class="led-in" value="'+echapH(b.url||(b.yt?"https://youtu.be/"+b.yt:""))+'" placeholder="Collez ici le lien de la vidéo YouTube" aria-label="Lien de la vidéo YouTube" oninput="ledVideo(\''+b.id+'\',this.value)">'
+      +'<div class="led-video" id="ledV'+b.id+'">'+ledVideoApercu(b)+'</div>'
+      +ledChampHTML(b,"leg","Titre affiché (ex : Boléro · Ravel, orchestre de Paris)",120);
+  }
+  else if(b.t==="qcm"){
+    c=ledChampHTML(b,"q","La question",300,"textarea")
+      +'<p class="led-st">Réponses (touchez le rond pour marquer la ou les bonnes)</p><div class="led-liste">'+(b.choix||[]).map(function(ch,i){
+        return '<div class="led-ligne"><button type="button" class="led-bon'+(ch.ok?" on":"")+'" aria-pressed="'+(!!ch.ok)+'" aria-label="Bonne réponse" title="Bonne réponse" onclick="ledChoixBon(\''+b.id+'\','+i+')"><i class="ph'+(ch.ok?"-fill":"")+' ph-check-circle"></i></button>'
+          +'<input class="led-in" value="'+echapH(ch.x||"")+'" maxlength="160" placeholder="Réponse '+(i+1)+'" aria-label="Réponse '+(i+1)+'" oninput="ledListe(\''+b.id+'\',\'choix\','+i+',this.value)">'
+          +'<button type="button" class="led-x" onclick="ledListeSuppr(\''+b.id+'\',\'choix\','+i+')" aria-label="Retirer la réponse '+(i+1)+'"'+((b.choix||[]).length<=2?" disabled":"")+'><i class="ph ph-x"></i></button></div>'; }).join("")+'</div>'
+      +((b.choix||[]).length<6?'<button type="button" class="led-plus" onclick="ledListeAjout(\''+b.id+'\',\'choix\')"><i class="ph ph-plus"></i> Ajouter une réponse</button>':'')
+      +ledChampHTML(b,"expl","Explication montrée après la réponse (facultatif)",300);
+  }
+  else if(b.t==="vf"){
+    c=ledChampHTML(b,"q","L’affirmation (ex : Le violon a quatre cordes.)",300,"textarea")
+      +'<div class="led-chips" role="radiogroup" aria-label="Bonne réponse"><span class="led-st">C’est</span>'
+      +[[true,"Vrai"],[false,"Faux"]].map(function(x){ return '<button type="button" role="radio" aria-checked="'+(!!b.ok===x[0])+'" class="led-chip'+(!!b.ok===x[0]?" on":"")+'" onclick="ledChamp(\''+b.id+'\',\'ok\','+x[0]+',true)">'+x[1]+'</button>'; }).join("")+'</div>'
+      +ledChampHTML(b,"expl","Explication montrée après la réponse (facultatif)",300);
+  }
+  else if(b.t==="trous"){
+    c=ledChampHTML(b,"consigne","Consigne (facultatif, ex : Complète avec les mots de la leçon.)",160)
+      +'<textarea class="led-in" rows="2" maxlength="600" placeholder="Écrivez la phrase complète, puis touchez les mots à cacher" aria-label="Phrase du texte à trous" oninput="ledTrousTexte(\''+b.id+'\',this.value)">'+echapH(b.texte||"")+'</textarea>'
+      +'<div class="led-mots" id="ledM'+b.id+'">'+ledMotsHTML(b)+'</div>';
+  }
+  else if(b.t==="ordre"){
+    c=ledChampHTML(b,"consigne","Consigne (ex : Range ces instruments du plus grave au plus aigu.)",160)
+      +'<p class="led-st">Écrivez les éléments dans le bon ordre : l’élève les recevra mélangés.</p><div class="led-liste">'+(b.items||[]).map(function(x,i){
+        return '<div class="led-ligne"><span class="led-num">'+(i+1)+'</span><input class="led-in" value="'+echapH(x||"")+'" maxlength="140" placeholder="Élément '+(i+1)+'" aria-label="Élément '+(i+1)+'" oninput="ledListe(\''+b.id+'\',\'items\','+i+',this.value)">'
+          +'<button type="button" class="led-x" onclick="ledListeSuppr(\''+b.id+'\',\'items\','+i+')" aria-label="Retirer l’élément '+(i+1)+'"'+((b.items||[]).length<=2?" disabled":"")+'><i class="ph ph-x"></i></button></div>'; }).join("")+'</div>'
+      +((b.items||[]).length<10?'<button type="button" class="led-plus" onclick="ledListeAjout(\''+b.id+'\',\'items\')"><i class="ph ph-plus"></i> Ajouter un élément</button>':'');
+  }
+  else if(b.t==="relier"){
+    c=ledChampHTML(b,"consigne","Consigne (ex : Relie chaque œuvre à son compositeur.)",160)
+      +'<div class="led-liste">'+(b.paires||[]).map(function(p,i){
+        return '<div class="led-ligne led-paire"><input class="led-in" value="'+echapH(p[0]||"")+'" maxlength="120" placeholder="À gauche" aria-label="Paire '+(i+1)+', à gauche" oninput="ledPaire(\''+b.id+'\','+i+',0,this.value)">'
+          +'<i class="ph ph-arrows-left-right" aria-hidden="true"></i><input class="led-in" value="'+echapH(p[1]||"")+'" maxlength="120" placeholder="À droite" aria-label="Paire '+(i+1)+', à droite" oninput="ledPaire(\''+b.id+'\','+i+',1,this.value)">'
+          +'<button type="button" class="led-x" onclick="ledListeSuppr(\''+b.id+'\',\'paires\','+i+')" aria-label="Retirer la paire '+(i+1)+'"'+((b.paires||[]).length<=2?" disabled":"")+'><i class="ph ph-x"></i></button></div>'; }).join("")+'</div>'
+      +((b.paires||[]).length<8?'<button type="button" class="led-plus" onclick="ledListeAjout(\''+b.id+'\',\'paires\')"><i class="ph ph-plus"></i> Ajouter une paire</button>':'');
+  }
+  return '<div class="led-bloc'+(T.g==="a"?" act":"")+'" data-b="'+b.id+'">'
+    +'<div class="led-bloc-t"><i class="ph ph-'+T.ic+'" aria-hidden="true"></i><span>'+T.lib+'</span>'
+      +ledOutils("ledBouger",b.id,j,n)
+      +'<button type="button" onclick="ledDupliquer(\''+b.id+'\')" aria-label="Dupliquer le bloc" title="Dupliquer"><i class="ph ph-copy"></i></button>'
+      +'<button type="button" onclick="ledSupprimer(\''+b.id+'\')" aria-label="Supprimer le bloc" title="Supprimer"><i class="ph ph-trash"></i></button></span></div>'
+    +'<div class="led-bloc-c">'+c+'</div></div>';
+}
+/* ---- Modifications ---- */
+function ledTrouver(bid){
+  for(let i=0;i<_led.sections.length;i++){ const s=_led.sections[i], j=(s.blocs||[]).findIndex(function(b){ return b.id===bid; }); if(j>=0)return {s:s,i:i,j:j,b:s.blocs[j]}; }
+  return null;
+}
+function ledSec(sid){ return _led.sections.findIndex(function(s){ return s.id===sid; }); }
+function ledChamp(bid,f,v,redessiner){ const r=ledTrouver(bid); if(!r)return; r.b[f]=v; ledModifie(); if(redessiner)ledRendre(); }
+function ledSecTitre(sid,v){ const i=ledSec(sid); if(i<0)return; _led.sections[i].titre=v; ledModifie(); }
+function ledListe(bid,f,i,v){ const r=ledTrouver(bid); if(!r)return; if(f==="choix")r.b.choix[i].x=v; else r.b[f][i]=v; ledModifie(); }
+function ledPaire(bid,i,k,v){ const r=ledTrouver(bid); if(!r)return; r.b.paires[i][k]=v; ledModifie(); }
+function ledListeAjout(bid,f){ const r=ledTrouver(bid); if(!r)return;
+  r.b[f].push(f==="choix"?{x:"",ok:false}:(f==="paires"?["",""]:"")); ledModifie();
+  ledRendre('[data-b="'+bid+'"] .led-liste .led-ligne:last-child .led-in'); }
+function ledListeSuppr(bid,f,i){ const r=ledTrouver(bid); if(!r)return; r.b[f].splice(i,1);
+  if(f==="choix"&&!r.b.choix.some(function(c){ return c.ok; })&&r.b.choix[0])r.b.choix[0].ok=true;
+  ledModifie(); ledRendre(); }
+function ledChoixBon(bid,i){ const r=ledTrouver(bid); if(!r)return; const c=r.b.choix[i]; c.ok=!c.ok;
+  if(!r.b.choix.some(function(x){ return x.ok; }))c.ok=true;          /* il faut au moins une bonne réponse */
+  ledModifie(); ledRendre(); }
+function ledRT(el){ const r=ledTrouver(el.getAttribute("data-b")); if(!r)return; r.b.html=el.innerHTML; ledVide(el); ledModifie(); }
+function ledVide(el){ el.classList.toggle("vide",!(el.textContent||"").trim()&&!el.querySelector("li")); }
+function ledColler(ev){
+  const cd=ev.clipboardData||window.clipboardData; if(!cd)return;
+  ev.preventDefault();
+  const h=cd.getData("text/html"), t=cd.getData("text/plain");
+  const propre=h?lpNettoyer(h):echapH(t||"").replace(/\r?\n\r?\n/g,"</p><p>").replace(/\r?\n/g,"<br>");
+  document.execCommand("insertHTML",false,propre);
+}
+function ledAncetre(n,tags,stop){ while(n&&n!==stop){ if(n.nodeType===1&&tags.test(n.tagName))return n; n=n.parentNode; } return null; }
+async function ledCmd(cmd){
+  const sel=window.getSelection(), n0=sel&&sel.anchorNode, el0=n0&&(n0.nodeType===1?n0:n0.parentNode);
+  const zone=el0&&el0.closest?el0.closest(".led-rt"):null;
+  if(!zone){ toast("Cliquez d’abord dans le texte à mettre en forme."); return; }
+  try{ document.execCommand("styleWithCSS",false,cmd==="mark"); }catch(e){}
+  if(cmd==="bold"||cmd==="italic"||cmd==="underline")document.execCommand(cmd);
+  else if(cmd==="ul")document.execCommand("insertUnorderedList");
+  else if(cmd==="ol")document.execCommand("insertOrderedList");
+  else if(cmd==="h4"){ const h=ledAncetre(sel.anchorNode,/^H4$/,zone); document.execCommand("formatBlock",false,h?"<p>":"<h4>"); }
+  else if(cmd==="mark"){
+    const fond=ledAncetre(sel.anchorNode,/^(SPAN|MARK)$/,zone);
+    const deja=fond&&(fond.tagName==="MARK"||/background/i.test(fond.getAttribute("style")||""));
+    document.execCommand("hiliteColor",false,deja?"transparent":"#fde68a");
+  }
+  else if(cmd==="effacer"){ document.execCommand("removeFormat"); document.execCommand("unlink"); document.execCommand("formatBlock",false,"<p>"); }
+  else if(cmd==="lien"){
+    const r=sel.rangeCount?sel.getRangeAt(0).cloneRange():null, texte=sel.toString();
+    const url=await dlgSaisir("Adresse du lien (elle commence par https://)","https://");
+    if(!url)return;
+    if(!/^https?:\/\/\S+\.\S+/i.test(url.trim())){ toast("Ce lien n’est pas valable : il doit commencer par https://"); return; }
+    zone.focus(); const s2=window.getSelection(); s2.removeAllRanges(); if(r)s2.addRange(r);
+    if(texte)document.execCommand("createLink",false,url.trim());
+    else document.execCommand("insertHTML",false,'<a href="'+echapH(url.trim())+'">'+echapH(url.trim())+'</a>');
+  }
+  try{ document.execCommand("styleWithCSS",false,false); }catch(e){}
+  ledRT(zone);
+}
+function ledVideoId(u){ const m=String(u||"").trim().match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([A-Za-z0-9_-]{11})/); if(m)return m[1];
+  return /^[A-Za-z0-9_-]{11}$/.test(String(u||"").trim())?String(u).trim():""; }
+function ledVideoApercu(b){
+  if(!b.url&&!b.yt)return "";
+  if(!b.yt)return '<p class="led-err"><i class="ph ph-warning" aria-hidden="true"></i> Ce lien n’est pas reconnu : copiez l’adresse de la vidéo depuis YouTube (bouton « Partager »).</p>';
+  return '<div class="compo-yt-grille"><div class="ce-yt" data-yt="'+b.yt+'" data-lib="'+echapH(b.leg||"Vidéo")+'"></div></div>';
+}
+function ledVideo(bid,v){ const r=ledTrouver(bid); if(!r)return; r.b.url=v; r.b.yt=ledVideoId(v); ledModifie();
+  const z=document.getElementById("ledV"+bid); if(z){ z.innerHTML=ledVideoApercu(r.b); if(typeof ceMonterYT==="function")ceMonterYT(); } }
+function ledMotsHTML(b){
+  const M=lpMots(b.texte); let n=-1;
+  const mots=M.filter(function(m){ return m.mot; });
+  if(!mots.length)return '<p class="led-st">Les mots de la phrase apparaîtront ici : touchez ceux que l’élève devra retrouver.</p>';
+  return '<p class="led-st">Touchez les mots à cacher ('+(b.trous||[]).length+' choisi'+((b.trous||[]).length>1?"s":"")+') :</p><div class="led-mots-l">'
+    +M.map(function(m){ if(!m.mot)return ""; n++;
+      const on=(b.trous||[]).indexOf(n)>=0;
+      return '<button type="button" class="led-mot'+(on?" on":"")+'" aria-pressed="'+on+'" onclick="ledTrou(\''+b.id+'\','+n+')">'+echapH(m.x)+'</button>'; }).join("")+'</div>';
+}
+function ledTrousTexte(bid,v){
+  const r=ledTrouver(bid); if(!r)return;
+  /* on garde les trous sur les mêmes mots quand la phrase change */
+  const avant=lpMots(r.b.texte).filter(function(m){ return m.mot; }), cach={};
+  (r.b.trous||[]).forEach(function(i){ if(avant[i])cach[avant[i].x]=(cach[avant[i].x]||0)+1; });
+  r.b.texte=v; r.b.trous=[];
+  lpMots(v).filter(function(m){ return m.mot; }).forEach(function(m,i){ if(cach[m.x]){ cach[m.x]--; r.b.trous.push(i); } });
+  ledModifie(); const z=document.getElementById("ledM"+bid); if(z)z.innerHTML=ledMotsHTML(r.b);
+}
+function ledTrou(bid,n){ const r=ledTrouver(bid); if(!r)return; const k=r.b.trous.indexOf(n);
+  if(k>=0)r.b.trous.splice(k,1); else r.b.trous.push(n);
+  ledModifie(); const z=document.getElementById("ledM"+bid); if(z)z.innerHTML=ledMotsHTML(r.b);
+  const b=z&&z.querySelectorAll(".led-mot")[n]; if(b)b.focus(); }
+function ledBouger(bid,d){ const r=ledTrouver(bid); if(!r)return; const L=r.s.blocs, k=r.j+d; if(k<0||k>=L.length)return;
+  L.splice(r.j,1); L.splice(k,0,r.b); ledModifie(); ledRendre('[data-b="'+bid+'"] .led-outils button:'+(d<0?"first-child":"nth-child(2)")); }
+function ledDupliquer(bid){ const r=ledTrouver(bid); if(!r)return; const c=JSON.parse(JSON.stringify(r.b)); c.id=ledId();
+  r.s.blocs.splice(r.j+1,0,c); ledModifie(); ledRendre('[data-b="'+c.id+'"] .led-bloc-t'); }
+async function ledSupprimer(bid){ const r=ledTrouver(bid); if(!r)return;
+  const plein=JSON.stringify(r.b).replace(/"(id|t|style|ok|ph)":("[^"]*"|true|false)/g,"").replace(/[^\p{L}\p{N}]/gu,"").length>8;
+  if(plein&&!await dlgConfirmer("Supprimer ce bloc « "+((LED_TYPES[r.b.t]||{}).lib||"")+" » ?"))return;
+  r.s.blocs.splice(r.j,1); ledModifie(); ledRendre(); }
+function ledSecAjouter(){ const s={id:ledId(),titre:"",blocs:[ledBloc({t:"texte"})]}; _led.sections.push(s); ledModifie(); ledRendre('[data-s="'+s.id+'"] .led-sec-titre'); }
+function ledSecBouger(sid,d){ const i=ledSec(sid), k=i+d; if(i<0||k<0||k>=_led.sections.length)return;
+  const s=_led.sections.splice(i,1)[0]; _led.sections.splice(k,0,s); ledModifie(); ledRendre('[data-s="'+sid+'"] .led-sec-titre'); }
+async function ledSecSupprimer(sid){ const i=ledSec(sid); if(i<0)return;
+  if(_led.sections.length===1){ toast("Une leçon garde au moins une partie."); return; }
+  const s=_led.sections[i];
+  if(((s.titre||"").trim()||(s.blocs||[]).length)&&!await dlgConfirmer("Supprimer la partie « "+((s.titre||"").trim()||("Partie "+(i+1)))+" » et ses "+(s.blocs||[]).length+" bloc(s) ?"))return;
+  _led.sections.splice(i,1); ledModifie(); ledRendre(); }
+/* menus flottants (types de blocs, icônes) : même mécanique que ceux des compétences */
+function ledAjoutMenu(btn,sid){
+  const items=Object.keys(LED_TYPES).map(function(k){ const T=LED_TYPES[k];
+    return {html:'<i class="ph ph-'+T.ic+'" aria-hidden="true"></i><span><b>'+T.lib+'</b><small>'+T.desc+'</small></span>', fn:function(){ ledAjouter(sid,k); }}; });
+  cpOuvrirPop(btn,"Ajouter un bloc",items);
+  const pop=document.getElementById("cpPop"); if(pop){ pop.classList.add("led-pop");
+    const o=pop.querySelectorAll(".cp-o"); if(o[4]){ const t=document.createElement("p"); t.className="cp-pop-t"; t.textContent="Activités (correction immédiate)"; pop.insertBefore(t,o[4]); } }
+}
+function ledAjouter(sid,t){ const i=ledSec(sid); if(i<0)return; const b=ledBloc({t:t}); _led.sections[i].blocs.push(b); ledModifie();
+  ledRendre('[data-b="'+b.id+'"] '+(t==="texte"||t==="encadre"?".led-rt":(t==="image"?".led-depot input":".led-in"))); }
+function ledIcones(btn){
+  cpOuvrirPop(btn,"Icône de la leçon",LP_ICONES.map(function(i){ return {radio:true,on:_led.ic===i[0],html:'<i class="ph ph-'+i[0]+'" aria-hidden="true"></i><span>'+i[1]+'</span>',
+    fn:function(){ _led.ic=i[0]; ledModifie(); ledRendre('.led-ic'); }}; }));
+}
+/* ---- Images : réduites sur l'appareil avant l'envoi ---- */
+function ledImageFichier(input,bid){
+  const f=input.files&&input.files[0]; if(!f)return;
+  if(!/^image\//.test(f.type)){ toast("Ce fichier n’est pas une image."); return; }
+  const lecteur=new FileReader();
+  lecteur.onload=function(){
+    const im=new Image();
+    im.onload=function(){
+      let max=1400, url="";
+      for(let essai=0;essai<4;essai++){
+        const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)), c=document.createElement("canvas");
+        c.width=Math.max(1,Math.round(im.naturalWidth*k)); c.height=Math.max(1,Math.round(im.naturalHeight*k));
+        const g=c.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,c.width,c.height); g.drawImage(im,0,0,c.width,c.height);
+        let w=c.toDataURL("image/webp",0.82); const j=c.toDataURL("image/jpeg",0.82);
+        url=(w.indexOf("data:image/webp")===0&&w.length<j.length)?w:j;
+        if(url.length<=450000)break; max=Math.round(max*0.75);
+      }
+      if(url.length>650000){ toast("Image trop lourde, même réduite : choisissez-en une plus simple."); return; }
+      const r=ledTrouver(bid); if(!r)return;
+      const id=ledId(); _led.imgs[id]=url; r.b.img=id; ledModifie(); ledRendre('[data-b="'+bid+'"] .led-in');
+    };
+    im.onerror=function(){ toast("Impossible de lire cette image."); };
+    im.src=lecteur.result;
+  };
+  lecteur.readAsDataURL(f);
+}
+/* ---- Ce qui part sur le serveur : nettoyé, sans les aides de l'éditeur ---- */
+function ledPropre(){
+  const sections=[];
+  _led.sections.forEach(function(s){
+    const blocs=[];
+    (s.blocs||[]).forEach(function(b){
+      const o={id:b.id,t:b.t};
+      if(b.t==="texte"||b.t==="encadre"){ o.html=lpNettoyer(b.html); if(b.t==="encadre")o.style=b.style; if(!lpBrut(o.html))return; }
+      else if(b.t==="image"){ if(!b.img)return; o.img=b.img; o.leg=(b.leg||"").trim(); }
+      else if(b.t==="video"){ if(!b.yt)return; o.yt=b.yt; o.leg=(b.leg||"").trim(); }
+      else if(b.t==="qcm"){ o.q=(b.q||"").trim(); o.choix=(b.choix||[]).filter(function(c){ return (c.x||"").trim(); }).map(function(c){ return {x:c.x.trim(),ok:!!c.ok}; });
+        o.expl=(b.expl||"").trim(); if(!o.q||o.choix.length<2||!o.choix.some(function(c){ return c.ok; }))return; }
+      else if(b.t==="vf"){ o.q=(b.q||"").trim(); o.ok=!!b.ok; o.expl=(b.expl||"").trim(); if(!o.q)return; }
+      else if(b.t==="trous"){ o.consigne=(b.consigne||"").trim(); o.texte=(b.texte||"").trim(); o.trous=(b.trous||[]).slice().sort(function(x,y){ return x-y; }); if(!o.texte||!o.trous.length)return; }
+      else if(b.t==="ordre"){ o.consigne=(b.consigne||"").trim(); o.items=(b.items||[]).map(function(x){ return String(x||"").trim(); }).filter(Boolean); if(o.items.length<2)return; }
+      else if(b.t==="relier"){ o.consigne=(b.consigne||"").trim(); o.paires=(b.paires||[]).map(function(p){ return [String(p[0]||"").trim(),String(p[1]||"").trim()]; }).filter(function(p){ return p[0]&&p[1]; }); if(o.paires.length<2)return; }
+      else return;
+      blocs.push(o);
+    });
+    const titre=(s.titre||"").trim();
+    if(titre||blocs.length)sections.push({id:s.id,titre:titre,blocs:blocs});
+  });
+  return sections;
+}
+/* ce qu'une activité incomplète laisse de côté : on le dit avant d'enregistrer */
+function ledIncomplets(){
+  const l=[];
+  _led.sections.forEach(function(s,i){ (s.blocs||[]).forEach(function(b){
+    const T=(LED_TYPES[b.t]||{}).lib, ou=" (partie "+(i+1)+")";
+    if(b.t==="qcm"&&((b.q||"").trim()||(b.choix||[]).some(function(c){ return (c.x||"").trim(); }))&&(!(b.q||"").trim()||(b.choix||[]).filter(function(c){ return (c.x||"").trim(); }).length<2))l.push(T+" : il faut la question et au moins deux réponses"+ou);
+    if(b.t==="trous"&&(b.texte||"").trim()&&!(b.trous||[]).length)l.push(T+" : touchez au moins un mot à cacher"+ou);
+    if(b.t==="ordre"&&(b.items||[]).filter(function(x){ return String(x||"").trim(); }).length===1)l.push(T+" : il faut au moins deux éléments"+ou);
+    if(b.t==="relier"&&(b.paires||[]).some(function(p){ return (p[0]||"").trim()?!(p[1]||"").trim():(p[1]||"").trim(); }))l.push(T+" : une paire n’a qu’un côté"+ou);
+    if(b.t==="video"&&b.url&&!b.yt)l.push(T+" : le lien n’est pas reconnu"+ou);
+  }); });
+  return l;
+}
+/* version texte, pour les anciennes versions de l'application (et les règles) */
+function ledTexteBrut(sections){
+  const out=[];
+  sections.forEach(function(s){
+    if(s.titre)out.push("## "+s.titre);
+    s.blocs.forEach(function(b){
+      if(b.t==="texte"||b.t==="encadre")out.push((b.t==="encadre"?"**"+LP_ENCADRES[b.style][0]+"**\n":"")+lpBrut(b.html));
+      else if(b.t==="qcm"||b.t==="vf")out.push("**Question :** "+b.q);
+      else if(b.t==="trous")out.push(b.texte);
+      else if(b.t==="ordre"||b.t==="relier")out.push((b.consigne||LED_TYPES[b.t].lib)+" (activité : mettez l’application à jour pour la faire)");
+    });
+  });
+  return out.join("\n\n").slice(0,19500);
+}
+function ledMsg(t){ const m=document.getElementById("ledMsg"); if(!m)return; if(!t){ m.hidden=true; return; } m.innerHTML='<i class="ph ph-warning-circle" aria-hidden="true"></i> '+t; m.hidden=false; m.scrollIntoView&&m.scrollIntoView({block:"center",behavior:"smooth"}); }
+async function ledEnregistrer(){
+  if(!_led)return; ledMsg("");
+  const titre=(_led.titre||"").trim();
+  if(!titre){ ledMsg("Donnez un titre à la leçon."); const t=document.getElementById("ledTitre"); if(t)t.focus(); return; }
+  const inc=ledIncomplets();
+  if(inc.length&&!await dlgConfirmer("Ces activités sont incomplètes et ne seront pas montrées aux élèves :\n\n• "+inc.join("\n• ")+"\n\nEnregistrer quand même ?"))return;
+  const sections=ledPropre();
+  if(!sections.some(function(s){ return s.blocs.length; })){ ledMsg("La leçon est vide : écrivez un texte ou ajoutez un bloc."); return; }
+  if(JSON.stringify(sections).length>300000){ ledMsg("La leçon est trop longue : découpez-la en deux leçons."); return; }
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
+  if(!s||!u){ ledMsg("Service indisponible : vérifiez votre connexion."); return; }
+  const base=s.collection("teachers").doc(u.uid), col=base.collection("lecons");
+  const ref=_led.id?col.doc(_led.id):col.doc();
+  const utilisees=ledImagesDe(sections), nouvelles=utilisees.filter(function(id){ return _led.imgs[id]; });
+  const doc={titre:titre, ic:_led.ic||"chalkboard-teacher", v:2, sections:sections, texte:ledTexteBrut(sections)||titre, cree:_led.cree||Date.now(), maj:Date.now()};
+  const envoi=unSeul("lecon",function(){ return pendant(_led.id?"Enregistrement de la leçon…":"Création de la leçon…",
+    Promise.all(nouvelles.map(function(id){ return base.collection("images").doc(id).set({d:_led.imgs[id], lecon:ref.id, maj:Date.now()}); }))
+      .catch(function(e){ e.images=true; throw e; })
+      .then(function(){ return ref.set(doc); })); });
+  if(!envoi)return;
+  return envoi.then(function(){
+    /* les images retirées de la leçon sont effacées du serveur */
+    (_led.imgsAvant||[]).filter(function(id){ return utilisees.indexOf(id)<0; }).forEach(function(id){ base.collection("images").doc(id).delete().catch(function(){}); });
+    nouvelles.forEach(function(id){ _lpImgCache[id]=_led.imgs[id]; });
+    _led.id=ref.id; _led.cree=doc.cree; _led.maj=doc.maj; _led.imgs={}; _led.imgsAvant=utilisees; _led.modifie=false; _led.brouillon=null;
+    ledBrouillonEffacer();
+    return lpCharger();
+  }).then(function(){
+    toast("Leçon enregistrée : vos élèves la voient dans « Leçons ».");
+    titreProf('<i class="ph ph-pencil-simple"></i> Modifier la leçon');
+    if(_led)ledRendre();
+  }).catch(function(e){
+    ledMsg(e&&e.images?"Les images n’ont pas pu être envoyées. Si le problème continue, le serveur doit être mis à jour (dossier « serveur »)."
+                      :"Impossible d’enregistrer. Vos modifications restent en brouillon sur cet appareil : réessayez dans un instant.");
+  });
+}
+/* ---- Aperçu : la leçon telle que l'élève la verra, activités comprises ---- */
+function ledApercu(){
+  if(!_led)return;
+  ledApercuFermer();
+  const l={titre:(_led.titre||"").trim()||"Sans titre", sections:ledPropre()};
+  const d=document.createElement("div"); d.id="ledApercu"; d.className="led-apercu"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label","Aperçu élève");
+  d.innerHTML='<div class="led-apercu-barre"><b><i class="ph ph-eye" aria-hidden="true"></i> Aperçu : ce que verront vos élèves</b><button type="button" class="led-btn" onclick="ledApercuFermer()"><i class="ph ph-x" aria-hidden="true"></i> Fermer</button></div>'
+    +'<div class="led-apercu-c"><div class="lecon"><div class="lecon-entete"><h2>'+echapH(l.titre)+'</h2></div><div class="carte">'+lpHtmlV2(l)+'</div></div></div>';
+  document.body.appendChild(d); document.body.classList.add("led-apercu-ouvert");
+  if(typeof ceMonterYT==="function")ceMonterYT(); lpMonter();
+  d.addEventListener("keydown",function(e){ if(e.key==="Escape"){ e.preventDefault(); ledApercuFermer(); } });
+  const f=d.querySelector(".led-apercu-barre button"); if(f)f.focus();
+}
+function ledApercuFermer(){ const d=document.getElementById("ledApercu"); if(d)d.remove(); document.body.classList.remove("led-apercu-ouvert"); }
+/* Les exercices d'une leçon (séries d'entraînement et évaluations), sous l'éditeur.
+   À ne pas confondre avec les activités du texte, faites pendant la lecture. */
 function lpBlocExercices(id){
   if(!id){
-    return `<div class="ex" style="margin-top:16px;text-align:center;border-style:dashed">
-      <p style="margin:0;color:var(--encre-doux)"><i class="ph ph-info"></i>
-        Enregistrez la leçon : vous passerez aussitôt à ses <b>exercices</b>.</p></div>`;
+    return '<div class="led-exos vide"><i class="ph ph-info" aria-hidden="true"></i><span>Une fois la leçon enregistrée, vous pourrez lui ajouter des <b>exercices notés</b> : ce sont eux qui servent aux séries d’entraînement et aux évaluations.</span></div>';
   }
   const qs=(_qProf["perso-"+id]||[]);
-  return `<div class="ex" style="margin-top:16px">
-    <h3 style="margin-top:0;text-align:center"><i class="ph ph-list-checks"></i> Les exercices de cette leçon</h3>
-    <p style="text-align:center;color:${qs.length?"var(--encre-doux)":"var(--faux)"};font-size:.9rem;margin-top:0">
-      ${qs.length? qs.length+" question"+(qs.length>1?"s":"")+" · l'élève peut s'entraîner et être évalué"
-                 : "Aucune question : la leçon est seulement à lire."}</p>
-    ${qs.length?`<ul style="margin:0 0 14px;padding-left:20px;line-height:1.7">
-      ${qs.slice(0,5).map(function(q){return "<li>"+echapH(q.q||"")+"</li>";}).join("")}
-      ${qs.length>5?`<li style="color:var(--encre-doux)">… et ${qs.length-5} autre${qs.length>6?"s":""}</li>`:""}
-    </ul>`:""}
-    <div style="text-align:center">
-      <button class="rm-cta" onclick="ecranQuestionsProf('perso-${id}')">
-        <i class="ph-fill ph-plus-circle"></i> ${qs.length?"Ajouter ou modifier les questions":"Créer les exercices"}</button>
-    </div>
-  </div>`;
+  return '<section class="led-exos"><div class="led-exos-t"><i class="ph ph-list-checks" aria-hidden="true"></i><div><b>Exercices et évaluation</b>'
+    +'<span>'+(qs.length?qs.length+" question"+(qs.length>1?"s":"")+" : l’élève peut s’entraîner et être évalué sur cette leçon."
+      :"Aucune question pour l’instant : la leçon est seulement à lire, sans entraînement ni évaluation.")+'</span></div>'
+    +'<button type="button" class="led-btn prim" onclick="ledVersQuestions(\''+id+'\')"><i class="ph-fill ph-plus-circle" aria-hidden="true"></i> '+(qs.length?"Gérer les questions":"Créer les exercices")+'</button></div>'
+    +(qs.length?'<ul>'+qs.slice(0,4).map(function(q){ return '<li>'+echapH(q.q||"")+'</li>'; }).join("")+(qs.length>4?'<li class="led-st">… et '+(qs.length-4)+' autre'+(qs.length>5?"s":"")+'</li>':'')+'</ul>':'')
+    +'</section>';
 }
-function lpApercu(){
-  const t=((document.getElementById("lpTitre")||{}).value||"").trim();
-  const x=((document.getElementById("lpTexte")||{}).value||"");
-  const z=document.getElementById("lpApercu"); if(!z)return;
-  z.innerHTML=`<div class="lecon" style="border:1px dashed var(--ligne);border-radius:14px;padding:14px">
-    <div style="font-size:.8rem;color:var(--encre-doux);margin-bottom:8px"><i class="ph ph-eye"></i> Aperçu tel que l'élève le verra</div>
-    ${lpHtmlLecon({titre:t||"(sans titre)",texte:x})}</div>`;
-}
-function lpEnregistrer(id){
-  const err=document.getElementById("lpErr");
-  const dire=function(m){ if(err){err.textContent=m;err.style.display="block";} else toast(m); };
-  const titre=((document.getElementById("lpTitre")||{}).value||"").trim();
-  const texte=((document.getElementById("lpTexte")||{}).value||"");
-  const ic=((document.getElementById("lpIc")||{}).value||"chalkboard-teacher");
-  if(!titre){dire("Donnez un titre à la leçon.");return;}
-  if(texte.trim().length<20){dire("Le contenu est trop court : écrivez au moins quelques phrases.");return;}
-  if(texte.length>20000){dire("La leçon est trop longue (20 000 caractères au maximum).");return;}
-  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
-  if(!s||!u){dire("Service indisponible.");return;}
-  if(err)err.style.display="none";
-  const col=s.collection("teachers").doc(u.uid).collection("lecons");
-  const donnees={titre:titre,texte:texte,ic:ic,maj:Date.now()};
-  const p=unSeul("lecon",function(){
-    return pendant(id?"Modification de la leçon…":"Création de la leçon…",
-      id ? col.doc(id).set(donnees,{merge:true})
-         : col.add(Object.assign({cree:Date.now()},donnees))); });
-  if(!p)return;
-  let neuf=null;
-  p.then(function(ref){ if(!id&&ref&&ref.id)neuf=ref.id;
-     toast("Leçon enregistrée !"); return lpCharger(); })
-   .then(function(){
-     /* une leçon qu'on vient de créer n'a aucun exercice : on y va tout de suite,
-        c'est la suite naturelle et cela évite d'oublier cette étape */
-     if(neuf){ ecranQuestionsProf("perso-"+neuf); return; }
-     lpRetour(); })
-   .catch(function(){ dire("Impossible d'enregistrer. Réessayez dans un instant."); });
+/* vers les questions : on prévient si la leçon a des modifications non enregistrées */
+function ledVersQuestions(id){
+  if(_led&&_led.modifie){
+    dlgConfirmer("Enregistrer d’abord vos modifications ? Sinon elles restent en brouillon sur cet appareil.").then(function(ok){
+      if(ok){ ledEnregistrer().then(function(){ if(_led&&!_led.modifie)ecranQuestionsProf("perso-"+id); }); }
+      else ecranQuestionsProf("perso-"+id);
+    });
+    return;
+  }
+  ecranQuestionsProf("perso-"+id);
 }
 async function lpSupprimer(id,depuisGrille){
   if(depuisGrille!==undefined)_lpRetourGrille=!!depuisGrille;
@@ -22679,6 +23990,8 @@ async function lpSupprimer(id,depuisGrille){
   const sup=unSeul("lecon-sup",function(){ return pendant("Suppression…",
     base.collection("questions").where("cat","==","perso-"+id).get()
     .then(function(snap){ return Promise.all(snap.docs.map(function(d){return d.ref.delete().catch(function(){});})); })
+    .then(function(){ return base.collection("images").where("lecon","==",id).get()
+      .then(function(sn){ return Promise.all(sn.docs.map(function(d){ return d.ref.delete().catch(function(){}); })); }).catch(function(){}); })
     .then(function(){ return base.collection("lecons").doc(id).delete(); })); });
   if(!sup)return;
   sup.then(function(){ toast("Leçon supprimée."); _qProfCharge=false;
@@ -22844,7 +24157,7 @@ function seanceRendre(){
   try{ localStorage.setItem("seanceDer_"+seance.src.titre,seance.i); }catch(e){}
   /* tout ce qui s'anime dans le cours s'anime aussi au tableau : vidéos, machine à
      accumulation, mini-synthétiseur, basse de Lully, partitions, studio */
-  ["ceMonterYT","ceMonterPistes","stuMonter","repMonter","repSynthMonter","repPassaMonter","repRefMonter"].forEach(function(f){
+  ["ceMonterYT","lpMonter","ceMonterPistes","stuMonter","repMonter","repSynthMonter","repPassaMonter","repRefMonter"].forEach(function(f){
     try{ if(typeof window[f]==="function")window[f](); }catch(e){} });
   seanceAjuster();
   c.querySelectorAll("img").forEach(function(im){ if(!im.complete)im.addEventListener("load",seanceAjuster,{once:true}); });
@@ -23171,7 +24484,8 @@ function sauvegardeCollecter(){
   const T=s.collection("teachers").doc(uid);
   return Promise.all([
     dump(T.collection("chants")), dump(T.collection("lecons")), dump(T.collection("questions")),
-    s.collection("classes").where("ownerUid","==",uid).get().catch(function(){ return {forEach:function(){}}; })
+    s.collection("classes").where("ownerUid","==",uid).get().catch(function(){ return {forEach:function(){}}; }),
+    dump(T.collection("images"))
   ]).then(function(r){
     const cls=[]; r[3].forEach(function(d){ cls.push(Object.assign({id:d.id},d.data()||{})); });
     return Promise.all(cls.map(function(k){
@@ -23180,7 +24494,7 @@ function sauvegardeCollecter(){
                            dump(C.collection("devoirs")), dump(C.collection("enr")) ])
         .then(function(sub){ return { classe:k, eleves:sub[0], evals:sub[1], devoirs:sub[2], enr:sub[3] }; });
     })).then(function(classes){
-      base.serveur={ chants:r[0], lecons:r[1], questions:r[2], classes:classes };  /* jamais l'audio */
+      base.serveur={ chants:r[0], lecons:r[1], questions:r[2], images:r[4], classes:classes };  /* jamais l'audio */
       return base;
     });
   }).catch(function(){ return base; });
@@ -23269,13 +24583,25 @@ async function sauvegardeConfirmerRestauration(data){
   sauvegardeAppliquerLocal(data);
   try{ if(typeof majEnteteProfil==="function")majEnteteProfil(); }catch(e){}
   toast("Sauvegarde restaurée : "+n+" nom(s) d'élève.");
+  /* les leçons du fichier qui n'existent plus sur le compte : on propose de les recréer */
+  const a=fbAuth(), u=a&&a.currentUser, o=lpxDepuisFichier(data);
+  if(o&&o.lecons.length&&u&&estProf(u)){
+    await lpCharger();
+    const ici=(_lecPerso||[]).map(function(l){ return l.id; }), titresIci=(_lecPerso||[]).map(function(l){ return l.titre; });
+    const absentes=o.lecons.filter(function(l){ return ici.indexOf(l.id)<0&&titresIci.indexOf(l.titre)<0; });
+    if(absentes.length&&await dlgConfirmer("Cette sauvegarde contient "+(absentes.length>1?absentes.length+" leçons qui ne sont plus":"une leçon qui n’est plus")+" sur votre compte :\n\n"
+      +absentes.slice(0,10).map(function(l){ return "• "+l.titre; }).join("\n")+(absentes.length>10?"\n…":"")+"\n\nLes recréer, avec leurs images et leurs questions ?")){
+      const k=await lpxCreer(absentes,o.images,false);
+      toast(k?(k>1?k+" leçons recréées.":"Leçon recréée."):"Aucune leçon n’a pu être recréée.");
+    }
+  }
 }
 function sauvegardeCarteHTML(){
   return '<div class="pm-panneau">'
     +'<div class="pm-p-tete"><div class="pm-p-ic"><i class="ph ph-floppy-disk"></i></div><h2>Sauvegarde</h2></div>'
     +'<p class="pm-p-aide">Les noms de vos élèves ne vivent que sur cet appareil : un fichier de sauvegarde, et vous ne perdez plus rien.</p>'
     +'<div class="sauv-bloc"><h3><i class="ph ph-download-simple"></i> Exporter mes données</h3>'
-    +'<p>Téléchargez un fichier de sauvegarde. Il contient <b>les noms de vos élèves</b> (qui ne quittent jamais cet appareil), vos préférences, et une copie de vos classes, morceaux, leçons et notes.</p>'
+    +'<p>Téléchargez un fichier de sauvegarde. Il contient <b>les noms de vos élèves</b> (qui ne quittent jamais cet appareil), vos préférences, et une copie de vos classes, morceaux, leçons (avec leurs images) et notes.</p>'
     +'<p id="sauvInfo" style="font-size:.88rem;color:var(--encre-doux)">'+sauvegardeInfoHTML()+'</p>'
     +'<button class="rm-cta" id="sauvExportBtn" onclick="sauvegardeExporter()"><i class="ph-fill ph-download-simple"></i> Télécharger ma sauvegarde</button></div>'
     +'<div class="sauv-bloc"><h3><i class="ph ph-file-csv"></i> Liste des élèves</h3>'
@@ -24732,6 +26058,7 @@ function detailEleve(classId,code){
   s.collection("classes").doc(classId).collection("eleves").doc(code).get().then(d=>{
     if(!d.exists){document.getElementById("zone").innerHTML=`<p>Cet élève n'a pas encore travaillé.</p>`;return;}
     const e=d.data();
+    (_evEleves[classId]=_evEleves[classId]||{})[code]=e;
     let h=`<div class="prog-grade" style="max-width:520px;margin:0 auto"><div class="pg-prenom">${lab?echapH(lab):("Code "+code)}</div>
       <div class="pg-nom">${echapH(e.grade||"")}</div><div class="pg-niveau">Niveau ${e.niveau||1} · code ${code}</div></div>`;
     h+=`<div class="accueil-stats" style="margin-top:14px">
@@ -24740,6 +26067,7 @@ function detailEleve(classId,code){
       <div class="stat-tuile"><div class="stat-ic"><i class="ph ph-medal"></i></div><div class="stat-val">${e.badges||0}</div><div class="stat-lib">badges</div></div>
       <div class="stat-tuile"><div class="stat-ic"><i class="ph ph-clock"></i></div><div class="stat-val" style="font-size:1.1rem">${fmtTemps(e.tempsMin)}</div><div class="stat-lib">connecté</div></div>
       <div class="stat-tuile"><div class="stat-ic"><i class="ph ph-barbell"></i></div><div class="stat-val" style="font-size:1.1rem">${e.tempsEntrain!=null?fmtTemps(e.tempsEntrain):"-"}</div><div class="stat-lib">entraînement</div></div></div>`;
+    h+=actFicheHTML(classId,code,e);
     const notes=e.notes||[];
     h+=`<h3 class="prog-titre" style="margin-top:20px"><i class="ph ph-exam"></i> Évolution des notes</h3>`;
     if(!notes.length)h+=`<p class="badge-vide">Aucune évaluation notée.</p>`;
@@ -24787,19 +26115,21 @@ function detailCoursHTML(e){
     if(Array.isArray(p.faits)&&p.faits.length)return true;
     const ex=p.ex||{}; return Object.keys(ex).some(function(i){ return Array.isArray(ex[i])&&ex[i].length; });
   };
-  const ids=Object.keys(COURS_DEF||{}).filter(function(k){ return actif(cs[k]); });
+  const cv=(e.coursValid&&typeof e.coursValid==="object")?e.coursValid:{};
+  const ids=Object.keys(COURS_DEF||{}).filter(function(k){ return actif(cs[k])||(cv[k]&&+cv[k].n>0); });
   let h='<h3 class="prog-titre" style="margin-top:20px"><i class="ph ph-chalkboard-simple"></i> Cours de collège</h3>';
   if(!ids.length)return h+'<p class="badge-vide">Aucun cours de collège commencé.</p>';
   const dh=function(t){ try{ return new Date(t).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" à "+new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }catch(x){ return ""; } };
   return h+ids.map(function(k){
     const def=COURS_DEF[k], p=cs[k]||{}, faits=Array.isArray(p.faits)?p.faits:[], ex=p.ex||{};
     const n=def.etapes.length; let nEt=0, nEx=0, totEx=0, prochaine=-1;
+    const nv=Math.min(n,Math.max(0,Math.floor(+((cv[k]||{}).n)||0)));     /* validées par le professeur */
     def.etapes.forEach(function(et,i){
       const tot=(et.ex||[]).length, fait=Array.isArray(ex[String(i)])?ex[String(i)].length:0;
-      const complete=faits.indexOf(i)>=0||(tot>0&&fait>=tot);
+      const perso=faits.indexOf(i)>=0||(tot>0&&fait>=tot), complete=perso||i<nv;
       /* une étape validée a forcément tous ses exercices faits (bouton « Suivant ») ;
          une étape sans exercice n'est acquise que si l'élève l'a validée */
-      totEx+=tot; nEx+=complete?tot:Math.min(fait,tot);
+      totEx+=tot; nEx+=perso?tot:Math.min(fait,tot);
       if(complete)nEt++; else if(prochaine<0)prochaine=i;
     });
     const fini=!!p.fini||nEt===n;
@@ -24810,7 +26140,7 @@ function detailCoursHTML(e){
     return '<div class="cc-suivi"><div class="cc-suivi-t"><b>'+echapH(def.titre)+'</b>'
       +'<span class="pl-etat '+(fini?"ok":"")+'">'+(fini?"Terminé":("Étape "+(prochaine+1)+" / "+n))+'</span></div>'
       +'<div class="ce-jauge"><i style="width:'+pct+'%"></i></div>'
-      +'<p class="cc-suivi-d">'+nEt+' étape'+(nEt>1?"s":"")+' sur '+n+' · '+nEx+' exercice'+(nEx>1?"s":"")+' sur '+totEx
+      +'<p class="cc-suivi-d">'+nEt+' étape'+(nEt>1?"s":"")+' sur '+n+(nv?' ('+(nv>=n?"toutes validées par vous":(nv>1?"1 à "+nv+" validées par vous":"la 1re validée par vous"))+')':'')+' · '+nEx+' exercice'+(nEx>1?"s":"")+' sur '+totEx
       +(p.debut?' · commencé le '+dh(p.debut):'')+(p.maj?' · dernière activité le '+dh(p.maj):'')+(p.fini?' · terminé le '+dh(p.fini):'')+'</p>'
       +(jalons?'<div class="cc-jalons">'+jalons+'</div>':'<p class="cc-suivi-d">Les dates de passage des étapes s\'afficheront à partir des prochaines étapes validées.</p>')
       +'</div>';
@@ -25121,6 +26451,7 @@ function terminerEval(parTemps){
     off:!!_off, libre:!_off, bonus:noteBonus, dev:(_off?_off.devoir.id:""),
     essais:(profil.vus&&profil.vus[evalDomaine])||0, tpsEntrain:Math.round((profil.tempsTheme&&profil.tempsTheme[evalDomaine])||0),
     surv:surv, entrain:entrainResume(evalDomaine) };
+  try{ actEvt("ev"); }catch(e){}
   /* la correction de l'élève : tout de suite, sauf pendant le créneau d'une
      évaluation demandée (elle circulerait dans la classe) */
   const _vOff=_off?((_off.devoir.volets||[])[_off.i]||{}):null;
@@ -25245,6 +26576,7 @@ function ecranMaCopie(devId,i){
    le professeur voit qui est prêt. L'élève voit sa correction tout de suite. */
 let evalBlanc=null, _evalBlancLance=null;
 function terminerEvalBlanc(note,bons,total,detail,parTemps){
+  try{ actEvt("ev"); }catch(e){}
   const b=evalBlanc; evalBlanc=null;
   const theme=(typeof nomCat==="function")?nomCat(evalDomaine):evalDomaine, fait=Date.now();
   try{ devoirFait(evalDomaine,"blanc",{note:note,sur:20,bons:bons,total:total,dev:b.devId}); }catch(e){}
@@ -26288,7 +27620,7 @@ function evBarre(classId){
   const aNoter=(typeof _evANoter!=="undefined"&&_evANoter[classId])||0;
   const T=[["eleves","Cours","exam",0],["chant","Chant","microphone-stage",aNoter]]
     .concat(TRAVAIL_CLASSE?[["comport","Comportement","chalkboard-simple",0]]:[])
-    .concat([["bilan","Bilan","scroll",0],["vigil","Vigilance","shield-warning",vig]]);
+    .concat([["comp","Compétences","target",0],["revoir","À revoir","lightbulb",0],["bilan","Bilan","scroll",0],["activite","Activité","pulse",0],["vigil","Vigilance","shield-warning",vig]]);
   let h='<div class="cn-barre"><nav class="cn-onglets" aria-label="Rubriques">'+T.map(function(t){
     const on=_evVue===t[0];
     return '<button type="button" class="'+(on?"on":"")+'" aria-pressed="'+on+'" onclick="evVue(\''+t[0]+'\')"'
@@ -27297,13 +28629,16 @@ function evBilanRendre(classId){
   let h="";
   if(!p){ return h+'<p class="badge-vide">Ouvrez une période dans « Travail en classe » : elle définit le trimestre du bilan et des appréciations.</p>'; }
   evBilanCharger(classId,p);
+  lsuCharger(classId,p);          /* les compétences des bulletins A4 */
   if(!_appDonnees.length)return h+'<p class="badge-vide">Aucun élève avec des données sur ce trimestre.</p>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px">'
     +'<button class="action btn-corr" onclick="evPronoteAssistant(\''+classId+'\')"><i class="ph ph-export"></i> Vers Pronote (pas à pas)</button>'
     +'<button class="action btn-nouv" onclick="evExportPronote(\''+classId+'\')"><i class="ph ph-table"></i> Copier toutes les colonnes</button>'
     +'<button class="action btn-nouv" onclick="evExportPronoteCSV(\''+classId+'\')"><i class="ph ph-file-csv"></i> Export Pronote (CSV)</button>'
-    +'</div>';
-  return h+lsuBlocHTML(classId,p)+appBlocHTML();
+    +'</div>'
+    +'<p class="bul-info"><i class="ph ph-target" aria-hidden="true"></i> Les bulletins A4 reprennent les compétences de l’onglet '
+    +'<button type="button" class="cp-voir" onclick="evVue(\'comp\')">Compétences</button> : vos choix, sinon les niveaux proposés. Une compétence non positionnée n’y figure pas.</p>';
+  return h+appBlocHTML();
 }
 
 /* ================= Diplômes des meilleurs élèves =================
@@ -27755,85 +29090,782 @@ function profReglagesCharger(u){
   }).catch(function(){ return false; });
 }
 
-/* ---------- Positionnement par compétences (LSU) ---------- */
+/* ---------- Positionnement par compétences (LSU) ----------
+   Onglet « Compétences » de Notes & bulletins (17/10/2026 ; avant, un bloc replié
+   du Bilan). Les quatre compétences du programme d'éducation musicale (cycle 3 en
+   6e, cycle 4 ensuite), sur les quatre niveaux du livret scolaire. L'application
+   PROPOSE un niveau quand elle a de quoi le mesurer ; le professeur choisit :
+   - C1 (chanter, interpréter) : les notes de chant de la période ;
+   - C2 (écouter, comparer, culture) : trois composantes mesurées thème par thème
+     (écoute, vocabulaire et lecture, culture musicale), d'après les évaluations
+     de la période, à défaut d'après les paliers d'entraînement ;
+   - C3 (créer) et C4 (échanger, argumenter) : rien de fiable à mesurer ; on montre
+     ce que l'élève a créé ou joué, le professeur positionne.
+   Choix du professeur : classes/{cid}/travailPlan/lsu-{période} = {c:{code:{c1..c4}}}. */
 const LSU_COMP={
   c3:["Chanter et interpréter","Écouter, comparer et commenter","Explorer, imaginer et créer","Échanger, partager et argumenter"],
   c4:["Réaliser des projets musicaux d'interprétation ou de création","Écouter, comparer, construire une culture musicale commune","Explorer, imaginer, créer et produire","Échanger, partager, argumenter et débattre"]
 };
+const LSU_COURT={
+  c3:["Chanter, interpréter","Écouter, comparer","Explorer, créer","Échanger, argumenter"],
+  c4:["Projets musicaux","Écouter, culture","Explorer, créer","Échanger, débattre"]
+};
 const LSU_NIV=["","Maîtrise insuffisante","Maîtrise fragile","Maîtrise satisfaisante","Très bonne maîtrise"];
-let _lsu={}, _lsuOuvert=false;        /* _lsu[classId+"|"+periode] = {code:{c1..c4}} (choix du prof) */
+let _lsu={}, _lsuPret={}, _cpOuverts={};   /* _lsu[classId+"|"+période] = {code:{c1..c4}} (choix du prof) */
 function lsuCycle(classId){
   const cl=((_profClasses||[]).filter(function(x){return x.id===classId;})[0])||{};
   return classeGroupe(cl)==="6e"?"c3":"c4";
 }
 function lsuDepuisNote(n){ if(n==null)return 0; return n<8?1:(n<12?2:(n<16?3:4)); }
-function lsuPropose(f){
-  return [lsuDepuisNote(f.chantMoy),
-          lsuDepuisNote(f.coursMoy!=null?f.coursMoy:f.bonusNote),
-          0,
-          lsuDepuisNote(f.comportement)];
-}
 function lsuCle(classId,p){ return classId+"|"+((p&&p.id)||"annee"); }
 function lsuCharger(classId,p){
   const k=lsuCle(classId,p); if(_lsu[k])return;
   _lsu[k]={};
-  const s=fbStore(); if(!s)return;
+  const s=fbStore(); if(!s){ _lsuPret[k]=true; return; }
   s.collection("classes").doc(classId).collection("travailPlan").doc("lsu-"+((p&&p.id)||"annee")).get()
-    .then(function(d){ _lsu[k]=(d&&d.exists&&(d.data()||{}).c)||{}; if(_evVue==="bilan"){ const z=document.getElementById("lsuZone"); if(z)z.innerHTML=lsuTableHTML(classId,p); } })
-    .catch(function(){});
+    .then(function(d){ _lsu[k]=(d&&d.exists&&(d.data()||{}).c)||{}; _lsuPret[k]=true; if(_evVue==="comp"&&_evClasse===classId)cpMaj(classId); })
+    .catch(function(){ _lsuPret[k]=true; });
 }
-function lsuNiveaux(classId,p,code,f){
-  const pr=lsuPropose(f), ch=(_lsu[lsuCle(classId,p)]||{})[code]||{};
-  return [0,1,2,3].map(function(i){ const v=ch["c"+(i+1)]; return {v:(v?v:pr[i]), auto:!v}; });
+/* Les trois composantes de C2, et le thème (domaine de leçon) qui nourrit chacune. */
+const CP_COMPO=[
+  {id:"ecoute", nom:"Écoute"},
+  {id:"langage", nom:"Vocabulaire et lecture"},
+  {id:"culture", nom:"Culture musicale"}
+];
+const CP_GROUPE={"Écoute (avec son)":"ecoute","Lire la musique":"langage","Rythme":"langage","Théorie":"langage","Vocabulaire & culture":"langage"};
+const CP_ID={"dictee-note":"ecoute","dictee-rythme":"ecoute","melodies":"ecoute","chiffrage":"langage",
+  "epoques":"culture","histoire-notation":"culture","histoire-son":"culture","reperes-compo":"culture"};
+let _cpGroupes=null;
+function cpComposanteDe(dom){
+  const d=String(dom||""); if(!d)return "";
+  if(CP_ID[d])return CP_ID[d];
+  if(!_cpGroupes){ _cpGroupes={}; try{ domainesEval().forEach(function(o){ _cpGroupes[o.id]=o.groupe; }); }catch(e){} }
+  /* styles, métiers, cours de collège, leçons du professeur : culture musicale */
+  return CP_GROUPE[_cpGroupes[d]]||"culture";
 }
-function lsuBlocHTML(classId,p){
-  lsuCharger(classId,p);
-  const comp=LSU_COMP[lsuCycle(classId)];
-  return '<div class="gb-bloc-w"><details class="gb-bloc lsu-bloc"'+(_lsuOuvert?" open":"")+' ontoggle="_lsuOuvert=this.open">'
-    +'<summary><i class="ph-fill ph-target"></i> Positionnement par compétences <span>'+(lsuCycle(classId)==="c3"?"cycle 3":"cycle 4")+' · pour le livret scolaire</span>'
-    +'</summary>'
-    +'<div class="gb-bloc-c"><p class="lsu-aide">Niveaux <b>proposés</b> (en clair) d\'après les notes de chant, les évaluations de cours et le travail en classe ; « Explorer, imaginer, créer » n\'est pas mesuré par l\'application. '
-    +'<b>Cliquez une case</b> pour choisir vous-même le niveau (il passe en plein). Légende : 1 insuffisante · 2 fragile · 3 satisfaisante · 4 très bonne.</p>'
-    +'<div id="lsuZone">'+lsuTableHTML(classId,p)+'</div></div></details>'
-    +'<span class="gb-bloc-btn"><button type="button" class="gb-exp" onclick="lsuCopier(\''+classId+'\')"><i class="ph ph-copy"></i> Copier</button></span></div>';
-}
-function lsuTableHTML(classId,p){
-  const comp=LSU_COMP[lsuCycle(classId)];
-  const lignes=evTousLesCodes(classId).map(function(c){ return {code:c, nom:labelDe(classId,c)||c, f:evFaitsComplets(classId,c,p)}; })
-    .sort(function(a,b){ return String(a.nom).localeCompare(String(b.nom),"fr",{numeric:true}); });
-  let h='<div class="gb-wrap"><table class="gradebook lsu-t"><thead><tr><th class="gb-nom">Élève</th>'
-    +comp.map(function(t,i){ return '<th class="gb-eval" title="'+echapH(t)+'"><span class="lsu-num">C'+(i+1)+'</span><span class="gb-col-sous">'+echapH(t)+'</span></th>'; }).join("")
-    +'</tr></thead><tbody>';
-  lignes.forEach(function(l){
-    const nv=lsuNiveaux(classId,p,l.code,l.f);
-    h+='<tr><td class="gb-nom"><b>'+echapH(l.nom)+'</b></td>'+nv.map(function(x,i){
-      return '<td><button type="button" class="lsu-c n'+x.v+(x.auto?" auto":"")+'" onclick="lsuBasculer(\''+classId+'\',\''+l.code+'\','+(i+1)+')" '
-        +'title="'+echapH(comp[i])+' : '+(x.v?LSU_NIV[x.v]:"non positionné")+(x.auto?" (proposé)":" (choisi par vous)")+'" aria-label="'+echapH(comp[i])+' : '+(x.v?LSU_NIV[x.v]:"non positionné")+'">'
-        +(x.v||"·")+'</button></td>'; }).join("")+'</tr>';
+function cpFmt(n){ return n==null?"-":String(Math.round(n*10)/10).replace(".",","); }
+/* Ce que l'application sait d'un élève, compétence par compétence, sur la période. */
+function cpFaits(classId,code,p){
+  const b=evBornesPeriode(p,classId);
+  const evs=(_evalsCache[classId]||[]).filter(function(e){ return e.code===code&&!e._travail&&(e.fait||0)>=b.deb&&(e.fait||0)<=b.fin; });
+  const sur20=function(e){ return (e.note||0)/(e.sur||20)*20; };
+  const el=(_evEleves[classId]||{})[code]||{}, sv=el.sauv||{}, pal=el.paliers||{};
+  /* C1 : le chant ; ce qu'il a joué en rythme n'est montré qu'en appui */
+  const chant=evs.filter(function(e){ return e._chant; });
+  const mc=chant.length?chant.reduce(function(s,e){ return s+sur20(e); },0)/chant.length:null;
+  const c1={v:lsuDepuisNote(mc), src:[chant.length?(chant.length>1?chant.length+" notes de chant":"1 note de chant")+", moyenne "+cpFmt(mc)+"/20":"Aucune note de chant sur la période"]};
+  if(Object.keys(sv.clapRec||{}).length)c1.src.push("A joué Clapping Music (taper en rythme)");
+  if(Object.keys(sv.polyRec||{}).length)c1.src.push("A joué la Polyrythmie");
+  /* C2 : évaluations de la période par composante, à défaut les paliers d'entraînement
+     (1 Facile en cours, 2 Facile validé, 3 Intermédiaire validé, 4 les trois validés) */
+  const compo={};
+  CP_COMPO.forEach(function(k){ compo[k.id]={notes:[],pal:[]}; });
+  evs.forEach(function(e){ if(e._chant||e._manuel||!e.domaine)return; const k=cpComposanteDe(e.domaine); if(compo[k])compo[k].notes.push(sur20(e)); });
+  Object.keys(pal).forEach(function(d){
+    const a=pal[d]; if(!Array.isArray(a))return; const nm=+a[0]||0, se=+a[1]||0;
+    if(!(nm>1||se>0))return;                      /* thème seulement ouvert : rien à en dire */
+    const k=cpComposanteDe(d); if(compo[k])compo[k].pal.push(Math.min(4,Math.max(1,nm))); });
+  const vs=[];
+  CP_COMPO.forEach(function(k){
+    const c=compo[k.id];
+    if(c.notes.length){ const m=c.notes.reduce(function(s,x){ return s+x; },0)/c.notes.length;
+      c.v=lsuDepuisNote(m); c.src=(c.notes.length>1?c.notes.length+" évaluations":"1 évaluation")+", moyenne "+cpFmt(m)+"/20"; }
+    else if(c.pal.length){ c.v=Math.round(c.pal.reduce(function(s,x){ return s+x; },0)/c.pal.length);
+      c.src="pas d'évaluation sur la période ; entraînement sur "+(c.pal.length>1?c.pal.length+" thèmes":"1 thème"); }
+    else { c.v=0; c.src="pas encore travaillé"; }
+    if(c.v)vs.push(c.v);
   });
-  return h+'</tbody></table></div>';
+  const c2={v:vs.length?Math.round(vs.reduce(function(s,x){ return s+x; },0)/vs.length):0, compo:compo};
+  /* C3 : ce qu'il a créé */
+  const cr=[];
+  const nMot=Array.isArray(sv.clapMotifs)?sv.clapMotifs.length:0, nBat=Array.isArray(sv.batterie)?sv.batterie.length:0;
+  if(nMot)cr.push((nMot>1?nMot+" motifs inventés":"1 motif inventé")+" (Clapping Music)");
+  if(nBat)cr.push((nBat>1?nBat+" rythmes créés":"1 rythme créé")+" (Boîte à rythmes)");
+  const dr=(typeof COURS_DEF!=="undefined")&&COURS_DEF.recre, rc=(sv.cours||{}).recre;
+  if(dr){ const nv=+(((el.coursValid||{}).recre||{}).n)||0, n=ccEtapesFaitesDe(rc||null,dr,nv);
+    if(n)cr.push("Cours « "+dr.titre+" » : "+n+" étape"+(n>1?"s":"")+" sur "+dr.etapes.length); }
+  const c3={v:0, src:cr.length?cr:["Aucune création enregistrée dans l'application"]};
+  const c4={v:0, src:["À positionner vous-même : débats, échanges, écoute des autres en classe"]};
+  return {c1:c1, c2:c2, c3:c3, c4:c4};
 }
-function lsuBasculer(classId,code,i){
-  const p=evPeriodeCourante(classId), k=lsuCle(classId,p);
-  const m=(_lsu[k]=_lsu[k]||{}); const e=(m[code]=m[code]||{});
-  const cur=e["c"+i]||0; const suiv=(cur+1)%5;   /* 0 = revenir au niveau proposé */
-  if(suiv)e["c"+i]=suiv; else delete e["c"+i];
-  const z=document.getElementById("lsuZone"); if(z)z.innerHTML=lsuTableHTML(classId,p);
-  clearTimeout(lsuBasculer._t);
-  lsuBasculer._t=setTimeout(function(){
+/* Niveau retenu par compétence : le choix du professeur, sinon la proposition. */
+function lsuNiveaux(classId,p,code,f){
+  f=f||cpFaits(classId,code,p);
+  const ch=(_lsu[lsuCle(classId,p)]||{})[code]||{};
+  return [f.c1,f.c2,f.c3,f.c4].map(function(x,i){ const v=+ch["c"+(i+1)]||0; return {v:v||x.v, auto:!v, prop:x.v}; });
+}
+/* Les thèmes où la classe échoue sur la période (au moins 3 élèves évalués, moyenne sous 12). */
+function cpPointsFaibles(classId,p){
+  const b=evBornesPeriode(p,classId), parDom={};
+  (_evalsCache[classId]||[]).forEach(function(e){
+    if(e._chant||e._manuel||e._travail||!e.domaine||(e.fait||0)<b.deb||(e.fait||0)>b.fin)return;
+    const d=(parDom[e.domaine]=parDom[e.domaine]||{}); (d[e.code]=d[e.code]||[]).push((e.note||0)/(e.sur||20)*20); });
+  return Object.keys(parDom).map(function(dom){
+      const ms=Object.keys(parDom[dom]).map(function(c){ const a=parDom[dom][c]; return a.reduce(function(s,x){ return s+x; },0)/a.length; });
+      return {dom:dom, n:ms.length, moy:ms.reduce(function(s,x){ return s+x; },0)/ms.length, sous:ms.filter(function(m){ return m<10; }).length}; })
+    .filter(function(x){ return x.n>=3&&x.moy<12; })
+    .sort(function(a,b){ return a.moy-b.moy; }).slice(0,3);
+}
+function cpRendre(classId){ return '<div id="cpZone">'+cpContenu(classId)+'</div>'; }
+function cpContenu(classId){
+  const p=evPeriodeCourante(classId), cyc=lsuCycle(classId), comp=LSU_COMP[cyc], court=LSU_COURT[cyc];
+  lsuCharger(classId,p);
+  const codes=evTousLesCodes(classId);
+  if(!codes.length)return '<p class="badge-vide">Aucun élève dans cette classe pour l’instant.</p>';
+  const L=codes.map(function(c){ const f=cpFaits(classId,c,p); return {code:c, nom:labelDe(classId,c)||"", f:f, nv:lsuNiveaux(classId,p,c,f)}; })
+    .sort(function(a,b){ return (a.nom||"￿"+a.code).localeCompare(b.nom||"￿"+b.code,"fr",{numeric:true}); });
+  /* la classe d'un coup d'œil : répartition des niveaux par compétence */
+  const kpis='<div class="cp-kpis">'+comp.map(function(t,i){
+    const n=[0,0,0,0,0]; L.forEach(function(l){ n[l.nv[i].v]++; });
+    const pos=L.length-n[0];
+    const lib=[1,2,3,4].map(function(k){ return n[k]+" "+LSU_NIV[k].toLowerCase(); }).join(", ")+(n[0]?", "+n[0]+" non positionné"+(n[0]>1?"s":""):"");
+    return '<div class="cp-kpi"><div class="cp-kpi-t"><b>C'+(i+1)+'</b><span title="'+echapH(t)+'">'+echapH(court[i])+'</span></div>'
+      +'<div class="cp-rep" role="img" aria-label="'+echapH(lib)+'" title="'+echapH(lib)+'">'
+      +[1,2,3,4,0].filter(function(k){ return n[k]; }).map(function(k){ return '<i class="n'+k+'" style="flex:'+n[k]+'"></i>'; }).join("")+'</div>'
+      +'<small>'+(pos?(n[1]+n[2])+" à consolider sur "+pos+" positionné"+(pos>1?"s":""):"aucun élève positionné")+'</small></div>';
+  }).join("")+'</div>';
+  const pf=cpPointsFaibles(classId,p);
+  const faibles=pf.length?'<div class="cp-faibles"><span class="cp-faibles-t"><i class="ph ph-warning-circle" aria-hidden="true"></i> À retravailler en classe</span>'
+    +pf.map(function(x){ return '<span class="cp-faible"><b>'+echapH(nomCat(x.dom))+'</b> moyenne '+cpFmt(x.moy)+' · '+x.sous+' élève'+(x.sous>1?"s":"")+' sous 10 sur '+x.n+'</span>'; }).join("")
+    +'<button type="button" class="cp-voir" onclick="evVue(\'revoir\')">Voir les notions ratées</button></div>':'';
+  const outils='<div class="cp-outils"><span class="cp-leg">'
+    +[1,2,3,4].map(function(k){ return '<span class="cp-leg-i"><span class="cp-c n'+k+'">'+k+'</span>'+LSU_NIV[k]+'</span>'; }).join("")
+    +'<span class="cp-leg-i"><span class="cp-c n3 auto">3</span>proposé par l’application</span></span>'
+    +'<span class="cp-btns"><button type="button" class="cn-btn" onclick="lsuCopier(\''+classId+'\')" title="Copier le tableau (1 à 4) pour le coller dans Pronote ou un tableur"><i class="ph ph-copy"></i><span>Copier</span></button>'
+    +'<button type="button" class="cn-btn" onclick="cpCsv(\''+classId+'\')"><i class="ph ph-file-csv"></i><span>CSV</span></button>'
+    +'<button type="button" class="cn-btn" onclick="cpImprimer(\''+classId+'\')"><i class="ph ph-printer"></i><span>Imprimer</span></button></span></div>';
+  const tete='<thead><tr><th class="gb-nom">Élève</th>'+comp.map(function(t,i){
+    return '<th class="cp-th" title="'+echapH(t)+'"><span class="cp-th-l"><span class="cp-num">C'+(i+1)+'</span>'
+      +'<button type="button" class="cp-col" aria-haspopup="menu" aria-label="Actions sur la colonne C'+(i+1)+'" onclick="cpColMenu(this,\''+classId+'\','+i+')"><i class="ph ph-dots-three-outline"></i></button></span>'
+      +'<span class="cp-nomc">'+echapH(court[i])+'</span></th>'; }).join("")+'</tr></thead>';
+  const corps=L.map(function(l){
+    const ouvert=!!_cpOuverts[l.code], qui=l.nom||l.code;
+    const cells=l.nv.map(function(x,i){
+      const etat=(x.v?LSU_NIV[x.v]:"non positionné")+(x.v?(x.auto?" (proposé)":" (votre choix)"):"");
+      const sous=(i===1)?'<span class="cp-sous" aria-hidden="true">'+CP_COMPO.map(function(k){ const c=l.f.c2.compo[k.id];
+        return '<i class="n'+(c.v||0)+'" title="'+echapH(k.nom)+' : '+(c.v?LSU_NIV[c.v]:"pas de mesure")+'"></i>'; }).join("")+'</span>':'';
+      return '<td><button type="button" class="cp-c n'+x.v+(x.auto?" auto":"")+'" data-cp="'+l.code+'|'+i+'" aria-haspopup="menu" onclick="cpMenu(this,\''+classId+'\',\''+l.code+'\','+i+')" '
+        +'title="C'+(i+1)+' · '+echapH(comp[i])+' : '+etat+'" aria-label="C'+(i+1)+' pour '+echapH(qui)+' : '+etat+'">'+(x.v||"·")+'</button>'+sous+'</td>';
+    }).join("");
+    return '<tr class="cp-l'+(ouvert?" ouvert":"")+'"><td class="gb-nom"><button type="button" class="cp-el" data-code="'+l.code+'" aria-expanded="'+ouvert+'" onclick="cpDetail(\''+l.code+'\')" title="Voir sur quoi reposent les propositions">'
+      +'<i class="ph ph-caret-right" aria-hidden="true"></i><span>'+(l.nom?echapH(l.nom):'<span class="ccs-rien">'+l.code+'</span>')+'</span></button></td>'+cells+'</tr>'
+      +(ouvert?'<tr class="cp-det"><td colspan="5">'+cpDetailHTML(l.f,comp)+'</td></tr>':'');
+  }).join("");
+  return kpis+faibles+outils
+    +'<div class="gb-wrap cp-wrap" tabindex="0" role="region" aria-label="Positionnement des élèves"><table class="gradebook cp-t">'+tete+'<tbody>'+corps+'</tbody></table></div>'
+    +'<p class="cp-aide"><i class="ph ph-info" aria-hidden="true"></i> '+(cyc==="c3"?"Cycle 3":"Cycle 4")+'. Les niveaux <b>en pointillés</b> sont proposés d’après la période : '
+    +'les notes de chant pour C1 ; pour C2, les évaluations (à défaut les paliers d’entraînement) en écoute, vocabulaire et lecture, culture musicale (les trois petits carrés). '
+    +'C3 et C4 ne se mesurent pas dans l’application : à vous de les positionner. <b>Cliquez une case</b> pour choisir un niveau, <b>un nom</b> pour voir sur quoi repose la proposition. Vos choix l’emportent toujours.</p>';
+}
+function cpDetailHTML(f,comp){
+  const li=function(a){ return a.map(function(x){ return '<li>'+echapH(x)+'</li>'; }).join(""); };
+  return '<div class="cp-preuves">'
+    +'<div><b>C1 · '+echapH(comp[0])+'</b><ul>'+li(f.c1.src)+'</ul></div>'
+    +'<div><b>C2 · '+echapH(comp[1])+'</b><ul>'+CP_COMPO.map(function(k){ const c=f.c2.compo[k.id];
+        return '<li><span class="cp-pt n'+(c.v||0)+'" aria-hidden="true"></span><b>'+echapH(k.nom)+'</b> : '+echapH(c.src)+(c.v?' · '+LSU_NIV[c.v].toLowerCase():'')+'</li>'; }).join("")+'</ul></div>'
+    +'<div><b>C3 · '+echapH(comp[2])+'</b><ul>'+li(f.c3.src)+'</ul></div>'
+    +'<div><b>C4 · '+echapH(comp[3])+'</b><ul>'+li(f.c4.src)+'</ul></div></div>';
+}
+/* ouvre / ferme le détail d'un élève sans redessiner le tableau */
+function cpDetail(code){
+  const classId=_evClasse, p=evPeriodeCourante(classId);
+  _cpOuverts[code]=!_cpOuverts[code];
+  const btn=document.querySelector('.cp-el[data-code="'+code+'"]'); if(!btn)return;
+  const tr=btn.closest("tr"); btn.setAttribute("aria-expanded",String(!!_cpOuverts[code])); tr.classList.toggle("ouvert",!!_cpOuverts[code]);
+  const suiv=tr.nextElementSibling; if(suiv&&suiv.classList.contains("cp-det"))suiv.remove();
+  if(_cpOuverts[code]){
+    const d=document.createElement("tr"); d.className="cp-det";
+    d.innerHTML='<td colspan="5">'+cpDetailHTML(cpFaits(classId,code,p),LSU_COMP[lsuCycle(classId)])+'</td>';
+    tr.parentNode.insertBefore(d,tr.nextSibling);
+  }
+}
+/* redessine l'onglet et rend le focus à la case qu'on vient de régler */
+function cpMaj(classId,focus){
+  const z=document.getElementById("cpZone"); if(!z)return;
+  z.innerHTML=cpContenu(classId);
+  if(focus){ const b=z.querySelector('[data-cp="'+focus.code+'|'+focus.i+'"]'); if(b)b.focus(); }
+}
+/* ---- petit menu flottant (niveaux d'une case, actions d'une colonne) ---- */
+function cpFermerMenu(){
+  const m=document.getElementById("cpPop"); if(m)m.remove();
+  document.removeEventListener("click",cpClicDehors,true);
+  window.removeEventListener("scroll",cpFermerMenu,true);
+}
+function cpClicDehors(e){ const m=document.getElementById("cpPop"); if(m&&!m.contains(e.target))cpFermerMenu(); }
+function cpOuvrirPop(btn,titre,items){
+  cpFermerMenu();
+  const m=document.createElement("div"); m.id="cpPop"; m.className="cp-pop"; m.setAttribute("role","menu"); m.setAttribute("aria-label",titre);
+  m.innerHTML='<p class="cp-pop-t">'+echapH(titre)+'</p>'+items.map(function(it,k){
+    return '<button type="button" role="'+(it.radio?'menuitemradio" aria-checked="'+!!it.on:'menuitem')+'" class="cp-o'+(it.on?" on":"")+'" data-k="'+k+'">'+it.html+'</button>'; }).join("");
+  document.body.appendChild(m);
+  const r=btn.getBoundingClientRect(), w=m.offsetWidth, h=m.offsetHeight, W=document.documentElement.clientWidth;
+  let x=Math.max(8,Math.min(r.left,W-w-8)), y=r.bottom+6;
+  if(y+h>window.innerHeight-8&&r.top-h-6>8)y=r.top-h-6;
+  m.style.left=x+"px"; m.style.top=Math.max(8,y)+"px";
+  m.addEventListener("click",function(e){
+    const b=e.target.closest(".cp-o"); if(!b)return;
+    const it=items[+b.getAttribute("data-k")]; cpFermerMenu(); it.fn(); });
+  m.addEventListener("keydown",function(e){
+    const os=[].slice.call(m.querySelectorAll(".cp-o")), i=os.indexOf(document.activeElement);
+    if(e.key==="Escape"){ e.preventDefault(); cpFermerMenu(); btn.focus(); }
+    else if(e.key==="ArrowDown"){ e.preventDefault(); os[(i+1)%os.length].focus(); }
+    else if(e.key==="ArrowUp"){ e.preventDefault(); os[(i-1+os.length)%os.length].focus(); }
+    else if(e.key==="Tab"){ cpFermerMenu(); }
+  });
+  setTimeout(function(){ document.addEventListener("click",cpClicDehors,true); window.addEventListener("scroll",cpFermerMenu,true); },0);
+  const f=m.querySelector(".cp-o.on")||m.querySelector(".cp-o"); if(f)f.focus();
+}
+function cpPret(classId,p){
+  if(_lsuPret[lsuCle(classId,p)])return true;
+  toast("Un instant : chargement de vos positionnements…"); return false;
+}
+function cpMenu(btn,classId,code,i){
+  const p=evPeriodeCourante(classId); if(!cpPret(classId,p))return;
+  const k=lsuCle(classId,p), f=cpFaits(classId,code,p), prop=[f.c1,f.c2,f.c3,f.c4][i].v;
+  const ch=+(((_lsu[k]||{})[code]||{})["c"+(i+1)])||0;
+  const items=[1,2,3,4].map(function(v){
+    return {radio:true, on:v===ch, html:'<span class="cp-c n'+v+'">'+v+'</span><span>'+LSU_NIV[v]+(v===prop&&!ch?' <small>(proposé)</small>':'')+'</span>',
+            fn:function(){ cpChoisir(classId,[code],i,v); }}; });
+  if(ch)items.push({html:'<i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i><span>'+(prop?"Revenir à la proposition ("+prop+")":"Effacer mon choix")+'</span>',
+                    fn:function(){ cpChoisir(classId,[code],i,0); }});
+  cpOuvrirPop(btn,"C"+(i+1)+" · "+(labelDe(classId,code)||code),items);
+}
+/* v : un niveau pour tous, ou une fonction code -> niveau ; 0 = retirer le choix */
+function cpChoisir(classId,codes,i,v,sansFocus){
+  const p=evPeriodeCourante(classId), k=lsuCle(classId,p), m=(_lsu[k]=_lsu[k]||{});
+  codes.forEach(function(c){
+    const n=(typeof v==="function")?v(c):v, e=(m[c]=m[c]||{});
+    if(n)e["c"+(i+1)]=n; else delete e["c"+(i+1)];
+    if(!Object.keys(e).length)delete m[c]; });
+  cpMaj(classId,(!sansFocus&&codes.length===1)?{code:codes[0],i:i}:null);
+  cpEnregistrer(classId,p);
+}
+let _cpMinuteurs={};
+function cpEnregistrer(classId,p){
+  const k=lsuCle(classId,p);
+  clearTimeout(_cpMinuteurs[k]);
+  _cpMinuteurs[k]=setTimeout(function(){
     const s=fbStore(); if(!s)return;
     s.collection("classes").doc(classId).collection("travailPlan").doc("lsu-"+((p&&p.id)||"annee"))
-      .set({c:m, maj:Date.now()}).catch(function(){ toast("Positionnement non enregistré (vérifiez votre connexion)."); });
-  },700);
+      .set({c:_lsu[k]||{}, maj:Date.now()}).catch(function(){ toast("Positionnement non enregistré : vérifiez votre connexion."); });
+  },600);
+}
+function cpColMenu(btn,classId,i){
+  const p=evPeriodeCourante(classId); if(!cpPret(classId,p))return;
+  const L=evTousLesCodes(classId).map(function(c){ return {c:c, x:lsuNiveaux(classId,p,c)[i]}; });
+  const aValider=L.filter(function(o){ return o.x.auto&&o.x.prop; }), vides=L.filter(function(o){ return !o.x.v; }), choisis=L.filter(function(o){ return !o.x.auto; });
+  const items=[];
+  if(aValider.length)items.push({html:'<i class="ph ph-check-circle" aria-hidden="true"></i><span>Retenir les '+aValider.length+' proposition'+(aValider.length>1?"s":"")+'</span>',
+    fn:function(){ const pr={}; aValider.forEach(function(o){ pr[o.c]=o.x.prop; });
+      cpChoisir(classId,aValider.map(function(o){ return o.c; }),i,function(c){ return pr[c]; },true);
+      toast("Propositions retenues pour C"+(i+1)+"."); }});
+  if(vides.length)[1,2,3,4].forEach(function(v){
+    items.push({html:'<span class="cp-c n'+v+'">'+v+'</span><span>Mettre « '+LSU_NIV[v].toLowerCase()+' » aux '+vides.length+' non positionné'+(vides.length>1?"s":"")+'</span>',
+      fn:function(){ cpChoisir(classId,vides.map(function(o){ return o.c; }),i,v,true); }}); });
+  if(choisis.length)items.push({html:'<i class="ph ph-eraser" aria-hidden="true"></i><span>Effacer mes '+choisis.length+' choix de la colonne</span>',
+    fn:async function(){
+      if(!await dlgConfirmer("Effacer vos "+choisis.length+" choix pour C"+(i+1)+" ? Les cases reviendront aux propositions de l’application."))return;
+      cpChoisir(classId,choisis.map(function(o){ return o.c; }),i,0,true); }});
+  if(!items.length){ toast("Rien à faire sur cette colonne pour l’instant."); return; }
+  cpOuvrirPop(btn,"C"+(i+1)+" · toute la classe",items);
+}
+/* lignes d'export : NOM Prénom + niveau 1 à 4 par compétence (vide = non positionné) */
+function cpLignes(classId){
+  const p=evPeriodeCourante(classId);
+  return evTousLesCodes(classId).map(function(c){
+      return [labelDe(classId,c)||c].concat(lsuNiveaux(classId,p,c).map(function(x){ return x.v?String(x.v):""; })); })
+    .sort(function(a,b){ return String(a[0]).localeCompare(String(b[0]),"fr",{numeric:true}); });
 }
 function lsuCopier(classId){
-  const p=evPeriodeCourante(classId);
   const comp=LSU_COMP[lsuCycle(classId)];
-  const lignes=evTousLesCodes(classId).map(function(c){ const f=evFaitsComplets(classId,c,p);
-      return [labelDe(classId,c)||c].concat(lsuNiveaux(classId,p,c,f).map(function(x){ return x.v?String(x.v):""; })); })
-    .sort(function(a,b){ return String(a[0]).localeCompare(String(b[0]),"fr",{numeric:true}); });
-  appPresse(["NOM Prénom"].concat(comp).join("\t")+"\n"+lignes.map(function(l){ return l.join("\t"); }).join("\n"));
+  appPresse(["NOM Prénom"].concat(comp).join("\t")+"\n"+cpLignes(classId).map(function(l){ return l.join("\t"); }).join("\n"));
   toast("Positionnement copié (1 à 4 par compétence). Collez-le dans votre tableau ou reportez-le dans le livret.");
+}
+function cpCsv(classId){
+  const comp=LSU_COMP[lsuCycle(classId)];
+  const csv=[["NOM Prénom"].concat(comp)].concat(cpLignes(classId))
+    .map(function(l){ return l.map(function(x){ return '"'+String(x).replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
+  csvTelecharger("museduc_competences.csv",csv);
+  toast("Tableau des compétences enregistré.");
+}
+function cpImprimer(classId){
+  const p=evPeriodeCourante(classId), cyc=lsuCycle(classId), comp=LSU_COMP[cyc];
+  const cl=((_profClasses||[]).filter(function(x){ return x.id===classId; })[0])||{};
+  const lignes=cpLignes(classId).map(function(l){
+    return '<tr><td>'+echapH(l[0])+'</td>'+l.slice(1).map(function(v){ return '<td>'+(v?v+" · "+LSU_NIV[+v]:"")+'</td>'; }).join("")+'</tr>'; }).join("");
+  ouvrirImpression("Compétences · "+(cl.nom||"Classe"),
+    '<h1>Positionnement par compétences</h1><p class="mini">'+echapH(cl.nom||"")+' · '+echapH((p&&p.nom)||"")+' · '+(cyc==="c3"?"cycle 3":"cycle 4")+'</p>'
+    +'<table><thead><tr><th>Élève</th>'+comp.map(function(t,i){ return '<th>C'+(i+1)+' · '+echapH(t)+'</th>'; }).join("")+'</tr></thead><tbody>'+lignes+'</tbody></table>'
+    +'<p class="mini">1 maîtrise insuffisante · 2 maîtrise fragile · 3 maîtrise satisfaisante · 4 très bonne maîtrise</p>');
+}
+/* ---------- Ce que la classe n'a pas compris (onglet « À revoir », 17/10/2026) ----------
+   D'après les copies de la période (évaluations demandées et libres) : les thèmes
+   les plus échoués, et dans chacun les NOTIONS ratées. Une notion = la bonne réponse
+   attendue (« quinte », « forte »…), comptée sur toutes les questions qui l'attendaient ;
+   la réponse fausse la plus fréquente dit avec quoi la classe la confond. Puis, en un
+   clic : un rattrapage (leçon + entraînement) pour les élèves en difficulté, ou la
+   leçon au tableau pour toute la classe. */
+const RV_GENERIQUES=["vrai","faux","oui","non"];
+let _rvThemes={};       /* classId -> {dom: analyse} (pour les boutons) */
+/* texte brut d'un énoncé ou d'une réponse : analysé dans un document inerte
+   (DOMParser), car les réponses tapées par les élèves ne doivent rien exécuter */
+let _rvParseur=null;
+function rvTexte(h){
+  if(h==null||h==="")return "";
+  _rvParseur=_rvParseur||new DOMParser();
+  const d=_rvParseur.parseFromString("<body>"+String(h)+"</body>","text/html").body;
+  d.querySelectorAll("svg,script,style,button,audio,video").forEach(function(x){ x.remove(); });
+  return (d.textContent||"").replace(/\s+/g," ").trim();
+}
+function rvCle(t){ return String(t||"").toLowerCase().replace(/[’']/g,"'").replace(/\s+/g," ").trim(); }
+function rvAnalyse(classId,p){
+  const b=evBornesPeriode(p,classId), parDom={};
+  (_evalsCache[classId]||[]).forEach(function(e){
+    if(e._chant||e._manuel||e._travail||!e.domaine||!e.code||(e.fait||0)<b.deb||(e.fait||0)>b.fin)return;
+    (parDom[e.domaine]=parDom[e.domaine]||[]).push(e); });
+  return Object.keys(parDom).map(function(dom){
+    const evs=parDom[dom], parEl={}, notions={};
+    evs.forEach(function(e){
+      (parEl[e.code]=parEl[e.code]||[]).push((e.note||0)/(e.sur||20)*20);
+      (Array.isArray(e.detail)?e.detail:[]).forEach(function(d){
+        if(!d||d.sol==null)return;
+        const sol=rvTexte(d.sol), k=rvCle(sol);
+        if(!k||k.length>80||RV_GENERIQUES.indexOf(k)>=0)return;
+        const n=(notions[k]=notions[k]||{sol:sol, total:0, rates:0, conf:{}, sans:0, ex:"", eleves:{}});
+        n.total++;
+        if(d.ok)return;
+        n.rates++; n.eleves[e.code]=1;
+        const rep=rvTexte(d.rep), kr=rvCle(rep);
+        if(!kr)n.sans++; else if(kr!==k){ const c=(n.conf[kr]=n.conf[kr]||{t:rep,n:0}); c.n++; }
+        if(!n.ex)n.ex=rvTexte(d.q).slice(0,160);
+      });
+    });
+    const moys=Object.keys(parEl).map(function(c){ const a=parEl[c]; return {code:c, moy:a.reduce(function(s,x){ return s+x; },0)/a.length, n:a.length}; })
+      .sort(function(x,y){ return x.moy-y.moy; });
+    const moy=moys.reduce(function(s,x){ return s+x.moy; },0)/moys.length;
+    const sous10=moys.filter(function(x){ return x.moy<10; });
+    const aider=sous10.length?sous10:moys.filter(function(x){ return x.moy<12; });
+    const nl=Object.keys(notions).map(function(k){ const n=notions[k];
+        const conf=Object.keys(n.conf).map(function(c){ return n.conf[c]; }).sort(function(x,y){ return y.n-x.n; })[0]||null;
+        return {sol:n.sol, total:n.total, rates:n.rates, taux:n.rates/n.total, conf:(conf&&conf.n>=2)?conf:null, sans:n.sans, ex:n.ex, nbEl:Object.keys(n.eleves).length}; })
+      .filter(function(n){ return n.total>=2&&n.rates>=2&&n.taux>=0.4; })
+      .sort(function(x,y){ return (y.taux-x.taux)||(y.rates-x.rates); }).slice(0,5);
+    return {dom:dom, nom:nomCat(dom), evs:evs.length, eleves:moys, moy:moy, sous10:sous10.length, aider:aider, notions:nl};
+  }).sort(function(x,y){ return x.moy-y.moy; });
+}
+/* le rattrapage déjà donné sur ce thème (le plus récent, s'il court encore) */
+function rvDejaDonne(classId,dom){
+  let r=null;
+  (_evDevoirs[classId]||[]).forEach(function(d){
+    if(!(d.volets||[]).some(function(v){ return v.t==="lecon"&&v.cible===dom; }))return;
+    if((d.echeance||0)<Date.now()-86400000)return;
+    if(!r||(d.cree||0)>(r.cree||0))r=d; });
+  return r;
+}
+function rvRendre(classId){
+  const p=evPeriodeCourante(classId), A=rvAnalyse(classId,p), T=(_rvThemes[classId]={});
+  A.forEach(function(t){ T[t.dom]=t; });
+  const tete='<p class="rv-intro"><i class="ph ph-lightbulb" aria-hidden="true"></i> Ce que la classe n’a pas compris sur la période, d’après les copies : '
+    +'les thèmes les plus échoués, les notions ratées et les confusions les plus fréquentes. Un clic donne un rattrapage aux élèves en difficulté.</p>';
+  if(!A.length)return tete+'<p class="badge-vide">Aucune évaluation sur cette période : changez de période en haut à droite, ou attendez les premières copies.</p>';
+  const soucis=A.filter(function(t){ return t.eleves.length>=2&&(t.moy<12||t.sous10>0); });
+  const ok=A.length-soucis.length;
+  if(!soucis.length)return tete+'<p class="rv-ok"><i class="ph-fill ph-check-circle" aria-hidden="true"></i> Rien d’inquiétant : sur les '+A.length+' thème'+(A.length>1?"s":"")+' évalué'+(A.length>1?"s":"")+', la classe a au moins 12 de moyenne et aucun élève n’est sous 10.</p>';
+  const nom=function(c){ return labelDe(classId,c)||c; };
+  const cartes=soucis.map(function(t,idx){
+    const comp=cpComposanteDe(t.dom), compL=(CP_COMPO.filter(function(k){ return k.id===comp; })[0]||{}).nom||"";
+    const grav=t.moy<8?"r":(t.moy<12?"o":"j");
+    const notions=t.notions.length
+      ?'<ul class="rv-notions">'+t.notions.map(function(n){
+          return '<li><span class="rv-taux '+(n.taux>=0.7?"r":"o")+'">'+Math.round(n.taux*100)+'&nbsp;%</span>'
+            +'<span class="rv-n"><b>«&nbsp;'+echapH(n.sol)+'&nbsp;»</b> ratée '+n.rates+' fois sur '+n.total+(n.nbEl>1?' ('+n.nbEl+' élèves)':'')
+            +(n.conf?' · souvent confondue avec <b>«&nbsp;'+echapH(n.conf.t)+'&nbsp;»</b>'+(n.conf.n>2?' ('+n.conf.n+' fois)':''):'')
+            +(n.sans>=2?' · '+n.sans+' fois sans réponse':'')
+            +(n.ex?'<small>Exemple de question : '+echapH(n.ex)+'</small>':'')+'</span></li>'; }).join("")+'</ul>'
+      :'<p class="rv-vide">Pas de notion qui ressorte nettement : les erreurs sont dispersées.</p>';
+    const el=t.eleves.filter(function(x){ return x.moy<12; });
+    const eleves=el.length?'<div class="rv-eleves"><span class="rv-st">Élèves à aider</span>'+el.map(function(x){
+        return '<button type="button" class="rv-el '+(x.moy<10?"r":"o")+'" onclick="ecranEvalEleve(\''+classId+'\',\''+x.code+'\')" title="Voir ses évaluations">'
+          +echapH(nom(x.code))+' <b>'+cpFmt(x.moy)+'</b></button>'; }).join("")+'</div>':'';
+    const deja=rvDejaDonne(classId,t.dom);
+    const k=String(t.dom).indexOf("evalcours-")===0?t.dom.slice(10):"";
+    const tableau=((k&&COURS_DEF[k])||(typeof LECONS!=="undefined"&&LECONS[t.dom]))?'rvTableau(\''+classId+'\',\''+t.dom+'\')':'';
+    const actions='<div class="rv-actions">'
+      +(t.aider.length?'<button type="button" class="ccx-btn rv-prim" onclick="rvRattrapage(\''+classId+'\',\''+t.dom+'\')"><i class="ph ph-first-aid-kit" aria-hidden="true"></i> '
+        +(deja?'Redonner':'Donner')+' un rattrapage à '+(t.aider.length>1?t.aider.length+' élèves':'1 élève')+'</button>':'')
+      +(tableau?'<button type="button" class="ccx-btn" onclick="'+tableau+'"><i class="ph ph-presentation" aria-hidden="true"></i> Revoir au tableau</button>':'')
+      +(deja?'<span class="rv-deja"><i class="ph ph-check" aria-hidden="true"></i> Rattrapage donné le '+fmtDate(deja.cree)+' (pour le '+fmtDate(deja.echeance)+')</span>':'')
+      +'</div>';
+    return '<details class="rv-carte"'+(idx<2?" open":"")+'><summary><span class="rv-dot '+grav+'" aria-hidden="true"></span>'
+      +'<span class="rv-t"><b>'+echapH(t.nom)+'</b>'+(compL?'<small>'+echapH(compL)+'</small>':'')+'</span>'
+      +'<span class="rv-chiffres"><span><b>'+cpFmt(t.moy)+'</b>/20 de moyenne</span><span><b>'+t.sous10+'</b> sous 10 sur '+t.eleves.length+'</span></span></summary>'
+      +'<div class="rv-corps"><span class="rv-st">Notions les plus ratées</span>'+notions+eleves+actions+'</div></details>';
+  }).join("");
+  return tete+cartes+(ok?'<p class="rv-ok"><i class="ph ph-check-circle" aria-hidden="true"></i> '+ok+' autre'+(ok>1?"s":"")+' thème'+(ok>1?"s":"")+' évalué'+(ok>1?"s":"")+' bien réussi'+(ok>1?"s":"")+' (moyenne d’au moins 12, personne sous 10).</p>':'');
+}
+/* La leçon (ou le cours) au tableau ; en quittant, on revient ici. */
+function rvTableau(classId,dom){
+  const k=String(dom).indexOf("evalcours-")===0?dom.slice(10):"";
+  const src=k?seanceDepuisCours(k):seanceDepuisLecon(dom); if(!src)return;
+  src.retour=function(){ _evVue="revoir"; evalsClasse(classId); };
+  seanceOuvrir(src);
+}
+/* Rattrapage en un clic : leçon + entraînement sur le thème, pour les élèves à aider. */
+async function rvRattrapage(classId,dom){
+  const t=(_rvThemes[classId]||{})[dom]; if(!t||!t.aider.length)return;
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u){ toast("Service indisponible : vérifiez votre connexion."); return; }
+  const codes=t.aider.map(function(x){ return x.code; }), noms=codes.map(function(c){ return labelDe(classId,c)||c; });
+  const ech=new Date(); ech.setDate(ech.getDate()+7); ech.setHours(23,59,59,0);
+  const notions=t.notions.slice(0,3).map(function(n){ return n.sol; });
+  if(!await dlgConfirmer("Donner un rattrapage sur « "+t.nom+" » à "+(codes.length>1?codes.length+" élèves":"1 élève")+" : "+noms.join(", ")+".\n\n"
+    +"Relire la leçon puis s'entraîner jusqu'à "+DEVOIR_SCORE_DEFAUT+" % de réussite, pour le "+fmtDate(ech.getTime())+"."
+    +(notions.length?"\nPoints à revoir indiqués : "+notions.join(", ")+".":"")))return;
+  const k=String(dom).indexOf("evalcours-")===0?dom.slice(10):"";
+  const volet={t:"lecon", cible:dom, nom:(k&&COURS_DEF[k])?"Entraînement : "+COURS_DEF[k].titre:devoirNomCible(dom), score:DEVOIR_SCORE_DEFAUT};
+  const doc={titre:("Rattrapage : "+t.nom).slice(0,120),
+    consigne:"Relis la leçon, puis entraîne-toi jusqu'à réussir une série."+(notions.length?" Points à revoir : "+notions.join(", ")+".":""),
+    volets:[volet], echeance:ech.getTime(), cree:Date.now(), par:u.uid, eleves:codes};
+  pendant("Envoi du rattrapage…",s.collection("classes").doc(classId).collection("devoirs").add(doc))
+    .then(function(ref){
+      (_evDevoirs[classId]=_evDevoirs[classId]||[]).push(Object.assign({id:ref&&ref.id},doc));
+      toast("Rattrapage donné à "+(codes.length>1?codes.length+" élèves":"1 élève")+" : Maestro "+(codes.length>1?"les":"le")+" prévient sur l’accueil.");
+      if(_evVue==="revoir"&&_evClasse===classId)evalsRendre();
+    }).catch(function(){ toast("Impossible d'enregistrer ce rattrapage. Réessayez dans un instant."); });
+}
+/* =====================================================================
+   JOURNAL D'ACTIVITÉ DES ÉLÈVES (17/10/2026)
+   Demande du professeur : savoir quand l'élève s'est connecté, s'il a vraiment
+   travaillé, combien de temps et à quoi (leçons, entraînement, jeux, défis…),
+   combien de temps la page est restée ouverte sans rien faire, et si c'était
+   pendant le temps scolaire ou en dehors.
+   Côté élève : une SÉANCE commence à la première activité et s'arrête 20 min
+   après la dernière. Toutes les 15 s, page visible : temps ACTIF si l'élève a
+   touché, tapé, fait défiler ou écouté quelque chose dans les 2 dernières minutes
+   (rangé dans l'activité en cours, voir ACT_ECRANS en fin de script, et dans la
+   demi-heure de l'horloge), sinon temps INACTIF. On compte aussi les sorties de
+   l'application et ce qui a été produit (séries, évaluations, défis, étapes de
+   cours, leçons lues).
+   Rangement : profil.journal = {"2026-10":{"<début base 36>-<appareil>":séance}},
+   envoyé avec la fiche de l'élève (fusion en profondeur : deux appareils ne
+   s'écrasent pas) ; le mois en cours et les quatre précédents sont gardés.
+   Aucune donnée de lieu : le temps scolaire se déduit de l'heure et du
+   calendrier (zone B, heures de cours ACT_HEURES).
+   ===================================================================== */
+const ACT_PAS=15, ACT_FIN_SEANCE=20*60000, ACT_INACTIF=2*60000, ACT_GARDE_MOIS=4;
+const ACT_CATS={lecon:["Leçons","books"], entr:["Entraînement","barbell"], cours:["Cours interactifs","chalkboard-simple"], eval:["Évaluations","exam"],
+  voc:["Vocabulaire","cards"], chant:["Chant","microphone-stage"], jeu:["Jeux","game-controller"], defi:["Défis","sword"], autre:["Navigation","house-line"]};
+const ACT_TRAVAIL=["lecon","entr","cours","eval","voc","chant"];
+let _actCat="autre", _actCle=null, _actSauveT=0;
+function actSuivi(){ try{ return !!(profil&&profil.eleveCode&&profil.classeId)&&!ceProf(); }catch(e){ return false; } }
+function actAppareil(){
+  try{ let t=localStorage.getItem("museduc.appareil");
+    if(!t){ t=Math.random().toString(36).slice(2,6); localStorage.setItem("museduc.appareil",t); } return t; }
+  catch(e){ return "x"; }
+}
+/* mois « AAAA-MM », k mois avant celui de ms */
+function actMois(ms,k){ const d=new Date(ms); const x=new Date(d.getFullYear(),d.getMonth()-(k||0),1); return x.getFullYear()+"-"+("0"+(x.getMonth()+1)).slice(-2); }
+function actElaguer(){
+  const J=profil.journal||{}, lim=actMois(Date.now(),ACT_GARDE_MOIS);
+  Object.keys(J).forEach(function(m){ if(m<lim)delete J[m]; });
+}
+/* la séance en cours (creer : en ouvrir une si besoin) */
+function actSeance(creer){
+  const now=Date.now();
+  if(!profil.journal||typeof profil.journal!=="object")profil.journal={};
+  const J=profil.journal;
+  let s=(_actCle&&J[_actCle[0]])?J[_actCle[0]][_actCle[1]]:null;
+  if(!s){   /* page rechargée : on reprend la dernière séance de cet appareil si elle est récente */
+    const ap="-"+actAppareil(); let best=null;
+    [actMois(now,0),actMois(now,1)].forEach(function(m){ const o=J[m]||{};
+      Object.keys(o).forEach(function(k){ if(k.slice(-ap.length)===ap&&o[k]&&(!best||o[k].f>best.s.f))best={m:m,k:k,s:o[k]}; }); });
+    if(best&&now-best.s.f<ACT_FIN_SEANCE){ _actCle=[best.m,best.k]; s=best.s; }
+  }
+  if(s&&now-s.f>=ACT_FIN_SEANCE){ s=null; _actCle=null; }
+  if(!s&&creer){
+    const m=actMois(now,0), k=now.toString(36)+"-"+actAppareil();
+    s={d:now,f:now,a:0,i:0,s:0,c:{},h:{},n:{}};
+    (J[m]=J[m]||{})[k]=s; _actCle=[m,k];
+    actElaguer();
+  }
+  return s;
+}
+/* un son ou une vidéo qui joue compte comme une activité (on écoute sans toucher) */
+function actEcoute(){
+  try{ if(typeof sonActif==="function"&&sonActif())return true; }catch(e){}
+  try{ return [].some.call(document.querySelectorAll("audio,video"),function(m){ return !m.paused&&!m.ended; }); }catch(e){ return false; }
+}
+/* quelque chose a été produit : série corrigée, évaluation rendue, défi… */
+function actEvt(k,v){
+  if(!actSuivi())return;
+  try{ _derniereActivite=Date.now(); const s=actSeance(true); s.n[k]=(s.n[k]||0)+(v==null?1:v); }catch(e){}
+}
+setInterval(function(){
+  if(document.hidden||!actSuivi())return;
+  const now=Date.now(), actif=(now-_derniereActivite<ACT_INACTIF)||actEcoute();
+  let s=actSeance(false);
+  if(!s){ if(!actif)return; s=actSeance(true); }
+  if(actif){
+    s.a+=ACT_PAS; s.c[_actCat]=(s.c[_actCat]||0)+ACT_PAS;
+    const d=new Date(now), hh=String(d.getHours()*2+(d.getMinutes()>=30?1:0));
+    s.h[hh]=(s.h[hh]||0)+ACT_PAS; s.f=now;
+  } else s.i+=ACT_PAS;          /* page ouverte, rien touché (au plus 20 min : ensuite la séance est close) */
+  if(now-_actSauveT>60000){ _actSauveT=now; try{ sauverProfil(profil); }catch(e){} }
+},ACT_PAS*1000);
+document.addEventListener("visibilitychange",function(){
+  if(!document.hidden||!actSuivi())return;
+  const s=actSeance(false); if(s)s.s=(s.s||0)+1;     /* il quitte l'application (autre appli, autre onglet) */
+  try{ sauverProfil(profil); }catch(e){}
+});
+/* ce qui part avec la fiche : les deux derniers mois (les plus anciens sont déjà sur
+   le serveur), et l'effacement des mois trop vieux */
+function actJournalEnvoi(){
+  const J=profil.journal||{}, out={}, now=Date.now();
+  [0,1].forEach(function(k){ const m=actMois(now,k); if(J[m])out[m]=J[m]; });
+  try{ const FV=firebase.firestore.FieldValue; for(let k=ACT_GARDE_MOIS+1;k<=ACT_GARDE_MOIS+12;k++)out[actMois(now,k)]=FV.delete(); }catch(e){}
+  return out;
+}
+
+/* ---------- Lecture par le professeur ---------- */
+/* Vacances de la zone B (académie de Normandie) : [premier jour, jour de reprise[,
+   d'après service-public.gouv.fr (arrêté du 22 octobre 2025). La rentrée 2027 n'est
+   pas encore connue : 1er septembre par défaut. Jours fériés pendant les cours :
+   11 novembre, lundi de Pâques, Ascension et son pont, lundi de Pentecôte. */
+const ACT_VACANCES=[["2026-07-04","2026-09-01"],["2026-10-17","2026-11-02"],["2026-12-19","2027-01-04"],["2027-02-20","2027-03-08"],["2027-04-17","2027-05-03"],["2027-07-03","2027-09-01"]];
+const ACT_FERIES=["2026-11-11","2027-03-29","2027-05-06","2027-05-07","2027-05-17"];
+const ACT_HEURES={debut:16, fin:35, finMercredi:25};   /* en demi-heures : 8 h → 17 h 30, le mercredi jusqu'à 12 h 30 */
+function actJourISO(d){ return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
+function actJourScolaire(d){
+  const j=d.getDay(); if(j===0||j===6)return false;
+  const iso=actJourISO(d);
+  if(ACT_FERIES.indexOf(iso)>=0)return false;
+  return !ACT_VACANCES.some(function(v){ return iso>=v[0]&&iso<v[1]; });
+}
+/* la demi-heure hh d'une séance commencée à debutMs est-elle du temps scolaire ? */
+function actScolaire(debutMs,hh){
+  const d=new Date(debutMs), h0=d.getHours()*2+(d.getMinutes()>=30?1:0);
+  if(hh<h0)d.setDate(d.getDate()+1);                   /* la séance a passé minuit */
+  if(!actJourScolaire(d))return false;
+  return hh>=ACT_HEURES.debut&&hh<(d.getDay()===3?ACT_HEURES.finMercredi:ACT_HEURES.fin);
+}
+function actSeances(journal,deb,fin){
+  const l=[];
+  Object.keys(journal||{}).forEach(function(m){ const o=journal[m];
+    if(o&&typeof o==="object")Object.keys(o).forEach(function(k){ const s=o[k]; if(s&&typeof s==="object"&&+s.d>=deb&&+s.d<=fin)l.push(s); }); });
+  return l.sort(function(a,b){ return b.d-a.d; });
+}
+function actResume(L){
+  const r={nb:L.length, jours:{}, der:0, a:0, i:0, s:0, c:{}, sco:0, hors:0, nuit:0, n:{}};
+  L.forEach(function(s){
+    r.jours[actJourISO(new Date(s.d))]=1; r.der=Math.max(r.der,s.f||s.d);
+    r.a+=s.a||0; r.i+=s.i||0; r.s+=s.s||0;
+    Object.keys(s.c||{}).forEach(function(k){ r.c[k]=(r.c[k]||0)+(+s.c[k]||0); });
+    Object.keys(s.n||{}).forEach(function(k){ r.n[k]=(r.n[k]||0)+(+s.n[k]||0); });
+    Object.keys(s.h||{}).forEach(function(hh){ const v=+s.h[hh]||0, x=+hh;
+      if(actScolaire(s.d,x))r.sco+=v; else r.hors+=v;
+      if(x>=44||x<12)r.nuit+=v; });                       /* de 22 h à 6 h */
+  });
+  r.nbJours=Object.keys(r.jours).length;
+  r.travail=ACT_TRAVAIL.reduce(function(t,k){ return t+(r.c[k]||0); },0);
+  r.jeux=(r.c.jeu||0)+(r.c.defi||0);
+  return r;
+}
+function actDuree(sec){
+  sec=Math.round(sec||0); if(!sec)return "0 min";
+  const m=Math.round(sec/60); if(m<1)return "< 1 min";
+  if(m<60)return m+" min";
+  return Math.floor(m/60)+" h "+("0"+(m%60)).slice(-2);
+}
+function actPct(x,tot){ return tot?Math.round(x/tot*100):0; }
+function actHeure(ms){ try{ return new Date(ms).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
+function actJourTxt(ms){ try{ return new Date(ms).toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"2-digit"}); }catch(e){ return ""; } }
+/* ce que l'élève a produit, en clair */
+function actProduits(n){
+  const l=[];
+  if(n.ex)l.push(n.ex+" série"+(n.ex>1?"s":"")+(n.exP!=null?" (réussite moyenne "+Math.round(n.exP/n.ex)+" %)":""));
+  if(n.ev)l.push(n.ev+" évaluation"+(n.ev>1?"s":""));
+  if(n.lu)l.push(n.lu+" leçon"+(n.lu>1?"s":"")+" lue"+(n.lu>1?"s":""));
+  if(n.et)l.push(n.et+" étape"+(n.et>1?"s":"")+" de cours");
+  if(n.dfE)l.push(n.dfE+" défi"+(n.dfE>1?"s":"")+" envoyé"+(n.dfE>1?"s":""));
+  if(n.dj)l.push(n.dj+" défi"+(n.dj>1?"s":"")+" du jour");
+  if(n.dfR)l.push(n.dfR+" défi"+(n.dfR>1?"s":"")+" relevé"+(n.dfR>1?"s":"")+(n.dfG?" ("+n.dfG+" gagné"+(n.dfG>1?"s":"")+")":""));
+  return l;
+}
+/* ce qui mérite l'œil du professeur */
+function actSignes(r){
+  const l=[];
+  if(r.a>=600&&r.jeux/r.a>0.6)l.push(["game-controller","Surtout des jeux : "+actPct(r.jeux,r.a)+" % du temps actif"]);
+  if(r.a+r.i>=600&&r.i/(r.a+r.i)>0.4)l.push(["hourglass-medium","Beaucoup de temps sans rien faire : "+actPct(r.i,r.a+r.i)+" % du temps passé"]);
+  if(r.nuit>=300)l.push(["moon-stars","Actif entre 22 h et 6 h : "+actDuree(r.nuit)]);
+  if(r.s>=10)l.push(["sign-out",r.s+" sorties de l'application"]);
+  return l;
+}
+const ACT_DEPUIS=new Date(2026,9,17).getTime();
+let _actPlage="7", _actTri={col:"nom",sens:1};
+function actBornes(classId){
+  const now=Date.now(), d=new Date(); d.setHours(0,0,0,0);
+  if(_actPlage==="per"){ const b=evBornesPeriode(evPeriodeCourante(classId),classId); return {deb:b.deb||0, fin:Math.min(b.fin||now,now+86400000), lib:"sur la période"}; }
+  const n=_actPlage==="30"?30:7; d.setDate(d.getDate()-(n-1));
+  return {deb:d.getTime(), fin:now+60000, lib:"sur les "+n+" derniers jours"};
+}
+function actPlageHTML(apres){
+  return '<span class="act-plage" role="group" aria-label="Période">'+[["7","7 jours"],["30","30 jours"],["per","Période"]].map(function(x){
+    return '<button type="button" class="'+(_actPlage===x[0]?"on":"")+'" aria-pressed="'+(_actPlage===x[0])+'" onclick="_actPlage=\''+x[0]+'\';'+apres+'">'+x[1]+'</button>'; }).join("")+'</span>';
+}
+function actRepHTML(c,tot){
+  return '<span class="act-rep" role="img" aria-label="'+echapH(Object.keys(ACT_CATS).filter(function(k){ return c[k]; }).map(function(k){ return ACT_CATS[k][0]+" "+actDuree(c[k]); }).join(", "))+'">'
+    +Object.keys(ACT_CATS).filter(function(k){ return c[k]; }).map(function(k){ return '<i class="k-'+k+'" style="flex:'+c[k]+'" title="'+ACT_CATS[k][0]+' : '+actDuree(c[k])+'"></i>'; }).join("")+'</span>';
+}
+function actLegendeHTML(){
+  return '<span class="act-leg">'+Object.keys(ACT_CATS).map(function(k){ return '<span><i class="k-'+k+'"></i>'+ACT_CATS[k][0]+'</span>'; }).join("")+'</span>';
+}
+const ACT_COLS={
+  nom:{lib:"Élève", v:function(l){ return (l.nom||"￿"+l.code).toLowerCase(); }, txt:true},
+  der:{lib:"Dernière activité", v:function(l){ return l.r.der||l.vu||0; }},
+  jours:{lib:"Jours", v:function(l){ return l.r.nbJours; }},
+  a:{lib:"Temps actif", v:function(l){ return l.r.a; }},
+  travail:{lib:"Travail", v:function(l){ return l.r.travail; }},
+  jeux:{lib:"Jeux et défis", v:function(l){ return l.r.jeux; }},
+  i:{lib:"Sans activité", v:function(l){ return l.r.a+l.r.i?l.r.i/(l.r.a+l.r.i):-1; }},
+  hors:{lib:"Hors temps scolaire", v:function(l){ return l.r.a?l.r.hors/l.r.a:-1; }},
+  ex:{lib:"Séries", v:function(l){ return l.r.n.ex||0; }},
+  df:{lib:"Défis env. / relevés", v:function(l){ return (l.r.n.dfE||0)+(l.r.n.dfR||0); }},
+  s:{lib:"Sorties", v:function(l){ return l.r.s; }}
+};
+function actTrier(col){ _actTri.sens=(_actTri.col===col)?-_actTri.sens:(ACT_COLS[col].txt?1:-1); _actTri.col=col; evalsRendre(); }
+/* Onglet « Activité » de Notes & bulletins : toute la classe */
+function actRendre(classId){
+  const b=actBornes(classId), E=_evEleves[classId]||{};
+  const L=evTousLesCodes(classId).map(function(c){ const el=E[c]||{}, S=actSeances(el.journal,b.deb,b.fin);
+    return {code:c, nom:labelDe(classId,c)||"", r:actResume(S), vu:+el.maj||0}; });
+  const c=ACT_COLS[_actTri.col]||ACT_COLS.nom;
+  L.sort(function(x,y){ const a=c.v(x), z=c.v(y); return (c.txt?String(a).localeCompare(String(z),"fr"):(a-z))*_actTri.sens; });
+  const actifs=L.filter(function(l){ return l.r.nb; }), totA=actifs.reduce(function(t,l){ return t+l.r.a; },0);
+  const totT=actifs.reduce(function(t,l){ return t+l.r.travail; },0), totH=actifs.reduce(function(t,l){ return t+l.r.hors; },0);
+  const kpi=evKpiBandeau([
+    {l:"Élèves actifs "+b.lib, v:actifs.length+" / "+L.length},
+    {l:"Temps actif moyen", v:actifs.length?actDuree(totA/actifs.length):"-"},
+    {l:"Part du travail", v:totA?actPct(totT,totA)+" %":"-", or:true},
+    {l:"Hors temps scolaire", v:totA?actPct(totH,totA)+" %":"-"}]);
+  const th=function(k){ const on=_actTri.col===k;
+    return '<th'+(k==="nom"?' class="gb-nom"':'')+' aria-sort="'+(on?(_actTri.sens>0?"ascending":"descending"):"none")+'"><button type="button" class="act-th'+(on?" on":"")+'" onclick="actTrier(\''+k+'\')">'
+      +ACT_COLS[k].lib+(on?(_actTri.sens>0?" ▲":" ▼"):"")+'</button></th>'; };
+  const lignes=L.map(function(l){
+    const r=l.r, sg=actSignes(r);
+    const nom='<td class="gb-nom"><button type="button" class="act-el" onclick="actEleve(\''+classId+'\',\''+l.code+'\')" title="Voir le détail de son activité">'
+      +(l.nom?echapH(l.nom):'<span class="ccs-rien">'+l.code+'</span>')+'</button>'
+      +(sg.length?'<span class="act-signes">'+sg.map(function(x){ return '<i class="ph ph-'+x[0]+'" role="img" aria-label="'+echapH(x[1])+'" title="'+echapH(x[1])+'"></i>'; }).join("")+'</span>':'')+'</td>';
+    if(!r.nb)return '<tr class="act-rien">'+nom+'<td>'+(l.vu?'<small>dernier passage '+fmtDate(l.vu)+'</small>':'<small>jamais</small>')+'</td><td colspan="9" class="act-vide">Aucune activité '+b.lib+'</td></tr>';
+    const pi=actPct(r.i,r.a+r.i), ph=actPct(r.hors,r.a), pj=actPct(r.jeux,r.a);
+    return '<tr>'+nom
+      +'<td>'+actJourTxt(r.der)+' <small>'+actHeure(r.der)+'</small></td>'
+      +'<td>'+r.nbJours+'</td>'
+      +'<td><b>'+actDuree(r.a)+'</b>'+actRepHTML(r.c,r.a)+'</td>'
+      +'<td>'+actDuree(r.travail)+' <small>'+actPct(r.travail,r.a)+' %</small></td>'
+      +'<td'+(pj>60&&r.a>=600?' class="act-alerte"':'')+'>'+actDuree(r.jeux)+' <small>'+pj+' %</small></td>'
+      +'<td'+(pi>40&&r.a+r.i>=600?' class="act-alerte"':'')+'>'+actDuree(r.i)+' <small>'+pi+' %</small></td>'
+      +'<td>'+actDuree(r.hors)+' <small>'+ph+' %</small></td>'
+      +'<td>'+(r.n.ex||0)+(r.n.ex?' <small>'+Math.round((r.n.exP||0)/r.n.ex)+' %</small>':'')+'</td>'
+      +'<td>'+(r.n.dfE||0)+' / '+(r.n.dfR||0)+'</td>'
+      +'<td>'+r.s+'</td></tr>';
+  }).join("");
+  return '<div class="act-barre">'+actPlageHTML("evalsRendre()")+actLegendeHTML()+'</div>'+kpi
+    +'<div class="gb-wrap act-wrap" tabindex="0" role="region" aria-label="Activité des élèves"><table class="gradebook act-t"><thead><tr>'
+    +Object.keys(ACT_COLS).map(th).join("")+'</tr></thead><tbody>'+lignes+'</tbody></table></div>'
+    +'<p class="cp-aide"><i class="ph ph-info" aria-hidden="true"></i> <b>Temps actif</b> : l’élève a touché, tapé, fait défiler ou écouté quelque chose dans les 2 dernières minutes. '
+    +'<b>Sans activité</b> : l’application était ouverte à l’écran mais rien n’a bougé (comptée au plus 20 minutes, ensuite la séance est close). '
+    +'<b>Sorties</b> : l’élève a quitté l’application (autre application, autre onglet). <b>Hors temps scolaire</b> : soirs, mercredis après-midi, week-ends, vacances de la zone B et jours fériés (cours de 8 h à 17 h 30). '
+    +'Cliquez un nom pour voir chaque séance. Le journal est tenu depuis le '+fmtDate(ACT_DEPUIS)+' (version 2026-10-17e) : rien n’est connu avant, ni pour un élève qui n’a pas encore la nouvelle version.</p>';
+}
+/* Dans la fiche de l'élève : les 7 derniers jours en une ligne, et le lien vers le détail */
+function actFicheHTML(classId,code,e){
+  const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-6);
+  const r=actResume(actSeances(e.journal,d.getTime(),Date.now()+60000));
+  return '<div class="act-fiche"><i class="ph ph-pulse" aria-hidden="true"></i><span>'+(r.nb
+      ?'7 derniers jours : <b>'+actDuree(r.a)+'</b> actives sur '+r.nbJours+' jour'+(r.nbJours>1?"s":"")+', dont '+actPct(r.travail,r.a)+' % de travail et '+actPct(r.jeux,r.a)+' % de jeux ; dernière activité '+actJourTxt(r.der)+' '+actHeure(r.der)+'.'
+      :'Aucune activité ces 7 derniers jours.')+'</span>'
+    +'<button type="button" class="cn-btn" onclick="actEleve(\''+classId+'\',\''+code+'\')"><i class="ph ph-list-magnifying-glass"></i><span>Toute son activité</span></button></div>';
+}
+/* Le détail d'un élève : séances, jours, répartition */
+let _actEl={classId:null,code:null};
+function actEleve(classId,code){
+  _actEl={classId:classId,code:code};
+  masquerInterfaceNormale();
+  majRetour(function(){ _evVue="activite"; evalsClasse(classId); },"Activité de la classe");
+  const nom=labelDe(classId,code)||("Code "+code);
+  titreProf('<i class="ph ph-pulse"></i> Activité · '+echapH(nom));
+  document.getElementById("intro").textContent="";
+  const z=document.getElementById("zone");
+  const el=(_evEleves[classId]||{})[code];
+  if(el){ z.innerHTML=actEleveHTML(classId,code,el); return; }
+  z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>';
+  const s=fbStore(); if(!s){ z.innerHTML=svcIndispo(); return; }
+  s.collection("classes").doc(classId).collection("eleves").doc(code).get().then(function(d){
+    const e=(d&&d.exists)?(d.data()||{}):{};
+    (_evEleves[classId]=_evEleves[classId]||{})[code]=e;
+    if(_actEl.code===code)z.innerHTML=actEleveHTML(classId,code,e);
+  }).catch(function(){ z.innerHTML=svcIndispo("Impossible de charger l’activité de cet élève."); });
+  if(typeof remonter==="function")remonter();
+}
+function actEleveRedessiner(){ const z=document.getElementById("zone"); if(z&&_actEl.code)z.innerHTML=actEleveHTML(_actEl.classId,_actEl.code,(_evEleves[_actEl.classId]||{})[_actEl.code]||{}); }
+function actEleveHTML(classId,code,el){
+  const b=actBornes(classId), S=actSeances(el.journal,b.deb,b.fin), r=actResume(S);
+  const barre='<div class="act-barre">'+actPlageHTML("actEleveRedessiner()")
+    +'<button type="button" class="cn-btn" onclick="actImprimer()"><i class="ph ph-printer"></i><span>Imprimer</span></button></div>';
+  if(!S.length)return barre+'<p class="badge-vide">Aucune activité '+b.lib+'.'+(el.maj?' Dernier passage enregistré : '+fmtDate(+el.maj)+'.':'')
+    +' Le journal est tenu depuis le '+fmtDate(ACT_DEPUIS)+', avec la version 2026-10-17e.</p>';
+  const sg=actSignes(r);
+  const kpi=evKpiBandeau([
+    {l:"Dernière activité", v:actJourTxt(r.der)+" "+actHeure(r.der)},
+    {l:"Temps actif · "+r.nbJours+" jour"+(r.nbJours>1?"s":""), v:actDuree(r.a), or:true},
+    {l:"dont travail", v:actPct(r.travail,r.a)+" %"},
+    {l:"Sans activité", v:actDuree(r.i)},
+    {l:"Hors temps scolaire", v:actPct(r.hors,r.a)+" %"},
+    {l:"Sorties", v:String(r.s)}]);
+  const prod=actProduits(r.n);
+  const cats='<div class="act-cats">'+Object.keys(ACT_CATS).filter(function(k){ return r.c[k]; }).sort(function(x,y){ return r.c[y]-r.c[x]; }).map(function(k){
+      return '<span class="act-cat"><i class="k-'+k+'"></i><i class="ph ph-'+ACT_CATS[k][1]+'" aria-hidden="true"></i>'+ACT_CATS[k][0]+' <b>'+actDuree(r.c[k])+'</b> <small>'+actPct(r.c[k],r.a)+' %</small></span>'; }).join("")+'</div>';
+  /* un bâton par jour : temps actif empilé par activité, puis le temps sans activité */
+  const jours={}; S.forEach(function(s){ const k=actJourISO(new Date(s.d)); const j=(jours[k]=jours[k]||{a:0,i:0,c:{},t:s.d}); j.a+=s.a||0; j.i+=s.i||0;
+    Object.keys(s.c||{}).forEach(function(c){ j.c[c]=(j.c[c]||0)+(+s.c[c]||0); }); });
+  const nbJ=Math.min(31,Math.max(7,Math.ceil((Math.min(b.fin,Date.now())-b.deb)/86400000)));
+  const max=Math.max(1,Object.keys(jours).reduce(function(m,k){ return Math.max(m,jours[k].a+jours[k].i); },0));
+  let barres="";
+  for(let k=nbJ-1;k>=0;k--){
+    const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-k);
+    const j=jours[actJourISO(d)], sco=actJourScolaire(d);
+    const tt=j?(actJourTxt(d.getTime())+" : "+actDuree(j.a)+" actives, "+actDuree(j.i)+" sans activité"):(actJourTxt(d.getTime())+" : rien");
+    barres+='<span class="act-j'+(sco?"":" off")+'" title="'+echapH(tt)+'"><span class="act-col" style="height:'+(j?Math.max(3,Math.round((j.a+j.i)/max*100)):0)+'%">'
+      +(j?'<i class="k-inactif" style="flex:'+j.i+'"></i>'+Object.keys(ACT_CATS).filter(function(c){ return j.c[c]; }).map(function(c){ return '<i class="k-'+c+'" style="flex:'+j.c[c]+'"></i>'; }).join(""):'')
+      +'</span><small>'+d.getDate()+'</small></span>';
+  }
+  const graphe='<div class="act-graphe" role="img" aria-label="Temps passé jour par jour">'+barres+'</div>'
+    +'<p class="act-graphe-l">Un bâton par jour (gris clair : temps sans activité ; jours en pointillé : sans cours).</p>';
+  const seances='<ul class="act-seances">'+S.slice(0,80).map(function(s){
+      const hs=Object.keys(s.h||{}), sco=hs.reduce(function(t,h){ return t+(actScolaire(s.d,+h)?(+s.h[h]||0):0); },0);
+      const p=actProduits(s.n||{});
+      const where=(s.a?(sco>=s.a*0.5?'<span class="act-tag sco">temps scolaire</span>':'<span class="act-tag hors">hors temps scolaire</span>'):'');
+      return '<li><div class="act-s-t"><b>'+actJourTxt(s.d)+'</b> '+actHeure(s.d)+' → '+actHeure(s.f)+where+'</div>'
+        +'<div class="act-s-c"><b>'+actDuree(s.a)+'</b> actives'+(s.i?' · '+actDuree(s.i)+' sans activité':'')+(s.s?' · '+s.s+' sortie'+(s.s>1?"s":""):'')
+        +(Object.keys(s.c||{}).length?' · '+Object.keys(ACT_CATS).filter(function(k){ return s.c[k]; }).map(function(k){ return ACT_CATS[k][0]+' '+actDuree(s.c[k]); }).join(", "):'')+'</div>'
+        +(p.length?'<div class="act-s-p">'+p.join(" · ")+'</div>':'')+'</li>'; }).join("")+'</ul>'
+    +(S.length>80?'<p class="cp-aide">Les 80 séances les plus récentes sont affichées.</p>':'');
+  return barre+kpi
+    +(sg.length?'<div class="act-alertes">'+sg.map(function(x){ return '<span><i class="ph ph-'+x[0]+'" aria-hidden="true"></i> '+echapH(x[1])+'</span>'; }).join("")+'</div>':'')
+    +'<section class="act-bloc"><h3>À quoi le temps actif a servi</h3>'+cats+(prod.length?'<p class="act-prod"><b>Produit :</b> '+prod.join(" · ")+'</p>':'<p class="act-prod">Rien de produit '+b.lib+' (aucune série, évaluation ni défi terminés).</p>')+'</section>'
+    +'<section class="act-bloc"><h3>Jour par jour</h3>'+graphe+'</section>'
+    +'<section class="act-bloc"><h3>Les séances ('+S.length+')</h3>'+seances+'</section>';
+}
+function actImprimer(){
+  const classId=_actEl.classId, code=_actEl.code; if(!code)return;
+  const el=(_evEleves[classId]||{})[code]||{}, b=actBornes(classId), S=actSeances(el.journal,b.deb,b.fin), r=actResume(S);
+  const cl=((_profClasses||[]).filter(function(x){ return x.id===classId; })[0])||{};
+  const lignes=S.map(function(s){ const p=actProduits(s.n||{});
+    return '<tr><td>'+actJourTxt(s.d)+'</td><td>'+actHeure(s.d)+' → '+actHeure(s.f)+'</td><td>'+actDuree(s.a)+'</td><td>'+actDuree(s.i)+'</td><td>'+(s.s||0)+'</td>'
+      +'<td>'+Object.keys(ACT_CATS).filter(function(k){ return (s.c||{})[k]; }).map(function(k){ return ACT_CATS[k][0]+' '+actDuree(s.c[k]); }).join(", ")+'</td><td>'+echapH(p.join(", "))+'</td></tr>'; }).join("");
+  ouvrirImpression("Activité · "+(labelDe(classId,code)||code),
+    '<h1>Activité de '+echapH(labelDe(classId,code)||("l’élève "+code))+'</h1><p class="mini">'+echapH(cl.nom||"")+' · '+b.lib+' · imprimé le '+fmtDate(Date.now())+'</p>'
+    +'<p>Temps actif <b>'+actDuree(r.a)+'</b> sur '+r.nbJours+' jour'+(r.nbJours>1?"s":"")+' (travail '+actPct(r.travail,r.a)+' %, jeux et défis '+actPct(r.jeux,r.a)+' %, hors temps scolaire '+actPct(r.hors,r.a)+' %) · sans activité '+actDuree(r.i)+' · '+r.s+' sortie'+(r.s>1?"s":"")+'.</p>'
+    +'<table><thead><tr><th>Jour</th><th>Heures</th><th>Actif</th><th>Sans activité</th><th>Sorties</th><th>Activités</th><th>Produit</th></tr></thead><tbody>'+lignes+'</tbody></table>');
 }
 /* Une ligne par élève : NOM Prénom, moyenne cours, note chant, comportement, appréciation. */
 function evPronoteRows(classId){
@@ -28096,6 +30128,9 @@ function evalsRendre(){
   const barre=evBarre(classId);
   if(_evVue==="chant"){ z.innerHTML=tete+barre+evChantRendre(classId); return; }
   if(_evVue==="comport"&&TRAVAIL_CLASSE){ z.innerHTML=tete+barre+evComportRendre(classId); return; }
+  if(_evVue==="comp"){ cpFermerMenu(); z.innerHTML=tete+barre+cpRendre(classId); return; }
+  if(_evVue==="revoir"){ z.innerHTML=tete+barre+rvRendre(classId); return; }
+  if(_evVue==="activite"){ z.innerHTML=tete+barre+actRendre(classId); return; }
   if(_evVue==="bilan"){ z.innerHTML=tete+barre+evBilanRendre(classId); return; }
   if(_evVue==="vigil"){ z.innerHTML=tete+barre+evVigilRendre(classId); return; }
   /* Aucune note ET aucun élève : rien à montrer. Dès qu'il y a des élèves, le
@@ -28801,7 +30836,7 @@ function rcCoursPapier(html){
      laboratoire des altérations, ascenseur des sons, forge, monocorde, spirale des
      quintes, calculatrice, palette des modes) ne s'impriment pas : un renvoi vers
      l'application prend leur place */
-  d.querySelectorAll(".carte.ln,.pm,.tx-atelier,.carte.ax,.carte.hx,.carte.py,.carte.mx,.carte.mt-quiz").forEach(function(a){
+  d.querySelectorAll(".carte.ln,.pm,.tx-atelier,.carte.ax,.carte.hx,.carte.py,.carte.mx,.carte.mt-quiz,.cd-jeu").forEach(function(a){
     const h=a.querySelector("h3"), ch=/^Chargement\s+(?:de\s+|du\s+)?(.+?)\s*…?$/.exec(a.textContent.replace(/\s+/g," ").trim());
     let t=((h&&h.textContent)||"").replace(/\s+/g," ").trim();
     if(!t&&ch){ t=ch[1]; t=t.charAt(0).toUpperCase()+t.slice(1); }
@@ -33700,6 +35735,7 @@ function dfEnvoyerDefi(e,silencieux){
     profil.defisEnvoyes=(profil.defisEnvoyes||[]).filter(function(x){ return x.id!==e.id; });
     profil.defisEnvoyes.push({v:2,id:e.id,cible:e.adv,cree:maintenant(),jour:e.jour,sem:e.sem,mise:e.mise,cat:e.cat,theme:e.theme,diff:e.diff,score:score,courbe:courbe,etat:"envoye"});
     profil.defiEnCours=null;
+    try{ actEvt("dfE"); }catch(x){}
     const gain=ajouterPoints(Math.round(score/20));
     dfPointsMaj();
     if(silencieux){ _dfMsgs.push({titre:"Défi envoyé à <b>"+echapH(dfNom(e.adv))+"</b>",corps:"Ton score de "+score+" points l'attend : il a 48 h pour le battre."}); dfAfficherMessages(); return; }
@@ -33720,6 +35756,7 @@ function dfFinReleve(e,silencieux){
   const gain=ajouterPoints(Math.round(sc/20)+(issue==="gagne"?15:0));
   const h={id:e.id,adv:e.adv,role:"releveur",theme:e.theme,mise:m,moi:sc,lui:sl,issue:issue,le:maintenant(),cMoi:moi,cLui:lui,gain:gain};
   dfHist(h);
+  try{ actEvt("dfR"); if(issue==="gagne")actEvt("dfG"); }catch(x){}
   profil.defiEnCours=null;
   dfEnfiler("defis/"+e.adv+"/"+e.id+"_r",{etat:"resultat",par:monCodeDefi(),score:sc,courbe:moi,joueAt:maintenant()});
   dfPointsMaj();
@@ -37599,8 +39636,11 @@ function ceProfil(){
 function ceFait(i){ return ceProfil().faits.indexOf(i)>=0; }
 function ceMarquer(i){
   const p=ceProfil();
-  if(p.faits.indexOf(i)<0){ p.faits.push(i); p.dates=p.dates||{}; if(!p.dates[i])p.dates[i]=Date.now(); p.maj=Date.now(); sauverProfil(profil); }
-  if((p.max||0)<i+1){ p.max=i+1; sauverProfil(profil); }
+  /* étape validée par le professeur dont l'élève n'a pas fait les exercices ici : on la
+     passe (« Suivant »), mais elle n'entre pas dans sa progression à lui */
+  const parProf=ceValideProf(i)&&!ceFait(i)&&ceRestants(i)>0;
+  if(!parProf&&p.faits.indexOf(i)<0){ try{ actEvt("et"); }catch(e){} p.faits.push(i); p.dates=p.dates||{}; if(!p.dates[i])p.dates[i]=Date.now(); p.maj=Date.now(); sauverProfil(profil); }
+  if(!parProf&&(p.max||0)<i+1){ p.max=i+1; sauverProfil(profil); }
   /* toutes les étapes faites : le cours vaut travail rendu */
   try{
     const n=ceDef().etapes.length;
@@ -37631,11 +39671,25 @@ function ceRestants(etape){
    actif que lorsque tous ses exercices sont faits. Les tout premiers élèves du
    cours « enregistrement » n'avaient que cette trace (pas le détail des
    exercices) : sans cette règle, leur cours n'était jamais « terminé ». */
-function ceEtapeComplete(etape){ return ceFait(etape)||ceRestants(etape)===0; }
+function ceEtapeComplete(etape){ return ceFait(etape)||ceRestants(etape)===0||ceValideProf(etape); }
+/* Étapes VALIDÉES À DISTANCE par le professeur (17/10/2026) : les n premières, lues sur
+   classes/{cid}/eleves/{code}.coursValid = {cours:{n,t}}. Pour l'élève qui a fait le cours
+   sur la tablette d'un camarade : il n'a pas à tout refaire sur la sienne. Comme les
+   ouvertures d'entraînement, elles n'entrent pas dans SA progression (profil.cours) :
+   le professeur les voit à part et peut les retirer. */
+function ceValideN(id){
+  if(ceProf())return 0;
+  const o=(profil.coursValid||{})[id||ceCours], n=o?Math.floor(+o.n||0):0;
+  return n>0?n:0;
+}
+function ceValideProf(etape){ return etape<ceValideN(); }
+/* exercices qu'il reste à faire pour passer l'étape (0 si elle est faite ou validée) */
+function ceResteAFaire(etape){ return (ceFait(etape)||ceValideProf(etape))?0:ceRestants(etape); }
 /* étape accessible ? prof = tout ; élève = la 1re, celles déjà faites, et la suivante immédiate */
 /* Limite fixée par le professeur pour la classe : nombre d'étapes ouvertes (0 = toutes). */
 function ceLimiteProf(id){ if(ceProf())return 0; const n=+((_coursEtapes||{})[id||ceCours]||0); return n>0?n:0; }
-function ceFermeeParProf(etape){ const L=ceLimiteProf(); return L>0&&etape>=L; }
+/* une étape validée par le professeur reste ouverte, même au-delà de la limite de la classe */
+function ceFermeeParProf(etape){ const L=ceLimiteProf(); return L>0&&etape>=L&&!ceValideProf(etape); }
 function ceOuverte(etape){
   if(ceProf())return true;
   if(ceFermeeParProf(etape))return false;
@@ -37666,7 +39720,7 @@ function ecranCoursEnr(etape){
     ceEtape=cible;
   }
   const e=ceDef().etapes[ceEtape], n=ceDef().etapes.length;
-  const reste=ceFait(ceEtape)?0:ceRestants(ceEtape), libre=ceProf(), bloque=(!libre&&reste>0);
+  const reste=ceResteAFaire(ceEtape), libre=ceProf(), bloque=(!libre&&reste>0);
   document.getElementById("titre").innerHTML='<i class="ph ph-'+ceDef().ic+'"></i> '+ceDef().titre;
   document.getElementById("intro").textContent=ceDef().intro;
   const pct=Math.round((ceEtape)/(n-1)*100);
@@ -37687,8 +39741,8 @@ function ecranCoursEnr(etape){
      <div class="ce-fil">
        ${ceDef().etapes.map(function(s,i){
          const ouv=ceOuverte(i), lib=escapeHtml(s.t.replace(/&nbsp;/g," "));
-         return `<button class="ce-pas${i===ceEtape?" on":""}${ceEtapeComplete(i)&&ceFait(i)?" fait":""}${ouv?"":" verrou"}${ceFermeeParProf(i)?" prof":""}"
-           title="${ouv?lib:(ceFermeeParProf(i)?"Ton professeur ouvrira cette étape plus tard":"Termine d'abord les exercices des étapes précédentes")}" ${ouv?"":"disabled"}
+         return `<button class="ce-pas${i===ceEtape?" on":""}${(ceFait(i)||ceValideProf(i))&&ceEtapeComplete(i)?" fait":""}${ouv?"":" verrou"}${ceFermeeParProf(i)?" prof":""}"
+           title="${ouv?lib+(ceValideProf(i)&&!ceFait(i)?" (validée par ton professeur)":""):(ceFermeeParProf(i)?"Ton professeur ouvrira cette étape plus tard":"Termine d'abord les exercices des étapes précédentes")}" ${ouv?"":"disabled"}
            onclick="${ouv?("ecranCoursEnr("+i+")"):""}">${ouv?(i+1):"<i class='ph-fill ph-lock-simple'></i>"}</button>`;}).join("")}
      </div>
      <div class="ce-jauge"><i style="width:${pct}%"></i></div>
@@ -37696,6 +39750,7 @@ function ecranCoursEnr(etape){
        <h2>${e.ic||""} ${e.t}</h2>
      </div>
      ${(ceLimiteProf()&&ceEtape===ceLimiteProf()-1&&ceEtape<n-1)?`<div class="ce-note ce-pause-prof"><i class="ph ph-hourglass-medium"></i> <span>C'est la <b>dernière étape ouverte</b> pour l'instant. Termine-la bien : ton professeur ouvrira la suite au prochain cours.</span></div>`:""}
+     ${(!libre&&ceValideProf(ceEtape)&&!ceFait(ceEtape)&&ceRestants(ceEtape)>0)?`<div class="ce-note ce-pause-prof"><i class="ph ph-seal-check" aria-hidden="true"></i> <span>Ton professeur a <b>validé cette étape</b> pour toi : tu peux refaire ses exercices pour réviser, ou passer à la suite.</span></div>`:""}
      <div class="ce-corps">${html}</div>
      ${exs}
      ${bloque?`<div class="ce-verrou"><i class="ph-fill ph-lock-simple"></i>
@@ -38470,7 +40525,7 @@ function ceFixeResteHTML(reste){
               :'<i class="ph-fill ph-check-circle"></i> Étape terminée';
 }
 function ceMajVerrou(){
-  const reste=ceFait(ceEtape)?0:ceRestants(ceEtape), bloque=(!ceProf()&&reste>0);
+  const reste=ceResteAFaire(ceEtape), bloque=(!ceProf()&&reste>0);
   const fx=document.getElementById("ceFixeReste");
   if(fx){ fx.innerHTML=ceFixeResteHTML(reste); fx.classList.toggle("ok",!reste); }
   const nav=document.querySelector(".ce-nav .btn-corr");
@@ -38524,7 +40579,11 @@ function coursAnnonceVue(id){
   try{ if(profil.cours&&profil.cours[id]){ profil.cours[id].annonceVue=true; sauverProfil(profil); } }catch(e){}
 }
 function ceFinal(){
-  try{ const pf=ceProfil(); if(!pf.fini)pf.fini=Date.now(); pf.annonceVue=true; sauverProfil(profil); }catch(e){}
+  try{ const pf=ceProfil();
+    /* « terminé » de lui-même seulement : un cours fini grâce aux étapes validées par le
+       professeur reste fini tant que la validation tient (coursTermine) */
+    let seul=true; for(let k=0;k<ceDef().etapes.length;k++){ if(!ceFait(k)&&ceRestants(k)>0){ seul=false; break; } }
+    if(!pf.fini&&seul)pf.fini=Date.now(); pf.annonceVue=true; sauverProfil(profil); }catch(e){}
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
   document.getElementById("titre").innerHTML='<i class="ph ph-flag-checkered"></i> Cours terminé';
   document.getElementById("intro").textContent="";
@@ -39586,7 +41645,11 @@ function coursDebloRafraichir(force){
   const s=fbStore(); if(!s)return Promise.resolve(false);
   return authElevePret().then(function(){
     return s.collection("classes").doc(profil.classeId).collection("eleves").doc(profil.eleveCode).get();
-  }).then(function(doc){ return coursDebloAppliquer(doc&&doc.exists?(doc.data()||{}).coursDeblo:null); })
+  }).then(function(doc){
+    const d=(doc&&doc.exists)?(doc.data()||{}):{};
+    const a=coursDebloAppliquer(d.coursDeblo), b=coursValidAppliquer(d.coursValid);
+    return a||b;
+  })
     .catch(function(){ return false; });
 }
 function coursDebloAppliquer(v){
@@ -39613,6 +41676,54 @@ function coursDebloMessages(){
   });
   return l;
 }
+/* Étapes validées par le professeur (voir ceValideN) */
+function coursValidAppliquer(v){
+  const nv=(v&&typeof v==="object")?v:{};
+  if(JSON.stringify(profil.coursValid||{})===JSON.stringify(nv))return false;
+  profil.coursValid=nv; try{ sauverProfil(profil); }catch(e){}
+  coursValidDevoirs();
+  return true;
+}
+/* un cours dont toutes les étapes sont faites ou validées vaut travail rendu
+   (devoirFait ne touche pas un volet déjà rendu ni un volet non rendu à temps) */
+function coursValidDevoirs(){
+  if(typeof devoirFait!=="function")return;
+  Object.keys(profil.coursValid||{}).forEach(function(k){
+    try{ if(COURS_DEF[k]&&coursTermine(k))devoirFait("cours:"+k,"cours",null); }catch(e){} });
+}
+/* étapes faites par l'élève lui-même, d'affilée depuis le début du cours */
+function coursEtapesSeul(k){
+  const def=COURS_DEF[k]; if(!def)return 0;
+  const av=ceCours; ceCours=k; let c=0;
+  try{ while(c<def.etapes.length&&(ceFait(c)||ceRestants(c)===0))c++; }catch(e){} finally{ ceCours=av; }
+  return c;
+}
+/* Maestro annonce chaque validation, une seule fois (rien s'il était déjà plus loin) */
+function coursValidMessages(){
+  const l=[], V=profil.coursValid||{}, vus=profil.coursValidVus||{};
+  if((typeof ceProf==="function")&&ceProf())return l;
+  Object.keys(V).forEach(function(k){
+    const o=V[k], d=COURS_DEF[k]; if(!o||!d||vus[k]===o.t)return;
+    const n=d.etapes.length, v=Math.min(n,Math.floor(+o.n||0));
+    if(v<1||coursEtapesSeul(k)>=v)return;
+    const reprise=ecAvancementCours(k).faites.indexOf(false), tout=reprise<0;
+    const ent=tout&&typeof EVALCOURS_DEF!=="undefined"&&!!EVALCOURS_DEF[k];
+    l.push({id:"valid-"+k,prio:38,ic:"seal-check",titre:"Ton professeur a validé "+(v>=n?"tout le cours":(v>1?"des étapes":"une étape")),
+      corps:'Pour le cours «&nbsp;'+echapH(d.titre)+'&nbsp;», ton professeur a validé '
+        +(v>=n?'<b>toutes les étapes</b>':(v>1?'les <b>étapes 1 à '+v+'</b>':'l’<b>étape 1</b>'))+' : tu n’as pas à les refaire.'
+        +(tout?(ent?' Ton <b>entraînement</b> est ouvert : tu le retrouves dans <b>Leçons</b>, rubrique <b>Évaluations des cours de collège</b>.':'')
+              :' Tu reprends à l’<b>étape '+(reprise+1)+'</b>.'),
+      actions:[ent?{lib:"S’entraîner",ic:"barbell",principal:true,clic:"coursValidVu('"+k+"');lecDernierDomaine=null;ouvrir('evalcours-"+k+"')"}
+                  :{lib:tout?"Revoir le cours":"Reprendre le cours",ic:"play",principal:true,clic:"coursValidVu('"+k+"');ecranCours('"+k+"')"},
+               {lib:"Compris",ic:"check",clic:"coursValidVu('"+k+"');maestroRetirer('valid-"+k+"')"}]});
+  });
+  return l;
+}
+function coursValidVu(k){
+  const o=(profil.coursValid||{})[k]; if(!o)return;
+  profil.coursValidVus=profil.coursValidVus||{}; profil.coursValidVus[k]=o.t;
+  try{ sauverProfil(profil); }catch(e){}
+}
 function coursDebloVu(k){
   const o=(profil.coursDeblo||{})[k]; if(!o)return;
   profil.coursDebloVus=profil.coursDebloVus||{}; profil.coursDebloVus[k]=o.t;
@@ -39627,21 +41738,24 @@ function coursDebloVu(k){
 let _ccSuivi={id:null,cid:null};
 /* étapes terminées d'après la fiche de l'élève (même règle que ceEtapeComplete ;
    une étape sans exercice compte dès que l'élève est allé plus loin) */
-function ccEtapesFaitesDe(pc,def){
-  const n=def.etapes.length; if(!pc)return 0; if(pc.fini)return n;
+function ccEtapesFaitesDe(pc,def,nv){
+  const n=def.etapes.length; nv=Math.min(n,nv||0); if(!pc)return nv; if(pc.fini)return n;
   const faits=Array.isArray(pc.faits)?pc.faits:[], ex=pc.ex||{};
   let c=0;
   for(let i=0;i<n;i++){
     const xs=def.etapes[i].ex||[], l=Array.isArray(ex[String(i)])?ex[String(i)]:[];
-    if(faits.indexOf(i)>=0||(xs.length&&xs.every(function(_,j){ return l.indexOf(j)>=0; }))||(!xs.length&&(pc.max||0)>i))c++;
+    if(i<nv||faits.indexOf(i)>=0||(xs.length&&xs.every(function(_,j){ return l.indexOf(j)>=0; }))||(!xs.length&&(pc.max||0)>i))c++;
   }
   return c;
 }
 /* Tout ce qu'on sait d'un élève pour ce cours, lu sur sa fiche (et les travaux donnés). */
 function ccSuiviEleve(id,code,prog,devs){
   const def=COURS_DEF[id], dom="evalcours-"+id, sv=(prog&&prog.sauv)||{}, n=def.etapes.length;
-  const pc=(sv.cours||{})[id]||null, faites=ccEtapesFaitesDe(pc,def);
-  const fini=faites>=n, finiLe=(pc&&pc.fini)||((pc&&pc.dates)?Math.max.apply(null,[0].concat(Object.keys(pc.dates).map(function(k){ return +pc.dates[k]||0; }))):0)||0;
+  /* étapes validées par le professeur (cours fait sur la tablette d'un camarade) */
+  const val=((prog&&prog.coursValid)||{})[id]||null, valN=val?Math.min(n,Math.max(0,Math.floor(+val.n||0))):0;
+  const pc=(sv.cours||{})[id]||null, faitesSeul=ccEtapesFaitesDe(pc,def), faites=ccEtapesFaitesDe(pc,def,valN);
+  const finiSeul=faitesSeul>=n, fini=faites>=n, finiLe0=(pc&&pc.fini)||((pc&&pc.dates)?Math.max.apply(null,[0].concat(Object.keys(pc.dates).map(function(k){ return +pc.dates[k]||0; }))):0)||0;
+  const finiLe=finiSeul?finiLe0:((fini&&val)?(+val.t||0):0);
   const deblo=((prog&&prog.coursDeblo)||{})[id]||null;
   const nm=(sv.niveauMax&&sv.niveauMax[dom]!=null)?+sv.niveauMax[dom]:1;
   const serie=(sv.serieNiv&&sv.serieNiv[dom+"|"+nm])||0;
@@ -39663,9 +41777,9 @@ function ccSuiviEleve(id,code,prog,devs){
   });
   evs.sort(function(a,b){ return (a.d||0)-(b.d||0); });
   /* de lui-même : cours fini avant toute ouverture par le professeur */
-  const seul=fini&&(!deblo||(finiLe&&finiLe<=(deblo.t||0)));
-  const acces=seul?"seul":(deblo?"prof":(fini?"seul":(devoir?"devoir":"")));
-  return {code:code,faites:faites,n:n,fini:fini,finiLe:finiLe,deblo:deblo,acces:acces,nm:nm,serie:serie,joue:joue,evs:evs,vu:!!(prog&&(prog.sauv||prog.maj))};
+  const seul=finiSeul&&(!deblo||(finiLe&&finiLe<=(deblo.t||0)));
+  const acces=seul?"seul":(deblo?"prof":(finiSeul?"seul":(fini?"valide":(devoir?"devoir":""))));
+  return {code:code,faites:faites,n:n,fini:fini,finiLe:finiLe,valN:valN,deblo:deblo,acces:acces,nm:nm,serie:serie,joue:joue,evs:evs,vu:!!(prog&&(prog.sauv||prog.maj))};
 }
 function ecranCoursSuivi(id,cid){
   if(typeof fermerMenu==="function")fermerMenu();
@@ -39702,6 +41816,7 @@ function ecranCoursSuivi(id,cid){
 }
 const CC_ACCES_LIB={seul:["v","De lui-même","Il a terminé le cours tout seul : l’entraînement s’est ouvert de lui-même."],
   prof:["o","Ouvert par vous","Vous lui avez ouvert l’entraînement."],
+  valide:["o","Étapes validées","Vous avez validé toutes ses étapes : l’entraînement s’est ouvert comme s’il avait fini le cours."],
   devoir:["b","Travail donné","L’entraînement est ouvert par un travail que vous lui avez donné sur ce cours."],
   "":["g","Pas encore","Il n’a pas terminé le cours et rien ne lui a été ouvert."]};
 function ccSuiviHTML(id,cid,L){
@@ -39718,9 +41833,11 @@ function ccSuiviHTML(id,cid,L){
   const lignes=L.map(function(e){
     const lab=labelDe(cid,e.code), a=CC_ACCES_LIB[e.acces]||CC_ACCES_LIB[""];
     const pct=Math.round(e.faites/e.n*100);
-    const cours=e.fini
+    const valTxt=e.valN?'<small class="ccs-sous ccs-val"><i class="ph ph-seal-check" aria-hidden="true"></i> '
+      +(e.valN>=e.n?"toutes validées par vous":(e.valN>1?"étapes 1 à "+e.valN+" validées par vous":"étape 1 validée par vous"))+'</small>':'';
+    const cours=(e.fini
       ?'<span class="ccs-fini"><i class="ph-fill ph-check-circle"></i> Terminé'+(e.finiLe?' le '+fmtDate(e.finiLe):'')+'</span>'
-      :'<span class="ccs-av"><span class="ccx-bar"><i style="width:'+pct+'%"></i></span><small>'+e.faites+' / '+e.n+' étapes</small></span>';
+      :'<span class="ccs-av"><span class="ccx-bar"><i style="width:'+pct+'%"></i></span><small>'+e.faites+' / '+e.n+' étapes</small></span>')+valTxt;
     const accesTxt='<span class="ccs-acces '+a[0]+'" title="'+escapeHtml(a[2])+'">'+a[1]+'</span>'
       +(e.deblo?'<small class="ccs-sous">entraînement '+ccDiffDe(e.deblo).replace("jusqu’à ","")+(e.deblo.n>=2?" + évaluation":"")+(e.deblo.t?' · le '+fmtDate(e.deblo.t):'')+(e.acces==="prof"&&e.fini?' · cours fini ensuite':'')+'</small>':'');
     const entr=e.joue?palierPastillesHTML({nm:e.nm,serie:e.serie,total:serieDebloc()}):'<span class="ccs-rien">pas commencé</span>';
@@ -39738,7 +41855,7 @@ function ccSuiviHTML(id,cid,L){
   }).join("");
   return '<div class="ccs-kpis">'
       +kpi(nb(function(e){ return e.acces==="seul"; }),"ont fini le cours d’eux-mêmes","v")
-      +kpi(nb(function(e){ return e.acces==="prof"; }),"ouverts par vous","o")
+      +kpi(nb(function(e){ return e.acces==="prof"||e.acces==="valide"; }),"ouverts par vous","o")
       +kpi(nb(function(e){ return e.acces==="devoir"; }),"par un travail donné","b")
       +kpi(nb(function(e){ return !e.acces; }),"pas encore","g")
       +kpi(nb(function(e){ return e.nm>=4; }),"entraînement validé (3 paliers)","v")
@@ -39751,9 +41868,42 @@ function ccSuiviHTML(id,cid,L){
     +'<span class="ccs-btns"><button class="ccx-btn" onclick="ccSuiviOuvrirCoches(\''+cid+'\',\''+id+'\',1)"><i class="ph ph-barbell"></i> Ouvrir l’entraînement</button>'
     +'<button class="ccx-btn" onclick="ccSuiviOuvrirCoches(\''+cid+'\',\''+id+'\',2)"><i class="ph ph-exam"></i> Entraînement + évaluation</button>'
     +'<button class="ccx-btn" onclick="ccSuiviOuvrirCoches(\''+cid+'\',\''+id+'\',0)"><i class="ph ph-lock-simple"></i> Retirer l’ouverture</button></span></div>'
+    +'<div class="ccs-valid"><label class="ccs-valid-t" for="ccsValN"><i class="ph ph-seal-check" aria-hidden="true"></i> Étapes déjà faites ailleurs :</label>'
+    +'<select class="ccs-sel" id="ccsValN" onchange="_ccsValN[\''+id+'\']=+this.value">'+ccValOptions(id)+'</select>'
+    +'<span class="ccs-btns"><button class="ccx-btn" onclick="ccSuiviValiderCoches(\''+cid+'\',\''+id+'\',1)"><i class="ph ph-seal-check"></i> Valider pour les élèves cochés</button>'
+    +'<button class="ccx-btn" onclick="ccSuiviValiderCoches(\''+cid+'\',\''+id+'\',0)"><i class="ph ph-arrow-counter-clockwise"></i> Retirer la validation</button></span></div>'
     +'<div class="ccs-table" tabindex="0" role="region" aria-label="Élèves de la classe"><table><thead><tr><th class="ccs-chk"><span class="sr-only">Choisir</span></th><th>Élève</th><th>Cours</th><th>Accès à l’entraînement</th><th>Paliers d’entraînement</th><th>Évaluations</th><th>Ouvrir</th></tr></thead><tbody>'+lignes+'</tbody></table></div>'
-    +'<p class="ccs-aide"><i class="ph ph-info"></i> <b>De lui-même</b> : l’élève a terminé toutes les étapes avant toute ouverture de votre part. <b>Difficulté</b> : l’élève peut s’entraîner jusqu’à la difficulté ouverte et démarre dessus ; « Facile » lui laisse gagner les suivantes par paliers. Les <b>paliers</b> (F, I, D) sont toujours ceux qu’il a gagnés lui-même : ouvrir ne les coche pas. Une évaluation <b>d’entraînement</b> ne compte nulle part ; pour en donner une, passez par <b>Travail à donner</b>.</p>'
+    +'<p class="ccs-aide"><i class="ph ph-info"></i> <b>De lui-même</b> : l’élève a terminé toutes les étapes avant toute ouverture de votre part. <b>Difficulté</b> : l’élève peut s’entraîner jusqu’à la difficulté ouverte et démarre dessus ; « Facile » lui laisse gagner les suivantes par paliers. Les <b>paliers</b> (F, I, D) sont toujours ceux qu’il a gagnés lui-même : ouvrir ne les coche pas. Une évaluation <b>d’entraînement</b> ne compte nulle part ; pour en donner une, passez par <b>Travail à donner</b>. <b>Étapes déjà faites ailleurs</b> : un élève a fait le cours sur la tablette d’un camarade ? Cochez-le et validez ses étapes : chez lui, elles s’ouvrent comme faites (il peut les revoir) et, s’il les a toutes, son entraînement s’ouvre. Elles restent marquées « validées par vous ».</p>'
     +'</section>';
+}
+/* Étapes à valider : « toutes » par défaut, sinon les k premières (titre de la k-ième) */
+let _ccsValN={};
+function ccValOptions(id){
+  const et=COURS_DEF[id].etapes, n=et.length, cur=_ccsValN[id]||n;
+  const t=function(i){ let x=String(et[i].t||"").replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
+    if(x.length>34)x=x.slice(0,33).trim()+"…"; return escapeHtml(x); };
+  let h='<option value="'+n+'"'+(cur>=n?" selected":"")+'>Toutes les étapes ('+n+')</option>';
+  for(let k=n-1;k>=1;k--)h+='<option value="'+k+'"'+(cur===k?" selected":"")+'>'+(k>1?"Étapes 1 à "+k:"Étape 1")+' · '+t(k-1)+'</option>';
+  return h;
+}
+function ccSuiviValiderCoches(cid,id,on){
+  const codes=[].map.call(document.querySelectorAll(".ccsCase:checked"),function(c){ return c.value; });
+  if(!codes.length){ toast("Coche d’abord les élèves concernés."); return; }
+  const sel=document.getElementById("ccsValN");
+  ccSuiviValider(cid,id,codes,on?(+(sel&&sel.value)||COURS_DEF[id].etapes.length):0);
+}
+function ccSuiviValider(cid,id,codes,n){
+  const s=fbStore(); if(!s){ toast("Service indisponible : vérifie ta connexion."); return; }
+  const FV=firebase.firestore.FieldValue, t=Date.now(), tot=COURS_DEF[id].etapes.length;
+  Promise.all(codes.map(function(c){
+    const o={}; o[id]=n?{n:n,t:t}:FV.delete();
+    return s.collection("classes").doc(cid).collection("eleves").doc(c).set({coursValid:o},{merge:true});
+  })).then(function(){
+    const qui=codes.length>1?codes.length+" élèves":"cet élève";
+    toast(n?((n>=tot?"Toutes les étapes validées":(n>1?"Étapes 1 à "+n+" validées":"Étape 1 validée"))+" pour "+qui+" : Maestro "+(codes.length>1?"les":"le")+" prévient sur l’accueil.")
+           :"Validation retirée pour "+qui+".");
+    ecranCoursSuivi(id,cid);
+  }).catch(function(){ toast("Échec de l'enregistrement : vérifie ta connexion."); });
 }
 function ccSuiviCocher(f){
   document.querySelectorAll(".ccsCase").forEach(function(c){
@@ -40345,6 +42495,23 @@ Object.keys(MENU_ECRANS).forEach(function(nom){
   const f=window[nom]; if(typeof f!=="function")return;
   window[nom]=function(){
     try{ const v=MENU_ECRANS[nom]; menuActif(typeof v==="function"?v.apply(this,arguments):v); }catch(e){}
+    return f.apply(this,arguments);
+  };
+});
+/* Journal d'activité : chaque écran principal dit à quoi l'élève passe son temps
+   (catégories ACT_CATS ; ce qui n'est pas listé garde la dernière activité). */
+const ACT_ECRANS={accueil:"autre",ecranLecons:"lecon",ecranLeconsCat:"lecon",afficherLecon:"lecon",afficherLeconCours:"lecon",ecranCompositeurs:"lecon",
+  regenerer:"entr",construireSerie:function(){ return (typeof modeDefi!=="undefined"&&modeDefi)?"defi":"entr"; },lancerEval:"eval",
+  ecranCours:"cours",ecranCoursEnr:"cours",ecranCoursCollege:"cours",ecranCoursNiveau:"cours",
+  ecranVocab:"voc",ecranVocabCartes:"voc",ecranVocabTest:"voc",ecranVocabAcquis:"voc",ecranChant:"chant",
+  ecranJouer:"jeu",ecranModeSurvie:"jeu",ecranModeDuel:"jeu",ecranDuelLocal:"jeu",ecranModeMulti:"jeu",ecranModeCalmar:"jeu",ecranJeuJoin:"jeu",
+  ecranClapping:"jeu",ecranPoly:"jeu",ecranBatterie:"jeu",ecranHistoire:"jeu",
+  ecranDefiLancer:"defi",ecranMesDefis:"defi",ecranDefiRecu:"defi",dfDemarrer:"defi",
+  ecranDevoirs:"autre",ecranProgression:"autre",ecranClassement:"autre",ecranParametres:"autre",ecranSoutien:"autre",ecranEvalAccueil:"autre",ecranMaClasse:"autre"};
+Object.keys(ACT_ECRANS).forEach(function(nom){
+  const f=window[nom]; if(typeof f!=="function")return;
+  window[nom]=function(){
+    try{ const v=ACT_ECRANS[nom]; _actCat=(typeof v==="function")?v.apply(this,arguments):v; }catch(e){}
     return f.apply(this,arguments);
   };
 });
