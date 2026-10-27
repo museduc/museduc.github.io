@@ -8,7 +8,7 @@
    - le reste (données, musiques et sons en streaming)
      n'est pas intercepté : le navigateur s'en charge comme avant.
    Changer CACHE vide les anciennes copies à la prochaine visite. */
-const CACHE = "museduc-v4";   /* v4 : nouvelles icônes (le M en ruban), on vide les anciennes */
+const CACHE = "museduc-v5";   /* v5 : programme et styles versionnés servis depuis le cache (25/10/2026) */
 
 self.addEventListener("install", function () { self.skipWaiting(); });
 self.addEventListener("activate", function (e) {
@@ -37,6 +37,32 @@ self.addEventListener("fetch", function (e) {
     e.respondWith(caches.match(r).then(function (m) {
       return m || fetch(r).then(function (rep) { return garder(r, rep); });
     }));
+    return;
+  }
+  /* programme, feuille de style et accès aux données VERSIONNÉS (?v=…) : pour une
+     version donnée, leur contenu ne change JAMAIS ; on les sert donc depuis le cache,
+     sans aller-retour réseau, et le navigateur peut garder le programme déjà compilé
+     (plusieurs secondes gagnées sur une tablette). La page, elle, reste réseau
+     d'abord : une nouvelle version publiée change ces adresses, donc rien de vieux
+     n'est jamais servi. On fait le ménage des versions précédentes du même fichier. */
+  if (/\.(js|css)$/.test(u.pathname) && u.searchParams.has("v")) {
+    e.respondWith(caches.open(CACHE).then(function (c) {
+      return c.match(r).then(function (m) {
+        return m || fetch(r).then(function (rep) {
+          if (rep && rep.status === 200 && rep.type === "basic") {
+            c.put(r, rep.clone()).then(function () { return c.keys(); }).then(function (ks) {
+              ks.forEach(function (k) { const ku = new URL(k.url); if (ku.pathname === u.pathname && ku.search !== u.search) c.delete(k); });
+            }).catch(function () {});
+          }
+          return rep;
+        }).catch(function () {
+          /* hors connexion et version absente du cache : la dernière copie connue du fichier */
+          return caches.match(r, { ignoreSearch: true }).then(function (m2) {
+            return m2 || new Response("", { status: 503 });
+          });
+        });
+      });
+    }).catch(function () { return fetch(r); }));
     return;
   }
   /* page, style, programme, manifeste : réseau d'abord, en demandant TOUJOURS au
