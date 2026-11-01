@@ -2651,7 +2651,11 @@ const NUMERIQUE_HIST={"f":[
 {"q":"Une chanson dans le domaine public peut être utilisée…","r":"librement","o":["librement","seulement le dimanche","par son auteur seulement","jamais"]},
 {"q":"Une marque qui paie pour utiliser une chanson connue achète…","r":"une licence","o":["une licence","une partition","un concert","un instrument"]},
 {"q":"La musique d’ambiance d’un magasin est choisie…","r":"pour influencer les clients","o":["pour influencer les clients","complètement au hasard","par les clients eux-mêmes","pour réveiller les vendeurs"]},
-{"q":"Un montant avant cotisations sociales et impôts est un montant…","r":"brut","o":["brut","net","gratuit","public"]}],
+{"q":"Un montant avant cotisations sociales et impôts est un montant…","r":"brut","o":["brut","net","gratuit","public"]},
+{"q":"Au début d’un contrat, la maison de disques verse à l’artiste…","r":"une avance","o":["une avance","une amende","un instrument","un diplôme"]},
+{"q":"Le pourcentage que touche l’artiste sur les ventes et les écoutes s’appelle…","r":"ses royalties","o":["ses royalties","son cachet de concert","son avance","sa licence"]},
+{"q":"En France, les radios doivent diffuser une part de chansons…","r":"en français","o":["en français","en anglais","sans paroles","de plus de 50 ans"]},
+{"q":"Le pass Culture est destiné…","r":"aux jeunes de 15 à 18 ans","o":["aux jeunes de 15 à 18 ans","aux artistes de plus de 60 ans","aux maisons de disques","aux radios privées"]}],
 "i":[
 {"q":"En France, une œuvre reste protégée après la mort de l’auteur pendant…","r":"70 ans","o":["70 ans","5 ans","200 ans","toujours, sans limite"]},
 {"q":"Quand la protection s’arrête, l’œuvre entre dans…","r":"le domaine public","o":["le domaine public","le domaine privé","la bibliothèque nationale","le répertoire de la SACEM"]},
@@ -2686,7 +2690,13 @@ const NUMERIQUE_HIST={"f":[
 {"q":"Les IA musicales ont appris en analysant…","r":"des millions de chansons","o":["des millions de chansons","une seule chanson","des livres de cuisine","des images de chats"]},
 {"q":"En 2023, une fausse chanson a imité les voix de…","r":"Drake et The Weeknd","o":["Drake et The Weeknd","Piaf et Trenet","Brel et Barbara","Mozart et Bach"]},
 {"q":"Pour un exposé sur une chanson, la bonne pratique est de…","r":"citer le titre, l’auteur et la source","o":["citer le titre, l’auteur et la source","copier la chanson sans rien dire à personne","changer le titre pour que ce soit original","effacer le nom de l’auteur de la diapositive"]},
-{"q":"Ce qui reste à l’artiste après les cotisations sociales s’appelle…","r":"le net","o":["le net","le brut","la licence","le cachet public"]}],
+{"q":"Ce qui reste à l’artiste après les cotisations sociales s’appelle…","r":"le net","o":["le net","le brut","la licence","le cachet public"]},
+{"q":"Tant que l’avance n’est pas récupérée, la part de l’artiste…","r":"va à la maison de disques","o":["va à la maison de disques","va directement à l’artiste","va à la plateforme","est donnée au public"]},
+{"q":"Un artiste indépendant qui paie lui-même son enregistrement…","r":"garde une plus grande part, mais prend tout le risque","o":["garde une plus grande part, mais prend tout le risque","ne touche jamais aucun argent de ses écoutes","doit tout reverser à la maison de disques","n’a pas le droit de faire de concerts"]},
+{"q":"Que paie souvent la maison de disques au début ?","r":"le studio, le clip et la promotion","o":["le studio, le clip et la promotion","les impôts de l’artiste à vie","les places de concert du public","les instruments de tous ses fans"]},
+{"q":"Le CNM, créé en 2020, est…","r":"le Centre national de la musique","o":["le Centre national de la musique","le Conservatoire national de Marseille","le Club des nouveaux musiciens","le Comité des notes de musique"]},
+{"q":"Les quotas de chansons en français à la radio sont d’au moins…","r":"40 %","o":["40 %","5 %","90 %","100 %"]},
+{"q":"La taxe pour copie privée est payée sur…","r":"les téléphones, clés USB et disques durs","o":["les téléphones, clés USB et disques durs","les places de concert uniquement","les instruments de musique","les cours de musique au collège"]}],
 "d":[
 {"q":"Après la mort de Mozart, peut-on enregistrer et vendre sa musique librement ?","r":"oui, sa musique est dans le domaine public","o":["oui, sa musique est dans le domaine public","non, il faut l’accord de sa famille","non, elle appartient à l’Autriche","seulement le dimanche"]},
 {"q":"Un enregistrement récent d’une sonate de Mozart…","r":"reste protégé par les droits voisins","o":["reste protégé par les droits voisins","est libre, comme la partition de Mozart","appartient encore à la famille de Mozart","ne peut jamais être vendu ni diffusé"]},
@@ -2722,7 +2732,13 @@ const NUMERIQUE_HIST={"f":[
 {"q":"Une vidéo publiée avec un tube protégé, sans droits, risque…","r":"d’être bloquée ou de perdre son son","o":["d’être bloquée ou de perdre son son","de gagner un prix de la SACEM","d’être diffusée à la radio nationale","rien du tout, c’est toujours permis"]},
 {"q":"L’exception pédagogique ne permet PAS…","r":"de publier en ligne une chanson entière","o":["de publier en ligne une chanson entière","d’écouter un extrait en classe","d’étudier une œuvre en cours","de citer un auteur dans un exposé"]},
 {"q":"Pourquoi vérifier la source d’une chanson « inédite » d’un artiste célèbre ?","r":"elle peut être fabriquée par une IA","o":["elle peut être fabriquée par une IA","toutes les chansons inédites sont vraies","les artistes ne sortent jamais d’inédits","pour connaître le prix du disque"]},
-{"q":"Avant de payer l’artiste, la maison de disques récupère souvent…","r":"l’avance qu’elle lui a versée","o":["l’avance qu’elle lui a versée","les billets de ses concerts","ses instruments de musique","la part de la SACEM"]}]};
+{"q":"Avant de payer l’artiste, la maison de disques récupère souvent…","r":"l’avance qu’elle lui a versée","o":["l’avance qu’elle lui a versée","les billets de ses concerts","ses instruments de musique","la part de la SACEM"]},
+{"q":"Si l’album ne se vend pas assez pour récupérer l’avance, l’artiste…","r":"n’a rien à rembourser, mais ne touche plus rien des écoutes","o":["n’a rien à rembourser, mais ne touche plus rien des écoutes","doit rendre toute l’avance dès le mois suivant","doit payer une amende à la plateforme de streaming","perd automatiquement le droit de chanter en public"]},
+{"q":"Pourquoi la maison de disques garde-t-elle la plus grande part quand un disque marche ?","r":"elle a pris le risque de payer avant de savoir si le disque marcherait","o":["elle a pris le risque de payer avant de savoir si le disque marcherait","la loi française lui interdit de payer davantage les artistes","elle écrit toujours elle-même les paroles et la musique","les artistes refusent souvent d’être payés pour leurs disques"]},
+{"q":"Pourquoi dit-on que l’avance n’est pas un vrai prêt ?","r":"elle se récupère sur la part de l’artiste, sans rien rendre si le disque échoue","o":["elle se récupère sur la part de l’artiste, sans rien rendre si le disque échoue","elle est remboursée chaque année par l’État français à la place de l’artiste","elle n’est jamais versée en argent réel, seulement en promesses","elle est toujours offerte par la SACEM, sans aucune condition"]},
+{"q":"Pour toucher des allocations d’intermittent du spectacle, un musicien doit avoir travaillé…","r":"au moins 507 heures en 12 mois","o":["au moins 507 heures en 12 mois","au moins 10 heures dans sa vie","au moins 5 ans sans s’arrêter","au moins 100 concerts par an"]},
+{"q":"Pourquoi l’intermittence du spectacle est-elle importante pour les musiciens ?","r":"leurs contrats sont courts, et elle les aide entre deux contrats","o":["leurs contrats sont courts, et elle les aide entre deux contrats","elle leur interdit de travailler plus de dix heures par semaine","elle remplace complètement tous les concerts de l’année","elle paie leurs instruments neufs chaque année en janvier"]},
+{"q":"Pourquoi l’État accorde-t-il un crédit d’impôt aux maisons de disques ?","r":"pour les encourager à produire de nouveaux artistes","o":["pour les encourager à produire de nouveaux artistes","pour les obliger à ne vendre que des vinyles","pour baisser le prix de toutes les places de concert","pour remplacer la SACEM dans toutes ses missions"]}]};
 const MONDE_HIST={"f":[
 {"q":"Une musique traditionnelle se transmet le plus souvent…","r":"de bouche à oreille","o":["de bouche à oreille","par des partitions imprimées","par des logiciels","par la radio seulement"]},
 {"q":"Combien de notes compte une gamme pentatonique ?","r":"5","o":["5","7","12","3"]},
@@ -14909,6 +14925,28 @@ const LECONS={
   <p>Aujourd’hui, on écoute surtout la musique en <b>streaming</b>&nbsp;: en ligne, sans posséder le fichier (Spotify, Deezer, Apple Music, YouTube…). La plateforme se finance par les <b>abonnements</b> et la <b>publicité</b>. Elle garde une partie de l’argent (souvent autour de <b>30&nbsp;%</b>) et reverse le reste aux <b>ayants droit</b>, selon le nombre d’écoutes&nbsp;: la <b>maison de disques</b> (le producteur), les <b>auteurs-compositeurs</b> (par la SACEM) et l’<b>artiste-interprète</b>, souvent le moins bien payé.</p>
   <p>Une écoute rapporte <b>moins d’un centime</b>. Résultat&nbsp;: seuls les artistes écoutés des millions de fois gagnent bien leur vie avec le streaming&nbsp;; les autres vivent surtout des <b>concerts</b>, de la vente de <b>disques</b> (le vinyle revient à la mode) et de produits dérivés. Essaie&nbsp;:</p>
   <div id="nsCalcZone"></div>
+  <h3>La maison de disques et l’avance</h3>
+  <p>Enregistrer un album coûte cher&nbsp;: le studio, les musiciens, l’ingénieur du son, le clip, la promotion. Un jeune artiste n’a pas cet argent. La <b>maison de disques</b> (le label) le paie pour lui et signe avec lui un <b>contrat</b>&nbsp;:</p>
+  <ul>
+  <li><b>Au début, elle verse une avance</b> à l’artiste (souvent plusieurs milliers d’euros) pour qu’il puisse vivre et créer, et elle paie l’enregistrement et la promotion.</li>
+  <li><b>Ensuite, elle garde la plus grande part</b> de l’argent des ventes et des écoutes. L’artiste a droit à un <b>pourcentage</b> (souvent autour de 10 à 20&nbsp;%), qu’on appelle ses <b>royalties</b>.</li>
+  <li><b>Mais ses royalties servent d’abord à « rembourser » l’avance</b>&nbsp;: tant que sa part n’a pas atteint le montant de l’avance (et parfois une partie des frais, selon le contrat), la maison de disques garde tout. C’est ce qu’on appelle <b>récupérer l’avance</b>. L’artiste ne touche de nouvel argent qu’après.</li>
+  <li><b>Ce n’est pas un vrai prêt</b>&nbsp;: si le disque ne marche pas, l’artiste n’a rien à rendre. C’est la maison de disques qui prend le risque&nbsp;; c’est aussi pour cela qu’elle garde la plus grande part quand le disque marche.</li>
+  </ul>
+  <p>Certains artistes préfèrent rester <b>indépendants</b>&nbsp;: ils paient eux-mêmes l’enregistrement (autoproduction) et gardent une bien plus grande part, mais ils prennent tout le risque et doivent se faire connaître seuls. Essaie&nbsp;: combien de temps faut-il pour que la part de l’artiste rembourse son avance&nbsp;?</p>
+  <div id="nsAvanceZone"></div>
+  <h3>Les aides de l’État</h3>
+  <p>En France, l’État considère que la musique est une richesse à protéger. Il aide donc les artistes et ceux qui les produisent, pour que la création ne dépende pas seulement des ventes&nbsp;:</p>
+  <ul>
+  <li><b>Le Centre national de la musique (CNM)</b>, créé en <b>2020</b>&nbsp;: il donne des aides pour enregistrer un album, partir en tournée, faire connaître sa musique à l’étranger.</li>
+  <li><b>Le crédit d’impôt</b>&nbsp;: une maison de disques qui produit de nouveaux artistes paie moins d’impôts. Cela l’encourage à prendre des risques.</li>
+  <li><b>L’intermittence du spectacle</b>&nbsp;: les musiciens enchaînent des contrats courts (un concert, une séance de studio). S’ils ont travaillé au moins <b>507 heures en 12 mois</b>, ils reçoivent des allocations entre deux contrats. Sans ce système, beaucoup ne pourraient pas vivre de la musique.</li>
+  <li><b>Les quotas à la radio</b>&nbsp;: depuis <b>1994</b>, les radios doivent diffuser au moins <b>40&nbsp;%</b> de chansons en français, dont une partie de nouveaux talents.</li>
+  <li><b>La copie privée</b>&nbsp;: une petite taxe est payée sur les téléphones, clés USB et disques durs (on peut y copier de la musique)&nbsp;; elle est reversée aux créateurs et une partie finance des festivals et des projets.</li>
+  <li><b>Les scènes de musiques actuelles (SMAC)</b>, soutenues par l’État et les villes, accueillent des concerts et aident les jeunes groupes à répéter.</li>
+  <li><b>Le pass Culture</b>&nbsp;: les jeunes de 15 à 18 ans reçoivent une somme à dépenser en concerts, disques, instruments ou cours.</li>
+  </ul>
+  <p>Les artistes-interprètes peuvent aussi être aidés par des <b>sociétés d’artistes</b> comme l’<b>Adami</b> ou la <b>Spedidam</b>, qui leur reversent des droits et financent des projets.</p>
   <h3>La musique dans la publicité</h3>
   <p>La publicité utilise la musique parce qu’elle agit sur nos <b>émotions</b> et sur notre <b>mémoire</b>&nbsp;:</p>
   <ul>
@@ -14936,7 +14974,7 @@ const LECONS={
   <li>Toujours <b>citer</b> le titre et l’auteur d’une musique que tu utilises dans un exposé.</li>
   <li>Face à une chanson «&nbsp;étonnante&nbsp;» d’un artiste célèbre, <b>vérifier la source</b>&nbsp;: c’est peut-être une voix fabriquée par une IA.</li>
   </ul>
-  <div class="cle">À retenir&nbsp;: le <b>droit d’auteur</b> protège automatiquement les créateurs (droit <b>moral</b> et droits <b>patrimoniaux</b>), pendant leur vie et <b>70 ans</b> après leur mort, avant le <b>domaine public</b>. La <b>SACEM</b> (fondée en <b>1851</b>) collecte et reverse l’argent aux auteurs, compositeurs et éditeurs. Le <b>streaming</b> rapporte <b>moins d’un centime</b> par écoute, partagé entre la plateforme, le producteur, les auteurs et l’artiste. La publicité utilise <b>jingles</b> et <b>logos sonores</b> pour agir sur nos émotions et notre mémoire. L’<b>IA</b> sait imiter des voix et fabriquer des chansons&nbsp;: elle pose la question de l’auteur et du respect des artistes.</div>
+  <div class="cle">À retenir&nbsp;: le <b>droit d’auteur</b> protège automatiquement les créateurs (droit <b>moral</b> et droits <b>patrimoniaux</b>), pendant leur vie et <b>70 ans</b> après leur mort, avant le <b>domaine public</b>. La <b>SACEM</b> (fondée en <b>1851</b>) collecte et reverse l’argent aux auteurs, compositeurs et éditeurs. Le <b>streaming</b> rapporte <b>moins d’un centime</b> par écoute, partagé entre la plateforme, le producteur, les auteurs et l’artiste&nbsp;; ce sont des sommes <b>brutes</b>. La <b>maison de disques</b> verse une <b>avance</b> et paie l’enregistrement, puis garde la part de l’artiste jusqu’à avoir <b>récupéré l’avance</b>. L’<b>État</b> aide aussi la musique&nbsp;: le <b>CNM</b>, l’<b>intermittence du spectacle</b>, les <b>quotas</b> de chansons en français à la radio, la <b>copie privée</b>. La publicité utilise <b>jingles</b> et <b>logos sonores</b> pour agir sur nos émotions et notre mémoire. L’<b>IA</b> sait imiter des voix et fabriquer des chansons&nbsp;: elle pose la question de l’auteur et du respect des artistes.</div>
  `},
  "film":{titre:"La musique de film",html:`
   <p>Depuis les débuts du cinéma, la musique accompagne les images. Elle ne raconte pas l'histoire à la place du film&nbsp;: elle fait ressentir des <b>émotions</b>, crée une <b>ambiance</b>, soutient l'<b>action</b>, annonce un danger ou relie les scènes entre elles. Essaie de regarder une scène de poursuite ou de peur sans le son&nbsp;: elle perd presque toute sa force.</p>
@@ -16943,7 +16981,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-11-01h";
+const VERSION_APP="2026-11-01i";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -17686,6 +17724,26 @@ function nsCalcMaj(){
   const mois=Math.round(1400/(1-NS_COTIS)/(NS_PAR_ECOUTE*NS_PARTS[2][1])/1000)*1000;
   document.getElementById("nsSmic").innerHTML='<i class="ph ph-lightbulb"></i> Pour gagner environ 1&nbsp;400&nbsp;€ <b>net</b> par mois (le salaire minimum) avec le seul streaming, sans manager et avant l’impôt, l’artiste-interprète aurait besoin d’environ <b>'+mois.toLocaleString("fr-FR")+' écoutes chaque mois</b>. C’est pourquoi les concerts restent essentiels.';
 }
+/* ----- l'avance de la maison de disques : combien de mois pour la « récupérer » ----- */
+function nsAvanceHTML(){
+  return '<div class="ns-calc ns-av" id="nsAvance"><div class="ns-calc-t"><i class="ph-fill ph-hand-coins"></i><b>L’avance est-elle remboursée&nbsp;?</b></div>'
+    +'<label class="ns-curseur"><span>Avance versée à l’artiste&nbsp;: <b id="nsAvA"></b></span><input type="range" id="nsAvR" min="5000" max="100000" step="5000" value="20000" oninput="nsAvanceMaj()" aria-label="Montant de l’avance"></label>'
+    +'<label class="ns-curseur"><span>Écoutes de l’album par mois&nbsp;: <b id="nsAvE"></b></span><input type="range" id="nsAvE2" min="4" max="7.5" step="0.25" value="6" oninput="nsAvanceMaj()" aria-label="Écoutes par mois"></label>'
+    +'<div class="ns-av-res" id="nsAvRes"></div>'
+    +'<p class="mm-note"><i class="ph ph-info"></i> Ordre de grandeur&nbsp;: la part de l’artiste vaut environ 0,000&nbsp;56&nbsp;€ brut par écoute (14&nbsp;% de 0,004&nbsp;€). Les contrats réels varient beaucoup.</p></div>';
+}
+function nsAvanceMaj(){
+  const a=+document.getElementById("nsAvR").value, e=Math.round(Math.pow(10,+document.getElementById("nsAvE2").value)/1000)*1000||1000;
+  const parMois=e*NS_PAR_ECOUTE*NS_PARTS[2][1], mois=a/parMois, ans=mois/12;
+  document.getElementById("nsAvA").textContent=nsEuros(a); document.getElementById("nsAvE").textContent=e.toLocaleString("fr-FR");
+  const an1=Math.min(100,Math.round(1200*parMois/a));
+  const duree=mois<=12?Math.ceil(mois)+" mois":(ans<100?(Math.round(ans*10)/10).toString().replace(".",",")+" ans":"plus de 100 ans");
+  document.getElementById("nsAvRes").innerHTML='<p>La part de l’artiste rapporte environ <b>'+nsEuros(parMois)+' brut par mois</b>. Mais elle va d’abord à la maison de disques, pour couvrir l’avance.</p>'
+    +'<div class="ns-av-barre" title="Part de l’avance récupérée en un an"><span style="width:'+an1+'%"></span></div>'
+    +'<p class="ns-av-l">Au bout d’un an, l’avance est récupérée à <b>'+an1+'&nbsp;%</b>.</p>'
+    +'<div class="ns-net-l"><span>Temps avant que l’artiste touche à nouveau de l’argent du streaming</span><b class="ns-net-v">'+duree+'</b></div>'
+    +(ans>10?'<p class="ns-av-l">Avec si peu d’écoutes, l’avance ne sera sans doute jamais récupérée&nbsp;: l’artiste garde l’avance, mais ne touchera plus rien des écoutes. Il vivra surtout de ses concerts.</p>':'');
+}
 /* ----- le logo sonore ----- */
 const NS_NOTES=[["do",60],["ré",62],["mi",64],["fa",65],["sol",67],["la",69],["si",71],["do aigu",72]];
 const NS_TIMBRES=[["cloches","Cloches"],["piano","Piano"],["synthe","Synthé"],["flute","Flûte"]];
@@ -17705,6 +17763,7 @@ function nsLogoChips(){ document.querySelectorAll("#nsLogo [data-t]").forEach(fu
 function nsLogoHasard(){ _ns.notes=[0,1,2,3].map(function(){ return NS_NOTES[Math.floor(Math.random()*NS_NOTES.length)][1]; });
   _ns.timbre=NS_TIMBRES[Math.floor(Math.random()*4)][0]; const z=document.getElementById("nsLogoZone"); if(z)z.innerHTML=nsLogoHTML(); jouerSonBtn({ns:"logo"}); }
 function nsInit(){ const a=document.getElementById("nsCalcZone"); if(a){ a.innerHTML=nsCalcHTML(); nsCalcMaj(); }
+  const v=document.getElementById("nsAvanceZone"); if(v){ v.innerHTML=nsAvanceHTML(); nsAvanceMaj(); }
   const b=document.getElementById("nsLogoZone"); if(b)b.innerHTML=nsLogoHTML(); }
 function nsJouer(k){
   const ctx=audio(); if(ctx.state==="suspended")ctx.resume(); const o={ctx:ctx,out:sonSortie()}, t=ctx.currentTime+0.06;
