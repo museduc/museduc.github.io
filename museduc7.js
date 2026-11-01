@@ -527,6 +527,7 @@ const CATEGORIES=[
     {id:"epoques",nom:"Grandes époques",ic:"<i class='ph ph-hourglass'></i>",niv:"3e"},
     {id:"histoire-notation",nom:"Histoire de l'écriture musicale",ic:"<i class='ph ph-pen-nib'></i>",niv:"5e"},
     {id:"histoire-son",nom:"Histoire de l'enregistrement",ic:"<i class='ph ph-cassette-tape'></i>",niv:"3e"},
+    {id:"numerique",nom:"Musique, numérique et droits",ic:"<i class='ph ph-copyright'></i>",niv:"3e"},
   ]},
   {groupe:"Théorie",items:[
     {id:"nuances",nom:"Nuances et crescendo",ic:"ƒ",niv:"6e"},
@@ -551,6 +552,7 @@ const CATEGORIES=[
     {id:"blues-histoire",nom:"Le blues : histoire et origines",ic:"<i class='ph ph-guitar'></i>",niv:"4e"},
     {id:"blues",nom:"La grille de blues",ic:"⑃",niv:"4e"},
     {id:"jazz",nom:"Le jazz",ic:"<i class='ph ph-music-notes-simple'></i>",niv:"4e"},
+    {id:"chanson",nom:"La chanson française",ic:"<i class='ph ph-microphone-stage'></i>",niv:"4e"},
     {id:"film",nom:"La musique de film",ic:"<i class='ph ph-film-strip'></i>",niv:"4e"},
     {id:"rock",nom:"Le rock",ic:"<i class='ph ph-lightning'></i>",niv:"4e"},
     {id:"minimaliste",nom:"La musique minimaliste",ic:"<i class='ph ph-repeat'></i>",niv:"4e"},
@@ -560,6 +562,13 @@ const CATEGORIES=[
     {id:"rap",nom:"Le rap et le hip-hop",ic:"<i class='ph ph-microphone'></i>",niv:"4e"},
     {id:"electro",nom:"La musique électronique",ic:"<i class='ph ph-waveform'></i>",niv:"4e"},
     {id:"jeuxvideo",nom:"La musique de jeux vidéo",ic:"<i class='ph ph-game-controller'></i>",niv:"4e"},
+  ]},
+  {groupe:"Musiques du monde",items:[
+    {id:"monde",nom:"Le tour du monde des musiques",ic:"<i class='ph ph-globe-hemisphere-west'></i>",niv:"5e"},
+    {id:"afrique",nom:"Les musiques d’Afrique",ic:"<i class='ph ph-hand-tap'></i>",niv:"5e"},
+    {id:"asie",nom:"Les musiques d’Asie",ic:"<i class='ph ph-flower-lotus'></i>",niv:"5e"},
+    {id:"ameriques",nom:"Amérique latine et Caraïbes",ic:"<i class='ph ph-sun-horizon'></i>",niv:"5e"},
+    {id:"europe-trad",nom:"Musiques traditionnelles de France et d’Europe",ic:"<i class='ph ph-castle-turret'></i>",niv:"5e"},
   ]},
   /* une seule leçon, ouverte directement depuis sa tuile de la page des leçons */
   {groupe:"Métiers de la musique",direct:true,items:[
@@ -2606,6 +2615,745 @@ function opJouer(i,quoi){
 }
 const REGGAE_HIST={"f":[{"q":"Le reggae est né dans quel pays ?","r":"la Jamaïque","o":["la Jamaïque","Cuba","le Brésil","le Mexique"]},{"q":"La capitale de la Jamaïque, berceau du reggae, est…","r":"Kingston","o":["Kingston","La Havane","Rio","Miami"]},{"q":"Le reggae apparaît à la fin des années…","r":"1960","o":["1960","1920","1990","1890"]},{"q":"Le chanteur de reggae le plus célèbre est…","r":"Bob Marley","o":["Bob Marley","Elvis Presley","Louis Armstrong","Michael Jackson"]},{"q":"Le groupe de Bob Marley s'appelle les…","r":"Wailers","o":["Wailers","Beatles","Doors","Clash"]},{"q":"Le tempo du reggae est plutôt…","r":"lent et balancé","o":["lent et balancé","très rapide","irrégulier","sans aucun temps"]},{"q":"Dans le reggae, la guitare joue ses accords sur les…","r":"contretemps","o":["contretemps","temps forts seulement","silences","notes graves"]},{"q":"L'instrument très mis en avant dans le reggae, qui joue des lignes graves, est la…","r":"basse","o":["basse","harpe","flûte","trompette"]},{"q":"Les couleurs du reggae et du mouvement rastafari sont le rouge, le vert et le…","r":"jaune","o":["jaune","bleu","violet","blanc"]},{"q":"Les longues mèches de cheveux des rastas s'appellent des…","r":"dreadlocks","o":["dreadlocks","couettes","frisettes","bouclettes"]},{"q":"Les chansons de reggae parlent souvent de…","r":"paix et de justice","o":["paix et de justice","voitures de course","recettes de cuisine","jeux vidéo"]},{"q":"« One Love » et « No Woman, No Cry » sont des chansons de…","r":"Bob Marley","o":["Bob Marley","Johnny Hallyday","Queen","MC Solaar"]},{"q":"Le reggae est né d'un autre style jamaïcain plus rapide : le…","r":"ska","o":["ska","tango","flamenco","fado"]},{"q":"Le chanteur de reggae est souvent accompagné par des…","r":"choristes","o":["choristes","chanteurs d'opéra","enfants de chœur","DJ seuls"]},{"q":"Le mouvement spirituel lié au reggae s'appelle le…","r":"rastafarisme","o":["rastafarisme","romantisme","surréalisme","impressionnisme"]},{"q":"L'UNESCO a inscrit le reggae au patrimoine culturel immatériel de l'humanité en…","r":"2018","o":["2018","1918","1968","1818"]},{"q":"Bob Marley est mort jeune, en…","r":"1981","o":["1981","2001","1951","2021"]},{"q":"En Jamaïque, les grandes sonos mobiles qui animent les fêtes s'appellent les…","r":"sound systems","o":["sound systems","orgues de Barbarie","fanfares","chorales"]},{"q":"Quel chanteur français a enregistré « La Marseillaise » en reggae ?","r":"Serge Gainsbourg","o":["Serge Gainsbourg","Johnny Hallyday","Jacques Brel","Charles Aznavour"]},{"q":"Bob Marley chantait en jouant de la…","r":"guitare","o":["guitare","harpe","batterie","trompette"]},{"q":"Le reggae chante souvent en anglais et en…","r":"patois jamaïcain","o":["patois jamaïcain","latin","chinois","allemand"]},{"q":"Alpha Blondy et Tiken Jah Fakoly sont des chanteurs de reggae venus de…","r":"Côte d'Ivoire","o":["Côte d'Ivoire","Norvège","Japon","Canada"]},{"q":"Quel groupe français chante le reggae « Tout le bonheur du monde » ?","r":"Sinsemilia","o":["Sinsemilia","Téléphone","IAM","Indochine"]},{"q":"Tryo est un groupe français de reggae plutôt…","r":"acoustique","o":["acoustique","électro","metal","punk"]},{"q":"« Get Up, Stand Up » (Lève-toi, bats-toi pour tes droits) est une chanson…","r":"engagée","o":["engagée","de Noël","pour enfants","sans paroles"]},{"q":"Le chanteur jamaïcain Jimmy Cliff a aussi été…","r":"acteur","o":["acteur","astronaute","cuisinier","pilote"]},{"q":"Le reggae est le plus souvent en mesure à…","r":"4 temps","o":["4 temps","3 temps","5 temps","7 temps"]},{"q":"Le reggae et les sound systems jamaïcains ont influencé la naissance du…","r":"rap","o":["rap","menuet","opéra","chant grégorien"]},{"q":"Un groupe de reggae joue en général guitare, basse, batterie et…","r":"claviers","o":["claviers","harpe","basson","cornemuse"]},{"q":"Le reggae se danse plutôt…","r":"en se balançant","o":["en se balançant","en sautant très vite","en valsant","en tournant sur la tête"]}],"i":[{"q":"Le ska, ancêtre du reggae, apparaît en Jamaïque vers…","r":"1960","o":["1960","1920","1990","1880"]},{"q":"Le style jamaïcain, plus lent que le ska, qui mène au reggae s'appelle le…","r":"rocksteady","o":["rocksteady","hard rock","bebop","grunge"]},{"q":"Le premier morceau à utiliser le mot « reggae » est « Do the Reggay » de…","r":"Toots and the Maytals","o":["Toots and the Maytals","Bob Marley","Jimmy Cliff","Peter Tosh"]},{"q":"La façon de jouer la batterie avec l'accent sur le 3ᵉ temps s'appelle le…","r":"one drop","o":["one drop","backbeat","swing","shuffle"]},{"q":"Le coup de guitare sec et court sur les contretemps s'appelle le…","r":"skank","o":["skank","riff","slide","solo"]},{"q":"La base basse-batterie sur laquelle plusieurs chanteurs peuvent chanter s'appelle un…","r":"riddim","o":["riddim","refrain","couplet","canon"]},{"q":"Les deejays jamaïcains qui parlaient en rythme sur la musique faisaient du…","r":"toasting","o":["toasting","scat","yodel","slam"]},{"q":"Le dub est une version du reggae…","r":"remixée avec beaucoup d'écho","o":["remixée avec beaucoup d'écho","chantée a cappella","jouée au piano seul","sans basse ni batterie"]},{"q":"Un grand maître du dub s'appelait…","r":"King Tubby","o":["King Tubby","King Kong","B.B. King","King Crimson"]},{"q":"Le mouvement rastafari vénère l'empereur d'Éthiopie…","r":"Haïlé Sélassié","o":["Haïlé Sélassié","Napoléon","Ramsès II","Charlemagne"]},{"q":"Pour les rastas, « Babylone » désigne…","r":"le système qui opprime","o":["le système qui opprime","une danse reggae","un instrument","une plage de Kingston"]},{"q":"Les fondateurs des Wailers sont Bob Marley, Bunny Wailer et…","r":"Peter Tosh","o":["Peter Tosh","Jimmy Cliff","Toots","Burning Spear"]},{"q":"Le premier album des Wailers chez Island Records (1973) s'appelle « Catch a… »","r":"Fire","o":["Fire","Wave","Train","Dream"]},{"q":"La maison de disques anglaise qui a fait connaître Bob Marley dans le monde est…","r":"Island Records","o":["Island Records","Motown","Def Jam","Sun Records"]},{"q":"En 1978, au One Love Peace Concert, Bob Marley fait se serrer la main à deux…","r":"rivaux politiques","o":["rivaux politiques","footballeurs","rois","chanteurs"]},{"q":"Bob Marley a grandi dans le quartier de Kingston appelé…","r":"Trenchtown","o":["Trenchtown","Harlem","le Bronx","Soho"]},{"q":"L'album « Exodus » de Bob Marley sort en…","r":"1977","o":["1977","1957","1997","1937"]},{"q":"La vedette du film jamaïcain « The Harder They Come » (1972) est…","r":"Jimmy Cliff","o":["Jimmy Cliff","Bob Marley","Peter Tosh","Toots"]},{"q":"Le reggae plus électronique et plus rapide des années 1980 s'appelle le…","r":"dancehall","o":["dancehall","bebop","grunge","disco"]},{"q":"L'album reggae de Serge Gainsbourg enregistré à Kingston en 1979 s'appelle « Aux armes et… »","r":"cætera","o":["cætera","patati","merveilles","compagnie"]},{"q":"Quel groupe punk anglais a repris du reggae (« Police and Thieves ») ?","r":"The Clash","o":["The Clash","The Beatles","Queen","Oasis"]},{"q":"Le groupe The Police, avec Sting, mêlait le rock et le…","r":"reggae","o":["reggae","baroque","fado","tango"]},{"q":"Alpha Blondy a chanté un grand succès intitulé…","r":"« Jerusalem »","o":["« Jerusalem »","« Satisfaction »","« Yesterday »","« Imagine »"]},{"q":"Dans le reggae, la basse est…","r":"très présente","o":["très présente","presque muette","très aiguë","toujours absente"]},{"q":"Marcus Garvey, qui a inspiré le mouvement rastafari, défendait…","r":"le retour vers l'Afrique","o":["le retour vers l'Afrique","la conquête spatiale","la vie en montagne","l'empire britannique"]},{"q":"Pour les rastas, « Jah » désigne…","r":"Dieu","o":["Dieu","un instrument","un chanteur","une plante"]},{"q":"L'UNESCO a distingué le reggae car il porte des messages de…","r":"paix et de justice","o":["paix et de justice","guerre et de conquête","richesse et de luxe","vitesse et de sport"]},{"q":"Le chanteur Burning Spear est…","r":"jamaïcain","o":["jamaïcain","français","américain","brésilien"]},{"q":"Le reggae est né dans les quartiers…","r":"pauvres de Kingston","o":["pauvres de Kingston","riches de Miami","chics de Paris","modernes de Tokyo"]},{"q":"Tiken Jah Fakoly chante souvent contre…","r":"les injustices","o":["les injustices","la pluie","les vacances","le football"]}],"d":[{"q":"Le mento, musique traditionnelle jamaïcaine, a influencé le…","r":"ska","o":["ska","bebop","grunge","baroque"]},{"q":"Le ska est né du mélange du mento et du…","r":"rhythm and blues","o":["rhythm and blues","chant grégorien","flamenco","opéra italien"]},{"q":"La Jamaïque devient indépendante en…","r":"1962","o":["1962","1776","1945","1990"]},{"q":"The Skatalites sont une grande formation de…","r":"ska","o":["ska","grunge","rap","musique baroque"]},{"q":"Lee « Scratch » Perry était un producteur célèbre pour le…","r":"dub","o":["dub","bebop","punk","swing"]},{"q":"Les techniques de remix inventées par le dub ont été reprises par…","r":"la musique électronique","o":["la musique électronique","la musique baroque","l'opéra italien","les fanfares militaires"]},{"q":"Le mot « riddim » vient de la prononciation jamaïcaine de l'anglais…","r":"rhythm","o":["rhythm","ridden","reading","riding"]},{"q":"Le batteur Sly Dunbar et le bassiste Robbie Shakespeare forment le duo…","r":"Sly & Robbie","o":["Sly & Robbie","Simon & Garfunkel","Daft Punk","Chic"]},{"q":"Sly & Robbie ont accompagné Serge Gainsbourg sur l'album…","r":"« Aux armes et cætera »","o":["« Aux armes et cætera »","« Melody Nelson »","« Love on the Beat »","« Initials B.B. »"]},{"q":"DJ Kool Herc, le père du hip-hop, était né en…","r":"Jamaïque","o":["Jamaïque","Irlande","Italie","Inde"]},{"q":"Avant son couronnement, Haïlé Sélassié s'appelait Ras…","r":"Tafari","o":["Tafari","Marley","Garvey","Kingston"]},{"q":"Haïlé Sélassié a visité la Jamaïque en…","r":"1966","o":["1966","1926","1986","2006"]},{"q":"Bob Marley est né en…","r":"1945","o":["1945","1925","1965","1935"]},{"q":"« Redemption Song » de Bob Marley est jouée seulement…","r":"à la guitare acoustique","o":["à la guitare acoustique","avec un grand orchestre","au synthétiseur","par une chorale"]},{"q":"En 1980, Bob Marley chante pour l'indépendance du…","r":"Zimbabwe","o":["Zimbabwe","Kenya","Maroc","Sénégal"]},{"q":"Le « lovers rock », reggae romantique, est né à…","r":"Londres","o":["Londres","Tokyo","Rome","Madrid"]},{"q":"Le « roots reggae » des années 1970 est un reggae…","r":"spirituel et engagé","o":["spirituel et engagé","électronique et rapide","instrumental et remixé","romantique et doux"]},{"q":"Le pionnier du toasting dans les sound systems jamaïcains est…","r":"U-Roy","o":["U-Roy","MC Solaar","Eminem","DJ Snake"]},{"q":"Le producteur Clement « Coxsone » Dodd a fondé le célèbre studio…","r":"Studio One","o":["Studio One","Abbey Road","Sun Studio","Motown"]},{"q":"Peter Tosh a quitté les Wailers en…","r":"1974","o":["1974","1954","1994","2004"]},{"q":"Le reggaeton, très populaire aujourd'hui, est né principalement à…","r":"Porto Rico","o":["Porto Rico","Islande","Norvège","Écosse"]},{"q":"Le chanteur jamaïcain Shaggy a connu un tube mondial en 1995 avec…","r":"« Boombastic »","o":["« Boombastic »","« Thriller »","« Macarena »","« Gangnam Style »"]},{"q":"Le groupe UB40, qui a repris « Red Red Wine » en reggae, vient de…","r":"Birmingham","o":["Birmingham","Kingston","Dublin","Glasgow"]},{"q":"Pour les rastas, l'Afrique est la terre promise, appelée…","r":"Zion","o":["Zion","Babylone","Eldorado","Atlantide"]},{"q":"Le groupe français Danakil joue du reggae…","r":"roots","o":["roots","baroque","lyrique","yé-yé"]},{"q":"Marcia Griffiths faisait partie du trio de choristes de Bob Marley, les…","r":"I-Threes","o":["I-Threes","Supremes","Destiny's Child","Spice Girls"]},{"q":"Le chanteur Gregory Isaacs était surnommé « Cool… »","r":"Ruler","o":["Ruler","Runner","Rider","Rapper"]},{"q":"Le « nyabinghi », musique rasta, se joue surtout avec des…","r":"tambours","o":["tambours","violons","guitares électriques","trompettes"]},{"q":"Le chanteur français Pierpoljak chante surtout du…","r":"reggae","o":["reggae","metal","lyrique","rap"]},{"q":"Le reggae est né de l'histoire et des combats des…","r":"peuples opprimés","o":["peuples opprimés","rois d'Europe","grands empires","pirates des Caraïbes"]}]};
 const RAP_HIST={"f":[{"q":"Le rap est né dans quelle ville ?","r":"New York","o":["New York","Los Angeles","Paris","Londres"]},{"q":"Plus précisément, le rap est né dans le quartier du…","r":"Bronx","o":["Bronx","Soho","Montmartre","Vatican"]},{"q":"Le rap apparaît dans les années…","r":"1970","o":["1970","1930","1950","2000"]},{"q":"Le rap fait partie d'une culture plus large appelée le…","r":"hip-hop","o":["hip-hop","jazz","rock","reggae"]},{"q":"Le rappeur est aussi appelé MC, c'est-à-dire…","r":"maître de cérémonie","o":["maître de cérémonie","musicien classique","meneur de chœur","manager de concert"]},{"q":"Le DJ mixe les disques sur des…","r":"platines","o":["platines","pupitres","harpes","timbales"]},{"q":"La danse de la culture hip-hop s'appelle le…","r":"breakdance","o":["breakdance","tango","ballet","flamenco"]},{"q":"Dans la culture hip-hop, l'art de peindre sur les murs s'appelle le…","r":"graffiti","o":["graffiti","vitrail","origami","collage"]},{"q":"La façon dont un rappeur pose sa voix et son rythme s'appelle le…","r":"flow","o":["flow","solo","riff","canon"]},{"q":"La base musicale sur laquelle on rappe s'appelle le…","r":"beat","o":["beat","refrain","pont","chœur"]},{"q":"Frotter un disque d'avant en arrière pour créer un son s'appelle le…","r":"scratch","o":["scratch","sample","fondu","larsen"]},{"q":"Imiter les sons de la batterie avec sa bouche s'appelle le…","r":"beatbox","o":["beatbox","playback","karaoké","yodel"]},{"q":"Quel rappeur français a chanté « Caroline » et « Bouge de là » ?","r":"MC Solaar","o":["MC Solaar","Booba","Orelsan","Jul"]},{"q":"IAM est un groupe de rap de…","r":"Marseille","o":["Marseille","Lille","Paris","Lyon"]},{"q":"NTM est un groupe de rap de…","r":"Seine-Saint-Denis","o":["Seine-Saint-Denis","Marseille","Bordeaux","Toulouse"]},{"q":"Le rap est une façon de dire les paroles…","r":"parlée et rythmée","o":["parlée et rythmée","lente et murmurée","sans aucun mot","en latin"]},{"q":"Eminem est un rappeur…","r":"américain","o":["américain","anglais","canadien","australien"]},{"q":"Dans un texte de rap, on joue beaucoup avec les…","r":"rimes","o":["rimes","silences","nuances","partitions"]},{"q":"Une phrase choc qui marque l'auditeur s'appelle une…","r":"punchline","o":["punchline","cadence","partition","mesure"]},{"q":"Improviser un rap sans texte préparé, c'est faire un…","r":"freestyle","o":["freestyle","playback","solfège","canon"]},{"q":"Un affrontement entre rappeurs ou entre danseurs s'appelle une…","r":"battle","o":["battle","chorale","symphonie","sérénade"]},{"q":"Quand un artiste invite un autre artiste sur son morceau, on parle de…","r":"featuring","o":["featuring","reprise","cover","medley"]},{"q":"Un extrait d'un ancien morceau réutilisé dans un nouveau s'appelle un…","r":"sample","o":["sample","solo","canon","riff"]},{"q":"Snoop Dogg est un rappeur de la côte…","r":"Ouest","o":["Ouest","Est","Nord","Sud"]},{"q":"Le rap arrive en France dans les années…","r":"1980","o":["1980","1940","1960","2010"]},{"q":"Dans le hip-hop, le DJ est celui qui…","r":"passe et mixe les disques","o":["passe et mixe les disques","écrit les partitions","dirige l'orchestre","accorde les guitares"]},{"q":"Orelsan a grandi dans la ville normande de…","r":"Caen","o":["Caen","Rouen","Le Havre","Cherbourg"]},{"q":"Un morceau de rap est souvent fait de…","r":"couplets et refrains","o":["couplets et refrains","actes et scènes","préludes et fugues","mouvements lents"]},{"q":"Les textes de rap parlent souvent de…","r":"la vie et la société","o":["la vie et la société","recettes de cuisine","prévisions météo","règles de grammaire"]},{"q":"Le rap est aujourd'hui l'un des styles les plus écoutés…","r":"dans le monde","o":["dans le monde","seulement au Japon","seulement en Italie","seulement à l'église"]}],"i":[{"q":"Quel DJ d'origine jamaïcaine est considéré comme le père du hip-hop ?","r":"DJ Kool Herc","o":["DJ Kool Herc","Grandmaster Flash","Afrika Bambaataa","Dr. Dre"]},{"q":"La fête de DJ Kool Herc, vue comme la naissance du hip-hop, a lieu en…","r":"1973","o":["1973","1953","1983","1963"]},{"q":"DJ Kool Herc faisait durer le passage instrumental d'un disque, appelé le…","r":"break","o":["break","refrain","couplet","prélude"]},{"q":"Pour faire durer ce passage, il utilisait deux…","r":"exemplaires du même disque","o":["exemplaires du même disque","micros différents","guitares électriques","batteries"]},{"q":"Qui a inventé le scratch vers 1975 ?","r":"Grand Wizzard Theodore","o":["Grand Wizzard Theodore","DJ Kool Herc","Eminem","Snoop Dogg"]},{"q":"Afrika Bambaataa a fondé l'association…","r":"Zulu Nation","o":["Zulu Nation","Motown","Sugarhill","Def Jam"]},{"q":"La devise de la Zulu Nation est « Peace, Love, Unity and… »","r":"Having Fun","o":["Having Fun","Money","Power","Glory"]},{"q":"« Rapper's Delight » (1979), premier grand tube du rap, est chanté par le…","r":"Sugarhill Gang","o":["Sugarhill Gang","Wu-Tang Clan","Run-DMC","groupe NTM"]},{"q":"« The Message » (1982), qui décrit la dure vie du ghetto, est de…","r":"Grandmaster Flash","o":["Grandmaster Flash","Beastie Boys","Snoop Dogg","Kool Herc"]},{"q":"La célèbre boîte à rythmes du rap est la Roland TR-…","r":"808","o":["808","2000","45","1789"]},{"q":"Run-DMC a mélangé rap et rock en reprenant « Walk This Way » avec le groupe…","r":"Aerosmith","o":["Aerosmith","Queen","Nirvana","U2"]},{"q":"Public Enemy est célèbre pour son rap…","r":"engagé","o":["engagé","romantique","comique","religieux"]},{"q":"Tupac Shakur (côte Ouest) et The Notorious B.I.G. étaient rivaux ; Biggie représentait la côte…","r":"Est","o":["Est","Nord","Sud","Pacifique"]},{"q":"Eminem a joué dans un film inspiré de sa vie :","r":"8 Mile","o":["8 Mile","Titanic","Rocky","Matrix"]},{"q":"En 2018, Kendrick Lamar reçoit un prix jusque-là réservé au classique et au jazz : le prix…","r":"Pulitzer","o":["Pulitzer","Nobel","Goncourt","César"]},{"q":"La première émission de télévision française consacrée au hip-hop (1984) s'appelle…","r":"« H.I.P. H.O.P. »","o":["« H.I.P. H.O.P. »","« Salut les copains »","« Thalassa »","« Les Enfants du rock »"]},{"q":"L'émission « H.I.P. H.O.P. » (1984) était présentée par…","r":"Sidney","o":["Sidney","MC Solaar","Johnny Hallyday","Jean-Jacques Goldman"]},{"q":"« L'École du micro d'argent » (1997) est un album de…","r":"IAM","o":["IAM","NTM","MC Solaar","Diam's"]},{"q":"Les deux rappeurs de NTM sont JoeyStarr et…","r":"Kool Shen","o":["Kool Shen","Akhenaton","Booba","Oxmo Puccino"]},{"q":"Le rappeur le plus connu du groupe IAM est…","r":"Akhenaton","o":["Akhenaton","Kool Shen","Orelsan","Nekfeu"]},{"q":"Un sampler (échantillonneur) sert à…","r":"rejouer des extraits de sons","o":["rejouer des extraits de sons","accorder une guitare","imprimer des partitions","allumer les projecteurs"]},{"q":"Dans un morceau de rap, la partie qui revient plusieurs fois est le…","r":"refrain","o":["refrain","couplet","break","sample"]},{"q":"Dans un « egotrip », le rappeur…","r":"se met en valeur","o":["se met en valeur","critique la société","raconte un voyage","parle de sa famille"]},{"q":"Le rap « conscient » (engagé) parle surtout de…","r":"la société","o":["la société","les voitures","les vacances","les jeux vidéo"]},{"q":"Diam's est une rappeuse…","r":"française","o":["française","américaine","belge","suisse"]},{"q":"Quel rappeur est belge ?","r":"Damso","o":["Damso","Booba","Jul","Nekfeu"]},{"q":"Depuis 1996, les radios françaises doivent diffuser 40 % de chansons en français ; cela a beaucoup aidé…","r":"le rap français","o":["le rap français","l'opéra","le jazz","la musique baroque"]},{"q":"Le « beatmaker » est celui qui…","r":"compose la musique","o":["compose la musique","écrit les paroles","danse le break","peint les graffitis"]},{"q":"Qui a rendu célèbre le beatbox dans les années 1980 ?","r":"Doug E. Fresh","o":["Doug E. Fresh","Dr. Dre","Kool Herc","Eminem"]},{"q":"L'effet qui corrige et transforme la voix, très utilisé dans le rap actuel, s'appelle l'…","r":"Auto-Tune","o":["Auto-Tune","écho","vibrato","unisson"]}],"d":[{"q":"La fête du 11 août 1973 était organisée par DJ Kool Herc et sa sœur…","r":"Cindy Campbell","o":["Cindy Campbell","Aretha Franklin","Lauryn Hill","Missy Elliott"]},{"q":"Le vrai nom de DJ Kool Herc est Clive…","r":"Campbell","o":["Campbell","Johnson","Brown","Smith"]},{"q":"La technique de Kool Herc pour enchaîner les breaks s'appelait le…","r":"Merry-Go-Round","o":["Merry-Go-Round","Moonwalk","Backbeat","Crescendo"]},{"q":"Grandmaster Flash, virtuose des platines, est né à…","r":"la Barbade","o":["la Barbade","Cuba","Haïti","Porto Rico"]},{"q":"« Planet Rock » (1982) d'Afrika Bambaataa s'inspire du groupe électronique allemand…","r":"Kraftwerk","o":["Kraftwerk","Rammstein","Scorpions","Tokio Hotel"]},{"q":"Les quatre disciplines du hip-hop sont le DJing, le rap, le breakdance et…","r":"le graffiti","o":["le graffiti","le skate","le slam","le cinéma"]},{"q":"Un « b-boy » est…","r":"un danseur de breakdance","o":["un danseur de breakdance","un DJ","un graffeur","un producteur"]},{"q":"Le verbe anglais « to rap » veut dire…","r":"frapper, bavarder","o":["frapper, bavarder","crier très fort","chanter faux","siffler"]},{"q":"Le label new-yorkais fondé en 1984 par Rick Rubin et Russell Simmons s'appelle…","r":"Def Jam","o":["Def Jam","Motown","Sun Records","Blue Note"]},{"q":"Le Wu-Tang Clan vient du quartier new-yorkais de…","r":"Staten Island","o":["Staten Island","Compton","Atlanta","Marseille"]},{"q":"N.W.A, le groupe de Dr. Dre et Ice Cube, vient de…","r":"Compton","o":["Compton","Brooklyn","Detroit","Chicago"]},{"q":"L'album « Illmatic » (1994), classique du rap de New York, est de…","r":"Nas","o":["Nas","Eminem","Tupac","Drake"]},{"q":"En 2003, « Lose Yourself » d'Eminem remporte l'…","r":"Oscar de la meilleure chanson","o":["Oscar de la meilleure chanson","Palme d'or","Ballon d'or","prix Nobel"]},{"q":"Kendrick Lamar a reçu le prix Pulitzer pour l'album…","r":"DAMN.","o":["DAMN.","Thriller","Nevermind","Illmatic"]},{"q":"En 2017, aux États-Unis, le hip-hop et le R&B deviennent plus écoutés que le…","r":"rock","o":["rock","jazz","gospel","blues"]},{"q":"Le premier album de MC Solaar, « Qui sème le vent récolte le tempo », sort en…","r":"1991","o":["1991","1971","1981","2001"]},{"q":"En 1994, IAM connaît un grand succès avec « Je danse le… »","r":"Mia","o":["Mia","Rock","Swing","Twist"]},{"q":"Oxmo Puccino est surnommé le…","r":"« Black Jacques Brel »","o":["« Black Jacques Brel »","« Prince de Marseille »","« Roi du Bronx »","« Mozart du rap »"]},{"q":"Booba a commencé dans le duo…","r":"Lunatic","o":["Lunatic","NTM","IAM","Sniper"]},{"q":"Le duo PNL est formé de deux frères originaires de…","r":"Corbeil-Essonnes","o":["Corbeil-Essonnes","Marseille","Lille","Nice"]},{"q":"En France, le slam (poésie déclamée) a été popularisé par…","r":"Grand Corps Malade","o":["Grand Corps Malade","Johnny Hallyday","Orelsan","MC Solaar"]},{"q":"Pour utiliser un sample, il faut en principe l'accord des…","r":"auteurs de l'extrait","o":["auteurs de l'extrait","voisins du studio","chanteurs d'opéra","maires des villes"]},{"q":"Répéter le même son de consonne (« ta tête tape ») s'appelle une…","r":"allitération","o":["allitération","assonance","onomatopée","métaphore"]},{"q":"Répéter le même son de voyelle s'appelle une…","r":"assonance","o":["assonance","allitération","anaphore","métaphore"]},{"q":"Le rap « boom bap » des années 1990 a un tempo d'environ…","r":"90 BPM","o":["90 BPM","200 BPM","30 BPM","300 BPM"]},{"q":"La trap, style de rap aux basses très puissantes, est née dans la ville de…","r":"Atlanta","o":["Atlanta","Seattle","Boston","Denver"]},{"q":"Le rap « old school » désigne…","r":"les débuts du rap","o":["les débuts du rap","le rap de demain","le rap en latin","le rap sans rythme"]},{"q":"La rappeuse et chanteuse Lauryn Hill a fait partie du groupe…","r":"Fugees","o":["Fugees","Wu-Tang Clan","N.W.A","Run-DMC"]},{"q":"Missy Elliott, Queen Latifah et MC Lyte sont des…","r":"rappeuses américaines","o":["rappeuses américaines","chanteuses d'opéra","batteuses de jazz","DJ françaises"]},{"q":"« Walk This Way » (1986) de Run-DMC et Aerosmith est célèbre car il a…","r":"rapproché le rap et le rock","o":["rapproché le rap et le rock","inventé le scratch","créé le beatbox","lancé le rap français"]}]};
+const NUMERIQUE_HIST={"f":[
+{"q":"Le droit d’auteur protège…","r":"les créateurs d’une œuvre","o":["les créateurs d’une œuvre","les acheteurs de disques","les vendeurs d’instruments","les spectateurs des concerts"]},
+{"q":"Pour être protégé par le droit d’auteur, il faut…","r":"rien : la protection est automatique","o":["rien : la protection est automatique","payer une taxe à la mairie chaque année","passer un examen de musique au conservatoire","avoir plus de 18 ans et un diplôme"]},
+{"q":"La SACEM est une société qui…","r":"collecte et reverse l’argent aux auteurs","o":["collecte et reverse l’argent aux auteurs","fabrique des instruments de musique","organise les concours de chant","vend des places de concert"]},
+{"q":"Dans « SACEM », le « C » veut dire…","r":"compositeurs","o":["compositeurs","chanteurs","concerts","chansons"]},
+{"q":"Le streaming, c’est…","r":"écouter la musique en ligne sans posséder le fichier","o":["écouter la musique en ligne sans posséder le fichier","acheter un disque vinyle dans un magasin de musique","jouer de la musique dans la rue pour les passants","enregistrer une chanson sur une cassette à la radio"]},
+{"q":"Une écoute en streaming rapporte en général…","r":"moins d’un centime","o":["moins d’un centime","environ un euro","environ dix euros","exactement cent euros"]},
+{"q":"Beaucoup d’artistes gagnent surtout leur vie grâce…","r":"aux concerts","o":["aux concerts","aux likes sur les réseaux","aux pochettes de disques","aux paroles imprimées"]},
+{"q":"Un jingle est…","r":"une courte musique qui accompagne une marque ou une émission","o":["une courte musique qui accompagne une marque ou une émission","un long concert symphonique donné en plein air","un instrument électronique utilisé en studio","un droit payé aux interprètes après chaque concert"]},
+{"q":"Un logo sonore, ce sont…","r":"quelques notes toujours identiques liées à une marque","o":["quelques notes toujours identiques liées à une marque","des paroles imprimées sur une affiche publicitaire","un dessin animé diffusé sans aucune musique","des bruits de la rue enregistrés au hasard"]},
+{"q":"Un bon logo sonore doit être…","r":"court et facile à retenir","o":["court et facile à retenir","long et très compliqué","joué par un orchestre entier","chanté en latin"]},
+{"q":"Un « ver d’oreille », c’est…","r":"une mélodie qui reste coincée dans la tête","o":["une mélodie qui reste coincée dans la tête","une maladie des oreilles","un insecte qui aime la musique","un casque audio de mauvaise qualité"]},
+{"q":"Pourquoi la publicité utilise-t-elle la musique ?","r":"pour agir sur nos émotions et notre mémoire","o":["pour agir sur nos émotions et notre mémoire","pour remplacer complètement les images","parce que c’est obligatoire par la loi","pour apprendre le solfège au public"]},
+{"q":"Une IA peut aujourd’hui…","r":"fabriquer une chanson à partir d’une phrase","o":["fabriquer une chanson à partir d’une phrase","jouer du violon avec de vraies mains","remplacer toutes les salles de concert","décider seule des droits d’auteur"]},
+{"q":"Une voix clonée par une IA s’appelle aussi…","r":"un deepfake audio","o":["un deepfake audio","un sample vocal","un jingle chanté","un refrain repris"]},
+{"q":"Quelle chanson des Beatles a été terminée grâce à l’IA en 2023 ?","r":"« Now and Then »","o":["« Now and Then »","« Yesterday »","« Hey Jude »","« Let It Be »"]},
+{"q":"L’IA a aidé à isoler la voix de…","r":"John Lennon","o":["John Lennon","Elvis Presley","Freddie Mercury","Michael Jackson"]},
+{"q":"Pour que les artistes soient payés, il faut écouter la musique…","r":"sur des sites légaux","o":["sur des sites légaux","sur des copies piratées","uniquement à la radio","sans jamais la partager"]},
+{"q":"Dans un exposé, quand on utilise une musique, il faut…","r":"citer son titre et son auteur","o":["citer son titre et son auteur","la couper au bout de 10 secondes","changer son titre","la jouer deux fois plus vite"]},
+{"q":"Une musique « libre de droits » est une musique…","r":"qu’on peut utiliser selon une licence simple","o":["qu’on peut utiliser selon une licence simple","qui n’a ni compositeur ni interprète","qui est interdite dans toutes les écoles","qui ne contient aucune note de musique"]},
+{"q":"Reprendre un extrait d’un enregistrement dans un nouveau morceau, c’est…","r":"faire un sample","o":["faire un sample","faire un jingle","faire un logo sonore","faire une coda"]},
+{"q":"Chanter la chanson d’un autre artiste s’appelle…","r":"une reprise","o":["une reprise","un plagiat","un jingle","un deepfake"]},
+{"q":"Copier une œuvre en la faisant passer pour la sienne, c’est…","r":"un plagiat","o":["un plagiat","une reprise","un hommage déclaré","un arrangement autorisé"]},
+{"q":"Les ayants droit sont…","r":"ceux qui touchent de l’argent quand une œuvre est utilisée","o":["ceux qui touchent de l’argent quand une œuvre est utilisée","ceux qui achètent les places des concerts en ligne","ceux qui réparent les instruments de musique abîmés","ceux qui écoutent la radio en voiture le matin"]},
+{"q":"Spotify et Deezer sont des plateformes de…","r":"streaming","o":["streaming","vente de partitions","fabrication d’instruments","concerts en plein air"]},
+{"q":"Un producteur (maison de disques)…","r":"paie et organise l’enregistrement","o":["paie et organise l’enregistrement","écrit toujours les paroles des chansons","chante sur scène à la place de l’artiste","fabrique les guitares dans son atelier"]},
+{"q":"L’éditeur de musique…","r":"aide l’auteur à faire connaître et utiliser ses œuvres","o":["aide l’auteur à faire connaître et utiliser ses œuvres","imprime les billets des concerts de l’artiste","fabrique les casques et les enceintes audio","présente le journal télévisé du soir"]},
+{"q":"Le vinyle est…","r":"un disque qui revient à la mode","o":["un disque qui revient à la mode","une plateforme de streaming","un logiciel d’IA","une loi sur la musique"]},
+{"q":"Un deepfake audio est…","r":"une fausse voix fabriquée par ordinateur","o":["une fausse voix fabriquée par ordinateur","un micro de très bonne qualité pour le studio","un concert retransmis en direct à la radio","une chanson d’amour très lente et triste"]},
+{"q":"Creative Commons est…","r":"un type de licence pour partager des œuvres","o":["un type de licence pour partager des œuvres","une plateforme de streaming payante","un studio d’enregistrement à Paris","une marque de casques et d’enceintes"]},
+{"q":"Content ID est un système de…","r":"YouTube","o":["YouTube","la SACEM","la radio","l’école"]},
+{"q":"La SACEM est une société…","r":"française","o":["française","américaine","japonaise","brésilienne"]},
+{"q":"Le droit d’auteur protège une œuvre…","r":"originale","o":["originale","copiée","oubliée","interdite"]},
+{"q":"Une chanson dans le domaine public peut être utilisée…","r":"librement","o":["librement","seulement le dimanche","par son auteur seulement","jamais"]},
+{"q":"Une marque qui paie pour utiliser une chanson connue achète…","r":"une licence","o":["une licence","une partition","un concert","un instrument"]},
+{"q":"La musique d’ambiance d’un magasin est choisie…","r":"pour influencer les clients","o":["pour influencer les clients","complètement au hasard","par les clients eux-mêmes","pour réveiller les vendeurs"]},
+{"q":"Un montant avant cotisations sociales et impôts est un montant…","r":"brut","o":["brut","net","gratuit","public"]}],
+"i":[
+{"q":"En France, une œuvre reste protégée après la mort de l’auteur pendant…","r":"70 ans","o":["70 ans","5 ans","200 ans","toujours, sans limite"]},
+{"q":"Quand la protection s’arrête, l’œuvre entre dans…","r":"le domaine public","o":["le domaine public","le domaine privé","la bibliothèque nationale","le répertoire de la SACEM"]},
+{"q":"Pourquoi peut-on jouer librement une symphonie de Beethoven ?","r":"elle est dans le domaine public","o":["elle est dans le domaine public","Beethoven l’a offerte à la France","elle n’a jamais été écrite","elle appartient aux orchestres"]},
+{"q":"Le droit moral permet à l’auteur…","r":"d’être cité et de refuser qu’on déforme son œuvre","o":["d’être cité et de refuser qu’on déforme son œuvre","de vendre lui-même les billets de ses concerts","de choisir le prix des instruments en magasin","de diriger les programmes de toutes les radios"]},
+{"q":"Les droits patrimoniaux permettent à l’auteur…","r":"de décider qui utilise son œuvre et d’être payé","o":["de décider qui utilise son œuvre et d’être payé","d’hériter d’une maison","de ne jamais payer d’impôts","d’être cité dans les livres d’histoire"]},
+{"q":"Les droits voisins concernent…","r":"les interprètes et les producteurs","o":["les interprètes et les producteurs","les voisins d’une salle de concert","les auteurs du Moyen Âge","les spectateurs du premier rang"]},
+{"q":"La SACEM a été fondée en…","r":"1851","o":["1851","1789","1945","2001"]},
+{"q":"L’histoire de la SACEM commence dans…","r":"un café-concert de Paris","o":["un café-concert de Paris","un opéra italien","une église de Rome","un studio américain"]},
+{"q":"En 1847, trois auteurs refusent de payer leurs consommations parce que…","r":"l’orchestre jouait leurs chansons sans les payer","o":["l’orchestre jouait leurs chansons sans les payer","les boissons du café-concert étaient trop chères","le café-concert venait de fermer ses portes","ils n’aimaient pas du tout la musique de l’orchestre"]},
+{"q":"La plateforme de streaming garde souvent environ…","r":"30 % de l’argent","o":["30 % de l’argent","100 % de l’argent","1 % de l’argent","rien du tout"]},
+{"q":"Une plateforme de streaming gagne de l’argent grâce…","r":"aux abonnements et à la publicité","o":["aux abonnements et à la publicité","à la vente d’instruments","aux concerts qu’elle organise","aux impôts sur la musique"]},
+{"q":"Dans le streaming, celui qui touche souvent le moins est…","r":"l’artiste-interprète","o":["l’artiste-interprète","la maison de disques","la plateforme","l’éditeur"]},
+{"q":"Pour faire un sample légalement, il faut…","r":"l’autorisation des ayants droit","o":["l’autorisation des ayants droit","que l’extrait dure moins d’une minute","que la chanson soit en anglais","l’accord de ses amis"]},
+{"q":"L’exception pédagogique permet…","r":"d’utiliser des extraits d’œuvres pour illustrer un cours","o":["d’utiliser des extraits d’œuvres pour illustrer un cours","de télécharger toute la musique gratuitement","de publier des chansons sur Internet sans les citer","de ne jamais payer de droits, même en dehors de l’école"]},
+{"q":"Content ID, sur YouTube, sert à…","r":"repérer les musiques protégées dans les vidéos","o":["repérer les musiques protégées dans les vidéos","choisir la meilleure chanson de l’année","traduire les paroles","accorder les guitares"]},
+{"q":"Une musique lente dans un magasin pousse les clients à…","r":"rester plus longtemps","o":["rester plus longtemps","partir plus vite","chanter plus fort","acheter des instruments"]},
+{"q":"Une marque de boisson de sport choisira plutôt une musique…","r":"rapide et énergique","o":["rapide et énergique","lente et triste","sans aucun rythme","jouée à l’orgue d’église"]},
+{"q":"Une chanson oubliée peut redevenir un tube grâce…","r":"à une publicité","o":["à une publicité","au domaine public","à la SACEM","au droit moral"]},
+{"q":"En France, une chanson créée entièrement par une IA…","r":"n’est en principe pas protégée par le droit d’auteur","o":["n’est en principe pas protégée par le droit d’auteur","appartient automatiquement à l’État français","est protégée pendant 500 ans par la loi","appartient d’office à la SACEM et à ses membres"]},
+{"q":"Pourquoi des maisons de disques ont-elles attaqué des IA musicales en 2024 ?","r":"elles ont appris sur des chansons sans autorisation","o":["elles ont appris sur des chansons sans autorisation","elles chantaient beaucoup trop fort dans les studios","elles refusaient de composer des chansons de rock","elles étaient bien trop lentes pour les radios"]},
+{"q":"Le droit moral comprend le droit…","r":"d’être cité comme auteur","o":["d’être cité comme auteur","de toucher une pension","de chanter dans toutes les radios","de choisir le prix des disques"]},
+{"q":"Le domaine public commence…","r":"70 ans après la mort de l’auteur","o":["70 ans après la mort de l’auteur","dès la sortie de l’œuvre","10 ans après la création","le jour du premier concert"]},
+{"q":"La partition de la « Lettre à Élise » de Beethoven est…","r":"dans le domaine public","o":["dans le domaine public","protégée jusqu’en 2100","la propriété de la SACEM","interdite en France"]},
+{"q":"Une radio qui diffuse des chansons doit…","r":"payer des droits","o":["payer des droits","demander l’avis du public","jouer seulement du classique","interdire les publicités"]},
+{"q":"Dans le streaming, la part des auteurs-compositeurs passe souvent par…","r":"la SACEM","o":["la SACEM","le gouvernement","la plateforme seule","le public"]},
+{"q":"Faire une reprise d’une chanson demande…","r":"de déclarer l’œuvre pour payer ses auteurs","o":["de déclarer l’œuvre pour payer ses auteurs","de changer obligatoirement les paroles","d’attendre 70 ans","de demander l’avis de la plateforme"]},
+{"q":"Le sample est très courant dans…","r":"le rap et l’électro","o":["le rap et l’électro","le chant grégorien","la musique baroque","le fado"]},
+{"q":"Un logo sonore dure en général…","r":"2 à 3 secondes","o":["2 à 3 secondes","2 à 3 minutes","une heure","une journée"]},
+{"q":"Une musique rapide et énergique dans une publicité suggère…","r":"l’énergie et le mouvement","o":["l’énergie et le mouvement","le calme et le sommeil","la tristesse","le silence"]},
+{"q":"Une musique lente et douce dans une publicité suggère plutôt…","r":"le calme et la confiance","o":["le calme et la confiance","la vitesse et le sport","la peur","la colère"]},
+{"q":"Les IA musicales ont appris en analysant…","r":"des millions de chansons","o":["des millions de chansons","une seule chanson","des livres de cuisine","des images de chats"]},
+{"q":"En 2023, une fausse chanson a imité les voix de…","r":"Drake et The Weeknd","o":["Drake et The Weeknd","Piaf et Trenet","Brel et Barbara","Mozart et Bach"]},
+{"q":"Pour un exposé sur une chanson, la bonne pratique est de…","r":"citer le titre, l’auteur et la source","o":["citer le titre, l’auteur et la source","copier la chanson sans rien dire à personne","changer le titre pour que ce soit original","effacer le nom de l’auteur de la diapositive"]},
+{"q":"Ce qui reste à l’artiste après les cotisations sociales s’appelle…","r":"le net","o":["le net","le brut","la licence","le cachet public"]}],
+"d":[
+{"q":"Après la mort de Mozart, peut-on enregistrer et vendre sa musique librement ?","r":"oui, sa musique est dans le domaine public","o":["oui, sa musique est dans le domaine public","non, il faut l’accord de sa famille","non, elle appartient à l’Autriche","seulement le dimanche"]},
+{"q":"Un enregistrement récent d’une sonate de Mozart…","r":"reste protégé par les droits voisins","o":["reste protégé par les droits voisins","est libre, comme la partition de Mozart","appartient encore à la famille de Mozart","ne peut jamais être vendu ni diffusé"]},
+{"q":"Le droit moral de l’auteur…","r":"ne disparaît jamais","o":["ne disparaît jamais","dure 10 ans","s’arrête à la mort de l’auteur","se vend avec le disque"]},
+{"q":"Qui la SACEM rémunère-t-elle ?","r":"les auteurs, les compositeurs et les éditeurs","o":["les auteurs, les compositeurs et les éditeurs","les fabricants et les vendeurs d’instruments","les spectateurs qui viennent aux concerts","les vendeurs de casques et d’enceintes audio"]},
+{"q":"Lequel de ces lieux doit payer des droits pour diffuser de la musique ?","r":"un magasin qui passe de la musique","o":["un magasin qui passe de la musique","une famille qui chante à la maison","un élève qui révise en silence","un musicien qui s’entraîne seul"]},
+{"q":"Avec environ 0,004 € par écoute, 1 million d’écoutes rapportent aux ayants droit environ… (en brut)","r":"4 000 €","o":["4 000 €","40 €","400 000 €","4 millions d’euros"]},
+{"q":"Pourquoi un artiste peu écouté gagne-t-il presque rien en streaming ?","r":"chaque écoute rapporte une toute petite somme","o":["chaque écoute rapporte une toute petite somme","le streaming est interdit en France","seules les radios paient les artistes","les plateformes ne paient jamais"]},
+{"q":"L’argent du streaming est partagé selon…","r":"le nombre d’écoutes","o":["le nombre d’écoutes","l’âge de l’artiste","la longueur des paroles","la couleur de la pochette"]},
+{"q":"En 2015, « Blurred Lines » a été condamnée pour avoir trop imité une chanson de…","r":"Marvin Gaye","o":["Marvin Gaye","Elvis Presley","Bob Marley","Stromae"]},
+{"q":"Quelle est la différence entre une reprise et un plagiat ?","r":"la reprise cite et paie les auteurs, le plagiat les cache","o":["la reprise cite et paie les auteurs, le plagiat les cache","la reprise est toujours plus courte que l’original","le plagiat est toujours chanté en anglais","il n’y a aucune différence entre les deux"]},
+{"q":"Quel est l’objectif principal d’un logo sonore ?","r":"faire penser immédiatement à la marque","o":["faire penser immédiatement à la marque","raconter une longue histoire","montrer la virtuosité d’un musicien","remplacer la publicité écrite"]},
+{"q":"La même mélodie jouée en mineur donne plutôt une impression…","r":"de mélancolie ou d’inquiétude","o":["de mélancolie ou d’inquiétude","de fête et de joie débordante","de vitesse et d’énergie sportive","de calme plat et d’ennui total"]},
+{"q":"Devant une publicité, une bonne question d’éducation aux médias est…","r":"que veut me faire ressentir cette musique, et pourquoi ?","o":["que veut me faire ressentir cette musique, et pourquoi ?","combien de notes différentes compte cette musique ?","dans quel pays a-t-on filmé cette publicité ?","combien coûte cette chanson sur une plateforme ?"]},
+{"q":"Pourquoi les publicitaires recherchent-ils le « ver d’oreille » ?","r":"pour qu’on repense à la marque sans le vouloir","o":["pour qu’on repense à la marque sans le vouloir","pour fatiguer les auditeurs et les faire partir","pour respecter le droit d’auteur des compositeurs","pour vendre davantage de partitions en magasin"]},
+{"q":"Utiliser la voix d’un chanteur clonée par IA sans son accord est…","r":"interdit","o":["interdit","autorisé si c’est drôle","obligatoire pour les publicités","autorisé après 18 h"]},
+{"q":"Pourquoi l’IA a-t-elle été utile pour « Now and Then » ?","r":"elle a séparé la voix de Lennon du piano sur une vieille cassette","o":["elle a séparé la voix de Lennon du piano sur une vieille cassette","elle a écrit toutes les paroles à la place des Beatles","elle a remplacé la batterie de Ringo Starr","elle a choisi le titre de la chanson"]},
+{"q":"La fausse chanson imitant Drake et The Weeknd en 2023 montre que…","r":"il faut vérifier la source d’une chanson étonnante","o":["il faut vérifier la source d’une chanson étonnante","les IA ne savent pas chanter","toutes les chansons en ligne sont vraies","les deepfakes sont toujours autorisés"]},
+{"q":"Pour mettre une musique sur une vidéo publiée, le plus sûr est…","r":"une musique libre de droits ou sous Creative Commons, citée","o":["une musique libre de droits ou sous Creative Commons, citée","le dernier tube à la mode, sans rien dire à personne","une chanson accélérée, pour ne pas être repérée","n’importe quelle chanson, si la vidéo est très courte"]},
+{"q":"Pourquoi la question de l’auteur est-elle difficile avec l’IA ?","r":"le droit d’auteur protège une création humaine","o":["le droit d’auteur protège une création humaine","les IA ont toutes plus de soixante-dix ans","la SACEM a fermé ses portes en 2024","les IA signent toujours leurs œuvres elles-mêmes"]},
+{"q":"Quel moyen permet aux artistes de vivre quand le streaming rapporte peu ?","r":"les concerts, les disques et les produits dérivés","o":["les concerts, les disques et les produits dérivés","les likes et les commentaires sur les réseaux","les vidéos piratées partagées par les fans","le domaine public, qui paie les artistes"]},
+{"q":"Pourquoi un vieil enregistrement de Piaf est-il encore protégé ?","r":"les droits voisins et les droits des auteurs courent encore","o":["les droits voisins et les droits des auteurs courent encore","Piaf est encore vivante","toutes les chansons sont protégées pour toujours","la SACEM l’a acheté"]},
+{"q":"Une œuvre de Bach est libre, mais un concert enregistré hier…","r":"est protégé par les droits des interprètes et du producteur","o":["est protégé par les droits des interprètes et du producteur","est libre aussi, puisque Bach est mort depuis longtemps","appartient encore aujourd’hui à la famille de Bach","ne peut en aucun cas être diffusé à la radio"]},
+{"q":"La différence entre droit moral et droits patrimoniaux est que…","r":"le moral protège le respect de l’œuvre, les patrimoniaux l’argent","o":["le moral protège le respect de l’œuvre, les patrimoniaux l’argent","le moral dure 10 ans, les patrimoniaux pour toujours","le moral ne concerne que les producteurs de disques","il n’y a aucune différence entre ces deux droits"]},
+{"q":"Pourquoi les artistes peu connus gagnent-ils peu en streaming ?","r":"la rémunération dépend du nombre d’écoutes","o":["la rémunération dépend du nombre d’écoutes","la loi leur interdit le streaming","ils ne sont jamais payés","les plateformes ne les diffusent pas"]},
+{"q":"Pour 10 millions d’écoutes, les ayants droit se partagent environ… (en brut)","r":"40 000 €","o":["40 000 €","400 €","4 millions d’euros","4 €"]},
+{"q":"Pourquoi la plateforme garde-t-elle une partie de l’argent ?","r":"elle paie ses serveurs, ses salariés et fait des bénéfices","o":["elle paie ses serveurs, ses salariés et fait des bénéfices","elle reverse tout cet argent aux auditeurs","elle paie les instruments de tous les artistes","c’est une erreur de calcul que personne ne corrige"]},
+{"q":"Pourquoi un logo sonore doit-il rester identique ?","r":"pour que le cerveau l’associe toujours à la marque","o":["pour que le cerveau l’associe toujours à la marque","parce que le changer est interdit par la loi","parce qu’il n’existe que quatre notes","pour économiser de l’argent"]},
+{"q":"Qu’est-ce qui fait d’une mélodie un bon « ver d’oreille » ?","r":"elle est simple, courte et répétée","o":["elle est simple, courte et répétée","elle est longue et compliquée","elle n’a aucun rythme","elle change à chaque écoute"]},
+{"q":"Pourquoi l’éducation aux médias s’intéresse-t-elle à la musique des publicités ?","r":"la musique influence nos choix sans qu’on s’en rende compte","o":["la musique influence nos choix sans qu’on s’en rende compte","la musique des publicités est toujours jouée faux","il faut apprendre tous les jingles par cœur à l’école","les publicités n’utilisent jamais aucune musique"]},
+{"q":"Pourquoi les maisons de disques reprochent-elles aux IA leur apprentissage ?","r":"elles utilisent des chansons protégées sans payer leurs auteurs","o":["elles utilisent des chansons protégées sans payer leurs auteurs","elles chantent beaucoup mieux que les vrais artistes","elles refusent d’écouter la moindre musique","elles effacent les chansons des plateformes"]},
+{"q":"Comment l’IA a-t-elle été utilisée honnêtement pour « Now and Then » ?","r":"pour nettoyer un vrai enregistrement de Lennon, avec l’accord des Beatles","o":["pour nettoyer un vrai enregistrement de Lennon, avec l’accord des Beatles","pour inventer une fausse voix de Lennon, sans enregistrement","pour écrire une chanson entière sans aucun des Beatles","pour copier discrètement la chanson d’un autre groupe"]},
+{"q":"Une vidéo publiée avec un tube protégé, sans droits, risque…","r":"d’être bloquée ou de perdre son son","o":["d’être bloquée ou de perdre son son","de gagner un prix de la SACEM","d’être diffusée à la radio nationale","rien du tout, c’est toujours permis"]},
+{"q":"L’exception pédagogique ne permet PAS…","r":"de publier en ligne une chanson entière","o":["de publier en ligne une chanson entière","d’écouter un extrait en classe","d’étudier une œuvre en cours","de citer un auteur dans un exposé"]},
+{"q":"Pourquoi vérifier la source d’une chanson « inédite » d’un artiste célèbre ?","r":"elle peut être fabriquée par une IA","o":["elle peut être fabriquée par une IA","toutes les chansons inédites sont vraies","les artistes ne sortent jamais d’inédits","pour connaître le prix du disque"]},
+{"q":"Avant de payer l’artiste, la maison de disques récupère souvent…","r":"l’avance qu’elle lui a versée","o":["l’avance qu’elle lui a versée","les billets de ses concerts","ses instruments de musique","la part de la SACEM"]}]};
+const MONDE_HIST={"f":[
+{"q":"Une musique traditionnelle se transmet le plus souvent…","r":"de bouche à oreille","o":["de bouche à oreille","par des partitions imprimées","par des logiciels","par la radio seulement"]},
+{"q":"Combien de notes compte une gamme pentatonique ?","r":"5","o":["5","7","12","3"]},
+{"q":"Une note tenue sans arrêt sous la mélodie s’appelle…","r":"un bourdon","o":["un bourdon","un refrain","un silence","une cadence"]},
+{"q":"Le didgeridoo est un instrument des…","r":"Aborigènes d’Australie","o":["Aborigènes d’Australie","Incas","Vikings","moines tibétains"]},
+{"q":"Le gamelan est surtout un orchestre de…","r":"gongs et métallophones","o":["gongs et métallophones","violons","flûtes de pan","guitares électriques"]},
+{"q":"Le sitar est un instrument de…","r":"l’Inde","o":["l’Inde","l’Irlande","l’Argentine","la Bretagne"]},
+{"q":"La kora est une harpe-luth d’…","r":"Afrique de l’Ouest","o":["Afrique de l’Ouest","Amérique du Sud","Europe du Nord","Océanie"]},
+{"q":"Le koto est une cithare du…","r":"Japon","o":["Japon","Mexique","Maroc","Brésil"]},
+{"q":"Le steel drum est fabriqué à partir…","r":"d’un baril de pétrole","o":["d’un baril de pétrole","d’une calebasse","d’un tronc d’arbre","d’une carapace de tortue"]},
+{"q":"Le tango vient de…","r":"l’Argentine","o":["l’Argentine","l’Inde","l’Irlande","le Japon"]},
+{"q":"La samba est la musique du carnaval de…","r":"Rio de Janeiro","o":["Rio de Janeiro","Venise, en Italie","Nice, sur la Côte d’Azur","Dunkerque, dans le Nord"]},
+{"q":"La quena et la flûte de pan viennent…","r":"des Andes","o":["des Andes","des Balkans","du Japon","d’Irlande"]},
+{"q":"Un instrument dont une peau tendue vibre est un…","r":"membranophone","o":["membranophone","cordophone","aérophone","idiophone"]},
+{"q":"Un instrument dont une corde vibre est un…","r":"cordophone","o":["cordophone","membranophone","aérophone","idiophone"]},
+{"q":"Un instrument où c’est l’air qui vibre est un…","r":"aérophone","o":["aérophone","cordophone","membranophone","idiophone"]},
+{"q":"Le djembé est…","r":"un tambour joué à mains nues","o":["un tambour joué à mains nues","une flûte en bambou","un violon à deux cordes","une cloche en bronze"]},
+{"q":"La bombarde et le biniou sont des instruments de…","r":"Bretagne","o":["Bretagne","Andalousie","Bali","Cuba"]},
+{"q":"Le flamenco vient d’…","r":"Andalousie (Espagne)","o":["Andalousie (Espagne)","Écosse (Royaume-Uni)","Égypte (Afrique du Nord)","Islande (Europe du Nord)"]},
+{"q":"La clave est un motif rythmique essentiel de la musique de…","r":"Cuba","o":["Cuba","Bretagne","l’Inde","l’Australie"]},
+{"q":"L’erhu est une vièle à deux cordes de…","r":"Chine","o":["Chine","Argentine","Irlande","Sénégal"]},
+{"q":"Le oud est…","r":"un luth sans frettes","o":["un luth sans frettes","un tambour en terre cuite","une flûte en roseau","une harpe à 21 cordes"]},
+{"q":"Les tablas sont…","r":"deux petits tambours de l’Inde","o":["deux petits tambours de l’Inde","deux petites cloches de temple","deux flûtes doubles en bambou","deux cithares posées au sol"]},
+{"q":"Le balafon est l’ancêtre du…","r":"xylophone","o":["xylophone","violoncelle","trombone","clavecin"]},
+{"q":"La tanpura joue en Inde…","r":"un bourdon","o":["un bourdon","un solo rapide","la batterie","le refrain"]},
+{"q":"Le bandonéon est l’instrument roi du…","r":"tango","o":["tango","reggae","flamenco","fado"]},
+{"q":"La quena est…","r":"une flûte des Andes","o":["une flûte des Andes","un tambour d’Afrique","une cithare du Japon","un luth d’Inde"]},
+{"q":"Le taiko est…","r":"un grand tambour japonais","o":["un grand tambour japonais","une petite flûte chinoise","une harpe indienne","un violon irlandais"]},
+{"q":"La bombarde est un instrument…","r":"à vent","o":["à vent","à cordes","à peau","à clavier"]},
+{"q":"La darbouka est…","r":"un tambour en forme de gobelet","o":["un tambour en forme de gobelet","une flûte en forme de tube","une guitare en forme de poire","une cloche en forme de cône"]},
+{"q":"Les uilleann pipes sont une cornemuse…","r":"irlandaise","o":["irlandaise","japonaise","brésilienne","indienne"]},
+{"q":"Les claves sont…","r":"deux bâtons de bois frappés","o":["deux bâtons de bois frappés","deux flûtes jouées ensemble","deux cordes pincées","deux tambours en peau"]},
+{"q":"La kora a combien de cordes ?","r":"21","o":["21","4","6","100"]},
+{"q":"Le koto a combien de cordes ?","r":"13","o":["13","2","6","21"]},
+{"q":"L’erhu a combien de cordes ?","r":"2","o":["2","6","13","21"]},
+{"q":"Le steel drum vient des…","r":"Caraïbes","o":["Caraïbes","Alpes","Andes","Balkans"]}],
+"i":[
+{"q":"Un instrument qui vibre tout entier (gong, balafon, claves) est un…","r":"idiophone","o":["idiophone","membranophone","cordophone","aérophone"]},
+{"q":"Les spécialistes des musiques du monde s’appellent des…","r":"ethnomusicologues","o":["ethnomusicologues","luthiers","archéologues","acousticiens"]},
+{"q":"La polyrythmie, c’est…","r":"plusieurs rythmes différents joués en même temps","o":["plusieurs rythmes différents joués en même temps","un seul rythme joué de plus en plus vite","un rythme joué sans aucune pulsation","une mélodie chantée par plusieurs voix"]},
+{"q":"Un quart de ton est…","r":"une note placée entre deux notes du piano","o":["une note placée entre deux notes du piano","le quart de la durée d’une noire","un accord formé de quatre notes","une note jouée quatre fois de suite"]},
+{"q":"Quelle musique utilise des quarts de ton ?","r":"la musique arabe","o":["la musique arabe","la samba","le reel irlandais","le tango"]},
+{"q":"Quel compositeur français a été ébloui par le gamelan en 1889 ?","r":"Claude Debussy","o":["Claude Debussy","Georges Bizet","Hector Berlioz","Maurice Ravel"]},
+{"q":"Quel groupe anglais a utilisé le sitar dans ses chansons ?","r":"les Beatles","o":["les Beatles","Queen","Pink Floyd","les Rolling Stones"]},
+{"q":"Le bourdon de la musique indienne est joué par…","r":"la tanpura","o":["la tanpura","la bansuri","le tabla","le koto"]},
+{"q":"La clave cubaine fait 5 coups en 2 mesures (3 puis 2). On dit clave…","r":"3-2","o":["3-2","4-4","2-2","5-1"]},
+{"q":"La « world music » désigne…","r":"des musiques du monde, souvent mêlées aux musiques actuelles","o":["des musiques du monde, souvent mêlées aux musiques actuelles","la musique jouée pendant les Jeux olympiques","la musique classique des grands orchestres européens","les hymnes nationaux de tous les pays du monde"]},
+{"q":"Les mesures « boiteuses » à 7 ou 9 temps sont typiques des…","r":"Balkans","o":["Balkans","Andes","Caraïbes","pays nordiques"]},
+{"q":"Quel instrument joue le bourdon en Australie ?","r":"le didgeridoo","o":["le didgeridoo","le koto","le bandonéon","la kora"]},
+{"q":"La gamme pentatonique ressemble aux touches… du piano.","r":"noires","o":["noires","blanches","du milieu","les plus graves"]},
+{"q":"Le balafon est l’ancêtre africain du…","r":"xylophone","o":["xylophone","violon","saxophone","piano"]},
+{"q":"Les rythmes africains, emportés en Amérique, sont à l’origine…","r":"du blues et du jazz","o":["du blues et du jazz","du chant grégorien","de la musique baroque","de l’opéra italien"]},
+{"q":"Le steel drum accompagne surtout le…","r":"calypso","o":["calypso","flamenco","fado","raga"]},
+{"q":"Le bandonéon est un cousin de…","r":"l’accordéon","o":["l’accordéon","la guitare","la trompette","l’orgue"]},
+{"q":"Le shakuhachi est…","r":"une flûte japonaise en bambou","o":["une flûte japonaise en bambou","une cithare japonaise à 13 cordes","un tambour japonais géant","un luth chinois à quatre cordes"]},
+{"q":"Le charango est…","r":"une petite guitare des Andes","o":["une petite guitare des Andes","un tambour du carnaval de Rio","une flûte de pan à deux rangées","un grand accordéon à boutons"]},
+{"q":"La darbouka produit un son grave, « dum », et un son aigu…","r":"« tek »","o":["« tek »","« boum »","« tchac »","« ding »"]},
+{"q":"Le bourdon du biniou breton ressemble à celui…","r":"de la tanpura indienne","o":["de la tanpura indienne","du steel drum caribéen","de la clave cubaine","des claves de bois"]},
+{"q":"Les rythmes africains ont voyagé en Amérique avec…","r":"la déportation des esclaves","o":["la déportation des esclaves","l’invention de la radio","les croisades du Moyen Âge","les Jeux olympiques"]},
+{"q":"Un musicien qui mêle tradition et musiques actuelles fait de la…","r":"fusion","o":["fusion","fugue","cadence","modulation"]},
+{"q":"La clave guide surtout la musique…","r":"cubaine","o":["cubaine","bretonne","japonaise","indienne"]},
+{"q":"Le surdo du Brésil frappe fort le…","r":"2ᵉ temps","o":["2ᵉ temps","1ᵉʳ temps","3ᵉ temps","dernier temps du morceau"]},
+{"q":"La mesure à 7 temps des Balkans se groupe souvent…","r":"2 + 2 + 3","o":["2 + 2 + 3","4 + 3","7 temps égaux","1 + 6"]},
+{"q":"Le didgeridoo est fabriqué dans…","r":"une branche creusée par les termites","o":["une branche creusée par les termites","un baril de pétrole martelé","une calebasse couverte de peau","un bambou percé de six trous"]},
+{"q":"Dans la musique indienne, le cycle rythmique s’appelle…","r":"le tala","o":["le tala","le raga","le maqam","la clave"]},
+{"q":"Dans la musique indienne, la couleur mélodique s’appelle…","r":"le raga","o":["le raga","le tala","le gamelan","le tango"]},
+{"q":"Le maqam est lié à la musique…","r":"arabe","o":["arabe","andine","bretonne","japonaise"]},
+{"q":"La kora est un…","r":"cordophone","o":["cordophone","membranophone","idiophone","aérophone"]},
+{"q":"Le djembé est un…","r":"membranophone","o":["membranophone","cordophone","aérophone","idiophone"]},
+{"q":"La quena est un…","r":"aérophone","o":["aérophone","membranophone","cordophone","idiophone"]},
+{"q":"Les castagnettes sont des…","r":"idiophones","o":["idiophones","cordophones","aérophones","membranophones"]}],
+"d":[
+{"q":"Pourquoi le oud n’a-t-il pas de frettes ?","r":"pour jouer des quarts de ton","o":["pour jouer des quarts de ton","pour être plus léger","pour jouer plus fort","pour être accordé plus vite"]},
+{"q":"Dans le maqam Rast sur do, quelles notes sont baissées d’un quart de ton ?","r":"le mi et le si","o":["le mi et le si","le do et le sol","le ré et le la","le fa et le do"]},
+{"q":"« 3 contre 2 » signifie qu’…","r":"un instrument frappe 3 coups pendant qu’un autre en frappe 2","o":["un instrument frappe 3 coups pendant qu’un autre en frappe 2","on joue 3 mesures, puis 2 mesures de silence complet","3 musiciens jouent face à 2 chanteurs qui leur répondent","le tempo passe de 3 temps à 2 temps au milieu du morceau"]},
+{"q":"Dans la classification de Hornbostel et Sachs, le gong est un…","r":"idiophone","o":["idiophone","membranophone","aérophone","cordophone"]},
+{"q":"Dans la même classification, la kora est un…","r":"cordophone","o":["cordophone","idiophone","membranophone","aérophone"]},
+{"q":"Le tabla est un…","r":"membranophone","o":["membranophone","idiophone","cordophone","aérophone"]},
+{"q":"Le shakuhachi est un…","r":"aérophone","o":["aérophone","cordophone","idiophone","membranophone"]},
+{"q":"Le steel drum, en métal frappé, est un…","r":"idiophone","o":["idiophone","membranophone","cordophone","aérophone"]},
+{"q":"Pourquoi le gamelan de Bali « scintille-t-il » ?","r":"les instruments vont par paires légèrement désaccordées","o":["les instruments vont par paires légèrement désaccordées","on y ajoute des clochettes en verre très aiguës","les musiciens frappent les lames de plus en plus fort","chaque note est jouée deux fois, à l’octave"]},
+{"q":"Une mesure aksak de 7 temps se groupe souvent en…","r":"2 + 2 + 3","o":["2 + 2 + 3","4 + 3 + 1","1 + 1 + 5","3 + 3 + 3"]},
+{"q":"Quel point commun entre la tanpura, le biniou et le didgeridoo ?","r":"ils jouent un bourdon","o":["ils jouent un bourdon","ce sont des tambours","ils sont tous en bronze","ils viennent d’Afrique"]},
+{"q":"Pourquoi beaucoup de musiques traditionnelles n’ont-elles pas de partition ?","r":"elles s’apprennent en écoutant et en imitant","o":["elles s’apprennent en écoutant et en imitant","elles sont interdites à l’écrit","le papier coûtait trop cher partout","elles sont toujours improvisées en entier"]},
+{"q":"La gamme pentatonique majeure de do contient…","r":"do, ré, mi, sol, la","o":["do, ré, mi, sol, la","do, ré, mi, fa, sol","do, mi, sol, si, ré","do, ré♭, mi, fa♯, la"]},
+{"q":"Pourquoi la salsa et la samba ont-elles des percussions venues d’Afrique ?","r":"à cause de la déportation d’Africains en Amérique","o":["à cause de la déportation d’Africains en Amérique","parce que l’Afrique et l’Amérique sont collées","grâce à la radio au XIXᵉ siècle","parce que les Incas venaient d’Afrique"]},
+{"q":"Lequel de ces instruments n’est PAS un idiophone ?","r":"le djembé","o":["le djembé","le balafon","les claves","le gong"]},
+{"q":"Lequel de ces instruments n’est PAS un cordophone ?","r":"la quena","o":["la quena","le koto","l’erhu","le charango"]},
+{"q":"Le kotekan balinais, ce sont…","r":"deux motifs rapides qui s’imbriquent","o":["deux motifs rapides qui s’imbriquent","des chants de moines dans les temples","les coups réguliers d’un seul tambour grave","les pas d’une danse jouée sans musique"]},
+{"q":"Pourquoi entend-on le souffle dans le shakuhachi ?","r":"le souffle fait partie du son recherché","o":["le souffle fait partie du son recherché","l’instrument est souvent fendu ou fêlé","le micro est toujours placé trop près","c’est une erreur des débutants seulement"]},
+{"q":"Le grand gong du gamelan sert à…","r":"marquer la fin de chaque cycle","o":["marquer la fin de chaque cycle","jouer la mélodie principale","accorder les autres instruments","annoncer l’entrée du public"]},
+{"q":"La cadence andalouse enchaîne les accords…","r":"la mineur, sol, fa, mi","o":["la mineur, sol, fa, mi","do, fa, sol, do","ré, la, si mineur, sol","mi, la, ré, sol"]},
+{"q":"Pourquoi dit-on que les ethnomusicologues classent les instruments « selon ce qui vibre » ?","r":"la famille dépend de la partie qui produit le son","o":["la famille dépend de la partie qui produit le son","la famille dépend du pays d’où vient l’instrument","la famille dépend de la taille de l’instrument","la famille dépend du prix de l’instrument"]},
+{"q":"Quel instrument associe un bourdon et une mélodie sur le même instrument ?","r":"la cornemuse","o":["la cornemuse","le djembé","les claves","le tambour taiko"]},
+{"q":"Quelle gamme de 5 notes partagent la Chine et les Andes ?","r":"la pentatonique","o":["la pentatonique","la chromatique","la gamme par tons","le maqam Rast"]},
+{"q":"Pourquoi le koto et le shakuhachi ont-ils peu de notes très rapides ?","r":"le silence et le souffle comptent beaucoup","o":["le silence et le souffle comptent beaucoup","ces instruments n’ont qu’une seule note","les musiciens japonais jouent toujours lentement par loi","ils sont joués seulement la nuit"]},
+{"q":"Qu’est-ce qui rapproche la samba de la salsa ?","r":"des percussions héritées d’Afrique","o":["des percussions héritées d’Afrique","des cornemuses venues d’Écosse","des gongs venus de Java","des quarts de ton arabes"]},
+{"q":"Dans le jeu de la carte, pourquoi la clave aide-t-elle à reconnaître Cuba ?","r":"son motif de 5 coups est très caractéristique","o":["son motif de 5 coups est très caractéristique","elle joue toujours la même note grave","elle est jouée avec un archet","elle remplace la voix"]},
+{"q":"Pourquoi une partition occidentale ne suffit-elle pas pour noter un maqam ?","r":"elle n’a pas de signe simple pour les quarts de ton","o":["elle n’a pas de signe simple pour les quarts de ton","elle ne sait pas écrire les notes très graves","elle est réservée aux pianistes professionnels","elle n’accepte que la gamme pentatonique"]},
+{"q":"Lequel de ces instruments n’est PAS un aérophone ?","r":"le koto","o":["le koto","la quena","la bombarde","le didgeridoo"]},
+{"q":"Lequel de ces instruments n’est PAS un membranophone ?","r":"la kora","o":["la kora","le djembé","la darbouka","le surdo"]},
+{"q":"Debussy a entendu le gamelan grâce à…","r":"l’Exposition universelle de Paris de 1889","o":["l’Exposition universelle de Paris de 1889","un long voyage à Bali en 1950","un disque acheté à Londres en 1920","un film muet tourné en Indonésie"]},
+{"q":"Que montre l’exemple du sitar chez les Beatles ?","r":"les musiques du monde se rencontrent et s’influencent","o":["les musiques du monde se rencontrent et s’influencent","le sitar a été inventé en Angleterre en 1960","les quatre Beatles étaient nés en Inde","la pop interdit d’utiliser des instruments indiens"]},
+{"q":"Pourquoi apprend-on souvent en imitant un maître dans les musiques traditionnelles ?","r":"la musique se transmet d’oreille, sans partition","o":["la musique se transmet d’oreille, sans partition","les maîtres refusent toujours de parler","les instruments sont trop chers","les élèves ne savent jamais lire"]},
+{"q":"Le grand gong grave d’un gamelan joue…","r":"une fois par cycle, à la fin","o":["une fois par cycle, à la fin","toutes les notes de la mélodie","seulement au tout début du concert","sans arrêt, comme un bourdon"]},
+{"q":"La polyrythmie « 3 contre 2 » se retrouve surtout dans les musiques…","r":"d’Afrique de l’Ouest","o":["d’Afrique de l’Ouest","de Bretagne et d’Irlande","du Japon et de Corée","des Andes et du Pérou"]}]};
+const AFRIQUE_HIST={"f":[
+{"q":"La polyrythmie, c’est…","r":"plusieurs rythmes superposés","o":["plusieurs rythmes superposés","un seul rythme joué de plus en plus vite","un rythme joué sans aucune pulsation","une mélodie chantée par plusieurs voix"]},
+{"q":"Le djembé se joue…","r":"à mains nues","o":["à mains nues","avec un archet","avec deux baguettes en métal","en soufflant"]},
+{"q":"La kora a…","r":"21 cordes","o":["21 cordes","6 cordes","2 cordes","88 cordes"]},
+{"q":"La caisse de résonance de la kora est faite d’…","r":"une calebasse","o":["une calebasse","un baril","une carapace de tortue","une boîte en métal"]},
+{"q":"Les griots sont…","r":"des musiciens conteurs, gardiens de la mémoire","o":["des musiciens conteurs, gardiens de la mémoire","des fabricants de tambours et de koras","des danseurs masqués lors des cérémonies","des chefs d’orchestre formés en Europe"]},
+{"q":"Le balafon est fait de…","r":"lames de bois posées sur des calebasses","o":["lames de bois posées sur des calebasses","cordes tendues sur un arc en bois","peaux tendues sur un tronc creusé","tuyaux de bambou de longueurs différentes"]},
+{"q":"L’appel et réponse, c’est…","r":"un soliste lance une phrase, le groupe répond","o":["un soliste lance une phrase, le groupe répond","deux orchestres qui jouent en même temps","un chanteur qui répète sa phrase seul","un musicien qui accorde son instrument"]},
+{"q":"Les polyphonies d’Afrique centrale sont chantées par les…","r":"Pygmées Aka et Baka","o":["Pygmées Aka et Baka","griots du Mali","Touaregs","Zoulous"]},
+{"q":"Le yodel, c’est une voix qui…","r":"saute très vite du grave à l’aigu","o":["saute très vite du grave à l’aigu","reste toujours sur la même note","chuchote","imite un tambour"]},
+{"q":"Le oud est…","r":"un luth sans frettes","o":["un luth sans frettes","un tambour en terre cuite","une flûte en roseau","une harpe à 21 cordes"]},
+{"q":"La darbouka a la forme…","r":"d’un gobelet","o":["d’un gobelet","d’une harpe","d’un tube droit","d’une boîte carrée"]},
+{"q":"Le raï est né en…","r":"Algérie","o":["Algérie","Afrique du Sud","Égypte","Nigeria"]},
+{"q":"Quel chanteur a rendu le raï célèbre dans le monde avec « Didi » ?","r":"Khaled","o":["Khaled","Fela Kuti","Youssou N’Dour","Mory Kanté"]},
+{"q":"L’afrobeat a été inventé par…","r":"Fela Kuti","o":["Fela Kuti","Bob Marley","Salif Keïta","Khaled"]},
+{"q":"Angélique Kidjo est une chanteuse du…","r":"Bénin","o":["Bénin","Maroc","Kenya","Mali"]},
+{"q":"Mory Kanté a fait connaître dans le monde le son de la…","r":"kora","o":["kora","darbouka","flûte de pan","cornemuse"]},
+{"q":"La musique gnawa vient du…","r":"Maroc","o":["Maroc","Sénégal","Congo","Cameroun"]},
+{"q":"Le guembri est…","r":"un luth grave à trois cordes","o":["un luth grave à trois cordes","un tambour qu’on tient sous le bras","une flûte en roseau à six trous","un grand xylophone en bois de rose"]},
+{"q":"Les qraqeb sont…","r":"de grandes castagnettes en métal","o":["de grandes castagnettes en métal","des tambours remplis d’eau","des flûtes doubles en roseau","des clochettes en bois sculpté"]},
+{"q":"Dans la musique africaine, souvent…","r":"tout le monde participe : chant, mains, danse","o":["tout le monde participe : chant, mains, danse","le public écoute assis, en silence","seul le chef du village a le droit de jouer","on danse seulement sur des disques enregistrés"]},
+{"q":"Les dunduns sont…","r":"des tambours graves joués avec une baguette","o":["des tambours graves joués avec une baguette","des flûtes de berger en bambou","des harpes à sept cordes en calebasse","des cloches d’église en bronze"]},
+{"q":"Toumani Diabaté est un grand joueur de…","r":"kora","o":["kora","djembé","oud","balafon"]},
+{"q":"Le djembé a la forme…","r":"d’un calice","o":["d’un calice","d’un cube","d’une poire","d’un tube droit"]},
+{"q":"Le djembé est taillé dans…","r":"un tronc d’arbre","o":["un tronc d’arbre","un baril de pétrole","une calebasse","du bambou"]},
+{"q":"Les griots sont aussi appelés…","r":"djélis","o":["djélis","sonneurs","mariachis","bardes"]},
+{"q":"Le balafon est l’ancêtre du…","r":"xylophone","o":["xylophone","violon","banjo","piano"]},
+{"q":"Le ngoni est…","r":"un petit luth","o":["un petit luth","un grand tambour","une flûte double","une cloche"]},
+{"q":"Le raï est une musique…","r":"populaire d’Algérie","o":["populaire d’Algérie","religieuse d’Égypte","classique du Mali","militaire du Kenya"]},
+{"q":"Le guembri est l’instrument de la musique…","r":"gnawa","o":["gnawa","raï","afrobeat","rumba"]},
+{"q":"Fela Kuti était…","r":"nigérian","o":["nigérian","marocain","sénégalais","malien"]},
+{"q":"Youssou N’Dour est…","r":"sénégalais","o":["sénégalais","algérien","nigérian","béninois"]},
+{"q":"Le « dum » de la darbouka est un son…","r":"grave","o":["grave","aigu","sans rythme","chanté"]},
+{"q":"Le « tek » de la darbouka est un son…","r":"aigu et sec","o":["aigu et sec","grave et long","doux et tenu","chanté"]},
+{"q":"Le oud n’a pas de…","r":"frettes","o":["frettes","cordes","caisse","manche"]},
+{"q":"La rumba congolaise vient du…","r":"Congo","o":["Congo","Maroc","Mali","Kenya"]}],
+"i":[
+{"q":"Les trois sons du djembé sont la basse, le ton et…","r":"la claque","o":["la claque","le roulement","le bourdon","le glissando"]},
+{"q":"Le son de basse du djembé se joue…","r":"au centre de la peau","o":["au centre de la peau","sur le bord en bois","sous le tambour","avec une baguette"]},
+{"q":"Dans un ensemble de percussions d’Afrique de l’Ouest, la cloche…","r":"répète un motif qui sert de repère à tous","o":["répète un motif qui sert de repère à tous","joue la mélodie principale du morceau","annonce seulement la fin du morceau","se tait dès que les tambours commencent"]},
+{"q":"« Djéli » est un autre nom du…","r":"griot","o":["griot","djembé","balafon","chef du village"]},
+{"q":"Les griots chantent l’histoire de Soundiata Keïta, fondateur de…","r":"l’empire du Mali","o":["l’empire du Mali","l’Égypte ancienne","l’empire romain","la ville de Dakar"]},
+{"q":"Le ngoni est un petit luth africain, ancêtre probable du…","r":"banjo","o":["banjo","violon","piano","saxophone"]},
+{"q":"Dans une polyphonie pygmée, il n’y a…","r":"pas de chef : chacun chante son motif","o":["pas de chef : chacun chante son motif","qu’une seule voix, chantée par tous ensemble","que des instruments, et jamais de voix","qu’un soliste, accompagné par des tambours"]},
+{"q":"Les chants des Pygmées Aka sont inscrits au patrimoine…","r":"de l’UNESCO","o":["de l’UNESCO","de la SACEM","des Jeux olympiques","du Louvre"]},
+{"q":"Le raï est né dans la ville d’…","r":"Oran","o":["Oran","Casablanca","Le Caire","Dakar"]},
+{"q":"Le raï moderne utilise…","r":"synthétiseurs et boîtes à rythmes","o":["synthétiseurs et boîtes à rythmes","seulement des voix a cappella","un orchestre symphonique","uniquement la kora"]},
+{"q":"La musique gnawa est une musique de…","r":"transe","o":["transe","cour royale européenne","film d’animation","fanfare militaire"]},
+{"q":"L’afrobeat est né au…","r":"Nigeria","o":["Nigeria","Maroc","Kenya","Sénégal"]},
+{"q":"L’afrobeat de Fela Kuti se reconnaît à…","r":"de longs morceaux avec cuivres et chant engagé","o":["de longs morceaux avec cuivres et chant engagé","des chansons très courtes chantées a cappella","un piano seul joué très lentement","des chants de moines accompagnés d’orgue"]},
+{"q":"La rumba congolaise vient…","r":"du Congo","o":["du Congo","de Cuba seulement","d’Égypte","d’Afrique du Sud"]},
+{"q":"Youssou N’Dour est un chanteur du…","r":"Sénégal","o":["Sénégal","Nigeria","Bénin","Algérie"]},
+{"q":"Salif Keïta est un chanteur du…","r":"Mali","o":["Mali","Ghana","Maroc","Tchad"]},
+{"q":"Ali Farka Touré, musicien malien, jouait surtout de la…","r":"guitare","o":["guitare","kora","trompette","darbouka"]},
+{"q":"Les « notes bleues » du blues viennent en partie…","r":"des chants d’Afrique de l’Ouest","o":["des chants d’Afrique de l’Ouest","de l’opéra italien","des chants de Noël anglais","de la musique indienne"]},
+{"q":"Dans la darbouka, le « dum » est…","r":"le son grave, au centre","o":["le son grave, au centre","le son aigu, au bord","un roulement","un silence"]},
+{"q":"L’afrobeats d’aujourd’hui vient surtout…","r":"du Nigeria et du Ghana","o":["du Nigeria et du Ghana","du Maroc et de l’Algérie","d’Égypte et du Soudan","de Madagascar"]},
+{"q":"Les dunduns donnent dans l’ensemble…","r":"la base grave","o":["la base grave","la mélodie aiguë","le chant principal","le signal de fin"]},
+{"q":"La basse du djembé se joue…","r":"au centre de la peau","o":["au centre de la peau","sur le bord en bois","avec une baguette","sous le tambour"]},
+{"q":"La claque du djembé se joue…","r":"au bord de la peau","o":["au bord de la peau","au centre de la peau","avec un archet","avec les pieds"]},
+{"q":"Les polyphonies d’Afrique centrale ont été inscrites au patrimoine immatériel de…","r":"l’UNESCO","o":["l’UNESCO","la SACEM","l’Union européenne","la FIFA"]},
+{"q":"Le kora se joue surtout en…","r":"pinçant les cordes","o":["pinçant les cordes","frottant avec un archet","frappant avec des baguettes","soufflant dans un bec"]},
+{"q":"Angélique Kidjo est connue comme…","r":"chanteuse","o":["chanteuse","joueuse de kora","joueuse de oud","cheffe d’orchestre"]},
+{"q":"Mory Kanté était un joueur de kora venu de…","r":"Guinée","o":["Guinée","Égypte","Afrique du Sud","Algérie"]},
+{"q":"Khaled est surnommé le…","r":"roi du raï","o":["roi du raï","roi de la kora","père de l’afrobeat","prince du gnawa"]},
+{"q":"L’afrobeat mélange musiques africaines,…","r":"jazz et funk","o":["jazz et funk","opéra et baroque","flamenco et fado","musique celtique et folk"]},
+{"q":"La musique gnawa est jouée lors de cérémonies de…","r":"transe","o":["transe","mariage royal européen","remise de diplômes","concours de chant"]},
+{"q":"L’appel et réponse se retrouve dans…","r":"le gospel et le blues","o":["le gospel et le blues","le chant grégorien seul","la fugue baroque","le menuet classique"]},
+{"q":"Les griots s’accompagnent souvent de…","r":"la kora ou du balafon","o":["la kora ou du balafon","la cornemuse d’Écosse","du bandonéon argentin","du koto japonais"]},
+{"q":"Dans l’ensemble de djembés, qui joue les improvisations ?","r":"le djembé soliste","o":["le djembé soliste","la cloche","les dunduns","le public"]}],
+"d":[
+{"q":"Dans « 3 contre 2 », pendant que la cloche frappe 2 coups, le tambour en frappe…","r":"3","o":["3","2","4","6"]},
+{"q":"Le motif de cloche à 12 pulsations sert de…","r":"repère commun (time-line) pour tous les musiciens","o":["repère commun (time-line) pour tous les musiciens","signal pour annoncer la fin de chaque morceau","mélodie principale chantée par le griot du village","accompagnement réservé aux danseurs masqués"]},
+{"q":"Comment le savoir des griots se transmet-il ?","r":"de génération en génération, de bouche à oreille","o":["de génération en génération, de bouche à oreille","par des livres écrits au Moyen Âge","par les conservatoires de musique des villes","par des émissions de radio enregistrées"]},
+{"q":"Pourquoi les calebasses sous les lames du balafon ?","r":"elles servent de résonateurs et amplifient le son","o":["elles servent de résonateurs et amplifient le son","elles rendent l’instrument plus léger à porter","elles servent à ranger les baguettes du musicien","elles décorent l’instrument pour les fêtes"]},
+{"q":"Le musicien joue la kora surtout avec…","r":"les pouces et les index","o":["les pouces et les index","un archet","une baguette","un médiator en métal"]},
+{"q":"Quelle technique vocale les Pygmées partagent-ils avec les chanteurs tyroliens ?","r":"le yodel","o":["le yodel","le chant diphonique","le rap","le bel canto"]},
+{"q":"Dans une polyphonie pygmée, les motifs…","r":"s’imbriquent pour former un tout","o":["s’imbriquent pour former un tout","sont chantés l’un après l’autre","sont tous identiques","sont écrits sur partition"]},
+{"q":"Quelle musique ne vient PAS d’Afrique du Nord ?","r":"l’afrobeat","o":["l’afrobeat","le raï","le gnawa","la musique arabo-andalouse"]},
+{"q":"Le guembri tient dans la musique gnawa le rôle…","r":"de la basse","o":["de la basse","de la mélodie aiguë","du chant","du tambour solo"]},
+{"q":"Mory Kanté a mêlé la kora…","r":"à la musique électronique et dansante","o":["à la musique électronique et dansante","à l’opéra baroque et au clavecin","au chant grégorien des monastères","à la musique minimaliste américaine"]},
+{"q":"L’afrobeat de Fela Kuti mélange musiques africaines et…","r":"jazz et funk","o":["jazz et funk","musique baroque","flamenco","musique celtique"]},
+{"q":"Pourquoi Fela Kuti est-il célèbre en dehors de la musique ?","r":"ses chansons critiquaient le pouvoir","o":["ses chansons critiquaient le pouvoir","il était aussi footballeur international","il a inventé la radio au Nigeria","il est devenu roi de son pays"]},
+{"q":"Le ngoni, ancêtre du banjo, rappelle que…","r":"des instruments africains ont voyagé en Amérique","o":["des instruments africains ont voyagé en Amérique","le banjo a été inventé en Écosse par des bergers","le ngoni a été apporté d’Asie par des marchands","les instruments restent toujours dans leur pays d’origine"]},
+{"q":"L’appel et réponse se retrouve aussi dans…","r":"les negro-spirituals et le gospel","o":["les negro-spirituals et le gospel","la fugue de Bach","la musique minimaliste seulement","le chant grégorien seulement"]},
+{"q":"Laquelle de ces affirmations est juste ?","r":"Il existe des centaines de musiques africaines différentes","o":["Il existe des centaines de musiques africaines différentes","Toute l’Afrique joue la même musique","L’Afrique n’a pas d’instruments à cordes","La musique africaine n’utilise que des tambours"]},
+{"q":"Dans le duo Ali Farka Touré et Toumani Diabaté, on entend…","r":"la guitare et la kora","o":["la guitare et la kora","le oud et la darbouka","le djembé et la voix","le balafon et le saxophone"]},
+{"q":"Quel instrument produit le motif-repère dans l’ensemble de djembés ?","r":"la cloche","o":["la cloche","la kora","le djembé solo","la voix"]},
+{"q":"Le solo de djembé se joue…","r":"par-dessus les rythmes d’accompagnement","o":["par-dessus les rythmes d’accompagnement","seul, sans aucun autre instrument","avant que la musique commence","uniquement à la fin, en silence"]},
+{"q":"La rumba congolaise est connue pour…","r":"ses guitares électriques entrelacées et sa danse","o":["ses guitares électriques entrelacées et sa danse","ses cornemuses et ses tambours militaires","ses chœurs d’hommes chantés a cappella","ses gongs en bronze joués en cycles"]},
+{"q":"Quel point commun entre le raï et l’afrobeats d’aujourd’hui ?","r":"ce sont des musiques populaires modernes, avec des sons électroniques","o":["ce sont des musiques populaires modernes, avec des sons électroniques","ils sont chantés en latin, dans les églises, à la messe","ils sont joués sans aucun instrument, seulement avec la voix","ils viennent tous les deux du même petit pays d’Afrique"]},
+{"q":"Pourquoi dit-on que la polyrythmie « s’emboîte » ?","r":"les rythmes se complètent pour former un tout","o":["les rythmes se complètent pour former un tout","les rythmes sont joués l’un après l’autre","un seul rythme est répété plus vite","les musiciens changent d’instrument"]},
+{"q":"Quel rôle jouent les griots dans la société ?","r":"ils gardent et transmettent l’histoire par la musique","o":["ils gardent et transmettent l’histoire par la musique","ils fabriquent tous les tambours du village","ils dirigent les écoles de musique des villes","ils jugent les concours de danse des fêtes"]},
+{"q":"Le yodel pygmée consiste à…","r":"passer brusquement d’une voix grave à une voix aiguë","o":["passer brusquement d’une voix grave à une voix aiguë","chanter sans arrêt une seule et même note grave","parler en rythme par-dessus les tambours","chanter seulement des onomatopées très aiguës"]},
+{"q":"Pourquoi la musique gnawa a-t-elle un guembri très grave ?","r":"il joue le rôle de la basse qui entraîne la transe","o":["il joue le rôle de la basse qui entraîne la transe","il imite le chant des oiseaux de la forêt","il sert seulement de décoration pendant la fête","il remplace complètement les voix des chanteurs"]},
+{"q":"Que reprochaient les chansons de Fela Kuti au pouvoir ?","r":"la corruption et l’injustice","o":["la corruption et l’injustice","la musique trop lente","les tambours trop bruyants","l’absence de radio"]},
+{"q":"Le raï moderne s’est transformé grâce…","r":"aux synthétiseurs et aux boîtes à rythmes","o":["aux synthétiseurs et aux boîtes à rythmes","aux orgues d’église et aux cloches","aux orchestres symphoniques","aux chorales a cappella"]},
+{"q":"Quel point commun entre la kora et le balafon ?","r":"une calebasse sert de résonateur","o":["une calebasse sert de résonateur","ils sont joués avec un archet","ils viennent d’Asie","ils n’ont qu’une seule note"]},
+{"q":"Le banjo américain descend probablement…","r":"du ngoni africain","o":["du ngoni africain","du koto japonais","de la vielle à roue","du bandonéon"]},
+{"q":"L’afrobeats d’aujourd’hui est surtout diffusé…","r":"sur les plateformes d’écoute","o":["sur les plateformes d’écoute","dans les monastères","sur des cassettes seulement","dans les opéras"]},
+{"q":"Pourquoi la rumba congolaise s’appelle-t-elle « rumba » ?","r":"elle s’est inspirée de disques de musique cubaine","o":["elle s’est inspirée de disques de musique cubaine","elle a été inventée en Espagne au Moyen Âge","elle se danse toujours seul, sans partenaire","elle est jouée à l’orgue dans les églises"]},
+{"q":"Lequel de ces artistes n’est PAS africain ?","r":"Paco de Lucía","o":["Paco de Lucía","Salif Keïta","Angélique Kidjo","Fela Kuti"]},
+{"q":"Lequel de ces instruments n’est PAS africain ?","r":"le bandonéon","o":["le bandonéon","la kora","le balafon","le djembé"]},
+{"q":"Dans « 3 contre 2 », les deux rythmes tombent ensemble…","r":"au début de chaque cycle","o":["au début de chaque cycle","à chaque coup","jamais","seulement à la fin du morceau"]},
+{"q":"Pourquoi dit-on qu’il n’y a pas « une » musique africaine ?","r":"le continent compte des centaines de peuples et de langues","o":["le continent compte des centaines de peuples et de langues","toute la musique africaine a disparu au XXᵉ siècle","l’Afrique n’a qu’un seul instrument, le djembé","la musique est interdite dans la plupart des pays"]}]};
+const ASIE_HIST={"f":[
+{"q":"La musique arabe repose sur le…","r":"maqam","o":["maqam","raga","tango","fado"]},
+{"q":"Le oud est un…","r":"luth sans frettes","o":["luth sans frettes","tambour arabe","gong de bronze","orgue à tuyaux"]},
+{"q":"Oum Kalthoum est une grande chanteuse…","r":"égyptienne","o":["égyptienne","japonaise","indienne","chinoise"]},
+{"q":"En Inde, la mélodie est organisée en…","r":"ragas","o":["ragas","maqams","claves","reels"]},
+{"q":"En Inde, le cycle rythmique s’appelle le…","r":"tala","o":["tala","tango","taiko","tabla"]},
+{"q":"Le sitar est…","r":"un luth à long manche","o":["un luth à long manche","un tambour","une flûte","une cithare posée au sol"]},
+{"q":"Les tablas sont…","r":"deux petits tambours","o":["deux petits tambours","deux petites cloches de temple","deux flûtes doubles en bambou","deux cithares posées au sol"]},
+{"q":"La tanpura joue…","r":"un bourdon","o":["un bourdon","la mélodie rapide","le rythme","un solo de percussion"]},
+{"q":"Ravi Shankar était un maître du…","r":"sitar","o":["sitar","koto","erhu","oud"]},
+{"q":"Le gamelan vient…","r":"d’Indonésie (Java et Bali)","o":["d’Indonésie (Java et Bali)","du Japon (Kyoto et Osaka)","de l’Inde (Delhi et Bombay)","de la Chine (Pékin et Shanghai)"]},
+{"q":"Le gamelan est surtout composé de…","r":"métallophones et de gongs","o":["métallophones et de gongs","violons et de violoncelles","flûtes de pan et de quenas","cornemuses et de bombardes"]},
+{"q":"L’erhu est…","r":"une vièle à deux cordes","o":["une vièle à deux cordes","un tambour géant","une flûte à bec","un luth à 21 cordes"]},
+{"q":"La musique chinoise utilise souvent une gamme de…","r":"5 notes","o":["5 notes","12 notes","2 notes","9 notes"]},
+{"q":"Le koto est…","r":"une cithare à 13 cordes","o":["une cithare à 13 cordes","un tambour à deux peaux","une flûte à sept trous","une trompette en cuivre"]},
+{"q":"Le shakuhachi est…","r":"une flûte en bambou","o":["une flûte en bambou","une cithare japonaise à 13 cordes","un tambour japonais géant","un luth chinois à quatre cordes"]},
+{"q":"Les taiko sont…","r":"de grands tambours japonais","o":["de grands tambours japonais","des flûtes chinoises","des luths indiens","des cloches indonésiennes"]},
+{"q":"Quel instrument des Beatles vient d’Inde ?","r":"le sitar","o":["le sitar","la guitare électrique","la batterie","le piano"]},
+{"q":"L’opéra de Pékin mêle chant, théâtre et…","r":"acrobaties","o":["acrobaties","patinage","football","magie"]},
+{"q":"Le koto se joue…","r":"posé au sol, cordes pincées","o":["posé au sol, cordes pincées","debout, avec un archet en crin","en soufflant dans un bec","avec deux baguettes en bois dur"]},
+{"q":"Le ma, au Japon, c’est…","r":"le silence entre les sons","o":["le silence entre les sons","un grand tambour de fête","une danse du théâtre nô","un chant de moine bouddhiste"]},
+{"q":"Quel compositeur français a été inspiré par le gamelan ?","r":"Claude Debussy","o":["Claude Debussy","Jean-Baptiste Lully","Georges Bizet","Camille Saint-Saëns"]},
+{"q":"La bansuri est…","r":"une flûte de bambou indienne","o":["une flûte de bambou indienne","un tambour japonais en bois","une cithare chinoise à cordes","un luth arabe sans frettes"]},
+{"q":"Le qanun se joue…","r":"en pinçant ses cordes","o":["en pinçant ses cordes","en soufflant dedans","avec un archet","en le frappant au centre"]},
+{"q":"Dans quelle musique entend-on le nay ?","r":"la musique arabe","o":["la musique arabe","la musique japonaise","la musique andine","la musique bretonne"]},
+{"q":"Le riq est…","r":"un tambourin","o":["un tambourin","une flûte","une harpe","un orgue"]},
+{"q":"Les tablas viennent…","r":"d’Inde","o":["d’Inde","du Japon","de Chine","d’Égypte"]},
+{"q":"Le shamisen a…","r":"trois cordes","o":["trois cordes","treize cordes","vingt et une cordes","une seule corde"]},
+{"q":"Le pipa est un instrument de…","r":"Chine","o":["Chine","Inde","Égypte","Indonésie"]},
+{"q":"La dizi est…","r":"une flûte chinoise","o":["une flûte chinoise","un tambour indien","un luth arabe","une cloche balinaise"]},
+{"q":"Le guzheng est…","r":"une cithare chinoise","o":["une cithare chinoise","une flûte japonaise","un tambour arabe","une vièle indienne"]},
+{"q":"Le kendang est…","r":"un tambour","o":["un tambour","une flûte","une cithare","un luth"]},
+{"q":"Le gamelan joue à Java et à…","r":"Bali","o":["Bali","Kyoto","Delhi","Pékin"]},
+{"q":"Oum Kalthoum chantait…","r":"en arabe","o":["en arabe","en japonais","en hindi","en chinois"]},
+{"q":"Ravi Shankar venait…","r":"d’Inde","o":["d’Inde","du Japon","d’Égypte","de Chine"]},
+{"q":"Les taiko sont joués…","r":"par un groupe, avec puissance","o":["par un groupe, avec puissance","par une seule personne, à voix basse","avec un archet","en soufflant dedans"]}],
+"i":[
+{"q":"Un quart de ton se trouve…","r":"entre deux notes du piano","o":["entre deux notes du piano","une octave plus haut","sur les touches noires","au début d’une mesure"]},
+{"q":"Pourquoi ne peut-on pas jouer un quart de ton sur un piano ordinaire ?","r":"il n’a pas de touche entre deux demi-tons","o":["il n’a pas de touche entre deux demi-tons","il est accordé beaucoup trop grave","ses cordes sont trop tendues","il a trop de touches noires et blanches"]},
+{"q":"Le taqsim est…","r":"une improvisation au oud qui présente le maqam","o":["une improvisation au oud qui présente le maqam","un tambour arabe au son très grave","une danse chinoise jouée au carnaval","un cycle rythmique indien de 16 temps"]},
+{"q":"Le tarab, c’est…","r":"l’émotion partagée entre le chanteur et le public","o":["l’émotion partagée entre le chanteur et le public","un tambour sur cadre joué dans les mariages","une gamme chinoise à cinq notes et un rythme","une flûte en roseau jouée par les bergers"]},
+{"q":"Le qanun est…","r":"une cithare arabe","o":["une cithare arabe","un tambour indien","une flûte japonaise","un gong balinais"]},
+{"q":"Le nay est…","r":"une flûte en roseau","o":["une flûte en roseau","une vièle à deux cordes","un tambour d’eau","une harpe"]},
+{"q":"Un raga est souvent associé…","r":"à un moment de la journée","o":["à un moment de la journée","à un pays précis","à un instrument unique","à une danse de couple"]},
+{"q":"Teental est un tala de…","r":"16 temps","o":["16 temps","3 temps","7 temps","100 temps"]},
+{"q":"Les cordes « sympathiques » du sitar…","r":"vibrent toutes seules quand on joue les autres","o":["vibrent toutes seules quand on joue les autres","se jouent avec un archet en crin","servent seulement à décorer l’instrument","permettent de porter le sitar sur l’épaule"]},
+{"q":"Quel Beatle a appris le sitar avec Ravi Shankar ?","r":"George Harrison","o":["George Harrison","Paul McCartney","Ringo Starr","John Lennon"]},
+{"q":"Le kendang est, dans le gamelan…","r":"le tambour qui guide le tempo","o":["le tambour qui guide le tempo","le grand gong qui ferme le cycle","une flûte en bambou très aiguë","le chanteur qui raconte l’histoire"]},
+{"q":"Dans un gamelan, le grand gong grave…","r":"marque la fin de chaque cycle","o":["marque la fin de chaque cycle","joue la mélodie","ne joue jamais","accorde les autres instruments"]},
+{"q":"Pourquoi ne mélange-t-on pas les instruments de deux gamelans ?","r":"chaque gamelan est accordé à sa façon","o":["chaque gamelan est accordé à sa façon","ils sont beaucoup trop lourds à porter","c’est interdit par une loi indonésienne","ils ne sont pas peints de la même couleur"]},
+{"q":"Debussy a découvert le gamelan à l’Exposition universelle de…","r":"Paris, en 1889","o":["Paris, en 1889","Londres, en 1851","Vienne, en 1900","Berlin, en 1936"]},
+{"q":"L’archet de l’erhu est…","r":"coincé entre les deux cordes","o":["coincé entre les deux cordes","posé au-dessus des cordes","en métal","remplacé par les doigts"]},
+{"q":"Le pipa est…","r":"un luth chinois","o":["un luth chinois","une flûte japonaise","un tambour indien","une cithare arabe"]},
+{"q":"Le koto se joue avec…","r":"des onglets aux doigts","o":["des onglets aux doigts","un archet en crin","des baguettes en bois","le souffle seulement"]},
+{"q":"Qui jouait autrefois du shakuhachi pour méditer ?","r":"des moines zen","o":["des moines zen","des samouraïs à cheval","des pêcheurs","des empereurs chinois"]},
+{"q":"Le jeu des taiko ressemble presque à…","r":"une danse, tant les gestes sont puissants","o":["une danse, tant les gestes sont puissants","un chant murmuré à voix très basse","un concert de piano dans un salon","une prière silencieuse dans un temple"]},
+{"q":"Le shamisen est…","r":"un luth japonais à trois cordes","o":["un luth japonais à trois cordes","un tambour coréen à deux peaux","une flûte chinoise en bambou","une harpe indienne à 21 cordes"]},
+{"q":"Le maqam Rast se reconnaît à…","r":"son mi et son si baissés d’un quart de ton","o":["son mi et son si baissés d’un quart de ton","son tempo toujours très rapide et dansant","l’absence complète de mélodie chantée","son accompagnement obligatoire au piano"]},
+{"q":"Un raga du matin se joue…","r":"le matin","o":["le matin","à minuit","seulement en hiver","jamais en public"]},
+{"q":"Teental est un cycle de…","r":"16 temps","o":["16 temps","3 temps","5 temps","12 temps"]},
+{"q":"Dans un concert indien, la tanpura joue…","r":"en continu, sans s’arrêter","o":["en continu, sans s’arrêter","seulement à la toute fin","seulement pendant les solos","une seule fois par minute"]},
+{"q":"Les instruments d’un gamelan sont surtout en…","r":"bronze","o":["bronze","plastique","verre","papier"]},
+{"q":"L’opéra de Pékin mêle chant, théâtre, acrobaties et…","r":"percussions","o":["percussions","cornemuses","claves","steel drums"]},
+{"q":"Le shakuhachi était joué autrefois par…","r":"des moines zen","o":["des moines zen","des soldats","des danseurs","des enfants"]},
+{"q":"Les cordes du koto sont accordées grâce à…","r":"des chevalets mobiles","o":["des chevalets mobiles","des clés de violon","une pédale","un soufflet"]},
+{"q":"Le gagaku est la musique…","r":"de la cour impériale du Japon","o":["de la cour impériale du Japon","des pêcheurs de l’île de Bali","des moines bouddhistes indiens","des marchés populaires du Caire"]},
+{"q":"Debussy a imité le gamelan dans des pièces pour…","r":"piano","o":["piano","orgue","guitare","flûte seule"]},
+{"q":"Une gamme pentatonique a…","r":"5 notes","o":["5 notes","7 notes","8 notes","12 notes"]},
+{"q":"George Harrison a appris le sitar avec…","r":"Ravi Shankar","o":["Ravi Shankar","Zakir Hussain","Oum Kalthoum","Debussy"]},
+{"q":"Zakir Hussain est un grand joueur de…","r":"tabla","o":["tabla","sitar","koto","oud"]}],
+"d":[
+{"q":"Dans le maqam Rast sur do, quelles notes sont un quart de ton plus bas ?","r":"mi et si","o":["mi et si","ré et la","fa et do","sol et ré"]},
+{"q":"Un maqam, c’est plus qu’une gamme : c’est aussi…","r":"ses notes importantes, ses formules et son émotion","o":["ses notes importantes, ses formules et son émotion","un tempo fixe et une danse obligatoire pour tous","un instrument précis, toujours le même, le oud","un nombre précis de musiciens sur scène, toujours sept"]},
+{"q":"Pourquoi le oud peut-il jouer des quarts de ton ?","r":"son manche n’a pas de frettes","o":["son manche n’a pas de frettes","il a 21 cordes","il est accordé en quintes","il est joué avec un archet"]},
+{"q":"Les notes de base jouées par la tanpura s’appellent…","r":"Sa et Pa","o":["Sa et Pa","Do et Ré","Dum et Tek","Yin et Yang"]},
+{"q":"La musique classique du nord de l’Inde s’appelle…","r":"hindoustanie","o":["hindoustanie","carnatique","bollywoodienne","gamelan"]},
+{"q":"Une grande partie d’un concert de sitar est…","r":"improvisée, dans le cadre du raga et du tala","o":["improvisée, dans le cadre du raga et du tala","lue sur une partition écrite à l’avance","jouée par un ordinateur et des haut-parleurs","répétée note pour note, chaque soir pareil"]},
+{"q":"Le kotekan de Bali, c’est…","r":"deux musiciens qui jouent des motifs rapides imbriqués","o":["deux musiciens qui jouent des motifs rapides imbriqués","un solo joué sur le grand gong grave à la fin","un chant de femmes sans aucun instrument autour","une danse de masques, jouée sans aucune musique"]},
+{"q":"Pourquoi le gamelan balinais semble-t-il « vibrer » ?","r":"les instruments jumeaux sont légèrement désaccordés","o":["les instruments jumeaux sont légèrement désaccordés","les musiciens agitent les instruments en jouant","les instruments sont joués à moitié dans l’eau","les lames sont frottées avec un archet"]},
+{"q":"Le gamelan est fait de…","r":"bronze","o":["bronze","bois de bambou seulement","plastique","pierre"]},
+{"q":"Quelle gamme ressemble aux touches noires du piano ?","r":"la gamme pentatonique","o":["la gamme pentatonique","la gamme chromatique","la gamme majeure","le maqam Rast"]},
+{"q":"Ce qui rapproche l’erhu de la voix humaine, c’est…","r":"ses glissements d’une note à l’autre","o":["ses glissements d’une note à l’autre","ses accords de trois notes","son volume très fort","ses notes toujours très courtes"]},
+{"q":"Dans « Les Courses de chevaux », l’erhu imite…","r":"le galop et les hennissements","o":["le galop et les hennissements","le chant des oiseaux le matin","la pluie qui tombe sur le toit","les cloches d’un temple bouddhiste"]},
+{"q":"Le koto a des chevalets mobiles qui servent à…","r":"accorder chaque corde","o":["accorder chaque corde","frapper les cordes","porter l’instrument","faire résonner le bois"]},
+{"q":"L’idée japonaise du ma signifie que…","r":"le silence compte autant que les sons","o":["le silence compte autant que les sons","la musique doit toujours être forte","il faut jouer sans s’arrêter","seuls les tambours comptent"]},
+{"q":"Le gagaku est…","r":"l’ancienne musique de la cour impériale du Japon","o":["l’ancienne musique de la cour impériale du Japon","un tambour indien joué avec les doigts des deux mains","une danse de Bali accompagnée par le gamelan","un opéra chinois moderne joué à Pékin depuis 1990"]},
+{"q":"Quel instrument n’appartient PAS à la musique de l’Inde ?","r":"le koto","o":["le koto","le sitar","le tabla","la tanpura"]},
+{"q":"Quel instrument n’appartient PAS à la musique arabe ?","r":"le taiko","o":["le taiko","le oud","le qanun","le nay"]},
+{"q":"Le tabla est formé de deux tambours : l’un aigu et l’autre…","r":"grave","o":["grave","muet","en bois sans peau","joué à l’archet"]},
+{"q":"Debussy a imité le gamelan dans ses pièces pour…","r":"piano","o":["piano","orgue","harpe seule","trompette"]},
+{"q":"Oum Kalthoum chantait des concerts qui duraient…","r":"plusieurs heures","o":["plusieurs heures","trois minutes","une seule chanson courte","dix secondes"]},
+{"q":"Pourquoi le sitar sonne-t-il « riche » même sur une seule note ?","r":"ses cordes sympathiques résonnent avec la note jouée","o":["ses cordes sympathiques résonnent avec la note jouée","il est toujours joué par plusieurs musiciens","il possède un petit haut-parleur intégré","on le frappe avec de petits marteaux en bois"]},
+{"q":"Quel est le rôle du taqsim au début d’un morceau arabe ?","r":"faire entendre le maqam en improvisant","o":["faire entendre le maqam en improvisant","accorder les instruments en silence","annoncer le titre au public","donner le tempo à la batterie"]},
+{"q":"Pourquoi un piano ne peut-il pas jouer le maqam Rast exactement ?","r":"il lui manque les notes entre les touches","o":["il lui manque les notes entre les touches","il joue beaucoup trop fort pour ce chant","il est accordé bien trop grave","il n’a pas de pédale pour tenir les sons"]},
+{"q":"Ce qui crée le « scintillement » du gamelan de Bali s’appelle…","r":"l’ombak, le battement des paires désaccordées","o":["l’ombak, le battement des paires désaccordées","le kotekan, un chant de femmes sans instrument","le tala, un cycle rythmique venu d’Inde","le ma, le silence de la musique japonaise"]},
+{"q":"Pourquoi un gamelan est-il unique ?","r":"tous ses instruments sont accordés ensemble, à sa façon","o":["tous ses instruments sont accordés ensemble, à sa façon","il ne peut jouer qu’une seule fois dans sa vie","il n’a jamais plus d’un seul musicien","il est toujours fabriqué en plastique coloré"]},
+{"q":"Dans l’erhu, l’archet passe…","r":"entre les deux cordes","o":["entre les deux cordes","au-dessus des deux cordes","sous la caisse","derrière le manche"]},
+{"q":"La musique de cour japonaise gagaku est…","r":"l’une des plus anciennes musiques d’orchestre du monde","o":["l’une des plus anciennes musiques d’orchestre du monde","une musique électronique inventée à Tokyo en 2010","une musique composée pour des jeux vidéo récents","un style de rap japonais très rapide et moderne"]},
+{"q":"Le tarab d’Oum Kalthoum explique pourquoi…","r":"ses concerts duraient plusieurs heures","o":["ses concerts duraient plusieurs heures","elle chantait toujours sans instruments","elle chantait parfois en japonais","elle ne chantait jamais plus d’une minute"]},
+{"q":"La musique classique du sud de l’Inde s’appelle…","r":"carnatique","o":["carnatique","hindoustanie","gamelan","gagaku"]},
+{"q":"Lequel de ces instruments n’est PAS joué en Chine ?","r":"le sitar","o":["le sitar","l’erhu","le pipa","le guzheng"]},
+{"q":"Lequel de ces instruments n’est PAS japonais ?","r":"le qanun","o":["le qanun","le koto","le shakuhachi","le shamisen"]},
+{"q":"Dans la musique indienne, le soliste improvise…","r":"à l’intérieur du raga et du tala","o":["à l’intérieur du raga et du tala","sans aucune règle","en lisant une partition","seulement à la fin du concert"]},
+{"q":"Quel point commun entre le maqam et le raga ?","r":"une gamme avec ses formules et son émotion","o":["une gamme avec ses formules et son émotion","un grand tambour joué par deux musiciens","une danse de couple lente et très élégante","un orchestre de gongs accordés ensemble"]},
+{"q":"Pourquoi l’erhu ressemble-t-il à une voix ?","r":"il glisse d’une note à l’autre et vibre","o":["il glisse d’une note à l’autre et vibre","il a des paroles gravées sur le manche","il joue des accords de trois notes","il est plus fort que tous les autres"]}]};
+const AMERIQUES_HIST={"f":[
+{"q":"Les musiques d’Amérique latine mélangent des héritages amérindiens, européens et…","r":"africains","o":["africains","japonais","indiens","russes"]},
+{"q":"La salsa vient en grande partie de la musique de…","r":"Cuba","o":["Cuba","Argentine","Pérou","Chili"]},
+{"q":"La clave est…","r":"un motif rythmique frappé avec deux bâtons de bois","o":["un motif rythmique frappé avec deux bâtons de bois","une flûte de pan faite de roseaux de longueurs différentes","une guitare cubaine à trois paires de cordes métalliques","un tambour géant frappé avec une massue rembourrée"]},
+{"q":"Les congas sont…","r":"des tambours","o":["des tambours","des flûtes","des guitares","des trompettes"]},
+{"q":"La samba est née à…","r":"Rio de Janeiro","o":["Rio de Janeiro","Buenos Aires","La Havane","Mexico"]},
+{"q":"Une batucada est…","r":"un grand groupe de percussions","o":["un grand groupe de percussions","une chanteuse seule avec sa guitare","une danse de couple très lente","un orchestre de violons et de violoncelles"]},
+{"q":"Le surdo est…","r":"un gros tambour grave","o":["un gros tambour grave","une petite flûte","une guitare","une cloche"]},
+{"q":"La bossa nova est…","r":"une samba douce et jazzy","o":["une samba douce et jazzy","une marche militaire","un chant religieux","un rock très fort"]},
+{"q":"Le tango est né à…","r":"Buenos Aires","o":["Buenos Aires","Rio de Janeiro","La Havane","Lima"]},
+{"q":"L’instrument roi du tango est le…","r":"bandonéon","o":["bandonéon","steel drum","charango","djembé"]},
+{"q":"Qui a composé « Libertango » ?","r":"Astor Piazzolla","o":["Astor Piazzolla","Antônio Carlos Jobim","Celia Cruz","Bob Marley"]},
+{"q":"La quena est…","r":"une flûte des Andes","o":["une flûte des Andes","un tambour cubain","une guitare mexicaine","un violon argentin"]},
+{"q":"Le charango est…","r":"une petite guitare à cordes doubles","o":["une petite guitare à cordes doubles","un tambour du carnaval de Rio","une flûte de pan à deux rangées","un grand accordéon à boutons"]},
+{"q":"« El Cóndor Pasa » est une musique célèbre des…","r":"Andes","o":["Andes","Caraïbes","États-Unis","Antilles françaises"]},
+{"q":"Le mariachi est un orchestre du…","r":"Mexique","o":["Mexique","Brésil","Pérou","Chili"]},
+{"q":"Le steel drum est fabriqué dans…","r":"un baril de pétrole","o":["un baril de pétrole","un tronc d’arbre","une calebasse","une carapace de tatou"]},
+{"q":"Le steel drum vient de…","r":"Trinité-et-Tobago","o":["Trinité-et-Tobago","l’Argentine","la Bolivie","la Guyane"]},
+{"q":"Le zouk a été rendu célèbre par le groupe…","r":"Kassav’","o":["Kassav’","Buena Vista Social Club","les Gipsy Kings","Daft Punk"]},
+{"q":"Le reggae vient de…","r":"la Jamaïque","o":["la Jamaïque","Cuba","Haïti","Trinité-et-Tobago"]},
+{"q":"La bossa nova est née au…","r":"Brésil","o":["Brésil","Mexique","Venezuela","Pérou"]},
+{"q":"Les maracas sont…","r":"des hochets remplis de graines","o":["des hochets remplis de graines","des flûtes en bambou","des tambours remplis d’eau","des cordes pincées sur une caisse"]},
+{"q":"Le tango est une danse…","r":"de couple","o":["de couple","en ronde","en solo uniquement","de guerriers"]},
+{"q":"Le son cubain est l’ancêtre de la…","r":"salsa","o":["salsa","bossa nova","valse","fugue"]},
+{"q":"Les bongos sont…","r":"deux petits tambours","o":["deux petits tambours","deux petites flûtes","deux petites guitares","deux cloches en métal"]},
+{"q":"Le tamborim joue dans la…","r":"samba","o":["samba","tango","fado","gavotte"]},
+{"q":"La samba vient du…","r":"Brésil","o":["Brésil","Mexique","Pérou","Chili"]},
+{"q":"Le cavaquinho est…","r":"une petite guitare brésilienne","o":["une petite guitare brésilienne","un tambour cubain à deux peaux","une flûte des Andes en roseau","un accordéon argentin à boutons"]},
+{"q":"Le siku est aussi appelé…","r":"zampoña","o":["zampoña","quena","bombo","clave"]},
+{"q":"Le mariachi porte un costume de…","r":"charro","o":["charro","gaucho","torero","cow-boy"]},
+{"q":"Le guitarrón est…","r":"une grosse guitare","o":["une grosse guitare","une petite flûte","un tambour","une trompette"]},
+{"q":"Le calypso vient de…","r":"Trinité-et-Tobago","o":["Trinité-et-Tobago","l’Argentine (Buenos Aires)","la Bolivie (La Paz)","le Mexique (Guadalajara)"]},
+{"q":"Le zouk vient…","r":"des Antilles françaises","o":["des Antilles françaises","des Andes, au Pérou","du Brésil, à Rio","de Cuba, à La Havane"]},
+{"q":"Le tango est né vers…","r":"1880","o":["1880","1950","1700","2000"]},
+{"q":"La batucada joue surtout au…","r":"carnaval","o":["carnaval","mariage royal","concert classique","match de tennis"]},
+{"q":"Celia Cruz chantait de la…","r":"salsa","o":["salsa","bossa nova","samba","musique andine"]}],
+"i":[
+{"q":"La clave 3-2 fait…","r":"3 coups dans la 1ʳᵉ mesure, 2 dans la 2ᵉ","o":["3 coups dans la 1ʳᵉ mesure, 2 dans la 2ᵉ","3 mesures puis 2 de silence","3 temps forts et 2 temps faibles","3 instruments et 2 chanteurs"]},
+{"q":"Le tres cubain est…","r":"une guitare à trois paires de cordes","o":["une guitare à trois paires de cordes","un tambour à trois peaux tendues","une flûte de bois à trois trous","un trio de chanteurs a cappella"]},
+{"q":"La salsa s’est développée dans les années 1960-1970 à…","r":"New York","o":["New York","Madrid","Rio","Lima"]},
+{"q":"Celia Cruz était une grande chanteuse de…","r":"salsa","o":["salsa","tango","fado","bossa nova"]},
+{"q":"Dans la samba, le surdo frappe fort le…","r":"2ᵉ temps","o":["2ᵉ temps","1ᵉʳ temps","3ᵉ temps","contretemps seulement"]},
+{"q":"L’agogô est…","r":"une double cloche","o":["une double cloche","un tambour grave","une petite guitare","une flûte"]},
+{"q":"« Bossa nova » signifie…","r":"nouvelle vague","o":["nouvelle vague","grande fête","danse du soleil","chant d’amour"]},
+{"q":"Qui a composé « The Girl from Ipanema » ?","r":"Antônio Carlos Jobim","o":["Antônio Carlos Jobim","Astor Piazzolla","Tito Puente","Carlos Santana"]},
+{"q":"Le bandonéon est venu d’…","r":"Allemagne","o":["Allemagne","Italie","Espagne","Japon"]},
+{"q":"Le tango nuevo de Piazzolla mêle le tango, le jazz et…","r":"la musique classique","o":["la musique classique","le reggae jamaïcain","le rap américain","le gamelan de Bali"]},
+{"q":"Le siku (ou zampoña) est…","r":"une flûte de pan","o":["une flûte de pan","une guitare","un tambour","un violon"]},
+{"q":"Autrefois, la caisse du charango était faite d’…","r":"une carapace de tatou","o":["une carapace de tatou","une calebasse","une noix de coco","un baril"]},
+{"q":"Les musiques des Andes utilisent souvent la gamme…","r":"pentatonique","o":["pentatonique","chromatique","par tons","maqam"]},
+{"q":"Le bombo est…","r":"une grosse caisse andine","o":["une grosse caisse andine","une flûte cubaine","un luth arabe","une cloche brésilienne"]},
+{"q":"Le guitarrón joue, dans le mariachi…","r":"la basse","o":["la basse","la mélodie aiguë","le chant","les percussions"]},
+{"q":"Sur un steel drum, chaque zone bosselée…","r":"donne une note","o":["donne une note","fait un bruit de tambour","sert de poignée","est décorative"]},
+{"q":"Le steel drum accompagne surtout le…","r":"calypso","o":["calypso","tango","fado","flamenco"]},
+{"q":"Le gwoka de Guadeloupe se joue avec des…","r":"tambours ka","o":["tambours ka","steel drums","flûtes de pan","bandonéons"]},
+{"q":"La biguine vient…","r":"des Antilles françaises","o":["des Antilles françaises","d’Argentine (Buenos Aires)","du Pérou (montagnes des Andes)","du Mexique (fêtes de mariachis)"]},
+{"q":"Le Buena Vista Social Club a fait redécouvrir…","r":"le son cubain","o":["le son cubain","la samba","le tango","la musique des Andes"]},
+{"q":"Le son cubain mêle guitare espagnole et…","r":"percussions africaines","o":["percussions africaines","gongs indonésiens","flûtes japonaises","cornemuses écossaises"]},
+{"q":"Tito Puente est un musicien de…","r":"salsa","o":["salsa","tango","bossa nova","mariachi"]},
+{"q":"La bossa nova chante…","r":"à voix douce, presque parlée","o":["à voix douce, presque parlée","à pleine voix, en criant","sans aucune parole","en chœur de cent chanteurs"]},
+{"q":"La bossa nova emprunte au jazz…","r":"ses accords riches","o":["ses accords riches","ses cornemuses","ses quarts de ton","ses gongs"]},
+{"q":"Le bandonéon se joue avec…","r":"un soufflet et des boutons","o":["un soufflet et des boutons","un archet et des cordes","des baguettes et une peau","un bec et des trous"]},
+{"q":"Le tango est né à Buenos Aires et à…","r":"Montevideo","o":["Montevideo","Lima","La Havane","Mexico"]},
+{"q":"Piazzolla a appelé son style le…","r":"tango nuevo","o":["tango nuevo","son cubain","samba-enredo","calypso"]},
+{"q":"La quena est une flûte…","r":"droite, à encoche","o":["droite, à encoche","traversière, en métal","double, à anche","à coulisse"]},
+{"q":"Le charango a des cordes…","r":"doubles","o":["doubles","en métal unique","frottées à l’archet","frappées"]},
+{"q":"Le steel drum est accordé en…","r":"martelant des zones du métal","o":["martelant des zones du métal","tendant une peau sur le baril","coupant des tuyaux en bambou","serrant des cordes en acier"]},
+{"q":"Kassav’ est un groupe de…","r":"zouk","o":["zouk","salsa","tango","samba"]},
+{"q":"Le gwoka est joué en…","r":"Guadeloupe","o":["Guadeloupe","Argentine","Bolivie","Mexique"]},
+{"q":"Le mariachi accompagne souvent…","r":"les fêtes et les sérénades","o":["les fêtes et les sérénades","les cérémonies bouddhistes","les défilés militaires","les concerts d’orgue"]}],
+"d":[
+{"q":"Dans la musique cubaine, la clave…","r":"organise tous les autres rythmes","o":["organise tous les autres rythmes","se joue seulement à la fin","remplace la mélodie","est jouée par le chanteur"]},
+{"q":"Quels héritages se rencontrent dans le son cubain ?","r":"la guitare espagnole et les percussions africaines","o":["la guitare espagnole et les percussions africaines","le violon russe et les gongs chinois de Pékin","l’orgue anglais et la flûte indienne en bambou","le koto japonais et la kora malienne à 21 cordes"]},
+{"q":"Pourquoi des percussions africaines au Brésil et à Cuba ?","r":"des millions d’Africains y ont été déportés comme esclaves","o":["des millions d’Africains y ont été déportés comme esclaves","les deux pays se trouvent sur le continent africain","la télévision les a fait connaître au XIXᵉ siècle","des marins japonais les y ont apportées par hasard"]},
+{"q":"Qu’est-ce qui distingue la bossa nova de la samba de carnaval ?","r":"une voix douce, presque parlée, et des accords de jazz","o":["une voix douce, presque parlée, et des accords de jazz","beaucoup plus de percussions et des sifflets","un tempo beaucoup plus rapide et des cuivres","des cornemuses et des tambours militaires"]},
+{"q":"Qui chante doucement dans « The Girl from Ipanema », avec Stan Getz ?","r":"João et Astrud Gilberto","o":["João et Astrud Gilberto","Celia Cruz et Tito Puente","Carlos Gardel et Astor Piazzolla","Mercedes Sosa et Violeta Parra"]},
+{"q":"Le tango est né chez…","r":"les immigrés européens des quartiers pauvres","o":["les immigrés européens des quartiers pauvres","les rois et les reines d’Espagne","les Incas des montagnes des Andes","les moines des monastères de Lisbonne"]},
+{"q":"Le caractère du tango est à la fois…","r":"passionné et mélancolique","o":["passionné et mélancolique","joyeux et un peu enfantin","calme et toujours religieux","comique et très léger"]},
+{"q":"Le bandonéon produit le son grâce à…","r":"un soufflet et des anches","o":["un soufflet et des anches","des cordes frappées","une peau tendue","des lames de métal frappées"]},
+{"q":"Pourquoi deux joueurs de siku se partagent-ils souvent les notes ?","r":"chaque flûte n’a qu’une partie des notes de la gamme","o":["chaque flûte n’a qu’une partie des notes de la gamme","l’instrument est beaucoup trop lourd pour un seul","c’est plus rapide pour accorder les tuyaux","à deux, on peut jouer beaucoup plus fort"]},
+{"q":"Les musiques des Andes sont héritées en partie des…","r":"Incas","o":["Incas","Vikings","Romains","Aztèques seulement"]},
+{"q":"La vihuela du mariachi est…","r":"une petite guitare bombée","o":["une petite guitare bombée","une trompette à pistons","un tambour à deux peaux","une flûte en roseau"]},
+{"q":"Lequel de ces instruments n’est PAS joué dans une batucada ?","r":"le bandonéon","o":["le bandonéon","le surdo","le tamborim","l’agogô"]},
+{"q":"Lequel de ces instruments n’est PAS des Andes ?","r":"le steel drum","o":["le steel drum","la quena","le charango","le siku"]},
+{"q":"Dans quelle famille range-t-on le steel drum ?","r":"les idiophones","o":["les idiophones","les membranophones","les cordophones","les aérophones"]},
+{"q":"Le zouk est apparu dans les années…","r":"1980","o":["1980","1920","1950","2010"]},
+{"q":"La salsa est surtout une musique…","r":"de danse","o":["de danse","de méditation","de cour royale","de film muet"]},
+{"q":"Le reggae jamaïcain est précédé par…","r":"le ska et le rocksteady","o":["le ska et le rocksteady","la samba et la bossa nova","le tango et la milonga","le calypso et le zouk"]},
+{"q":"Ce qu’on entend dans un ensemble cubain qui joue le son :","r":"tres, congas, bongos, maracas, contrebasse","o":["tres, congas, bongos, maracas, contrebasse","koto, shakuhachi, taiko, shamisen, biwa","bombarde, biniou, harpe, bodhrán, fiddle","sitar, tabla, tanpura, bansuri, sarangi"]},
+{"q":"La sérénade mexicaine « Cielito lindo » est jouée par…","r":"un mariachi","o":["un mariachi","une batucada","un orchestre de tango","un groupe de steel drums"]},
+{"q":"Piazzolla a choqué certains amateurs de tango parce qu’il…","r":"a modernisé le tango avec le jazz et le classique","o":["a modernisé le tango avec le jazz et le classique","a supprimé le bandonéon de ses orchestres","a chanté tous ses tangos en anglais","a remplacé le tango par la salsa cubaine"]},
+{"q":"Pourquoi la clave est-elle dite « 3-2 » ?","r":"3 coups dans une mesure, 2 dans la suivante","o":["3 coups dans une mesure, 2 dans la suivante","3 musiciens jouent pour 2 danseurs","3 notes graves puis 2 notes aiguës","3 minutes de musique puis 2 de silence"]},
+{"q":"Que se passe-t-il si un musicien cubain joue « contre la clave » ?","r":"son rythme ne s’accorde plus avec le motif de base","o":["son rythme ne s’accorde plus avec le motif de base","il joue toujours plus fort que les autres","il doit aussitôt changer d’instrument","il est obligé de chanter en anglais"]},
+{"q":"Pourquoi le surdo frappe-t-il fort le 2ᵉ temps ?","r":"c’est l’accent qui fait avancer les danseurs","o":["c’est l’accent qui fait avancer les danseurs","c’est le seul temps que le joueur connaît","c’est pour signaler la fin du défilé","c’est pour imiter le rythme du tango"]},
+{"q":"Quel héritage amérindien entend-on dans la musique des Andes ?","r":"les flûtes et la gamme pentatonique","o":["les flûtes et la gamme pentatonique","le bandonéon et la valse à trois temps","les congas et la clave cubaine","le steel drum et le calypso des îles"]},
+{"q":"Pourquoi les Européens ont-ils marqué les musiques d’Amérique latine ?","r":"ils ont apporté la guitare, le violon et l’harmonie","o":["ils ont apporté la guitare, le violon et l’harmonie","ils ont inventé la quena et la flûte de pan","ils ont apporté les tambours venus d’Afrique","ils ont interdit toute musique sur le continent"]},
+{"q":"Pourquoi le zouk est-il lié aux Antilles françaises ?","r":"il est né en Guadeloupe et en Martinique dans les années 1980","o":["il est né en Guadeloupe et en Martinique dans les années 1980","il est né à Paris dans les salons du XVIIIᵉ siècle","il a été inventé au Japon par des marins","il vient de l’opéra italien chanté en créole"]},
+{"q":"Qu’est-ce qui rend la bossa nova « intime » ?","r":"une guitare douce et une voix presque murmurée","o":["une guitare douce et une voix presque murmurée","une batucada de cent percussionnistes","des cuivres très puissants","des chœurs de stade"]},
+{"q":"Le tango nuevo de Piazzolla se joue souvent…","r":"au concert, pour être écouté","o":["au concert, pour être écouté","seulement pendant le carnaval","uniquement pendant la messe","toujours sans bandonéon"]},
+{"q":"Le reggae jamaïcain se reconnaît à…","r":"la guitare sur les contretemps","o":["la guitare sur les contretemps","la clave 3-2 des percussions","le bandonéon des orchestres","la flûte de pan des montagnes"]},
+{"q":"Lequel de ces styles n’est PAS né en Amérique latine ou aux Caraïbes ?","r":"le flamenco","o":["le flamenco","la salsa","la samba","le tango"]},
+{"q":"Quel instrument fabrique-t-on à partir d’objets industriels recyclés ?","r":"le steel drum","o":["le steel drum","la quena","le charango","le bandonéon"]},
+{"q":"Les fêtes de carnaval de Rio réunissent…","r":"des écoles de samba qui défilent avec leur batucada","o":["des écoles de samba qui défilent avec leur batucada","des orchestres de tango en costume de soirée","des mariachis à cheval venus du Mexique","des chorales a cappella dans les églises"]},
+{"q":"La guitare espagnole a donné à Cuba le…","r":"tres","o":["tres","bongo","güiro","bombo"]},
+{"q":"La musique de « El Cóndor Pasa » utilise…","r":"la quena et la flûte de pan","o":["la quena et la flûte de pan","le steel drum et les congas","le bandonéon et le piano","la cornemuse et la harpe"]}]};
+const EUROPE_HIST={"f":[
+{"q":"Le fest-noz est une fête de danse de…","r":"Bretagne","o":["Bretagne","Corse","Irlande","Andalousie"]},
+{"q":"La bombarde est…","r":"un hautbois puissant","o":["un hautbois puissant","un tambour grave","une harpe celtique","un violon breton"]},
+{"q":"Le biniou est…","r":"une petite cornemuse","o":["une petite cornemuse","une flûte de pan","un accordéon","un tambour"]},
+{"q":"Les sonneurs bretons jouent souvent…","r":"en couple : bombarde et biniou","o":["en couple : bombarde et biniou","seuls, au piano à queue","à quatre violons, en quatuor","avec des steel drums et des congas"]},
+{"q":"Alan Stivell a fait renaître…","r":"la harpe celtique","o":["la harpe celtique","le sitar","le bandonéon","le koto"]},
+{"q":"La bourrée est une danse…","r":"d’Auvergne","o":["d’Auvergne","de Bretagne","du Pays basque","d’Irlande"]},
+{"q":"La vielle à roue fait vibrer ses cordes grâce à…","r":"une roue tournée par une manivelle","o":["une roue tournée par une manivelle","un archet en crin de cheval","des petits marteaux en feutre","le souffle d’un soufflet en cuir"]},
+{"q":"La paghjella est un chant polyphonique de…","r":"Corse","o":["Corse","Bretagne","Normandie","Alsace"]},
+{"q":"A cappella veut dire…","r":"sans instrument","o":["sans instrument","très vite","avec un orchestre","en solo de tambour"]},
+{"q":"L’instrument du bal musette est…","r":"l’accordéon","o":["l’accordéon","la cornemuse","la harpe","le violon"]},
+{"q":"La gigue irlandaise (jig) se compte souvent à…","r":"6/8","o":["6/8","4/4","3/4","7/8"]},
+{"q":"Le fiddle est…","r":"le violon de la musique traditionnelle","o":["le violon de la musique traditionnelle","une flûte irlandaise en métal à six trous","un tambour irlandais sur cadre, en peau","une harpe celtique à trente-quatre cordes"]},
+{"q":"Le bodhrán est…","r":"un tambour sur cadre irlandais","o":["un tambour sur cadre irlandais","une cornemuse à soufflet","une flûte en métal","un luth à cordes doubles"]},
+{"q":"Le flamenco vient d’…","r":"Andalousie","o":["Andalousie","Écosse (Royaume-Uni)","Égypte (Afrique du Nord)","Islande (Europe du Nord)"]},
+{"q":"Dans le flamenco, les palmas sont…","r":"des claquements de mains","o":["des claquements de mains","des pas de danse frappés","des chants très aigus","des castagnettes en bois"]},
+{"q":"Le grand guitariste de flamenco s’appelle…","r":"Paco de Lucía","o":["Paco de Lucía","Alan Stivell","Goran Bregović","Astor Piazzolla"]},
+{"q":"Le fado est un chant du…","r":"Portugal","o":["Portugal","Mexique","Brésil","Italie"]},
+{"q":"La grande voix du fado est…","r":"Amália Rodrigues","o":["Amália Rodrigues","Édith Piaf","Celia Cruz","Oum Kalthoum"]},
+{"q":"Les mesures « boiteuses » se trouvent surtout dans les…","r":"Balkans","o":["Balkans","pays nordiques","îles britanniques","Alpes"]},
+{"q":"Goran Bregović est célèbre pour ses…","r":"fanfares des Balkans","o":["fanfares des Balkans","chants corses","airs irlandais","chants bretons"]},
+{"q":"En Écosse, la grande cornemuse s’appelle…","r":"le bagpipe","o":["le bagpipe","le biniou","la cabrette","le bodhrán"]},
+{"q":"Les musiques traditionnelles accompagnent souvent…","r":"la danse et les fêtes","o":["la danse et les fêtes","les films de science-fiction","les jeux vidéo","les publicités"]},
+{"q":"Fest-noz veut dire…","r":"fête de nuit","o":["fête de nuit","danse du matin","chant de marin","bal des enfants"]},
+{"q":"Au fest-noz, on danse souvent…","r":"en chaîne ou en rond","o":["en chaîne ou en rond","seul sur une chaise","en couple, au tango","sans aucune musique"]},
+{"q":"La vielle à roue a…","r":"une manivelle","o":["une manivelle","un soufflet","une peau","un bec"]},
+{"q":"La cabrette est…","r":"une cornemuse","o":["une cornemuse","un violon","une flûte de pan","un tambour"]},
+{"q":"Le txistu vient du…","r":"Pays basque","o":["Pays basque","Pays de Galles","Portugal","Tyrol"]},
+{"q":"Le bal musette est lié à la ville de…","r":"Paris","o":["Paris","Lisbonne","Dublin","Séville"]},
+{"q":"La musique irlandaise se joue souvent dans…","r":"les pubs","o":["les pubs","les opéras","les cathédrales","les stades"]},
+{"q":"Le reel est…","r":"un air de danse irlandais","o":["un air de danse irlandais","un chant corse","une danse basque","une chanson portugaise"]},
+{"q":"Le cante, dans le flamenco, c’est…","r":"le chant","o":["le chant","la guitare","la danse","le public"]},
+{"q":"Le baile, dans le flamenco, c’est…","r":"la danse","o":["la danse","le chant","la guitare","les palmas"]},
+{"q":"La saudade est un sentiment de…","r":"nostalgie","o":["nostalgie","colère","joie","peur"]},
+{"q":"Le fado est accompagné par…","r":"la guitare portugaise","o":["la guitare portugaise","la cornemuse","le bodhrán","l’accordéon musette"]},
+{"q":"Alan Stivell est un musicien…","r":"breton","o":["breton","corse","irlandais","basque"]}],
+"i":[
+{"q":"Le kan ha diskan, c’est…","r":"deux chanteurs qui se relaient","o":["deux chanteurs qui se relaient","un orchestre de bombardes","une danse en couple","un solo de harpe"]},
+{"q":"Le bagad est…","r":"un grand orchestre breton de bombardes, cornemuses et percussions","o":["un grand orchestre breton de bombardes, cornemuses et percussions","une danse basque en cercle, avec des sabots et des bâtons","un chant corse à trois voix d’hommes, sans instrument","une petite flûte irlandaise en métal à six trous"]},
+{"q":"Le biniou joue sous la mélodie…","r":"un bourdon","o":["un bourdon","des accords","un solo de tambour","un silence"]},
+{"q":"La cabrette est une cornemuse…","r":"d’Auvergne","o":["d’Auvergne","de Bretagne","d’Irlande","d’Andalousie"]},
+{"q":"La paghjella se chante à…","r":"trois voix d’hommes","o":["trois voix d’hommes","une seule voix d’enfant","deux voix avec piano","quatre voix et orchestre"]},
+{"q":"La txalaparta du Pays basque est…","r":"faite de planches de bois frappées à deux","o":["faite de planches de bois frappées à deux","une flûte à trois trous jouée d’une main","une cornemuse jouée avec un soufflet","une petite guitare aux cordes doubles"]},
+{"q":"Le txistu est…","r":"une flûte à trois trous","o":["une flûte à trois trous","un tambour de bois","une harpe à pédales","un accordéon à boutons"]},
+{"q":"Le bal musette a connu son âge d’or dans les années…","r":"1920-1950","o":["1920-1950","1600-1650","1990-2010","1800-1820"]},
+{"q":"Une session irlandaise se joue souvent…","r":"dans un pub, entre musiciens, d’oreille","o":["dans un pub, entre musiciens, d’oreille","dans une église, avec un chœur","sur partition, avec un chef d’orchestre","seul, au piano, devant le public"]},
+{"q":"Le reel irlandais est…","r":"rapide, à 4 temps","o":["rapide, à 4 temps","lent, à 3 temps","à 7 temps","sans pulsation"]},
+{"q":"Les uilleann pipes sont une cornemuse…","r":"gonflée par un soufflet sous le bras","o":["gonflée par un soufflet sous le bras","gonflée par la bouche seulement","sans bourdon","en métal"]},
+{"q":"Le tin whistle est…","r":"une petite flûte en métal","o":["une petite flûte en métal","un petit violon","un tambour sur cadre","une harpe celtique"]},
+{"q":"Dans le flamenco, le cante est…","r":"le chant","o":["le chant","la guitare","la danse","les claquements de mains"]},
+{"q":"Le zapateado, c’est…","r":"les pieds qui frappent le sol","o":["les pieds qui frappent le sol","un accord de guitare frappé","un chant très aigu et tenu","une paire de castagnettes"]},
+{"q":"Le rasgueado est une technique de…","r":"guitare, les doigts frappent les cordes en éventail","o":["guitare, les doigts frappent les cordes en éventail","chant, avec des notes très aiguës et tenues","danse, avec de grands gestes des bras","flûte, en soufflant très fort et vite"]},
+{"q":"La guitare portugaise du fado a…","r":"douze cordes","o":["douze cordes","deux cordes","six cordes","vingt et une cordes"]},
+{"q":"La saudade, c’est…","r":"la nostalgie, le manque","o":["la nostalgie, le manque","la joie de la fête","la colère","la peur"]},
+{"q":"« Aksak » veut dire en turc…","r":"boiteux","o":["boiteux","rapide","joyeux","lent"]},
+{"q":"Une mesure à 7 temps des Balkans se groupe souvent en…","r":"2 + 2 + 3","o":["2 + 2 + 3","4 + 4","3 + 3 + 3","1 + 6"]},
+{"q":"Dans la musique des Balkans, on entend beaucoup…","r":"de cuivres et de clarinette","o":["de cuivres et de clarinette","de kotos et de shamisens","de steel drums et d’iron","de flûtes de pan et de quenas"]},
+{"q":"La bombarde a un son…","r":"puissant et nasillard","o":["puissant et nasillard","doux et murmuré","grave et sourd","métallique et brillant"]},
+{"q":"Les sonneurs bretons se répondent…","r":"bombarde et biniou en alternance","o":["bombarde et biniou en alternance","guitare électrique et batterie","harpe et piano à queue","violon et contrebasse"]},
+{"q":"Alan Stivell a fait renaître la harpe celtique dans les années…","r":"1970","o":["1970","1870","1930","2010"]},
+{"q":"La bourrée se danse au son de la cabrette et de…","r":"la vielle à roue","o":["la vielle à roue","la cornemuse écossaise","la guitare portugaise","la harpe celtique"]},
+{"q":"La paghjella est chantée…","r":"a cappella","o":["a cappella","avec orchestre","au piano","avec des tambours"]},
+{"q":"La txalaparta se joue…","r":"à deux musiciens","o":["à deux musiciens","seul, avec un archet","à cent musiciens","sans les mains"]},
+{"q":"La musique irlandaise s’apprend surtout…","r":"d’oreille","o":["d’oreille","sur partition","dans des livres","par Internet uniquement"]},
+{"q":"Le bodhrán se joue avec…","r":"une petite baguette","o":["une petite baguette","un archet en crin","un soufflet en cuir","un bec en roseau"]},
+{"q":"Le flamenco est né dans le sud de…","r":"l’Espagne","o":["l’Espagne","l’Italie","la France","la Grèce"]},
+{"q":"Paco de Lucía est un grand joueur de…","r":"guitare flamenca","o":["guitare flamenca","bandonéon argentin","harpe celtique","violon irlandais"]},
+{"q":"Amália Rodrigues chantait…","r":"le fado","o":["le fado","le flamenco","la paghjella","le kan ha diskan"]},
+{"q":"Dans une gigue à 6/8, on sent…","r":"deux temps de trois croches","o":["deux temps de trois croches","six temps égaux et lents","trois temps de deux croches","sept temps boiteux"]},
+{"q":"Goran Bregović est un musicien des…","r":"Balkans","o":["Balkans","îles Britanniques","Andes","Caraïbes"]}],
+"d":[
+{"q":"Pourquoi la musique traditionnelle varie-t-elle d’un village à l’autre ?","r":"elle se transmet d’oreille et chacun l’adapte","o":["elle se transmet d’oreille et chacun l’adapte","les partitions étaient toutes différentes","les instruments étaient interdits","elle était inventée chaque soir"]},
+{"q":"Dans le kan ha diskan, le second chanteur…","r":"reprend la fin de la phrase du premier","o":["reprend la fin de la phrase du premier","chante une octave plus bas tout le temps","se tait jusqu’à la fin","joue de la bombarde"]},
+{"q":"Quel point commun entre le biniou, la cabrette et la vielle à roue ?","r":"ils jouent un bourdon","o":["ils jouent un bourdon","ce sont des tambours","ils viennent d’Irlande","ils n’ont qu’une seule note"]},
+{"q":"Alan Stivell a mêlé la musique bretonne…","r":"au rock et au folk","o":["au rock et au folk","à l’opéra baroque","au gamelan","à la musique minimaliste"]},
+{"q":"La paghjella est inscrite au patrimoine de…","r":"l’UNESCO","o":["l’UNESCO","l’Académie française","la SACEM","l’ONU sportive"]},
+{"q":"Dans une gigue à 6/8, on compte…","r":"deux groupes de trois croches","o":["deux groupes de trois croches","six noires","trois groupes de deux croches","sept croches"]},
+{"q":"Dans une session irlandaise, les musiciens jouent souvent…","r":"la même mélodie à l’unisson, très ornée","o":["la même mélodie à l’unisson, très ornée","chacun une mélodie différente","des accords seulement","des improvisations libres sans mélodie"]},
+{"q":"La cadence andalouse enchaîne…","r":"la mineur, sol, fa, mi","o":["la mineur, sol, fa, mi","do, sol, la mineur, fa","mi, la, si, mi","ré, sol, do, fa"]},
+{"q":"Le flamenco est né de la rencontre des Gitans avec les musiques…","r":"arabes, juives et espagnoles","o":["arabes, juives et espagnoles","celtes et vikings","indiennes et chinoises","africaines et incas"]},
+{"q":"Les trois piliers du flamenco sont…","r":"le cante, le toque et le baile","o":["le cante, le toque et le baile","le fado, le tango et la samba","la bombarde, le biniou et la harpe","la clave, la conga et le tres"]},
+{"q":"Le toque, dans le flamenco, c’est…","r":"la guitare","o":["la guitare","le chant","la danse","les palmas"]},
+{"q":"Le fado est né à…","r":"Lisbonne","o":["Lisbonne","Madrid","Séville","Porto Rico"]},
+{"q":"Une mesure de 9 temps des Balkans peut se grouper en…","r":"2 + 2 + 2 + 3","o":["2 + 2 + 2 + 3","3 + 3 + 3 seulement","4 + 5 + 1","1 + 1 + 7"]},
+{"q":"Pourquoi dit-on que ces mesures « boitent » ?","r":"les groupes de temps n’ont pas tous la même longueur","o":["les groupes de temps n’ont pas tous la même longueur","le tempo ralentit sans arrêt jusqu’à la fin","il manque toujours un musicien dans la fanfare","les musiciens jouent faux exprès pour rire"]},
+{"q":"Lequel de ces instruments n’est PAS breton ?","r":"le bodhrán","o":["le bodhrán","la bombarde","le biniou","la harpe celtique"]},
+{"q":"Lequel de ces instruments n’est PAS irlandais ?","r":"la cabrette","o":["la cabrette","le fiddle","le tin whistle","les uilleann pipes"]},
+{"q":"La vielle à roue appartient à la famille des…","r":"cordes frottées","o":["cordes frottées","cordes frappées","percussions","vents"]},
+{"q":"Le bal musette mêle l’accordéon à des danses comme…","r":"la valse et la java","o":["la valse et la java","la samba et la salsa","la gigue et le reel","le tango et la milonga"]},
+{"q":"Quel style a le même caractère nostalgique que le fado ?","r":"le blues","o":["le blues","la samba de carnaval","la fanfare des Balkans","le reel irlandais"]},
+{"q":"Aujourd’hui, les musiques traditionnelles…","r":"sont toujours vivantes et se mêlent au rock ou à l’électro","o":["sont toujours vivantes et se mêlent au rock ou à l’électro","ont toutes disparu avec l’arrivée de la radio","sont interdites dans la plupart des pays d’Europe","ne se jouent plus que dans les musées, en vitrine"]},
+{"q":"Pourquoi le biniou et la bombarde jouent-ils en alternance ?","r":"pour que chacun puisse reprendre son souffle","o":["pour que chacun puisse reprendre son souffle","parce qu’ils sont accordés différemment","pour que le public puisse chanter","parce que c’est plus facile à danser"]},
+{"q":"Le kan ha diskan et la paghjella ont en commun…","r":"d’être des chants sans instrument","o":["d’être des chants sans instrument","d’être joués à la cornemuse","de venir d’Irlande","d’être des danses de couple"]},
+{"q":"Combien de voix chantent la paghjella corse ?","r":"trois","o":["trois","une","sept","douze"]},
+{"q":"Pourquoi la vielle à roue fait-elle partie des cordes frottées ?","r":"une roue frotte les cordes comme un archet","o":["une roue frotte les cordes comme un archet","des marteaux frappent les cordes","on pince les cordes avec les doigts","l’air fait vibrer les cordes"]},
+{"q":"Le rasgueado produit…","r":"des accords frappés et rythmés","o":["des accords frappés et rythmés","une mélodie lente et douce","un bourdon tenu","un roulement de tambour"]},
+{"q":"La cadence andalouse descend…","r":"de la mineur à mi","o":["de la mineur à mi","de do à sol","de ré à la","de mi à si"]},
+{"q":"Dans une mesure de 9 temps 2+2+2+3, le groupe long est…","r":"le dernier","o":["le dernier","le premier","celui du milieu","aucun, ils sont égaux"]},
+{"q":"Pourquoi les fanfares des Balkans semblent-elles « boiter » ?","r":"elles jouent des mesures aux temps inégaux","o":["elles jouent des mesures aux temps inégaux","les musiciens marchent en jouant","elles jouent toujours faux","elles changent de tempo à chaque note"]},
+{"q":"Quelle danse irlandaise est la plus rapide, à 4 temps ?","r":"le reel","o":["le reel","la gigue","la bourrée","la gavotte"]},
+{"q":"Les uilleann pipes diffèrent de la cornemuse écossaise car…","r":"l’air vient d’un soufflet sous le bras","o":["l’air vient d’un soufflet sous le bras","elles n’ont absolument aucun bourdon","elles se jouent avec un archet en crin","elles sont entièrement faites en métal"]},
+{"q":"Lequel de ces instruments n’a PAS de bourdon ?","r":"le bodhrán","o":["le bodhrán","le biniou","la vielle à roue","la cabrette"]},
+{"q":"Lequel de ces chants n’est PAS a cappella ?","r":"le fado","o":["le fado","la paghjella","le kan ha diskan","le chant des Pygmées"]},
+{"q":"Pourquoi le bal musette est-il lié à l’accordéon ?","r":"l’accordéon jouait les valses et les javas du bal","o":["l’accordéon jouait les valses et les javas du bal","l’accordéon a été inventé à Paris en 2000","c’était le seul instrument autorisé","l’accordéon remplaçait le chanteur"]},
+{"q":"Aujourd’hui, le bagad est souvent présent…","r":"dans les festivals et les concours bretons","o":["dans les festivals et les concours bretons","seulement dans les églises de Paris","dans les opéras italiens","dans les pubs de Dublin"]}]};
+const CHANSON_HIST={"f":[
+{"q":"Celui qui écrit les paroles d’une chanson est…","r":"le parolier","o":["le parolier","le compositeur","l’arrangeur","le chef d’orchestre"]},
+{"q":"Celui qui écrit la musique d’une chanson est…","r":"le compositeur","o":["le compositeur","le parolier","l’interprète","le producteur"]},
+{"q":"Celui qui chante la chanson est…","r":"l’interprète","o":["l’interprète","le parolier","l’ingénieur du son","le luthier"]},
+{"q":"La partie d’une chanson qui revient avec les mêmes paroles est…","r":"le refrain","o":["le refrain","le couplet","l’introduction","la coda"]},
+{"q":"Dans le couplet, la musique revient mais…","r":"les paroles changent","o":["les paroles changent","le tempo double","on ne chante pas","on change d’instrument"]},
+{"q":"Édith Piaf a chanté…","r":"« La vie en rose »","o":["« La vie en rose »","« La Mer »","« Les copains d’abord »","« Papaoutai »"]},
+{"q":"Charles Trenet a chanté…","r":"« La Mer »","o":["« La Mer »","« Ne me quitte pas »","« Mistral gagnant »","« Je veux »"]},
+{"q":"Georges Brassens s’accompagnait surtout à…","r":"la guitare","o":["la guitare","l’orgue","la batterie","la harpe"]},
+{"q":"Jacques Brel était…","r":"belge","o":["belge","suisse","canadien","italien"]},
+{"q":"Barbara s’accompagnait souvent au…","r":"piano","o":["piano","violon","saxophone","accordéon"]},
+{"q":"Les yéyés étaient influencés par…","r":"le rock et le twist américains","o":["le rock et le twist américains","l’opéra italien et le bel canto","le chant grégorien des moines","le gamelan de Java et de Bali"]},
+{"q":"Johnny Hallyday a commencé comme chanteur…","r":"yéyé","o":["yéyé","d’opéra","de rap","de fado"]},
+{"q":"Une chanson qui a un énorme succès est…","r":"un tube","o":["un tube","une coda","un pont","un couplet"]},
+{"q":"A cappella veut dire…","r":"sans instrument","o":["sans instrument","très fort","en duo","en anglais"]},
+{"q":"MC Solaar est un pionnier du…","r":"rap français","o":["rap français","rock français","fado","jazz manouche"]},
+{"q":"Stromae est un chanteur…","r":"belge","o":["belge","québécois","sénégalais","suisse"]},
+{"q":"« Papaoutai » est une chanson de…","r":"Stromae","o":["Stromae","Angèle","Zaz","Renaud"]},
+{"q":"« Balance ton quoi » est une chanson de…","r":"Angèle","o":["Angèle","Barbara","Françoise Hardy","France Gall"]},
+{"q":"« Les copains d’abord » est une chanson de…","r":"Georges Brassens","o":["Georges Brassens","Jacques Brel","Charles Aznavour","Jean Ferrat"]},
+{"q":"« Quand la musique est bonne » est une chanson de…","r":"Jean-Jacques Goldman","o":["Jean-Jacques Goldman","Indochine","Francis Cabrel","MC Solaar"]},
+{"q":"Une reprise est…","r":"une nouvelle version d’une chanson par un autre artiste","o":["une nouvelle version d’une chanson par un autre artiste","la pause au milieu d’un concert, l’entracte","le deuxième couplet, chanté plus fort que le premier","un chanteur qui remplace l’interprète malade"]},
+{"q":"La rime, c’est…","r":"le même son à la fin de deux vers","o":["le même son à la fin de deux vers","un instrument à cordes pincées","la vitesse à laquelle on chante","un refrain chanté sans paroles"]},
+{"q":"Le music-hall, ce sont…","r":"des spectacles avec chanteurs et orchestre","o":["des spectacles avec chanteurs et orchestre","des concerts de musique baroque à la cour","des cours de chant donnés au collège","des émissions de radio sans public"]},
+{"q":"L’Olympia est…","r":"une célèbre salle de spectacle de Paris","o":["une célèbre salle de spectacle de Paris","un stade de football de Marseille","un studio de télévision","un festival en Bretagne"]},
+{"q":"Charles Trenet est surnommé…","r":"le fou chantant","o":["le fou chantant","la Môme","l’idole des jeunes","le roi du raï"]},
+{"q":"« Ne me quitte pas » est une chanson de…","r":"Jacques Brel","o":["Jacques Brel","Georges Brassens","Charles Trenet","Jean Ferrat"]},
+{"q":"« L’aigle noir » est une chanson de…","r":"Barbara","o":["Barbara","Françoise Hardy","Édith Piaf","Angèle"]},
+{"q":"« La bohème » est une chanson de…","r":"Charles Aznavour","o":["Charles Aznavour","Renaud","Johnny Hallyday","MC Solaar"]},
+{"q":"« Mistral gagnant » est une chanson de…","r":"Renaud","o":["Renaud","Francis Cabrel","Indochine","Zaz"]},
+{"q":"« La montagne » est une chanson de…","r":"Jean Ferrat","o":["Jean Ferrat","Jacques Brel","Boris Vian","Serge Gainsbourg"]},
+{"q":"« Caroline » est un rap de…","r":"MC Solaar","o":["MC Solaar","Stromae","IAM","Renaud"]},
+{"q":"« Je veux » est une chanson de…","r":"Zaz","o":["Zaz","Angèle","Barbara","France Gall"]},
+{"q":"« Le Déserteur » a été écrit par…","r":"Boris Vian","o":["Boris Vian","Jean Ferrat","Georges Brassens","Jacques Prévert"]},
+{"q":"Une chanson se termine souvent par…","r":"la coda","o":["la coda","l’introduction","le premier couplet","le pont"]},
+{"q":"Avant la voix, la chanson commence souvent par…","r":"une introduction instrumentale","o":["une introduction instrumentale","le tout dernier refrain chanté","la coda jouée très lentement","un long silence d’une minute"]}],
+"i":[
+{"q":"Un auteur-compositeur-interprète…","r":"écrit les paroles, compose la musique et chante","o":["écrit les paroles, compose la musique et chante","chante seulement les chansons des autres","joue seulement du piano","produit les disques des autres"]},
+{"q":"L’arrangeur…","r":"choisit les instruments et écrit leurs parties","o":["choisit les instruments et écrit leurs parties","écrit seulement les paroles de la chanson","vend les billets pour les concerts de l’artiste","organise les tournées et réserve les salles"]},
+{"q":"Le pont d’une chanson est…","r":"un passage différent, avant le dernier refrain","o":["un passage différent, avant le dernier refrain","le tout premier couplet de la chanson","la toute dernière note de la chanson","l’introduction jouée par les instruments seuls"]},
+{"q":"La chanson réaliste des années 1930 raconte…","r":"la vie difficile des quartiers populaires","o":["la vie difficile des quartiers populaires","des voyages imaginaires dans l’espace","des légendes de chevaliers et de dragons","la vie luxueuse des rois et des reines"]},
+{"q":"Charles Trenet, « le fou chantant », a amené dans la chanson…","r":"le swing du jazz","o":["le swing du jazz","le rap","la musique électronique","le flamenco"]},
+{"q":"Joséphine Baker a triomphé…","r":"au music-hall","o":["au music-hall","à l’opéra","dans les fest-noz","dans les clips"]},
+{"q":"Les cabarets de la « Rive gauche » se trouvaient à…","r":"Saint-Germain-des-Prés","o":["Saint-Germain-des-Prés","Montréal, au Québec","Marseille, sur le Vieux-Port","Bruxelles, en Belgique"]},
+{"q":"Dans les années 1950, des poèmes de Prévert et d’Aragon sont…","r":"mis en musique","o":["mis en musique","interdits","traduits en anglais","chantés par des robots"]},
+{"q":"« Les feuilles mortes » a pour parolier…","r":"Jacques Prévert","o":["Jacques Prévert","Boris Vian","Serge Gainsbourg","Charles Trenet"]},
+{"q":"Le mot « yéyé » vient…","r":"de l’anglais « yeah, yeah »","o":["de l’anglais « yeah, yeah »","du prénom d’un chanteur célèbre","d’une danse traditionnelle bretonne","du nom d’une radio de Monte-Carlo"]},
+{"q":"« Salut les copains » était…","r":"une émission de radio et un magazine des yéyés","o":["une émission de radio et un magazine des yéyés","un film en noir et blanc de Georges Brassens","une chanson d’Édith Piaf enregistrée en 1940","un groupe de rap marseillais des années 1990"]},
+{"q":"« Le Déserteur » de Boris Vian a été…","r":"interdit à la radio","o":["interdit à la radio","chanté par Johnny Hallyday en 1954","écrit pour un film d’animation","un hymne officiel"]},
+{"q":"Une chanson engagée…","r":"défend une idée ou dénonce une injustice","o":["défend une idée ou dénonce une injustice","est toujours une chanson d’amour","est chantée sans paroles","est réservée aux enfants"]},
+{"q":"Jean Ferrat chante dans « La montagne »…","r":"les campagnes qui se vident","o":["les campagnes qui se vident","la mer et les bateaux","les voyages en avion","la vie d’un roi"]},
+{"q":"Dans les années 1980, la chanson utilise beaucoup…","r":"de synthétiseurs","o":["de synthétiseurs","de clavecins","de cornemuses","de luths"]},
+{"q":"Les clips des années 1980 passaient surtout…","r":"à la télévision","o":["à la télévision","au cinéma muet","sur les plateformes d’écoute","à la radio"]},
+{"q":"Le rap français s’impose dans les années…","r":"1990","o":["1990","1950","1930","1970"]},
+{"q":"Dans le rap, le texte est…","r":"rappé sur un rythme","o":["rappé sur un rythme","chanté a cappella sans rythme","joué à la flûte","toujours en anglais"]},
+{"q":"Stromae mêle des textes graves à…","r":"une musique qui fait danser","o":["une musique qui fait danser","une musique de film d’horreur","du chant grégorien","une marche militaire"]},
+{"q":"France Gall chantait souvent les chansons de…","r":"Michel Berger","o":["Michel Berger","Serge Gainsbourg seulement","Jacques Brel","Renaud"]},
+{"q":"Fréhel et Piaf chantaient la chanson…","r":"réaliste","o":["réaliste","yéyé","électro","engagée de 1970"]},
+{"q":"Joséphine Baker a chanté…","r":"« J’ai deux amours »","o":["« J’ai deux amours »","« La vie en rose »","« La Mer »","« Je veux »"]},
+{"q":"Les cabarets de la Rive gauche ont fait connaître…","r":"les auteurs-compositeurs-interprètes","o":["les auteurs-compositeurs-interprètes","les grands orchestres symphoniques","les groupes de rock venus d’Angleterre","les DJ de musique électronique"]},
+{"q":"Juliette Gréco chantait à…","r":"Saint-Germain-des-Prés","o":["Saint-Germain-des-Prés","Marseille, sur le port","Nashville, aux États-Unis","Lisbonne, au Portugal"]},
+{"q":"Léo Ferré a mis en musique des poèmes de…","r":"Verlaine et Aragon","o":["Verlaine et Aragon","Molière et Racine","Homère et Virgile","Shakespeare et Goethe"]},
+{"q":"Françoise Hardy a chanté…","r":"« Tous les garçons et les filles »","o":["« Tous les garçons et les filles »","« Ella, elle l’a », de France Gall","« L’aigle noir », de Barbara","« Papaoutai », de Stromae"]},
+{"q":"Les yéyés ont été popularisés par…","r":"la radio et le magazine « Salut les copains »","o":["la radio et le magazine « Salut les copains »","les cabarets de la Rive gauche des années 1950","les plateformes de streaming et les réseaux","les fest-noz bretons et les bals musette"]},
+{"q":"« Ella, elle l’a » a été chantée par…","r":"France Gall","o":["France Gall","Barbara","Zaz","Sylvie Vartan"]},
+{"q":"Indochine est un groupe de…","r":"rock français des années 1980","o":["rock français des années 1980","rap des années 1990","chanson réaliste de 1930","musique bretonne"]},
+{"q":"IAM est un groupe de rap de…","r":"Marseille","o":["Marseille","Bruxelles","Montréal","Lyon"]},
+{"q":"Stromae mélange la chanson avec…","r":"l’électro","o":["l’électro","le chant grégorien","la musique baroque","le fado"]},
+{"q":"Angèle est une chanteuse…","r":"belge","o":["belge","québécoise","suisse","marocaine"]},
+{"q":"La rime se trouve…","r":"à la fin des vers","o":["à la fin des vers","au début de la chanson","dans le solo de guitare","dans l’introduction"]}],
+"d":[
+{"q":"Pourquoi parle-t-on de « chanson à texte » en France ?","r":"on y attache une grande importance aux paroles","o":["on y attache une grande importance aux paroles","les chansons françaises n’ont pas de musique","on lit les paroles à voix haute sans chanter","les chansons françaises sont toujours très longues"]},
+{"q":"Chez Brassens, pourquoi l’accompagnement est-il si simple ?","r":"pour laisser toute la place au texte","o":["pour laisser toute la place au texte","parce que les instruments étaient chers","parce qu’il ne savait pas jouer","parce que c’était imposé par la radio"]},
+{"q":"Qu’est-ce qui distingue le chant de Piaf de celui de Trenet ?","r":"Piaf est dramatique, Trenet souriant et swing","o":["Piaf est dramatique, Trenet souriant et swing","Piaf rappe, Trenet chante","Piaf chante a cappella, Trenet avec orchestre symphonique","aucune différence"]},
+{"q":"Le chant de Jacques Brel est souvent décrit comme…","r":"très théâtral","o":["très théâtral","chuchoté et monotone","rappé","sans émotion"]},
+{"q":"Les yéyés chantaient beaucoup…","r":"d’adaptations françaises de chansons anglaises et américaines","o":["d’adaptations françaises de chansons anglaises et américaines","de poèmes du Moyen Âge mis en musique pour le luth","d’airs d’opéra italiens traduits en français","de chants traditionnels bretons et corses"]},
+{"q":"Serge Gainsbourg a mélangé la chanson avec…","r":"le jazz, la pop et le reggae","o":["le jazz, la pop et le reggae","le gamelan de Bali seulement","le chant grégorien des moines","la musique baroque de Lully"]},
+{"q":"Dans « Le Déserteur », Boris Vian écrit…","r":"la lettre d’un homme qui refuse de partir à la guerre","o":["la lettre d’un homme qui refuse de partir à la guerre","l’histoire d’un marin qui part en mer pour longtemps","une chanson d’amour pour une jeune Parisienne","un hymne militaire pour faire défiler les soldats"]},
+{"q":"Dans « Papaoutai », Stromae parle…","r":"d’un père absent","o":["d’un père absent","de la mer","des vacances","d’un match de football"]},
+{"q":"« Balance ton quoi » d’Angèle dénonce…","r":"le sexisme","o":["le sexisme","la pollution","la guerre","l’école"]},
+{"q":"Les rappeurs français sont connus pour…","r":"leurs jeux de mots et leurs rimes très travaillés","o":["leurs jeux de mots et leurs rimes très travaillés","leur absence totale de rythme et de pulsation","leurs chants en latin et en grec ancien","leurs longs solos de violon et de violoncelle"]},
+{"q":"Un sample, dans le rap, c’est…","r":"un extrait d’un autre enregistrement réutilisé","o":["un extrait d’un autre enregistrement réutilisé","un couplet chanté par un artiste invité","une fausse note laissée exprès dans le morceau","un instrument breton à anche double, en bois"]},
+{"q":"L’accroche d’une chanson, c’est…","r":"un petit motif qu’on retient tout de suite","o":["un petit motif qu’on retient tout de suite","la toute dernière note de la chanson","la photo imprimée sur la pochette","le nom du parolier sur le disque"]},
+{"q":"Le phrasé, c’est…","r":"la façon de dire les mots en chantant","o":["la façon de dire les mots en chantant","le nombre de couplets dans une chanson","la tonalité choisie pour chanter","le prix d’un disque dans un magasin"]},
+{"q":"Dans quel ordre trouve-t-on souvent les parties d’une chanson ?","r":"intro, couplet, refrain, couplet, refrain, pont, refrain","o":["intro, couplet, refrain, couplet, refrain, pont, refrain","refrain, refrain, refrain, refrain, refrain, intro","pont, coda, intro, couplet, refrain, pont, coda","coda, couplet, intro, refrain, pont, intro, coda"]},
+{"q":"Lequel de ces artistes n’est PAS de la Rive gauche des années 1950 ?","r":"Angèle","o":["Angèle","Georges Brassens","Juliette Gréco","Léo Ferré"]},
+{"q":"Lequel de ces artistes n’est PAS un chanteur yéyé ?","r":"Jacques Brel","o":["Jacques Brel","Johnny Hallyday","Sylvie Vartan","Françoise Hardy"]},
+{"q":"Dans les années 1980, qui forme un duo célèbre de chanteuse et de compositeur ?","r":"France Gall et Michel Berger","o":["France Gall et Michel Berger","Édith Piaf et Charles Trenet","Barbara et Jacques Brel","Angèle et Stromae"]},
+{"q":"Quel artiste mêle chanson et électro aujourd’hui ?","r":"Stromae","o":["Stromae","Georges Brassens","Fréhel","Charles Trenet"]},
+{"q":"La « Môme » est le surnom de…","r":"Édith Piaf","o":["Édith Piaf","Barbara","Françoise Hardy","Joséphine Baker"]},
+{"q":"Aujourd’hui, les tubes naissent souvent…","r":"sur les plateformes d’écoute et les réseaux sociaux","o":["sur les plateformes d’écoute et les réseaux sociaux","seulement dans les petits cabarets de Paris","dans les églises, pendant les messes du dimanche","dans les fest-noz de Bretagne, en été"]},
+{"q":"Qu’est-ce qui distingue un couplet d’un refrain ?","r":"le couplet change de paroles, le refrain revient","o":["le couplet change de paroles, le refrain revient","le refrain est toujours joué sans paroles","le couplet est toujours chanté plus vite","le refrain ne se chante qu’une seule fois"]},
+{"q":"Pourquoi le refrain est-il souvent la partie la plus connue ?","r":"il revient plusieurs fois et on le chante ensemble","o":["il revient plusieurs fois et on le chante ensemble","il est le plus long de la chanson","il est toujours chanté en anglais","il est joué seulement par les instruments"]},
+{"q":"Le swing de Trenet vient…","r":"du jazz","o":["du jazz","du fado","du flamenco","de l’opéra"]},
+{"q":"Qu’ont en commun Brassens, Brel et Barbara ?","r":"ils écrivaient et composaient leurs chansons","o":["ils écrivaient et composaient leurs chansons","ils chantaient tous les trois en anglais","ils étaient tous les trois nés en Belgique","ils jouaient tous les trois du rock’n’roll"]},
+{"q":"Pourquoi « Le Déserteur » a-t-il été interdit en 1954 ?","r":"il refusait la guerre au moment de la guerre d’Indochine","o":["il refusait la guerre au moment de la guerre d’Indochine","il était beaucoup trop long pour passer à la radio","il était chanté entièrement en anglais","il copiait note pour note une chanson américaine"]},
+{"q":"Pourquoi les années 1980 ont-elles changé le son de la chanson ?","r":"les synthétiseurs et les boîtes à rythmes sont arrivés","o":["les synthétiseurs et les boîtes à rythmes sont arrivés","la guitare a été interdite dans les studios","les chanteurs ont arrêté d’écrire des paroles","la radio a disparu au profit de la télévision"]},
+{"q":"Le rap français se distingue de la chanson classique par…","r":"un texte rappé sur des rythmes et des samples","o":["un texte rappé sur des rythmes et des samples","l’absence totale de texte et de paroles","un accompagnement joué à l’orgue d’église","des mélodies chantées très aiguës et lentes"]},
+{"q":"Dans « Papaoutai », le contraste entre musique et paroles vient…","r":"d’une musique dansante sur un texte triste","o":["d’une musique dansante sur un texte triste","d’une musique triste sur un texte joyeux","d’une chanson sans aucune parole","d’un chant a cappella très lent"]},
+{"q":"Une chanson engagée récente qui dénonce le sexisme est…","r":"« Balance ton quoi »","o":["« Balance ton quoi »","« La Mer »","« Je veux »","« Ella, elle l’a »"]},
+{"q":"Les feuilles mortes réunissent Prévert et le compositeur…","r":"Joseph Kosma","o":["Joseph Kosma","Michel Berger","Serge Gainsbourg","Charles Trenet"]},
+{"q":"Lequel de ces artistes est un auteur-compositeur-interprète ?","r":"Georges Brassens","o":["Georges Brassens","Yves Montand","Johnny Hallyday à ses débuts","Joséphine Baker"]},
+{"q":"Pourquoi parle-t-on d’« interprète » pour Yves Montand ?","r":"il chantait des chansons écrites par d’autres","o":["il chantait des chansons écrites par d’autres","il traduisait les chansons en anglais","il jouait de tous les instruments","il dirigeait un orchestre"]},
+{"q":"Le phrasé rappé se distingue du phrasé chanté par…","r":"un débit parlé et rythmé","o":["un débit parlé et rythmé","des notes très longues et tenues","l’absence de rythme","un chant toujours aigu"]},
+{"q":"Un arrangement change…","r":"les instruments et la manière de jouer, pas la chanson","o":["les instruments et la manière de jouer, pas la chanson","les paroles et la mélodie de la chanson entièrement","le nom de l’auteur inscrit sur le disque","la langue dans laquelle la chanson est chantée"]}]};
 const BLUES_HIST={"f":[{"q":"Le blues est une musique née aux…","r":"États-Unis","o":["États-Unis","France","Japon","Brésil"]},{"q":"Le blues a été créé par la communauté…","r":"afro-américaine","o":["afro-américaine","amérindienne","asiatique","scandinave"]},{"q":"À l'origine, le blues vient des chants des…","r":"esclaves noirs","o":["esclaves noirs","rois","soldats romains","marins vikings"]},{"q":"Les chants chantés en travaillant dans les champs s'appellent des…","r":"work songs","o":["work songs","opéras","symphonies","menuets"]},{"q":"« Work song » veut dire en français…","r":"chant de travail","o":["chant de travail","chant de Noël","chant d'amour","chant de guerre"]},{"q":"Les esclaves chantaient surtout en travaillant dans des champs de…","r":"coton","o":["coton","tulipes","blé","vigne"]},{"q":"Le blues est né dans le… des États-Unis.","r":"Sud","o":["Sud","Nord","Grand froid","désert"]},{"q":"Le grand fleuve associé à la naissance du blues est le…","r":"Mississippi","o":["Mississippi","Nil","Rhône","Amazone"]},{"q":"Le blues exprime souvent des sentiments de…","r":"tristesse","o":["tristesse","colère seule","peur du noir","faim"]},{"q":"En anglais, « to feel blue » veut dire avoir le…","r":"cafard","o":["cafard","sourire","courage","sommeil"]},{"q":"Le blues se joue très souvent à la guitare et à l'…","r":"harmonica","o":["harmonica","accordéon","trompette","flûte"]},{"q":"Une grille de blues classique compte… mesures.","r":"12","o":["12","4","8","20"]},{"q":"Le blues a donné naissance à une musique très célèbre, le…","r":"rock","o":["rock","grégorien","menuet","madrigal"]},{"q":"Vrai ou faux : le blues est né au XIXᵉ siècle.","r":"Vrai","o":["Vrai","Faux"]},{"q":"Le blues raconte souvent la vie difficile et les… des gens.","r":"peines","o":["peines","recettes","calculs","jeux"]},{"q":"Avant le blues, les esclaves chantaient aussi des chants religieux appelés…","r":"negro-spirituals","o":["negro-spirituals","cantiques latins","raps","valses"]},{"q":"Le blues a beaucoup influencé le jazz et le…","r":"rock'n'roll","o":["rock'n'roll","grégorien","baroque","menuet"]},{"q":"Le mot « blues » évoque en anglais l'idée d'être…","r":"triste","o":["triste","joyeux","riche","fatigué"]},{"q":"Les chants de travail aidaient les esclaves à tenir le… ensemble.","r":"rythme","o":["rythme","silence","feu","repas"]},{"q":"Le blues se chante surtout avec une voix…","r":"expressive","o":["expressive","sans émotion","criée toujours","chuchotée toujours"]},{"q":"Le blues vient des plantations du Sud des…","r":"États-Unis","o":["États-Unis","Pays-Bas","Émirats","Philippines"]},{"q":"Un instrument souvent utilisé dans le blues est la…","r":"guitare","o":["guitare","harpe","cornemuse","mandoline seule"]},{"q":"Le blues est l'ancêtre de nombreuses musiques…","r":"populaires modernes","o":["populaires modernes","médiévales","baroques","de la Renaissance"]},{"q":"Les esclaves venaient surtout d'un continent : l'…","r":"Afrique","o":["Afrique","Asie","Océanie","Europe"]},{"q":"Le blues garde un lien fort avec la musique…","r":"africaine","o":["africaine","chinoise","russe","irlandaise seule"]},{"q":"Le blues utilise souvent des « notes bleues » qui sonnent un peu…","r":"plus basses","o":["plus basses","muettes","électroniques","métalliques"]},{"q":"Le blues était d'abord transmis surtout à l'…","r":"oral","o":["oral","écrit en latin","ordinateur","télégraphe"]},{"q":"Le blues parle souvent d'amour, de misère et de…","r":"liberté","o":["liberté","mathématiques","cuisine","jardinage"]},{"q":"Combien de notes différentes faut-il au minimum pour jouer une grille de blues ?","r":"trois accords","o":["trois accords","douze accords","un seul accord","trente accords"]},{"q":"Le blues est né après la fin de l'…","r":"esclavage","o":["esclavage","Empire romain","Moyen Âge","Antiquité"]},{"q":"Les esclaves ont été libérés après une grande guerre américaine : la guerre de…","r":"Sécession","o":["Sécession","Cent Ans","Troie","Trente Ans"]},{"q":"Le blues a voyagé du Sud agricole vers les grandes villes du…","r":"Nord","o":["Nord","Sud profond","désert","Grand Ouest sauvage"]},{"q":"Le blues se reconnaît à son atmosphère souvent…","r":"mélancolique","o":["mélancolique","militaire","comique","grégorienne"]},{"q":"Le blues est une musique surtout…","r":"vocale et instrumentale","o":["vocale et instrumentale","uniquement écrite","sans instruments","sans voix"]}],"i":[{"q":"Le blues est né dans quelle région des États-Unis ?","r":"le Delta du Mississippi","o":["le Delta du Mississippi","la Californie","la Floride","le Texas seul"]},{"q":"Le 13ᵉ amendement, qui abolit l'esclavage, entre en vigueur en…","r":"1865","o":["1865","1789","1945","1700"]},{"q":"La guerre de Sécession s'est déroulée entre quelles années ?","r":"1861-1865","o":["1861-1865","1914-1918","1789-1799","1939-1945"]},{"q":"Dans la guerre de Sécession, le Nord s'opposait au… sur l'esclavage.","r":"Sud","o":["Sud","Canada","Mexique","Pacifique"]},{"q":"Qu'est-ce qu'un « work song » ?","r":"un chant rythmant le travail","o":["un chant rythmant le travail","un chant d'opéra","une danse de cour","un hymne national"]},{"q":"Les work songs aidaient à supporter le dur travail dans les champs de…","r":"coton","o":["coton","riz japonais","café brésilien","cacao"]},{"q":"Quels chants religieux ont aussi nourri le blues ?","r":"les negro-spirituals","o":["les negro-spirituals","les psaumes latins","les chorals de Bach","les madrigaux"]},{"q":"Après l'abolition, beaucoup d'anciens esclaves sont devenus…","r":"métayers pauvres","o":["métayers pauvres","riches propriétaires","soldats du roi","marins"]},{"q":"Combien de mesures compte la grille de blues classique ?","r":"douze","o":["douze","huit","seize","quatre"]},{"q":"La grille de blues repose sur trois accords : les degrés…","r":"I, IV et V","o":["I, IV et V","II, III et VI","I et II","tous les degrés"]},{"q":"Quel État du Sud est considéré comme le berceau du blues ?","r":"le Mississippi","o":["le Mississippi","le Vermont","l'Alaska","Hawaï"]},{"q":"Le blues s'est aussi développé au Texas et en…","r":"Géorgie","o":["Géorgie","Norvège","Catalogne","Bavière"]},{"q":"En remontant le Mississippi vers le Nord, les Noirs ont surtout migré vers…","r":"Chicago","o":["Chicago","Miami","Las Vegas","Denver"]},{"q":"Ce grand départ des Noirs du Sud vers le Nord s'appelle la Grande…","r":"Migration","o":["Migration","Guerre","Dépression","Exposition"]},{"q":"Pourquoi les Afro-Américains quittaient-ils le Sud ?","r":"chercher du travail et fuir la ségrégation","o":["chercher du travail et fuir la ségrégation","fuir le froid","chercher de l'or","faire du tourisme"]},{"q":"Les lois qui imposaient la ségrégation dans le Sud s'appelaient les lois…","r":"Jim Crow","o":["Jim Crow","Robin des Bois","Napoléon","de la jungle"]},{"q":"Quel bluesman, virtuose de la guitare 12 cordes, fut découvert en prison ?","r":"Lead Belly","o":["Lead Belly","Mozart","Elvis Presley","Frank Sinatra"]},{"q":"Selon la légende, Robert Johnson aurait vendu son âme au diable à un…","r":"carrefour","o":["carrefour","château","port","sommet de montagne"]},{"q":"Quel musicien est surnommé le « roi du blues » ?","r":"B.B. King","o":["B.B. King","Bach","Chopin","Liszt"]},{"q":"Quel guitariste britannique a popularisé le blues dans les années 1960 ?","r":"Eric Clapton","o":["Eric Clapton","Mozart","Vivaldi","Haendel"]},{"q":"Le blues a donné naissance au rock'n'roll, au jazz et à la…","r":"soul","o":["soul","valse","fugue","sonate"]},{"q":"Le blues s'est d'abord transmis de bouche à oreille, donc par…","r":"tradition orale","o":["tradition orale","partitions imprimées","internet","radio satellite"]},{"q":"Dans le Nord, le blues est devenu plus urbain et souvent…","r":"électrique","o":["électrique","grégorien","acoustique seulement","silencieux"]},{"q":"Quel grand bluesman a fondé le « Chicago blues » électrique ?","r":"Muddy Waters","o":["Muddy Waters","Jean-Sébastien Bach","Franz Liszt","Philip Glass"]},{"q":"Le blues parle souvent de la prison, de l'errance et de la…","r":"misère","o":["misère","richesse","royauté","gloire"]},{"q":"Les chants de travail se faisaient souvent en « appel et réponse », c'est-à-dire…","r":"un meneur, puis le groupe répond","o":["un meneur, puis le groupe répond","tous chantent au hasard","personne ne chante","une machine chante"]},{"q":"Le blues est apparu à la fin du XIXᵉ et au début du…","r":"XXᵉ siècle","o":["XXᵉ siècle","XVIᵉ siècle","XIIᵉ siècle","XVIIIᵉ siècle"]},{"q":"Quel instrument à anches, petit et portable, est typique du blues ?","r":"l'harmonica","o":["l'harmonica","le tuba","la harpe","l'orgue d'église"]},{"q":"La grille de blues a aussi servi de base au…","r":"rock'n'roll","o":["rock'n'roll","plain-chant","menuet","madrigal"]},{"q":"Le « Delta » du blues désigne une plaine fertile entre le Mississippi et la rivière…","r":"Yazoo","o":["Yazoo","Seine","Tamise","Volga"]},{"q":"Beaucoup de bluesmen du Delta étaient des… agricoles.","r":"ouvriers","o":["ouvriers","banquiers","avocats","pilotes"]},{"q":"Le blues raconte la vie après l'abolition, marquée par la pauvreté et la…","r":"ségrégation","o":["ségrégation","richesse","fête permanente","paix totale"]},{"q":"Quel État, ville de Memphis, a joué un grand rôle dans le blues ?","r":"le Tennessee","o":["le Tennessee","le Maine","l'Oregon","le Montana"]},{"q":"Le blues a influencé une chaîne d'artistes : Robert Johnson, Muddy Waters, B.B. King puis…","r":"Eric Clapton","o":["Eric Clapton","Mozart","Vivaldi","Lully"]}],"d":[{"q":"Le 13ᵉ amendement abolissant l'esclavage prend effet le…","r":"18 décembre 1865","o":["18 décembre 1865","14 juillet 1789","8 mai 1945","4 juillet 1776"]},{"q":"Le « Delta » du blues n'est pas l'embouchure mais une plaine au nord-ouest du…","r":"Mississippi","o":["Mississippi","Colorado","Missouri","Ohio"]},{"q":"De quelles villes parle-t-on quand le blues remonte vers le Nord ?","r":"Chicago et Detroit","o":["Chicago et Detroit","Miami et Tampa","Phoenix et Tucson","Reno et Boise"]},{"q":"Le vrai nom de Lead Belly était…","r":"Huddie Ledbetter","o":["Huddie Ledbetter","Riley King","McKinley Morganfield","Robert Leroy"]},{"q":"Lead Belly était surtout un maître de la guitare à…","r":"12 cordes","o":["12 cordes","2 cordes","20 cordes","1 corde"]},{"q":"Qui a découvert et enregistré Lead Belly en prison pour la Bibliothèque du Congrès ?","r":"John et Alan Lomax","o":["John et Alan Lomax","les frères Lumière","les frères Grimm","les frères Wright"]},{"q":"La chanson légendaire de Robert Johnson sur le pacte du carrefour s'appelle…","r":"Cross Road Blues","o":["Cross Road Blues","Yesterday","Imagine","Hey Jude"]},{"q":"Robert Johnson fait partie du tristement célèbre « Club des… »","r":"27","o":["27","18","40","60"]},{"q":"Le vrai nom de B.B. King était Riley B. King ; que signifie le « B.B. » ?","r":"Blues Boy","o":["Blues Boy","Big Boss","Brave Boy","Boogie Band"]},{"q":"Comment B.B. King avait-il surnommé sa guitare ?","r":"Lucille","o":["Lucille","Bertha","Stella","Diana"]},{"q":"Quelle invention de jeu, reprise par tout le rock, attribue-t-on à B.B. King ?","r":"la guitare lead","o":["la guitare lead","la pédale wah-wah","le synthétiseur","la boîte à rythmes"]},{"q":"Le vrai nom de Muddy Waters était…","r":"McKinley Morganfield","o":["McKinley Morganfield","Huddie Ledbetter","Riley King","Chester Burnett"]},{"q":"Eric Clapton a dit que son influence la plus importante était…","r":"Robert Johnson","o":["Robert Johnson","Mozart","Elvis Presley","Bob Dylan"]},{"q":"Quel groupe de blues-rock Eric Clapton a-t-il formé à la fin des années 1960 ?","r":"Cream","o":["Cream","Queen","ABBA","The Police"]},{"q":"L'expression anglaise à l'origine du mot « blues » est « to have the blue… »","r":"devils","o":["devils","birds","skies","waves"]},{"q":"Quel pionnier du Delta blues est surnommé « le père du Delta blues » ?","r":"Charley Patton","o":["Charley Patton","John Williams","Hans Zimmer","Glenn Miller"]},{"q":"Quel bluesman du Delta, mentor, a influencé Robert Johnson et Muddy Waters ?","r":"Son House","o":["Son House","Cole Porter","George Gershwin","Duke Ellington"]},{"q":"Le grand carrefour mythique du blues se trouve à Clarksdale, au croisement des routes…","r":"61 et 49","o":["61 et 49","66 et 95","1 et 2","10 et 20"]},{"q":"Quelle chanteuse, « impératrice du blues », a marqué les années 1920 ?","r":"Bessie Smith","o":["Bessie Smith","Maria Callas","Édith Piaf","Billie Eilish"]},{"q":"Quel compositeur a publié « St. Louis Blues » et est dit « père du blues » écrit ?","r":"W.C. Handy","o":["W.C. Handy","Scott Joplin","Irving Berlin","Cole Porter"]},{"q":"Les chants des esclaves utilisaient souvent une forme « appel et réponse » venue d'…","r":"Afrique","o":["Afrique","Irlande","Italie","Chine"]},{"q":"Quelle gamme particulière, sentie comme « bleue », caractérise le blues ?","r":"la gamme pentatonique avec blue notes","o":["la gamme pentatonique avec blue notes","la gamme par tons entiers","le mode grégorien","la gamme chromatique pure"]},{"q":"Quel bluesman aveugle, pionnier, fut un modèle pour Lead Belly ?","r":"Blind Lemon Jefferson","o":["Blind Lemon Jefferson","Stevie Wonder","Ray Charles","José Feliciano"]},{"q":"Le blues du Delta a d'abord été enregistré sur disque vers les années…","r":"1920","o":["1920","1880","1960","2000"]},{"q":"Quel État, avec La Nouvelle-Orléans, est lié au blues et au jazz naissant ?","r":"la Louisiane","o":["la Louisiane","le Dakota","le Nevada","le Maine"]},{"q":"Quelle chanson de Lead Belly, reprise plus tard par Nirvana, est très connue ?","r":"Where Did You Sleep Last Night","o":["Where Did You Sleep Last Night","Yellow Submarine","Thriller","Let It Be"]},{"q":"Muddy Waters s'installe à Chicago et achète une guitare électrique dans les années…","r":"1940","o":["1940","1900","1980","2010"]},{"q":"Quel album de 2000 réunit B.B. King et Eric Clapton ?","r":"Riding with the King","o":["Riding with the King","Abbey Road","Thriller","The Wall"]},{"q":"Le mouvement britannique des années 1960 qui redécouvre le blues s'appelle le blues…","r":"revival","o":["revival","baroque","minimaliste","grégorien"]},{"q":"Lead Belly est né dans quel État du Sud, voisin du Mississippi ?","r":"la Louisiane","o":["la Louisiane","le Wyoming","le Vermont","l'Idaho"]},{"q":"Quel surnom du blues électrique du Nord vient de la grande ville où il s'est développé ?","r":"le Chicago blues","o":["le Chicago blues","le Paris blues","le Berlin blues","le Tokyo blues"]},{"q":"Quelle chanteuse pionnière est surnommée « mère du blues » ?","r":"Ma Rainey","o":["Ma Rainey","Maria Callas","Dalida","Adele"]},{"q":"Le blues a directement préparé l'apparition, dans les années 1950, du…","r":"rock'n'roll","o":["rock'n'roll","grégorien","sérialisme","madrigal"]},{"q":"Quel film de Martin Scorsese relie le blues à ses racines africaines (du Mali au Mississippi) ?","r":"Feel Like Going Home","o":["Feel Like Going Home","Titanic","Le Roi lion","Amadeus"]}]};
 /* Œuvres célèbres par compositeur, pour le cours de synthèse « Compositeurs & repères ». */
 const WORKS_COMPO={
@@ -3201,7 +3949,7 @@ const GEN={
       solution:`Réponse&nbsp;: <b>${it.r}</b>.`};}),
 
   // --- Styles de musique : gospel, jazz, film, rock, minimaliste, prog, guitare, reggae, rap, électro, jeux vidéo (même principe que le blues) ---
-  ...Object.fromEntries([["opera","op",OPERA_HIST],["gospel","gs",GOSPEL_HIST],["jazz","jz",JAZZ_HIST],["film","fm",FILM_HIST],["rock","rk",ROCK_HIST],["minimaliste","mn",MINI_HIST],["prog","pg",PROG_HIST],["guitare","gt",GUITARE_HIST],["reggae","rg",REGGAE_HIST],["rap","rp",RAP_HIST],["electro","el",ELECTRO_HIST],["jeuxvideo","jv",JV_HIST]].map(function(x){ const B=x[2];
+  ...Object.fromEntries([["opera","op",OPERA_HIST],["gospel","gs",GOSPEL_HIST],["jazz","jz",JAZZ_HIST],["film","fm",FILM_HIST],["rock","rk",ROCK_HIST],["minimaliste","mn",MINI_HIST],["prog","pg",PROG_HIST],["guitare","gt",GUITARE_HIST],["reggae","rg",REGGAE_HIST],["rap","rp",RAP_HIST],["electro","el",ELECTRO_HIST],["jeuxvideo","jv",JV_HIST],["chanson","cf",CHANSON_HIST],["monde","mm",MONDE_HIST],["afrique","af",AFRIQUE_HIST],["asie","as",ASIE_HIST],["ameriques","am",AMERIQUES_HIST],["europe-trad","eu",EUROPE_HIST],["numerique","nm",NUMERIQUE_HIST]].map(function(x){ const B=x[2];
     return [x[0],()=>mapEx(nbQuestions,()=>{
       const pool=difficulte===1?B.f:difficulte===2?B.f.concat(B.i):B.i.concat(B.d);
       const it=pick(pool);
@@ -13918,6 +14666,278 @@ const LECONS={
   <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="WcqK9Ls7Eos" data-lib="Jerusalem · Alpha Blondy"></div><div class="ce-yt" data-yt="qxcorFVVSmc" data-lib="Aux armes et cætera · Serge Gainsbourg (en concert, 1988)"></div></div></div>
   <p class="bt-lien"><button class="btn-son" onclick="ecranBatterie('reggae')"><i class="ph ph-equalizer"></i> Essayer ce rythme dans la boîte à rythmes</button></p>
   <div class="cle">À retenir&nbsp;: le reggae naît à la fin des <b>années 1960</b> à <b>Kingston</b>, en <b>Jamaïque</b>, après le <b>ska</b> et le <b>rocksteady</b>. Ses marques&nbsp;: un tempo <b>lent et balancé</b>, la guitare sur les <b>contretemps</b>, une <b>basse</b> très présente, l'accent de batterie sur le <b>3ᵉ temps</b>. Il est lié au mouvement <b>rastafari</b> et porte des messages de paix et de justice. Sa grande star&nbsp;: <b>Bob Marley</b> et les Wailers.</div>`},
+ "monde":{titre:"Le tour du monde des musiques",html:`
+  <p>Partout sur la Terre, les êtres humains font de la musique&nbsp;: pour danser, prier, raconter, travailler, fêter, consoler. Chaque peuple a inventé ses <b>instruments</b>, ses <b>gammes</b> et ses <b>rythmes</b>, avec ce qu’il trouvait autour de lui&nbsp;: du bois, des peaux, des calebasses, du bambou, du métal. On appelle souvent ces musiques des <b>musiques traditionnelles</b>&nbsp;: elles se transmettent <b>de bouche à oreille</b>, d’une génération à l’autre, souvent sans partition.</p>
+  <h3>La carte des musiques</h3>
+  <p>Touche un point&nbsp;: tu entends une courte imitation de sa musique, tu découvres ses instruments, puis tu regardes une vraie vidéo. Ensuite, essaie le jeu&nbsp;: une musique est jouée, à toi de trouver d’où elle vient.</p>
+  <div id="mmCarteZone"></div>
+  <h3>Ce qui change d’une musique à l’autre</h3>
+  <ul>
+  <li><b>Les gammes</b>&nbsp;: la gamme majeure n’est pas partout&nbsp;! Beaucoup de musiques (Chine, Andes, Afrique de l’Ouest) utilisent une <b>gamme pentatonique</b> de 5 notes. La musique arabe utilise des <b>quarts de ton</b>, des notes «&nbsp;entre&nbsp;» nos notes.</li>
+  <li><b>Les rythmes</b>&nbsp;: la <b>polyrythmie</b> d’Afrique superpose plusieurs rythmes&nbsp;; les Balkans comptent des mesures «&nbsp;boiteuses&nbsp;» à 7 ou 9 temps&nbsp;; la clave cubaine organise toute la musique.</li>
+  <li><b>Le bourdon</b>&nbsp;: une note tenue sans arrêt sous la mélodie (la tanpura en Inde, le biniou en Bretagne, le didgeridoo en Australie).</li>
+  <li><b>Les timbres</b>&nbsp;: le métal du gamelan, la vièle de l’erhu, la kora, la quena… chaque instrument a sa couleur.</li>
+  <li><b>La transmission</b>&nbsp;: on apprend souvent en écoutant et en imitant un maître, pas en lisant une partition.</li>
+  </ul>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'penta'})"><i class="ph ph-play"></i> La gamme pentatonique (5 notes)</button> <button class="btn-son" onclick="jouerSonBtn({mm:'majeur'})"><i class="ph ph-play"></i> La gamme majeure</button> <button class="btn-son" onclick="jouerSonBtn({mm:'rast'})"><i class="ph ph-play"></i> Le maqam Rast (quarts de ton)</button></p>
+  <h3>Les familles d’instruments du monde</h3>
+  <p>Les spécialistes, les <b>ethnomusicologues</b>, rangent tous les instruments du monde en quatre grandes familles, selon ce qui vibre (c’est la classification de <b>Hornbostel et Sachs</b>, 1914)&nbsp;:</p>
+  <ul>
+  <li><b>Les cordophones</b>&nbsp;: une corde vibre (kora, sitar, oud, koto, erhu, charango, guitare).</li>
+  <li><b>Les aérophones</b>&nbsp;: l’air vibre (quena, shakuhachi, bombarde, didgeridoo, cornemuse).</li>
+  <li><b>Les membranophones</b>&nbsp;: une peau tendue vibre (djembé, tabla, darbouka, taiko, surdo).</li>
+  <li><b>Les idiophones</b>&nbsp;: l’instrument vibre lui-même, tout entier (balafon, gongs du gamelan, steel drum, claves, castagnettes).</li>
+  </ul>
+  <h3>Les musiques du monde se rencontrent</h3>
+  <p>Les musiques voyagent avec les hommes. Les rythmes africains, emportés par l’esclavage en Amérique, sont à l’origine du <b>blues</b>, du <b>jazz</b>, de la <b>salsa</b> et de la <b>samba</b>. Les Beatles ont joué du <b>sitar</b>&nbsp;; Debussy a été ébloui par le <b>gamelan</b> à l’Exposition universelle de Paris en 1889. Aujourd’hui, des artistes mêlent traditions et musiques actuelles&nbsp;: on parle de <b>world music</b> (musique du monde) ou de <b>fusion</b>.</p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><p>Un didgeridoo joué par un artiste aborigène d’Australie&nbsp;: un bourdon grave, des rythmes de souffle et des cris d’animaux.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="yG9ZX1FS20A" data-lib="Didgeridoo · Lewis Burns"></div></div></div>
+  <div class="cle">À retenir&nbsp;: chaque culture a ses <b>instruments</b>, ses <b>gammes</b> et ses <b>rythmes</b>. Beaucoup de musiques traditionnelles se transmettent <b>de bouche à oreille</b>. On y trouve la <b>gamme pentatonique</b>, les <b>quarts de ton</b>, la <b>polyrythmie</b>, le <b>bourdon</b>. Les instruments se rangent en <b>cordophones</b>, <b>aérophones</b>, <b>membranophones</b> et <b>idiophones</b>.</div>
+ `},
+ "afrique":{titre:"Les musiques d'Afrique",html:`
+  <p>L’Afrique est un immense continent de 54 pays et de plus de 2&nbsp;000 langues&nbsp;: il n’y a pas <i>une</i> musique africaine, mais des centaines. La musique y accompagne toute la vie&nbsp;: naissances, mariages, travaux des champs, cérémonies, fêtes. Souvent, tout le monde participe&nbsp;: on chante, on frappe dans les mains, on danse.</p>
+  <h3>Le rythme roi : la polyrythmie</h3>
+  <p>En Afrique de l’Ouest (Mali, Guinée, Sénégal, Côte d’Ivoire), les percussions jouent ensemble des rythmes <b>différents</b> qui s’emboîtent&nbsp;: c’est la <b>polyrythmie</b>. Un exemple simple&nbsp;: «&nbsp;3 contre 2&nbsp;», un tambour frappe 3 coups pendant que la cloche en frappe 2&nbsp;; les deux tombent ensemble au début de chaque cycle. Une <b>cloche</b> répète un motif qui sert de repère à tous.</p>
+  <ul>
+  <li><b>Le djembé</b>&nbsp;: tambour en forme de calice, taillé dans un tronc, joué à mains nues. Il a trois sons&nbsp;: la <b>basse</b> (au centre), le <b>ton</b> et la <b>claque</b> (au bord).</li>
+  <li><b>Les dunduns</b>&nbsp;: trois tambours joués avec une baguette, qui donnent la base grave.</li>
+  <li><b>Le call and response</b> (appel et réponse)&nbsp;: un soliste lance une phrase, le groupe répond.</li>
+  </ul>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'trois-deux'})"><i class="ph ph-play"></i> Écouter « 3 contre 2 »</button> <button class="btn-son" onclick="jouerSonBtn({mm:'afrique-ouest'})"><i class="ph ph-play"></i> Cloche, tambours et balafon ensemble</button> <button class="btn-son" onclick="ecranPoly()"><i class="ph ph-shapes"></i> Essayer le jeu Polyrythmie</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><p>Repère le motif de la cloche, les tambours graves, puis les solos de djembé par-dessus.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="Qsq5PHoik-s" data-lib="Kuku · Mamady Keïta (djembés)"></div></div></div>
+  <h3>Les griots, mémoire des peuples</h3>
+  <p>En Afrique de l’Ouest, les <b>griots</b> (on dit aussi <b>djélis</b>) sont des musiciens, conteurs et historiens. Ils chantent l’histoire des familles et des rois, comme celle de Soundiata Keïta, fondateur de l’empire du Mali. Leur savoir se transmet de père en fils, <b>de bouche à oreille</b>.</p>
+  <ul>
+  <li><b>La kora</b>&nbsp;: une harpe-luth à <b>21 cordes</b>, faite d’une grande calebasse couverte d’une peau. Le musicien la joue avec les pouces et les index.</li>
+  <li><b>Le balafon</b>&nbsp;: l’ancêtre du xylophone, avec des lames de bois posées sur des calebasses qui servent de résonateurs.</li>
+  <li><b>Le ngoni</b>&nbsp;: un petit luth, ancêtre probable du banjo.</li>
+  </ul>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><p>La kora de Toumani Diabaté dialogue avec la guitare d’Ali Farka Touré, deux grands musiciens du Mali.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="pJUE03aeaQ4" data-lib="Debe · Ali Farka Touré et Toumani Diabaté"></div><div class="ce-yt" data-yt="e7fpLeTdxPA" data-lib="Yé ké yé ké · Mory Kanté, de Guinée (kora et électro)"></div></div></div>
+  <h3>Les polyphonies d’Afrique centrale</h3>
+  <p>Dans la forêt d’Afrique centrale, les <b>Pygmées Aka et Baka</b> chantent des <b>polyphonies</b> extraordinaires&nbsp;: chacun chante un petit motif différent, et tous les motifs s’imbriquent. Ils utilisent le <b>yodel</b>&nbsp;: la voix passe très vite du grave à l’aigu. Personne ne dirige&nbsp;: c’est la musique de tout le groupe. L’UNESCO a inscrit ces chants au patrimoine culturel immatériel de l’humanité.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'afrique-centre'})"><i class="ph ph-play"></i> Imitation : des voix qui s’imbriquent</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="HsJWzhAWVd4" data-lib="Polyphonies des Pygmées Aka (UNESCO)"></div></div></div>
+  <h3>L’Afrique du Nord</h3>
+  <ul>
+  <li><b>Le oud</b>&nbsp;: un luth sans frettes, au manche court, ancêtre du luth européen.</li>
+  <li><b>La darbouka</b>&nbsp;: un tambour en forme de gobelet&nbsp;; le son grave au centre s’appelle «&nbsp;dum&nbsp;», le son sec au bord «&nbsp;tek&nbsp;».</li>
+  <li><b>La musique gnawa</b> (Maroc)&nbsp;: des chants de transe accompagnés du <b>guembri</b> (luth grave à trois cordes) et des <b>qraqeb</b> (grandes castagnettes en métal).</li>
+  <li><b>Le raï</b> (Algérie, ville d’Oran)&nbsp;: une musique populaire devenue moderne avec synthétiseurs et boîtes à rythmes&nbsp;; <b>Khaled</b>, le «&nbsp;roi du raï&nbsp;», l’a rendue célèbre dans le monde entier.</li>
+  </ul>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'maghreb'})"><i class="ph ph-play"></i> Imitation : darbouka (dum, tek) et oud</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="QXgIwpIerGA" data-lib="Musique gnawa · Mâalem Mahmoud Guinia (guembri)"></div><div class="ce-yt" data-yt="tTcnIYYeZI8" data-lib="Didi · Khaled (raï)"></div></div></div>
+  <h3>Les musiques africaines d’aujourd’hui</h3>
+  <p>Au XXᵉ siècle, les musiques d’Afrique se mêlent au jazz, au funk et à l’électronique. Au Nigeria, <b>Fela Kuti</b> invente l’<b>afrobeat</b> (longs morceaux, cuivres, chant engagé contre la corruption et l’injustice du pouvoir). Au Congo, la <b>rumba congolaise</b>, née de l’écoute de disques de musique cubaine, avec ses guitares électriques entrelacées, fait danser tout le continent. <b>Youssou N’Dour</b> (Sénégal), <b>Salif Keïta</b> (Mali) et <b>Angélique Kidjo</b> (Bénin) chantent dans le monde entier. Aujourd’hui, l’<b>afrobeats</b> du Nigeria et du Ghana remplit les plateformes d’écoute.</p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="kisTH3SFegc" data-lib="Water No Get Enemy · Fela Kuti (afrobeat)"></div><div class="ce-yt" data-yt="dlgESq5FAx4" data-lib="Agolo · Angélique Kidjo"></div></div></div>
+  <h3>De l’Afrique au blues et au jazz</h3>
+  <p>Entre le XVIᵉ et le XIXᵉ siècle, des millions d’Africains ont été déportés en Amérique comme esclaves. Ils ont emporté leurs rythmes, l’<b>appel et réponse</b>, les <b>notes bleues</b>. De là sont nés les negro-spirituals, le <b>blues</b>, le <b>jazz</b>, puis le rock et le rap, mais aussi la salsa et la samba.</p>
+  <div class="cle">À retenir&nbsp;: en Afrique de l’Ouest règne la <b>polyrythmie</b> (djembé, dunduns, cloche) et l’<b>appel et réponse</b>. Les <b>griots</b> chantent l’histoire, accompagnés de la <b>kora</b> (21 cordes) et du <b>balafon</b>. En Afrique centrale, les <b>Pygmées</b> chantent des <b>polyphonies</b> avec le <b>yodel</b>. En Afrique du Nord&nbsp;: le <b>oud</b>, la <b>darbouka</b>, le <b>gnawa</b> et le <b>raï</b>. Les rythmes africains sont à l’origine du <b>blues</b> et du <b>jazz</b>.</div>
+ `},
+ "asie":{titre:"Les musiques d'Asie",html:`
+  <p>De la Méditerranée au Japon, l’Asie abrite des musiques très anciennes et très savantes, avec leurs propres théories, leurs gammes et leurs instruments. Voyage d’ouest en est.</p>
+  <h3>Le monde arabe et le maqam</h3>
+  <p>La musique arabe (Égypte, Liban, Syrie, Irak…) repose sur le <b>maqam</b>&nbsp;: un mode, c’est-à-dire une gamme avec ses notes importantes, ses formules et son émotion. Certains maqams utilisent des <b>quarts de ton</b>&nbsp;: des notes placées entre deux notes du piano, impossibles à jouer sur un clavier ordinaire.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'majeur'})"><i class="ph ph-play"></i> Gamme majeure (do)</button> <button class="btn-son" onclick="jouerSonBtn({mm:'rast'})"><i class="ph ph-play"></i> Maqam Rast (do) : le mi et le si sont baissés d’un quart de ton</button></p>
+  <ul>
+  <li><b>Le oud</b>&nbsp;: luth sans frettes, ce qui permet les quarts de ton. Le musicien improvise un <b>taqsim</b> pour présenter le maqam.</li>
+  <li><b>Le qanun</b> (cithare), le <b>nay</b> (flûte de roseau), le <b>riq</b> (tambourin).</li>
+  <li><b>Le tarab</b>&nbsp;: l’émotion intense que partagent le chanteur et le public. La chanteuse égyptienne <b>Oum Kalthoum</b> (morte en 1975) chantait des concerts de plusieurs heures.</li>
+  </ul>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="m4cLPohrUVY" data-lib="Taqsim sur le maqam Rast · Michael Ibrahim (oud)"></div><div class="ce-yt" data-yt="6YjW05dqec8" data-lib="Enta Omri · Oum Kalthoum"></div></div></div>
+  <h3>L’Inde : raga et tala</h3>
+  <p>La musique classique du nord de l’Inde (<b>hindoustanie</b>&nbsp;; celle du sud s’appelle <b>carnatique</b>) repose sur deux idées&nbsp;:</p>
+  <ul>
+  <li><b>Le raga</b>&nbsp;: une couleur mélodique (des notes, des ornements, une humeur). Chaque raga est lié à un <b>moment du jour</b> ou à une saison&nbsp;: il y a des ragas du matin, du soir, de la nuit.</li>
+  <li><b>Le tala</b>&nbsp;: un cycle rythmique qui revient sans fin, par exemple <b>teental</b>, un cycle de 16 temps.</li>
+  <li><b>Le bourdon</b>&nbsp;: la <b>tanpura</b> joue sans arrêt les notes de base (Sa et Pa), comme un tapis sonore.</li>
+  </ul>
+  <p>Les instruments&nbsp;: les <b>tablas</b>, dont <b>Zakir Hussain</b> était un maître, le <b>sitar</b> (luth à long manche, avec des cordes «&nbsp;sympathiques&nbsp;» qui vibrent toutes seules), les tablas (deux petits tambours accordés, l’un aigu, l’autre grave), la <b>bansuri</b> (flûte de bambou). Un concert est en grande partie <b>improvisé</b>. <b>Ravi Shankar</b>, maître du sitar, a fait connaître cette musique en Occident et l’a apprise à George Harrison, des Beatles.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'tanpura'})"><i class="ph ph-play"></i> Le bourdon de la tanpura</button> <button class="btn-son" onclick="jouerSonBtn({mm:'inde'})"><i class="ph ph-play"></i> Imitation : bourdon et mélodie qui glisse</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="LAwgD_YxRgM" data-lib="Solo de tabla · Zakir Hussain"></div><div class="ce-yt" data-yt="FdlQgo-eYUU" data-lib="Raga du matin · Ravi Shankar (sitar)"></div><div class="ce-yt" data-yt="HsffxGyY4ck" data-lib="Within You Without You · The Beatles (sitar et tablas)"></div></div></div>
+  <h3>L’Indonésie : le gamelan</h3>
+  <p>À <b>Java</b> et à <b>Bali</b>, le <b>gamelan</b> est un orchestre de <b>métallophones</b> (lames de bronze), de <b>gongs</b> et de tambours (le <b>kendang</b>, qui guide le tempo). Les instruments d’un gamelan sont fabriqués ensemble et accordés entre eux&nbsp;: on ne les mélange pas avec ceux d’un autre gamelan. La musique est faite de <b>cycles</b>&nbsp;: le grand gong grave en marque la fin. À Bali, deux musiciens jouent des motifs rapides qui s’imbriquent (le <b>kotekan</b>), et les instruments vont par paires légèrement désaccordées, ce qui fait «&nbsp;scintiller&nbsp;» le son&nbsp;: c’est l’<b>ombak</b>.</p>
+  <p>En <b>1889</b>, à l’Exposition universelle de Paris, <b>Claude Debussy</b> découvre un gamelan de Java&nbsp;: ce son l’inspire pour ses pièces pour piano.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'indonesie'})"><i class="ph ph-play"></i> Imitation : métallophones et grand gong</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="UY8NEAupxjc" data-lib="Gong kebyar · gamelan de Bali"></div></div></div>
+  <h3>La Chine</h3>
+  <p>La musique chinoise utilise souvent la <b>gamme pentatonique</b> (5 notes, comme les touches noires du piano). L’<b>erhu</b> est une vièle à <b>deux cordes</b>, jouée avec un archet coincé entre les cordes&nbsp;: elle glisse d’une note à l’autre comme une voix. On joue aussi du <b>pipa</b> (luth), du <b>guzheng</b> (cithare) et de la <b>dizi</b> (flûte). L’<b>opéra de Pékin</b> mêle chant, théâtre, acrobaties et percussions.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'penta'})"><i class="ph ph-play"></i> La gamme pentatonique</button> <button class="btn-son" onclick="jouerSonBtn({mm:'chine'})"><i class="ph ph-play"></i> Imitation : une vièle qui glisse</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><p>L’erhu imite le galop et les hennissements des chevaux.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="UXoU0E6zRLg" data-lib="Les Courses de chevaux · Jun Chen (erhu)"></div></div></div>
+  <h3>Le Japon</h3>
+  <ul>
+  <li><b>Le koto</b>&nbsp;: une longue cithare à <b>13 cordes</b>, posée au sol, avec des chevalets mobiles. On le pince avec des onglets.</li>
+  <li><b>Le shakuhachi</b>&nbsp;: une flûte en bambou, jouée autrefois par des moines zen&nbsp;; le souffle s’entend autant que la note.</li>
+  <li><b>Le taiko</b>&nbsp;: de grands tambours frappés avec puissance par un groupe, presque comme une danse.</li>
+  <li><b>Le shamisen</b>&nbsp;: un luth à <b>trois cordes</b>, au long manche, joué avec un grand plectre.</li>
+  <li><b>Le gagaku</b>&nbsp;: l’ancienne musique de la cour impériale, l’une des plus vieilles musiques d’orchestre du monde.</li>
+  <li><b>Le ma</b>&nbsp;: le silence entre les sons compte autant que les sons eux-mêmes.</li>
+  </ul>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'japon'})"><i class="ph ph-play"></i> Imitation : « Sakura » au koto</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="JDTp_YQizqE" data-lib="Sakura · Kasumi Watanabe (koto)"></div><div class="ce-yt" data-yt="TPHqra4QImE" data-lib="Kudariha · Kiku Day (shakuhachi)"></div><div class="ce-yt" data-yt="heglVG83scA" data-lib="Zoku · Kodo (taiko)"></div></div></div>
+  <div class="cle">À retenir&nbsp;: la musique arabe repose sur le <b>maqam</b>, avec des <b>quarts de ton</b>, joués au <b>oud</b>. La musique de l’Inde associe le <b>raga</b> (mélodie, liée à un moment du jour), le <b>tala</b> (cycle rythmique) et un <b>bourdon</b>&nbsp;; on y entend le <b>sitar</b> et les <b>tablas</b>. Le <b>gamelan</b> d’Indonésie est un orchestre de <b>métallophones</b> et de <b>gongs</b>, qui a inspiré <b>Debussy</b>. En Chine&nbsp;: la gamme <b>pentatonique</b> et l’<b>erhu</b>. Au Japon&nbsp;: le <b>koto</b>, le <b>shakuhachi</b> et le <b>taiko</b>.</div>
+ `},
+ "ameriques":{titre:"Les musiques d'Amérique latine et des Caraïbes",html:`
+  <p>Du Mexique à l’Argentine et dans les îles des Caraïbes, trois mondes se sont mélangés&nbsp;: les <b>peuples amérindiens</b> (flûtes, percussions), les <b>Européens</b> (guitare, violon, harmonie, langues espagnole et portugaise) et les <b>Africains</b> déportés comme esclaves (rythmes, tambours, appel et réponse). De ces rencontres sont nées des musiques qui font danser le monde entier.</p>
+  <h3>Cuba : le son, la clave et la salsa</h3>
+  <p>À Cuba, le <b>son cubain</b> mêle la guitare espagnole (le <b>tres</b>, à trois paires de cordes) et les percussions africaines (<b>congas</b>, <b>bongos</b>, <b>maracas</b>). Tout est guidé par la <b>clave</b>&nbsp;: un motif de 5 coups sur deux mesures (3 coups puis 2), frappé avec deux bâtons de bois, les <b>claves</b>. Un musicien qui joue «&nbsp;contre la clave&nbsp;» sonne faux aux oreilles des Cubains&nbsp;: son rythme ne s’accorde plus avec le motif de base. À New York, dans les années 1960-1970, des musiciens cubains et portoricains en tirent la <b>salsa</b> (Celia Cruz, Tito Puente).</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'clave'})"><i class="ph ph-play"></i> La clave 3-2</button> <button class="btn-son" onclick="jouerSonBtn({mm:'cuba'})"><i class="ph ph-play"></i> Imitation : clave, congas, basse et piano</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="tGbRZ73NvlY" data-lib="Chan Chan · Buena Vista Social Club"></div></div></div>
+  <h3>Le Brésil : samba et bossa nova</h3>
+  <p>La <b>samba</b> est née à Rio de Janeiro au début du XXᵉ siècle, dans les communautés afro-brésiliennes. Au <b>carnaval</b>, les écoles de samba défilent avec leur <b>batucada</b>&nbsp;: des centaines de percussionnistes. Le <b>surdo</b> (grosse caisse grave) frappe fort le <b>2ᵉ temps</b>, l’accent qui fait avancer les danseurs&nbsp;; le <b>tamborim</b>, l’<b>agogô</b> (double cloche) et la caisse claire jouent par-dessus, et le <b>cavaquinho</b> (petite guitare) accompagne les chanteurs. À la fin des années 1950 naît la <b>bossa nova</b> («&nbsp;nouvelle vague&nbsp;»)&nbsp;: une samba douce, chantée à voix basse, avec des accords de jazz (Antônio Carlos Jobim, João Gilberto).</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'bresil'})"><i class="ph ph-play"></i> Imitation : une batucada</button></p>
+  <div class="lec-ecoute compare"><div class="lec-ecoute-t"><i class="ph ph-arrows-left-right"></i> Écoute et compare</div><p>① La batucada d’une école de samba, puissante et faite pour le défilé. ② La bossa nova, intime et jazzy&nbsp;: même pays, deux mondes.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="qpS0KFG38ds" data-lib="① Batucada de l’école de samba Salgueiro"></div><div class="ce-yt" data-yt="kLO8XoNf5EM" data-lib="② The Girl from Ipanema · Stan Getz, João Gilberto, A. C. Jobim"></div></div></div>
+  <h3>L’Argentine : le tango</h3>
+  <p>Le <b>tango</b> naît vers 1880 dans les quartiers pauvres de <b>Buenos Aires</b> et de Montevideo, chez les immigrés venus d’Europe. C’est une danse de couple, à la fois passionnée et mélancolique. Son instrument roi est le <b>bandonéon</b>, un cousin de l’accordéon venu d’Allemagne. Dans les années 1950-1970, <b>Astor Piazzolla</b> invente le <b>tango nuevo</b>, qui mêle le tango, le jazz et la musique classique («&nbsp;Libertango&nbsp;»).</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'argentine'})"><i class="ph ph-play"></i> Imitation : les accents marqués du tango</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="8UNtQpMMSEM" data-lib="Libertango · Astor Piazzolla"></div></div></div>
+  <h3>Les Andes</h3>
+  <p>Dans les montagnes du Pérou, de la Bolivie et de l’Équateur, les musiques héritées des <b>Incas</b> utilisent la <b>gamme pentatonique</b>. On y joue la <b>quena</b> (flûte droite à encoche), le <b>siku</b> ou <b>zampoña</b> (flûte de pan&nbsp;: deux musiciens se partagent souvent les notes), le <b>charango</b> (petite guitare à cordes doubles, autrefois faite avec une carapace de tatou) et le <b>bombo</b> (grosse caisse). «&nbsp;El Cóndor Pasa&nbsp;» est devenu célèbre dans le monde entier.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'andes'})"><i class="ph ph-play"></i> Imitation : quena, charango et bombo</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="PJJlDmCeG4A" data-lib="El Cóndor Pasa · Jean Atauje (quena et zampoña)"></div></div></div>
+  <h3>Le Mexique : les mariachis</h3>
+  <p>Le <b>mariachi</b> est un orchestre en costume de <b>charro</b>, avec trompettes, violons, guitares, la <b>vihuela</b> (petite guitare bombée) et le <b>guitarrón</b> (grosse guitare qui joue la basse). Il anime les fêtes et les sérénades («&nbsp;Cielito lindo&nbsp;»).</p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="OHeHOb3E-2g" data-lib="Cielito lindo · Mariachi Nuevo Tecalitlán"></div></div></div>
+  <h3>Les Caraïbes</h3>
+  <ul>
+  <li><b>Trinité-et-Tobago</b>&nbsp;: le <b>steel drum</b> (ou <b>pan</b>) est fabriqué dans un baril de pétrole martelé&nbsp;: chaque zone bosselée donne une note. Il accompagne le <b>calypso</b> et le carnaval.</li>
+  <li><b>La Jamaïque</b>&nbsp;: le ska, puis le <b>reggae</b> (voir la leçon <a href="#" onclick="afficherLecon('reggae');return false">Le reggae</a>).</li>
+  <li><b>Les Antilles françaises</b> (Guadeloupe, Martinique)&nbsp;: la <b>biguine</b>, le <b>gwoka</b> (tambours ka) et, dans les années 1980, le <b>zouk</b> du groupe <b>Kassav’</b>.</li>
+  </ul>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'trinidad'})"><i class="ph ph-play"></i> Imitation : le son du steel drum</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="uYqAX9vCUrk" data-lib="Curry Tabanca · Trinidad All Stars (steel drums)"></div><div class="ce-yt" data-yt="_FJ03NjJEUY" data-lib="Zouk la sé sèl médikaman nou ni · Kassav’"></div></div></div>
+  <div class="cle">À retenir&nbsp;: les musiques d’Amérique latine mêlent des héritages <b>amérindiens</b>, <b>européens</b> et <b>africains</b>. Cuba&nbsp;: le <b>son</b>, la <b>clave</b> et la <b>salsa</b>. Brésil&nbsp;: la <b>samba</b> (batucada, <b>surdo</b> sur le 2ᵉ temps) et la <b>bossa nova</b>. Argentine&nbsp;: le <b>tango</b> et le <b>bandonéon</b>, renouvelé par <b>Piazzolla</b>. Andes&nbsp;: la <b>quena</b>, la <b>flûte de pan</b>, le <b>charango</b>. Mexique&nbsp;: les <b>mariachis</b>. Caraïbes&nbsp;: le <b>steel drum</b>, le <b>calypso</b>, le <b>zouk</b>.</div>
+ `},
+ "europe-trad":{titre:"Les musiques traditionnelles de France et d'Europe",html:`
+  <p>Avant la radio et les disques, chaque région d’Europe avait ses chansons, ses danses et ses instruments, joués au village pour les fêtes, les mariages et les veillées. On les appelle les <b>musiques traditionnelles</b> (ou <b>folkloriques</b>). Beaucoup sont encore bien vivantes aujourd’hui, et des musiciens les mêlent au rock ou à l’électro.</p>
+  <h3>La Bretagne</h3>
+  <p>En Bretagne, on danse en chaîne ou en rond au <b>fest-noz</b> («&nbsp;fête de nuit&nbsp;»). Les <b>sonneurs</b> jouent en couple&nbsp;: la <b>bombarde</b> (hautbois au son puissant et nasillard) et le <b>biniou</b> (petite cornemuse avec un <b>bourdon</b>) se répondent&nbsp;: chacun reprend son souffle pendant que l’autre joue. On chante aussi le <b>kan ha diskan</b>&nbsp;: deux chanteurs se relaient, le second reprend la fin de la phrase du premier. Dans les années 1970, <b>Alan Stivell</b> fait renaître la <b>harpe celtique</b> et mêle la musique bretonne au rock. Le <b>bagad</b> est un grand orchestre de bombardes, cornemuses et percussions, qu’on entend dans les festivals et les concours.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'bretagne'})"><i class="ph ph-play"></i> Imitation : bourdon et mélodie de bombarde</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="Nhhvs-fteMo" data-lib="Un couple de sonneurs : biniou et bombarde"></div><div class="ce-yt" data-yt="P9Woz1g0jnM" data-lib="Tri Martolod · Alan Stivell"></div></div></div>
+  <h3>Les autres régions de France</h3>
+  <ul>
+  <li><b>L’Auvergne et le Limousin</b>&nbsp;: la <b>bourrée</b>, dansée au son de la <b>cabrette</b> (cornemuse) et de la <b>vielle à roue</b>&nbsp;: une roue frottée par une manivelle fait chanter les cordes, avec un bourdon.</li>
+  <li><b>La Corse</b>&nbsp;: la <b>paghjella</b>, un chant polyphonique à trois voix d’hommes, sans instrument (a cappella), inscrit au patrimoine de l’UNESCO.</li>
+  <li><b>Le Pays basque</b>&nbsp;: la <b>txalaparta</b> (planches de bois frappées à deux) et le <b>txistu</b> (flûte à trois trous).</li>
+  <li><b>Paris</b>&nbsp;: le <b>bal musette</b> des années 1920-1950, avec l’<b>accordéon</b>, la valse et la java.</li>
+  </ul>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="3ZrQ_tIoecU" data-lib="Bourrées d’Auvergne · vielle à roue"></div><div class="ce-yt" data-yt="8wK0745kBZg" data-lib="Sumiglia · A Filetta (polyphonie corse)"></div><div class="ce-yt" data-yt="RQvzrifN-ls" data-lib="Indifférence · André Verchuren (accordéon musette)"></div></div></div>
+  <h3>L’Irlande et l’Écosse</h3>
+  <p>La musique irlandaise se joue souvent dans les <b>pubs</b>, en <b>sessions</b>&nbsp;: les musiciens jouent ensemble, à l’unisson, des airs de danse appris d’oreille. Les plus connus sont la <b>gigue</b> (jig, à 6/8&nbsp;: deux groupes de trois croches) et le <b>reel</b> (à 4 temps, rapide). Les instruments&nbsp;: le <b>fiddle</b> (violon), le <b>tin whistle</b> (petite flûte en métal), les <b>uilleann pipes</b> (cornemuse jouée avec un soufflet sous le bras) et le <b>bodhrán</b> (tambour sur cadre). En Écosse, la grande <b>cornemuse</b> (bagpipe) se joue en défilé.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'jig'})"><i class="ph ph-play"></i> Compter une gigue : 1-2-3, 4-5-6</button> <button class="btn-son" onclick="jouerSonBtn({mm:'irlande'})"><i class="ph ph-play"></i> Imitation : flûte et bodhrán</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="JNN4eYvSajk" data-lib="Skyline Jig · The Chieftains"></div></div></div>
+  <h3>L’Espagne : le flamenco</h3>
+  <p>Le <b>flamenco</b> vient d’<b>Andalousie</b>, dans le sud de l’Espagne&nbsp;; il est né de la rencontre des Gitans avec les musiques arabes, juives et espagnoles. Il réunit le <b>cante</b> (le chant, souvent déchirant), le <b>toque</b> (la guitare, jouée en <b>rasgueado</b>&nbsp;: les doigts frappent les cordes en éventail) et le <b>baile</b> (la danse, avec le <b>zapateado</b>, les pieds qui frappent le sol). Les <b>palmas</b> (claquements de mains) marquent les accents. On entend souvent la <b>cadence andalouse</b>&nbsp;: les accords la mineur, sol, fa, mi. <b>Paco de Lucía</b> a été le plus grand guitariste de flamenco.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'andalouse'})"><i class="ph ph-play"></i> La cadence andalouse (la, sol, fa, mi)</button> <button class="btn-son" onclick="jouerSonBtn({mm:'espagne'})"><i class="ph ph-play"></i> Imitation : rasgueado et palmas</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="0vq3qZwaXrw" data-lib="Entre dos aguas · Paco de Lucía"></div></div></div>
+  <h3>Le Portugal : le fado</h3>
+  <p>Le <b>fado</b>, né à Lisbonne, est un chant mélancolique accompagné de la <b>guitare portugaise</b> (douze cordes, en forme de poire). Il exprime la <b>saudade</b>&nbsp;: la nostalgie, le manque de quelqu’un ou d’un lieu. <b>Amália Rodrigues</b> en est la grande voix.</p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="DVFOUMJXdU8" data-lib="Barco Negro · Amália Rodrigues"></div></div></div>
+  <h3>Les Balkans : des mesures qui boitent</h3>
+  <p>En Bulgarie, en Macédoine, en Serbie ou en Roumanie, beaucoup de danses utilisent des <b>mesures asymétriques</b> (on dit aussi <b>aksak</b>, «&nbsp;boiteux&nbsp;» en turc)&nbsp;: par exemple <b>7 temps groupés 2+2+3</b>, ou 9 temps groupés 2+2+2+3. On les sent comme des pas de danse inégaux. Les <b>fanfares</b> de cuivres et la clarinette jouent très vite. <b>Goran Bregović</b> a rendu célèbres ces musiques avec son orchestre.</p>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({mm:'aksak'})"><i class="ph ph-play"></i> Compter 7 : 1-2, 1-2, 1-2-3</button> <button class="btn-son" onclick="jouerSonBtn({mm:'balkans'})"><i class="ph ph-play"></i> Imitation : tambour et clarinette en 7 temps</button></p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="UqOL7LOR6ko" data-lib="Kalashnikov · Goran Bregović"></div></div></div>
+  <div class="cle">À retenir&nbsp;: les musiques traditionnelles se transmettent <b>d’oreille</b> et accompagnent la danse et les fêtes. Bretagne&nbsp;: le <b>fest-noz</b>, la <b>bombarde</b> et le <b>biniou</b>, le <b>kan ha diskan</b>, Alan Stivell et la <b>harpe celtique</b>. Auvergne&nbsp;: la <b>bourrée</b>, la <b>vielle à roue</b>. Corse&nbsp;: la <b>paghjella</b>. Irlande&nbsp;: la <b>gigue</b> (6/8), le <b>reel</b>, le <b>fiddle</b>. Espagne&nbsp;: le <b>flamenco</b> (chant, guitare en rasgueado, danse, palmas). Portugal&nbsp;: le <b>fado</b> et la <b>saudade</b>. Balkans&nbsp;: les <b>mesures asymétriques</b> (7 temps&nbsp;: 2+2+3).</div>
+ `},
+ "chanson":{titre:"La chanson française",html:`
+  <p>Une <b>chanson</b>, c’est un <b>texte</b> (les paroles) mis en <b>musique</b> et chanté. En France, la chanson est un art à part entière&nbsp;: on y attache une grande importance aux <b>paroles</b>, au point qu’on parle de <b>chanson à texte</b>. Elle raconte des histoires, fait rire, émeut, dénonce&nbsp;; elle accompagne la vie de chacun.</p>
+  <h3>Qui fait une chanson&nbsp;?</h3>
+  <ul>
+  <li><b>Le parolier</b> (ou auteur) écrit les paroles.</li>
+  <li><b>Le compositeur</b> écrit la musique.</li>
+  <li><b>L’interprète</b> chante la chanson.</li>
+  <li><b>L’auteur-compositeur-interprète</b> fait les trois&nbsp;: Brassens, Brel, Barbara, Renaud, Stromae, Angèle…</li>
+  <li><b>L’arrangeur</b> choisit les instruments et écrit leurs parties&nbsp;; <b>une reprise</b> est une nouvelle version d’une chanson par un autre artiste.</li>
+  </ul>
+  <h3>La forme d’une chanson</h3>
+  <p>La plupart des chansons alternent des <b>couplets</b> et un <b>refrain</b>&nbsp;:</p>
+  <ul>
+  <li><b>L’introduction</b>&nbsp;: les instruments seuls, avant la voix.</li>
+  <li><b>Le couplet</b>&nbsp;: la musique revient, mais les <b>paroles changent</b>&nbsp;; il fait avancer l’histoire.</li>
+  <li><b>Le refrain</b>&nbsp;: la musique <b>et</b> les paroles reviennent à l’identique&nbsp;; c’est la partie qu’on retient et qu’on chante tous ensemble.</li>
+  <li><b>Le pont</b>&nbsp;: un passage différent, souvent vers la fin, qui apporte du nouveau avant le dernier refrain.</li>
+  <li><b>La coda</b> (ou outro)&nbsp;: la fin.</li>
+  </ul>
+  <p>Écoute «&nbsp;Les copains d’abord&nbsp;» de Brassens&nbsp;: les couplets racontent, le refrain revient. Chez Brassens, l’accompagnement est simple (une guitare, une contrebasse) pour laisser toute la place au texte.</p>
+  <h3>Un siècle de chanson française</h3>
+  <p>Touche une époque&nbsp;: ce qui change, les artistes, et deux chansons à écouter.</p>
+  <div id="cfZone"></div>
+  <h3>La chanson réaliste et le music-hall</h3>
+  <p>Dans les années 1930, la <b>chanson réaliste</b> raconte la vie difficile des quartiers populaires, avec une voix puissante et pleine d’émotion&nbsp;: <b>Fréhel</b>, puis <b>Édith Piaf</b>, «&nbsp;la Môme&nbsp;» («&nbsp;La vie en rose&nbsp;», «&nbsp;Non, je ne regrette rien&nbsp;»). Au <b>music-hall</b> (l’Olympia, Bobino), <b>Joséphine Baker</b> triomphe, et <b>Charles Trenet</b>, «&nbsp;le fou chantant&nbsp;», amène le <b>swing</b> du jazz dans la chanson («&nbsp;La Mer&nbsp;», 1946).</p>
+  <div class="lec-ecoute compare"><div class="lec-ecoute-t"><i class="ph ph-arrows-left-right"></i> Écoute et compare</div><p>① Piaf&nbsp;: une voix qui vibre, dramatique. ② Trenet&nbsp;: une voix souriante, un rythme qui balance (le swing).</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="4r454dad7tc" data-lib="① Non, je ne regrette rien · Édith Piaf"></div><div class="ce-yt" data-yt="PXQh9jTwwoA" data-lib="② La Mer · Charles Trenet"></div></div></div>
+  <h3>Les auteurs-compositeurs-interprètes</h3>
+  <p>Après la guerre, dans les <b>cabarets</b> de <b>Saint-Germain-des-Prés</b> (la «&nbsp;Rive gauche&nbsp;» de Paris), une génération écrit et chante ses propres chansons, avec un accompagnement simple&nbsp;: <b>Georges Brassens</b> et sa guitare, <b>Jacques Brel</b> (Belge, chant très théâtral), <b>Barbara</b> au piano, <b>Léo Ferré</b>, <b>Charles Aznavour</b>. Le texte est au cœur de la chanson, et des poètes sont mis en musique (Prévert, Aragon, Verlaine).</p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="4heMfS5jTxY" data-lib="L’aigle noir · Barbara"></div><div class="ce-yt" data-yt="O1aVWu2rBhE" data-lib="Les feuilles mortes · Yves Montand (paroles de Jacques Prévert, musique de Joseph Kosma)"></div></div></div>
+  <h3>Les yéyés</h3>
+  <p>Au début des années 1960, le <b>rock</b> et le <b>twist</b> arrivent d’Amérique. De jeunes chanteurs les adaptent en français&nbsp;: ce sont les <b>yéyés</b> (de l’anglais «&nbsp;yeah, yeah&nbsp;»)&nbsp;: <b>Johnny Hallyday</b>, <b>Sylvie Vartan</b>, <b>Françoise Hardy</b>, <b>France Gall</b>. L’émission de radio et le magazine «&nbsp;Salut les copains&nbsp;» les rendent célèbres auprès des adolescents.</p>
+  <h3>La chanson engagée</h3>
+  <p>Une chanson peut défendre une idée ou dénoncer une injustice. En 1954, «&nbsp;Le Déserteur&nbsp;» de <b>Boris Vian</b>, lettre d’un homme qui refuse de partir à la guerre, est interdite à la radio, en pleine guerre d’Indochine. <b>Jean Ferrat</b> chante la vie des campagnes qui se vident («&nbsp;La montagne&nbsp;»), <b>Renaud</b> la vie des quartiers. Aujourd’hui, <b>Angèle</b> (Belge) dénonce le sexisme dans «&nbsp;Balance ton quoi&nbsp;» (2019).</p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="95AIULT6dFk" data-lib="Le Déserteur · Boris Vian"></div><div class="ce-yt" data-yt="_YqzuE-5RE8" data-lib="Mistral gagnant · Renaud"></div></div></div>
+  <h3>Des années 1980 à aujourd’hui</h3>
+  <p>Les <b>synthétiseurs</b> et les <b>clips</b> à la télévision changent la chanson&nbsp;: <b>Jean-Jacques Goldman</b>, <b>France Gall</b> et <b>Michel Berger</b>, <b>Indochine</b>. Dans les années 1990, le <b>rap français</b> s’impose avec <b>MC Solaar</b> et <b>IAM</b> (Marseille)&nbsp;: des textes très travaillés, avec des jeux de mots, sur des rythmes et des samples. Aujourd’hui, la chanson se mélange à l’électro et au rap&nbsp;: <b>Stromae</b> (Belge) chante des textes graves sur une musique qui fait danser («&nbsp;Papaoutai&nbsp;», sur un père absent).</p>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><div class="compo-yt-grille"><div class="ce-yt" data-yt="lgHGU8gqz9U" data-lib="Ella, elle l’a · France Gall"></div><div class="ce-yt" data-yt="0TFNGRYMz1U" data-lib="Je veux · Zaz"></div></div></div>
+  <h3>Le vocabulaire de la chanson</h3>
+  <ul>
+  <li><b>Un tube</b>&nbsp;: une chanson qui a un très grand succès.</li>
+  <li><b>A cappella</b>&nbsp;: chanté sans instrument.</li>
+  <li><b>La rime</b>&nbsp;: le même son à la fin de deux vers.</li>
+  <li><b>L’accroche</b>&nbsp;: un petit motif (mélodie, riff, phrase) qu’on retient tout de suite.</li>
+  <li><b>Le phrasé</b>&nbsp;: la façon de dire les mots en chantant (lié, détaché, parlé, rappé).</li>
+  </ul>
+  <div class="cle">À retenir&nbsp;: une chanson, ce sont des <b>paroles</b> (le <b>parolier</b>) et une <b>musique</b> (le <b>compositeur</b>), chantées par un <b>interprète</b>&nbsp;; l’<b>auteur-compositeur-interprète</b> fait les trois. Forme&nbsp;: <b>introduction</b>, <b>couplets</b> (paroles qui changent), <b>refrain</b> (qui revient à l’identique), <b>pont</b>, <b>coda</b>. Les grandes étapes&nbsp;: la chanson <b>réaliste</b> et le <b>music-hall</b> (Piaf, Trenet), la <b>Rive gauche</b> (Brassens, Brel, Barbara), les <b>yéyés</b>, la chanson <b>engagée</b> (Vian, Ferrat), les années <b>synthés</b> (Goldman), le <b>rap français</b> (MC Solaar), la chanson <b>électro</b> (Stromae, Angèle).</div>
+ `},
+ "numerique":{titre:"Musique, numérique et droits",html:`
+  <p>Une chanson n’appartient pas à tout le monde&nbsp;: elle a des <b>auteurs</b>, et la loi les protège. Aujourd’hui, la musique s’écoute surtout en ligne, s’invite dans les publicités et peut même être fabriquée par des intelligences artificielles. Comprendre comment tout cela fonctionne, c’est apprendre à écouter, à créer et à partager la musique de façon juste… et à ne pas se laisser manipuler.</p>
+  <h3>Le droit d’auteur</h3>
+  <p>Dès qu’une œuvre originale est créée (une chanson, une mélodie, un texte), son créateur a automatiquement des droits sur elle&nbsp;: c’est le <b>droit d’auteur</b>. Il n’y a rien à déclarer pour être protégé.</p>
+  <ul>
+  <li><b>Le droit moral</b>&nbsp;: le nom de l’auteur doit être cité, et personne ne peut déformer son œuvre sans son accord. Il ne disparaît jamais.</li>
+  <li><b>Les droits patrimoniaux</b>&nbsp;: l’auteur décide qui peut utiliser son œuvre (la diffuser, la copier, l’adapter) et il est payé pour cela.</li>
+  <li><b>La durée</b>&nbsp;: en France, l’œuvre reste protégée pendant toute la vie de l’auteur, puis <b>70 ans après sa mort</b>. Ensuite, elle entre dans le <b>domaine public</b>&nbsp;: tout le monde peut l’utiliser librement (Mozart, Beethoven, les chansons traditionnelles…), mais un <b>enregistrement</b> récent de cette musique reste, lui, protégé.</li>
+  <li><b>L’éditeur</b>&nbsp;: il aide l’auteur à faire connaître et utiliser ses œuvres, en échange d’une part des droits.</li>
+  <li><b>Les droits voisins</b>&nbsp;: les <b>interprètes</b> (chanteurs, musiciens) et les <b>producteurs</b> qui ont payé l’enregistrement ont aussi des droits sur l’enregistrement.</li>
+  </ul>
+  <h3>La SACEM</h3>
+  <p>Un auteur ne peut pas vérifier lui-même toutes les radios, tous les magasins et tous les sites qui diffusent sa chanson. En France, c’est la <b>SACEM</b> (Société des auteurs, compositeurs et éditeurs de musique) qui le fait pour lui&nbsp;: elle <b>collecte</b> de l’argent auprès de ceux qui diffusent de la musique (radios, télévisions, salles de concert, discothèques, magasins, plateformes) et le <b>reverse</b> aux auteurs, compositeurs et éditeurs.</p>
+  <p>Son histoire commence en <b>1847</b> dans un café-concert de Paris, «&nbsp;Les Ambassadeurs&nbsp;»&nbsp;: trois auteurs refusent de payer leurs consommations, car l’orchestre joue leurs chansons sans les payer. Ils gagnent leur procès, et la SACEM est fondée en <b>1851</b>.</p>
+  <h3>Emprunter, sampler, plagier</h3>
+  <ul>
+  <li><b>Le sample</b>&nbsp;: reprendre un extrait d’un enregistrement dans un nouveau morceau (très courant dans le rap et l’électro). Il faut l’<b>autorisation</b> des ayants droit, sinon c’est illégal.</li>
+  <li><b>La reprise</b>&nbsp;: chanter la chanson d’un autre est permis, à condition de déclarer l’œuvre (et donc de payer ses auteurs).</li>
+  <li><b>Le plagiat</b>&nbsp;: copier une œuvre en la faisant passer pour la sienne. En 2015, aux États-Unis, la justice a condamné les auteurs de «&nbsp;Blurred Lines&nbsp;» pour avoir trop imité «&nbsp;Got to Give It Up&nbsp;» de Marvin Gaye.</li>
+  <li><b>À l’école</b>&nbsp;: la loi prévoit une <b>exception pédagogique</b>&nbsp;: on peut utiliser des extraits d’œuvres pour illustrer un cours, en classe.</li>
+  </ul>
+  <h3>Le streaming : qui gagne quoi&nbsp;?</h3>
+  <p>Aujourd’hui, on écoute surtout la musique en <b>streaming</b>&nbsp;: en ligne, sans posséder le fichier (Spotify, Deezer, Apple Music, YouTube…). La plateforme se finance par les <b>abonnements</b> et la <b>publicité</b>. Elle garde une partie de l’argent (souvent autour de <b>30&nbsp;%</b>) et reverse le reste aux <b>ayants droit</b>, selon le nombre d’écoutes&nbsp;: la <b>maison de disques</b> (le producteur), les <b>auteurs-compositeurs</b> (par la SACEM) et l’<b>artiste-interprète</b>, souvent le moins bien payé.</p>
+  <p>Une écoute rapporte <b>moins d’un centime</b>. Résultat&nbsp;: seuls les artistes écoutés des millions de fois gagnent bien leur vie avec le streaming&nbsp;; les autres vivent surtout des <b>concerts</b>, de la vente de <b>disques</b> (le vinyle revient à la mode) et de produits dérivés. Essaie&nbsp;:</p>
+  <div id="nsCalcZone"></div>
+  <h3>La musique dans la publicité</h3>
+  <p>La publicité utilise la musique parce qu’elle agit sur nos <b>émotions</b> et sur notre <b>mémoire</b>&nbsp;:</p>
+  <ul>
+  <li><b>Le jingle</b>&nbsp;: une courte chanson ou un motif qui accompagne une marque ou une émission.</li>
+  <li><b>Le logo sonore</b> (ou identité sonore)&nbsp;: quelques notes, toujours les mêmes, qui font penser à une marque dès qu’on les entend. Le plus célèbre en France est celui de la SNCF (2005), entendu dans toutes les gares.</li>
+  <li><b>La chanson sous licence</b>&nbsp;: une marque paie pour utiliser une chanson connue&nbsp;; une chanson oubliée peut redevenir un tube grâce à une pub.</li>
+  <li><b>Le ver d’oreille</b>&nbsp;: une mélodie simple et répétée qui reste «&nbsp;coincée&nbsp;» dans la tête&nbsp;: c’est exactement ce que cherchent les publicitaires.</li>
+  <li><b>La musique d’ambiance</b>&nbsp;: dans les magasins, une musique lente pousse à rester plus longtemps, une musique rapide à aller plus vite&nbsp;; le choix n’est jamais un hasard.</li>
+  </ul>
+  <p class="mm-demo"><button class="btn-son" onclick="jouerSonBtn({ns:'lent'})"><i class="ph ph-play"></i> La mélodie, lente et douce</button> <button class="btn-son" onclick="jouerSonBtn({ns:'rapide'})"><i class="ph ph-play"></i> La même, rapide et énergique</button> <button class="btn-son" onclick="jouerSonBtn({ns:'mineur'})"><i class="ph ph-play"></i> La même, en mineur</button></p>
+  <p>Même mélodie, trois effets&nbsp;: tranquillité (une banque, un parfum), énergie (une voiture, une boisson de sport), inquiétude ou nostalgie. <b>Éducation aux médias</b>&nbsp;: devant une publicité, demande-toi ce que la musique veut te faire <i>ressentir</i>, et pourquoi.</p>
+  <div id="nsLogoZone"></div>
+  <h3>L’intelligence artificielle et la musique</h3>
+  <p>Des intelligences artificielles (IA) savent maintenant <b>fabriquer des chansons entières</b> à partir d’une simple phrase, ou <b>imiter la voix</b> d’un chanteur. Elles ont appris en analysant des millions de morceaux, souvent sans l’accord de leurs auteurs&nbsp;: en 2024, les grandes maisons de disques ont attaqué en justice deux de ces services. Cela pose de vraies questions&nbsp;:</p>
+  <ul>
+  <li><b>Qui est l’auteur</b>&nbsp;? En France, le droit d’auteur protège une création <b>humaine</b>&nbsp;: un morceau fabriqué entièrement par une IA n’est en principe pas protégé. Le sujet est encore débattu.</li>
+  <li><b>Les voix clonées</b> (ou «&nbsp;deepfakes&nbsp;» audio)&nbsp;: en 2023, une fausse chanson imitant les voix de Drake et de The Weeknd a circulé avant d’être retirée. Utiliser la voix de quelqu’un sans son accord est interdit.</li>
+  <li><b>L’IA comme outil</b>&nbsp;: elle aide aussi les musiciens, par exemple pour séparer les instruments d’un vieil enregistrement. En 2023, les Beatles ont ainsi sorti «&nbsp;Now and Then&nbsp;»&nbsp;: une IA a isolé la voix de John Lennon sur une vieille cassette où elle se mêlait au piano.</li>
+  </ul>
+  <div class="lec-ecoute"><div class="lec-ecoute-t"><i class="ph ph-headphones"></i> À écouter</div><p>Le court-métrage qui raconte comment la voix de John Lennon a été retrouvée grâce à l’IA, puis la chanson terminée.</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="APJAQoSCwuA" data-lib="Now and Then, la dernière chanson des Beatles (court-métrage)"></div><div class="ce-yt" data-yt="Opxhh9Oh3rg" data-lib="Now and Then · The Beatles (2023)"></div></div></div>
+  <h3>Les bons réflexes</h3>
+  <ul>
+  <li>Écouter la musique sur des sites <b>légaux</b>&nbsp;: c’est ainsi que les artistes sont payés.</li>
+  <li>Pour une vidéo que tu publies, utilise des <b>musiques libres de droits</b> ou sous licence <b>Creative Commons</b>, en citant l’auteur. Sinon, la plateforme repère la musique (sur YouTube, c’est le système <b>Content ID</b>) et peut couper le son ou bloquer la vidéo.</li>
+  <li>Toujours <b>citer</b> le titre et l’auteur d’une musique que tu utilises dans un exposé.</li>
+  <li>Face à une chanson «&nbsp;étonnante&nbsp;» d’un artiste célèbre, <b>vérifier la source</b>&nbsp;: c’est peut-être une voix fabriquée par une IA.</li>
+  </ul>
+  <div class="cle">À retenir&nbsp;: le <b>droit d’auteur</b> protège automatiquement les créateurs (droit <b>moral</b> et droits <b>patrimoniaux</b>), pendant leur vie et <b>70 ans</b> après leur mort, avant le <b>domaine public</b>. La <b>SACEM</b> (fondée en <b>1851</b>) collecte et reverse l’argent aux auteurs, compositeurs et éditeurs. Le <b>streaming</b> rapporte <b>moins d’un centime</b> par écoute, partagé entre la plateforme, le producteur, les auteurs et l’artiste. La publicité utilise <b>jingles</b> et <b>logos sonores</b> pour agir sur nos émotions et notre mémoire. L’<b>IA</b> sait imiter des voix et fabriquer des chansons&nbsp;: elle pose la question de l’auteur et du respect des artistes.</div>
+ `},
  "film":{titre:"La musique de film",html:`
   <p>Depuis les débuts du cinéma, la musique accompagne les images. Elle ne raconte pas l'histoire à la place du film&nbsp;: elle fait ressentir des <b>émotions</b>, crée une <b>ambiance</b>, soutient l'<b>action</b>, annonce un danger ou relie les scènes entre elles. Essaie de regarder une scène de poursuite ou de peur sans le son&nbsp;: elle perd presque toute sa force.</p>
   <h3>Au temps du cinéma muet</h3>
@@ -14493,6 +15513,9 @@ function retourRond(){
   return document.getElementById("btnRetourRond");
 }
 function majRetour(fn,libelle){
+  /* « retour à l'accueil » alors qu'on venait d'une autre page : retour à cette page */
+  if((fn===accueil||(typeof accueilProf==="function"&&fn===accueilProf))&&_nav&&_nav.length>1){
+    const p=_nav[_nav.length-2]; if(p&&p.nom!=="accueil"&&p.nom!=="accueilProf"){ fn=navRetour; libelle=p.lib||"Retour"; } }
   cibleRetour=fn||null;
   const b=document.getElementById("btnRetour");
   if(b){ b.style.display="none"; b.textContent="‹ "+(libelle||"Retour"); }
@@ -15491,6 +16514,8 @@ function jouerSonBtnInterne(s){
   if(s.mx){mxExtrait(s.mx);return;}
   if(s.cd){cdExtrait(s.cd);return;}
   if(s.orch){orJouer(s.orch);return;}
+  if(s.mm){mmJouer(s.mm);return;}
+  if(s.ns){nsJouer(s.ns);return;}
   /* suite d'accords : [[midis], durée en secondes] */
   if(s.accords){let t=0;s.accords.forEach(a=>{(a[0]||[]).forEach(m=>jouerMidi(m,t,(a[1]||1)*0.92,0.14));t+=(a[1]||1);});return;}
   if(s.rythme){jouerRythme(s.rythme,s.secTemps);return;}
@@ -15918,7 +16943,7 @@ const PLAFOND_JOUR=100;
    PUBLICATION : c'est ce qui permet de vérifier, depuis un poste
    d'élève ou de professeur, que la page ouverte n'est pas une ancienne copie
    gardée en cache. */
-const VERSION_APP="2026-10-27b";
+const VERSION_APP="2026-11-01h";
 /* ---------- Application installable et nouvelle version ---------- */
 /* Le service worker (sw.js) rend MusEduc installable et utilisable hors ligne
    pour ce qui a déjà été ouvert. Il ne s'installe qu'en ligne (http/https) :
@@ -16082,7 +17107,7 @@ function pfBadgesHTML(){
 }
 /* Maîtrise par thème : un onglet par domaine, les thèmes du domaine choisi en barres. */
 let _pfDom=0;
-const PF_DOM_COURT={"Styles de musique":"Styles","Écoute (avec son)":"Écoute","Vocabulaire & culture":"Culture","Pour aller plus loin (hors collège)":"Plus loin","Évaluations des cours de collège":"Cours"};
+const PF_DOM_COURT={"Styles de musique":"Styles","Musiques du monde":"Monde","Écoute (avec son)":"Écoute","Vocabulaire & culture":"Culture","Pour aller plus loin (hors collège)":"Plus loin","Évaluations des cours de collège":"Cours"};
 function pfMaitriseHTML(){
   const doms=domainesEval(), parGroupe={}, ordre=[];
   doms.forEach(d=>{ const gr=d.groupe||"Autres"; if(!parGroupe[gr]){parGroupe[gr]=[];ordre.push(gr);} parGroupe[gr].push(d); });
@@ -16128,6 +17153,7 @@ async function reinitProgression(){
 /* ----- Écran d'inscription (1er lancement) : prénom + nom ----- */
 function masquerInterfaceNormale(){
   document.body.classList.remove("mode-connexion");
+  if(document.body.classList.contains("ev-tableau")){ document.body.classList.remove("ev-tableau"); try{ _ev.tableau=false; }catch(e){} }
   if(typeof arreterChronoLive==="function")arreterChronoLive();
   if(classementTimer){clearInterval(classementTimer);classementTimer=null;} // stop l'auto-refresh du classement
   if(typeof jeuArreter==="function")jeuArreter(); // stop les timers du mode classe
@@ -16315,6 +17341,383 @@ function ecParcoursHTML(id,ouvert){
     return '<li class="ec-etape '+etat+'"><span class="ec-pastille"><i class="'+ic+'"></i></span><b>'+n+'</b><small>'+det+'</small></li>';
   }).join("")+'</ol>';
 }
+/* ---------- Musiques du monde : sons, carte, jeu (01/11/2026) ----------
+   Chaque région a une courte démonstration fabriquée ici (quelques secondes) : on
+   y entend ce que la leçon décrit (le bourdon du sitar, la clave cubaine, le gamelan
+   qui scintille, les quarts de ton du maqam, la mesure boiteuse des Balkans…). Ce ne
+   sont pas des enregistrements : les vraies musiques sont dans les vidéos. Les sons
+   passent par sonSortie() (reclic ou clic ailleurs = arrêt). */
+const MM_HALTES=[
+  {k:"bretagne",nom:"Bretagne",lieu:"France",lon:-3,lat:48,vu:[2,44],ct:"eu",lecon:"europe-trad",
+   traits:["Un bourdon tenu sous la mélodie (le biniou)","Une mélodie nasillarde et puissante (la bombarde)","Des danses en chaîne au fest-noz"],
+   instr:["bombarde","biniou","harpe celtique"],yt:["P9Woz1g0jnM","Tri Martolod · Alan Stivell"]},
+  {k:"irlande",nom:"Irlande",lieu:"Europe du Nord-Ouest",lon:-8,lat:53,vu:[-22,58],ct:"eu",lecon:"europe-trad",
+   traits:["Des airs de danse rapides : la gigue (jig) à 6/8","Des mélodies très ornées","Le violon (fiddle) et la flûte qui jouent à l’unisson"],
+   instr:["fiddle","tin whistle","uilleann pipes","bodhrán"],yt:["JNN4eYvSajk","Skyline Jig · The Chieftains"]},
+  {k:"espagne",nom:"Andalousie",lieu:"Espagne",lon:-5,lat:37.5,vu:[-19,40],ct:"eu",lecon:"europe-trad",
+   traits:["La guitare en rasgueado (accords frappés)","Les palmas (claquements de mains) et le zapateado (pas frappés)","La cadence andalouse : la-sol-fa-mi"],
+   instr:["guitare flamenca","palmas","cajón","castagnettes"],yt:["0vq3qZwaXrw","Entre dos aguas · Paco de Lucía"]},
+  {k:"balkans",nom:"Balkans",lieu:"Europe du Sud-Est",lon:21,lat:43,ct:"eu",lecon:"europe-trad",
+   traits:["Des mesures « boiteuses » : 7 temps groupés 2+2+3","Des fanfares de cuivres","Des gammes aux couleurs orientales"],
+   instr:["clarinette","trompette","tapan (tambour)","accordéon"],yt:["UqOL7LOR6ko","Kalashnikov · Goran Bregović"]},
+  {k:"maghreb",nom:"Maghreb",lieu:"Afrique du Nord",lon:-2,lat:32,vu:[1,26],ct:"af",lecon:"afrique",
+   traits:["Le oud, luth sans frettes","La darbouka : « dum » grave, « tek » aigu","Le raï d’Algérie, la musique gnawa du Maroc"],
+   instr:["oud","darbouka","guembri","qraqeb"],yt:["tTcnIYYeZI8","Didi · Khaled"]},
+  {k:"afrique-ouest",nom:"Afrique de l’Ouest",lieu:"Mali, Guinée, Sénégal",lon:-8,lat:12,ct:"af",lecon:"afrique",
+   traits:["La polyrythmie : plusieurs rythmes superposés","Les griots, gardiens de la mémoire","La kora (harpe-luth à 21 cordes) et le balafon"],
+   instr:["djembé","dundun","kora","balafon"],yt:["Qsq5PHoik-s","Kuku · Mamady Keïta (djembés)"]},
+  {k:"afrique-centre",nom:"Forêt d’Afrique centrale",lieu:"Pygmées Aka et Baka",lon:18,lat:3,ct:"af",lecon:"afrique",
+   traits:["Une polyphonie : chaque voix chante un motif différent","Le yodel : la voix saute entre grave et aigu","Une musique de tout le groupe, sans chef"],
+   instr:["voix","claquements de mains","tambours"],yt:["HsJWzhAWVd4","Polyphonies des Pygmées Aka (UNESCO)"]},
+  {k:"egypte",nom:"Égypte et Proche-Orient",lieu:"Le maqam arabe",lon:31,lat:30,ct:"as",lecon:"asie",
+   traits:["Le maqam : des gammes avec des quarts de ton","L’improvisation (taqsim) au oud","Le tarab : l’émotion partagée avec le public"],
+   instr:["oud","qanun","nay","riq"],yt:["m4cLPohrUVY","Taqsim sur le maqam Rast · Michael Ibrahim (oud)"]},
+  {k:"inde",nom:"Inde",lieu:"Musique hindoustanie",lon:78,lat:22,ct:"as",lecon:"asie",
+   traits:["Le raga : une couleur mélodique, liée à un moment du jour","Le tala : un cycle rythmique","Un bourdon permanent (la tanpura)"],
+   instr:["sitar","tabla","tanpura","bansuri"],yt:["LAwgD_YxRgM","Solo de tabla · Zakir Hussain"]},
+  {k:"indonesie",nom:"Bali et Java",lieu:"Indonésie",lon:112,lat:-7.5,ct:"as",lecon:"asie",
+   traits:["Le gamelan : un orchestre de métallophones et de gongs","Des motifs imbriqués très rapides","Le grand gong qui ferme chaque cycle"],
+   instr:["gongs","métallophones","kendang (tambour)"],yt:["UY8NEAupxjc","Gong kebyar · gamelan de Bali"]},
+  {k:"chine",nom:"Chine",lieu:"Asie de l’Est",lon:110,lat:33,ct:"as",lecon:"asie",
+   traits:["La gamme pentatonique (5 notes)","L’erhu, vièle à deux cordes qui « chante »","Les glissements d’une note à l’autre"],
+   instr:["erhu","pipa","guzheng","dizi"],yt:["UXoU0E6zRLg","Les Courses de chevaux · Jun Chen (erhu)"]},
+  {k:"japon",nom:"Japon",lieu:"Asie de l’Est",lon:138,lat:36,ct:"as",lecon:"asie",
+   traits:["Le koto, cithare à 13 cordes","Des gammes à 5 notes avec demi-tons","Le silence (ma) fait partie de la musique"],
+   instr:["koto","shakuhachi","shamisen","taiko"],yt:["JDTp_YQizqE","Sakura · Kasumi Watanabe (koto)"]},
+  {k:"australie",nom:"Australie",lieu:"Peuples aborigènes",lon:133,lat:-23,ct:"oc",lecon:"monde",
+   traits:["Le didgeridoo, une longue branche creusée par les termites","Un bourdon grave sans fin (souffle continu)","Des sons qui imitent les animaux"],
+   instr:["didgeridoo","bâtons de rythme (clapsticks)"],yt:["yG9ZX1FS20A","Didgeridoo · Lewis Burns"]},
+  {k:"cuba",nom:"Cuba",lieu:"Caraïbes",lon:-79,lat:22,ct:"am",lecon:"ameriques",
+   traits:["La clave : le motif rythmique qui guide tout","Le son cubain, ancêtre de la salsa","Des percussions venues d’Afrique, des guitares venues d’Espagne"],
+   instr:["claves","congas","tres (guitare)","maracas"],yt:["tGbRZ73NvlY","Chan Chan · Buena Vista Social Club"]},
+  {k:"trinidad",nom:"Trinité-et-Tobago",lieu:"Caraïbes",lon:-61,lat:10.5,ct:"am",lecon:"ameriques",
+   traits:["Le steel drum, fabriqué dans un baril de pétrole","Le calypso et le carnaval","Des orchestres de dizaines de steel drums"],
+   instr:["steel drum (pan)","iron (cloche)","basse"],yt:["uYqAX9vCUrk","Curry Tabanca · Trinidad All Stars"]},
+  {k:"bresil",nom:"Brésil",lieu:"Rio de Janeiro",lon:-43,lat:-22.5,ct:"am",lecon:"ameriques",
+   traits:["La samba et ses batucadas de carnaval","Le surdo, grosse caisse qui frappe le 2ᵉ temps","La bossa nova, plus douce et jazzy"],
+   instr:["surdo","tamborim","agogô","cavaquinho"],yt:["qpS0KFG38ds","Batucada de l’école de samba Salgueiro"]},
+  {k:"argentine",nom:"Argentine",lieu:"Buenos Aires",lon:-58.5,lat:-34.5,ct:"am",lecon:"ameriques",
+   traits:["Le tango, une danse de couple","Le bandonéon, cousin de l’accordéon","Des accents marqués et des contrastes"],
+   instr:["bandonéon","violon","piano","contrebasse"],yt:["8UNtQpMMSEM","Libertango · Astor Piazzolla"]},
+  {k:"andes",nom:"Andes",lieu:"Pérou, Bolivie",lon:-71,lat:-15,ct:"am",lecon:"ameriques",
+   traits:["La quena et la flûte de pan (siku)","La gamme pentatonique","Le charango, petite guitare aux cordes doubles"],
+   instr:["quena","siku (flûte de pan)","charango","bombo"],yt:["PJJlDmCeG4A","El Cóndor Pasa · Jean Atauje (quena et zampoña)"]}
+];
+const MM_CT={eu:["Europe","#2b70ab"],af:["Afrique","#c0541a"],as:["Asie","#7a4fb0"],am:["Amériques","#1d8a5a"],oc:["Océanie","#b8860b"]};
+/* ----- petits instruments de synthèse ----- */
+function mmF(m){ return 440*Math.pow(2,(m-69)/12); }
+function mmEnv(ctx,t,a,d,v){ const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v,t+a); g.gain.exponentialRampToValueAtTime(0.0001,t+a+d); return g; }
+/* corde pincée : forme d'onde + filtre qui se referme */
+function mmPince(o,t,m,d,v,type,clair){
+  const ctx=o.ctx, os=ctx.createOscillator(), f=ctx.createBiquadFilter(), g=mmEnv(ctx,t,0.004,d,v||0.25);
+  os.type=type||"sawtooth"; os.frequency.setValueAtTime(mmF(m),t);
+  f.type="lowpass"; f.frequency.setValueAtTime((clair||8)*mmF(m),t); f.frequency.exponentialRampToValueAtTime(Math.max(200,mmF(m)*1.5),t+d*0.8);
+  os.connect(f); f.connect(g); g.connect(o.out); os.start(t); os.stop(t+d+0.05);
+}
+/* son tenu (flûte, anche, archet) avec vibrato ; glisse = demi-tons de départ */
+function mmTenu(o,t,m,d,v,type,vib,glisse,souffle){
+  const ctx=o.ctx, os=ctx.createOscillator(), g=ctx.createGain(), f=ctx.createBiquadFilter(), lfo=ctx.createOscillator(), lg=ctx.createGain();
+  os.type=type||"triangle"; const fr=mmF(m);
+  os.frequency.setValueAtTime(glisse?mmF(m+glisse):fr,t); if(glisse)os.frequency.exponentialRampToValueAtTime(fr,t+Math.min(0.18,d*0.4));
+  lfo.frequency.value=5.5; lg.gain.value=fr*(vib||0); lfo.connect(lg); lg.connect(os.frequency);
+  f.type="lowpass"; f.frequency.value=fr*6;
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v||0.18,t+0.04); g.gain.setValueAtTime(v||0.18,t+Math.max(0.05,d-0.06)); g.gain.linearRampToValueAtTime(0.0001,t+d);
+  os.connect(f); f.connect(g); g.connect(o.out); os.start(t); lfo.start(t); os.stop(t+d+0.02); lfo.stop(t+d+0.02);
+  if(souffle)mmBruit(o,t,Math.min(d,0.12),souffle,"bandpass",fr*2,1);
+}
+/* frappe : tambour grave (fréquence qui chute) */
+function mmTambour(o,t,f0,d,v){
+  const ctx=o.ctx, os=ctx.createOscillator(), g=mmEnv(ctx,t,0.002,d,v||0.5);
+  os.type="sine"; os.frequency.setValueAtTime(f0*1.8,t); os.frequency.exponentialRampToValueAtTime(f0,t+0.04);
+  os.connect(g); g.connect(o.out); os.start(t); os.stop(t+d+0.05);
+}
+let _mmBruit=null;
+function mmBruit(o,t,d,v,type,freq,q){
+  const ctx=o.ctx;
+  if(!_mmBruit||_mmBruit.sampleRate!==ctx.sampleRate){ const n=ctx.sampleRate; _mmBruit=ctx.createBuffer(1,n,n); const x=_mmBruit.getChannelData(0); for(let i=0;i<n;i++)x[i]=Math.random()*2-1; }
+  const s=ctx.createBufferSource(), f=ctx.createBiquadFilter(), g=mmEnv(ctx,t,0.001,d,v||0.2);
+  s.buffer=_mmBruit; f.type=type||"highpass"; f.frequency.value=freq||3000; f.Q.value=q||0.8;
+  s.connect(f); f.connect(g); g.connect(o.out); s.start(t,Math.random()*0.5,d+0.05);
+}
+/* métal : partiels non harmoniques (gamelan, cloche) ; bat = léger désaccord qui fait vibrer */
+function mmMetal(o,t,fr,d,v,parts,bat){
+  const ctx=o.ctx; (parts||[1,2.76,5.4]).forEach(function(p,i){
+    [0,bat||0].forEach(function(dec,j){ if(j&&!bat)return;
+      const os=ctx.createOscillator(), g=mmEnv(ctx,t,0.002,d/(1+i*0.8),(v||0.15)/(1+i*1.4)/(bat?1.6:1));
+      os.type="sine"; os.frequency.value=fr*p+dec; os.connect(g); g.connect(o.out); os.start(t); os.stop(t+d+0.05); }); });
+}
+function mmBourdon(o,t,m,d,v,type){
+  const ctx=o.ctx, os=ctx.createOscillator(), f=ctx.createBiquadFilter(), g=ctx.createGain();
+  os.type=type||"sawtooth"; os.frequency.value=mmF(m); f.type="lowpass"; f.frequency.value=mmF(m)*4;
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v||0.08,t+0.3); g.gain.setValueAtTime(v||0.08,t+d-0.4); g.gain.linearRampToValueAtTime(0.0001,t+d);
+  os.connect(f); f.connect(g); g.connect(o.out); os.start(t); os.stop(t+d+0.05);
+}
+/* une suite de notes : [midi ou null, durée en pas] */
+function mmSuite(o,t,pas,notes,jouer){ let x=t; notes.forEach(function(n){ if(n[0]!=null)jouer(x,n[0],n[1]*pas); x+=n[1]*pas; }); return x; }
+/* ----- les démonstrations ----- */
+const MM_SONS={
+  bretagne:function(o,t){ mmBourdon(o,t,50,7,0.06); mmBourdon(o,t,57,7,0.04);
+    const mel=[[74,1],[76,1],[78,2],[79,1],[78,1],[76,1],[74,1],[76,2],[81,2],[79,1],[78,1],[76,1],[74,1],[73,2],[74,4],[78,1],[79,1],[81,2],[83,1],[81,1],[79,1],[78,1],[76,2],[74,2],[76,2],[74,4]];
+    mmSuite(o,t+0.4,0.19,mel,function(x,m,d){ mmTenu(o,x,m,d*0.95,0.11,"square",0.004,0,0); }); },
+  irlande:function(o,t){ const p=0.165;
+    for(let i=0;i<8;i++){ mmTambour(o,t+i*3*p,90,0.25,i%2?0.25:0.45); mmBruit(o,t+i*3*p+2*p,0.05,0.05,"bandpass",900,2); }
+    mmSuite(o,t,p,[[74,1],[71,1],[71,1],[74,1],[71,1],[71,1],[74,1],[76,1],[78,1],[79,1],[78,1],[76,1],[74,1],[71,1],[71,1],[69,1],[71,1],[73,1],[74,1],[76,1],[74,1],[71,2],[null,1]],
+      function(x,m,d){ mmTenu(o,x,m+12,d*0.9,0.12,"triangle",0.003,0,0.03); }); },
+  espagne:function(o,t){ const A=[[57,64,69,72,76],[55,59,62,67,71],[53,57,60,65,69],[52,56,59,64,68]];
+    A.forEach(function(c,i){ const x=t+i*1.6; [0,0.55,0.8,1.2].forEach(function(dx,j){ c.forEach(function(m,k){ mmPince(o,x+dx+(j%2?(4-k):k)*0.018,m,1.1,0.09,"sawtooth",6); }); }); });
+    [2,5,7,9,11].forEach(function(b){ for(let r=0;r<2;r++)mmBruit(o,t+r*3.2+b*0.27,0.06,0.25,"bandpass",1800,1.2); }); },
+  balkans:function(o,t){ const p=0.13, cyc=[0,2,4];
+    for(let r=0;r<6;r++){ cyc.forEach(function(b,i){ mmTambour(o,t+(r*7+b)*p,i?110:75,0.22,i?0.3:0.5); }); }
+    const mel=[[62,2],[63,2],[66,3],[67,2],[69,2],[70,3],[69,2],[67,2],[66,3],[63,2],[62,2],[62,3],[66,2],[67,2],[69,3],[70,2],[72,2],[74,3],[72,2],[70,2],[69,3],[67,2],[66,2],[62,3]];
+    mmSuite(o,t,p,mel,function(x,m,d){ mmTenu(o,x,m+12,d*0.9,0.1,"square",0.006,0,0); }); },
+  maghreb:function(o,t){ const p=0.16;
+    for(let r=0;r<5;r++){ const x=t+r*8*p; mmTambour(o,x,80,0.3,0.5); mmBruit(o,x+2*p,0.05,0.25,"highpass",2500); mmBruit(o,x+3*p,0.05,0.2,"highpass",2500); mmTambour(o,x+4*p,80,0.3,0.45); mmBruit(o,x+6*p,0.05,0.25,"highpass",2500); }
+    mmSuite(o,t,p,[[62,2],[63,1],[66,1],[67,2],[69,2],[70,1],[69,1],[67,1],[66,1],[63,2],[62,2],[66,1],[67,1],[69,4],[67,1],[66,1],[63,1],[66,1],[62,4]],
+      function(x,m,d){ mmPince(o,x,m,Math.max(0.35,d),0.2,"sawtooth",5); }); },
+  "afrique-ouest":function(o,t){ const p=0.15, cloche=[0,2,4,5,7,9,11];
+    for(let r=0;r<4;r++){ const x=t+r*12*p;
+      cloche.forEach(function(b){ mmMetal(o,x+b*p,1250,0.18,0.07,[1,2.4]); });
+      mmTambour(o,x,70,0.4,0.55); mmTambour(o,x+6*p,70,0.4,0.45); mmTambour(o,x+9*p,95,0.3,0.3);
+      [3,4,9,10].forEach(function(b){ mmBruit(o,x+b*p,0.05,0.22,"bandpass",2200,1.5); });
+      [[0,67],[3,69],[6,72],[9,69]].forEach(function(n,i){ mmMetal(o,x+n[0]*p,mmF(n[1]+(r%2&&i===2?2:0)),0.45,0.18,[1,4]); mmMetal(o,x+(n[0]+1.5)*p,mmF(n[1]-5),0.3,0.1,[1,4]); }); } },
+  "afrique-centre":function(o,t){ const p=0.2, A=[60,62,65,67,69,72];
+    const v1=[0,4,2,4,0,4,2,5], v2=[5,1,3,1,5,1,3,2];
+    for(let r=0;r<2;r++)v1.forEach(function(n,i){ const x=t+(r*16+i*2)*p; mmTenu(o,x,A[n],p*1.8,0.1,"sine",0.01,i%2?-5:5,0);
+      mmTenu(o,x+p,A[v2[i]]+12,p*0.9,0.08,"sine",0.012,v2[i]%2?7:-7,0); mmBruit(o,x,0.04,0.12,"bandpass",1500,1); });
+    mmTenu(o,t,48,6.2,0.05,"sine",0.004,0,0); },
+  egypte:function(o,t){ const R=[60,62,63.5,65,67,69,70.5,72], p=0.3;
+    mmSuite(o,t,p,[[60,1],[62,1],[63.5,1.5],[65,0.5],[67,2],[69,1],[70.5,1],[72,2],[70.5,1],[69,1],[67,1],[65,1],[63.5,2],[62,1],[60,3]],
+      function(x,m,d){ mmPince(o,x,m,Math.max(0.5,d+0.2),0.2,"sawtooth",4); if(d>0.5)mmPince(o,x+0.12,m,0.4,0.1,"sawtooth",4); });
+    for(let i=0;i<10;i++)mmBruit(o,t+i*0.6,0.08,0.06,"highpass",6000); },
+  inde:function(o,t){ [48,55,60,48].forEach(function(m,i){ for(let r=0;r<4;r++)mmPince(o,t+r*2+i*0.5,m,1.9,0.07,"sawtooth",10); });
+    mmSuite(o,t+0.6,0.32,[[71,2],[72,1],[74,1],[76,2],[78,1],[76,1],[74,1],[72,1],[71,3],[67,1],[69,2],[71,4]],
+      function(x,m,d){ mmTenu(o,x,m,d,0.12,"sawtooth",0.006,-1,0); mmPince(o,x,m,0.3,0.06,"sawtooth",12); }); },
+  indonesie:function(o,t){ const S=[0,1,2,3,4,5,6,7].map(function(n){ return 293*Math.pow(2,n*240/1200); }), p=0.13;
+    const mot=[0,2,1,3,2,4,3,1, 2,4,3,5,4,2,3,1];
+    for(let r=0;r<3;r++)mot.forEach(function(n,i){ mmMetal(o,t+(r*16+i)*p,S[n]*2,0.5,0.1,[1,2.76],3); });
+    [0,4,8,12].forEach(function(b,i){ for(let r=0;r<3;r++)mmMetal(o,t+(r*16+b)*p,S[[3,1,2,0][i]],1.4,0.16,[1,2.76],2); });
+    for(let r=0;r<3;r++)mmMetal(o,t+r*16*p,70,3.5,0.35,[1,2.1,3.3],0.8); },
+  chine:function(o,t){ mmSuite(o,t,0.28,[[67,2],[69,1],[71,1],[74,2],[76,1],[74,1],[71,2],[69,2],[67,3],[64,1],[67,2],[69,2],[71,4]],
+      function(x,m,d){ mmTenu(o,x,m+12,d*0.95,0.11,"sawtooth",0.012,-2,0); });
+    [0,1.1,2.2,3.3,4.4].forEach(function(dx,i){ mmPince(o,t+dx,[55,52,55,50,55][i],1,0.1,"triangle",8); }); },
+  japon:function(o,t){ const p=0.32;
+    mmSuite(o,t,p,[[69,1],[69,1],[71,2],[69,1],[69,1],[71,2],[69,1],[71,1],[72,1],[71,1],[69,1],[71,0.5],[69,0.5],[65,2],[64,1],[60,1],[64,1],[65,1],[64,1],[64,0.5],[60,0.5],[59,2]],
+      function(x,m,d){ mmPince(o,x,m,1.4,0.2,"triangle",6); }); },
+  australie:function(o,t){ const ctx=o.ctx, os=ctx.createOscillator(), f=ctx.createBiquadFilter(), g=ctx.createGain(), lfo=ctx.createOscillator(), lg=ctx.createGain();
+    os.type="sawtooth"; os.frequency.value=65; f.type="bandpass"; f.Q.value=4; f.frequency.value=400; lfo.frequency.value=2.4; lg.gain.value=260; lfo.connect(lg); lg.connect(f.frequency);
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(0.35,t+0.3); g.gain.setValueAtTime(0.35,t+6.2); g.gain.linearRampToValueAtTime(0.0001,t+6.6);
+    os.connect(f); f.connect(g); g.connect(o.out); os.start(t); lfo.start(t); os.stop(t+6.7); lfo.stop(t+6.7);
+    [1.2,2.4,3.6,4.2,4.8].forEach(function(dx){ mmTenu(o,t+dx,50,0.18,0.12,"sawtooth",0,0,0); });
+    for(let i=0;i<13;i++)mmBruit(o,t+i*0.5,0.03,0.18,"bandpass",2400,3); },
+  cuba:function(o,t){ const p=0.13, cl=[0,3,6,10,12];
+    for(let r=0;r<3;r++){ const x=t+r*16*p;
+      cl.forEach(function(b){ mmMetal(o,x+b*p,2500,0.08,0.16,[1]); });
+      [[4,"s"],[7,"o"],[8,"o"],[12,"s"],[14,"o"],[15,"o"]].forEach(function(c){ if(c[1]==="s")mmBruit(o,x+c[0]*p,0.06,0.2,"bandpass",1600,1.2); else mmTambour(o,x+c[0]*p,190,0.25,0.3); });
+      [[3,43],[6,50],[11,43],[14,50]].forEach(function(n){ mmPince(o,x+n[0]*p,n[1],0.5,0.25,"triangle",4); });
+      [[0,[67,72,76]],[2,[67,72,76]],[5,[65,69,74]],[8,[67,71,74]],[10,[67,71,74]],[13,[65,69,72]]].forEach(function(c){ c[1].forEach(function(m){ mmPince(o,x+c[0]*p,m,0.25,0.06,"square",3); }); }); } },
+  trinidad:function(o,t){ const p=0.15;
+    for(let i=0;i<40;i++)mmMetal(o,t+i*p,3200,0.05,i%2?0.04:0.07,[1]);
+    for(let i=0;i<10;i++){ mmPince(o,t+i*4*p,i%2?43:48,0.5,0.25,"triangle",3); mmPince(o,t+i*4*p+3*p,i%2?43:48,0.3,0.15,"triangle",3); }
+    mmSuite(o,t,p,[[72,1],[74,1],[76,2],[76,1],[74,1],[72,2],[74,2],[77,2],[76,1],[74,1],[72,2],[69,2],[67,2],[72,4],[null,4]],
+      function(x,m,d){ mmMetal(o,x,mmF(m),0.9,0.16,[1,2,3],1.5); }); },
+  bresil:function(o,t){ const p=0.115;
+    for(let r=0;r<6;r++){ const x=t+r*8*p;
+      mmTambour(o,x,62,0.35,0.3); mmTambour(o,x+4*p,58,0.5,0.6);
+      for(let i=0;i<8;i++)mmBruit(o,x+i*p,0.04,i%4===0?0.12:0.06,"highpass",4000);
+      [0,2,3,5,6].forEach(function(b){ mmBruit(o,x+b*p,0.04,0.15,"bandpass",3000,3); });
+      [[0,1500],[3,1100],[6,1500]].forEach(function(a){ mmMetal(o,x+a[0]*p,a[1],0.15,0.06,[1,2.2]); }); } },
+  argentine:function(o,t){ const b=0.42;
+    for(let i=0;i<14;i++){ const x=t+i*b; mmPince(o,x,i%4===0?45:52,0.18,0.3,"triangle",3); [57,60,64].forEach(function(m){ mmPince(o,x,m,0.12,0.05,"square",3); }); }
+    mmSuite(o,t,b/2,[[69,3],[71,1],[72,2],[71,2],[69,2],[68,2],[69,4],[76,3],[74,1],[72,2],[71,2],[72,2],[71,2],[69,4]],
+      function(x,m,d){ mmTenu(o,x,m,d*0.92,0.1,"sawtooth",0.002,0,0); mmTenu(o,x,m+12,d*0.92,0.05,"square",0.003,0,0); }); },
+  andes:function(o,t){ const p=0.17;
+    for(let i=0;i<10;i++){ mmTambour(o,t+i*4*p,65,0.4,0.4); for(let k=0;k<4;k++)mmPince(o,t+i*4*p+2*p+k*0.015,[69,72,76,81][k],0.3,0.04,"sawtooth",8); }
+    mmSuite(o,t,p,[[69,3],[72,1],[74,2],[76,2],[79,3],[76,1],[74,4],[72,2],[74,1],[72,1],[69,2],[67,2],[69,8]],
+      function(x,m,d){ mmTenu(o,x,m+12,d*0.95,0.12,"sine",0.008,0,0.06); }); },
+  /* petites démonstrations des leçons */
+  "trois-deux":function(o,t){ const p=0.18; for(let i=0;i<24;i++){ if(i%3===0)mmTambour(o,t+i*p,75,0.3,0.5); if(i%2===0)mmMetal(o,t+i*p,1600,0.12,0.12,[1,2.4]); } },
+  "clave":function(o,t){ const p=0.15; for(let r=0;r<4;r++)[0,3,6,10,12].forEach(function(b){ mmMetal(o,t+(r*16+b)*p,2500,0.1,0.2,[1]); }); },
+  "aksak":function(o,t){ const p=0.16; for(let r=0;r<5;r++)[0,2,4].forEach(function(b,i){ for(let k=0;k<(i===2?3:2);k++)mmMetal(o,t+(r*7+b+k)*p,k?1800:2600,0.08,k?0.06:0.18,[1]); }); },
+  "majeur":function(o,t){ [60,62,64,65,67,69,71,72].forEach(function(m,i){ mmPince(o,t+i*0.4,m,0.6,0.2,"sawtooth",4); }); },
+  "rast":function(o,t){ [60,62,63.5,65,67,69,70.5,72].forEach(function(m,i){ mmPince(o,t+i*0.4,m,0.6,0.2,"sawtooth",4); }); },
+  "penta":function(o,t){ [60,62,64,67,69,72,69,67,64,62,60].forEach(function(m,i){ mmPince(o,t+i*0.3,m,0.6,0.2,"triangle",6); }); },
+  "tanpura":function(o,t){ [48,55,60,48].forEach(function(m,i){ for(let r=0;r<3;r++)mmPince(o,t+r*2+i*0.5,m,1.9,0.09,"sawtooth",10); }); },
+  "andalouse":function(o,t){ [[57,64,69,72,76],[55,59,62,67,71],[53,57,60,65,69],[52,56,59,64,68]].forEach(function(c,i){ c.forEach(function(m,k){ mmPince(o,t+i*1.2+k*0.02,m,1.3,0.09,"sawtooth",6); }); }); },
+  "jig":function(o,t){ const p=0.18; for(let i=0;i<24;i++){ mmMetal(o,t+i*p,i%3===0?2600:1700,0.07,i%3===0?0.18:0.05,[1]); } }
+};
+function mmJouer(k){ const S=MM_SONS[k]; if(!S)return; const ctx=audio(); if(ctx.state==="suspended")ctx.resume();
+  S({ctx:ctx,out:sonSortie()},ctx.currentTime+0.06); }
+/* ----- la carte ----- */
+const MM_TERRES=[
+  [[-168,66],[-162,70],[-140,70],[-125,72],[-95,72],[-80,74],[-62,66],[-55,52],[-66,45],[-76,35],[-81,25],[-81,30],[-90,29],[-97,26],[-97,20],[-87,21],[-83,10],[-79,8],[-92,15],[-105,20],[-115,30],[-124,40],[-125,49],[-135,58],[-152,58],[-165,60]],
+  [[-50,60],[-42,60],[-20,70],[-20,80],[-60,82],[-70,77],[-55,68]],
+  [[-79,8],[-72,12],[-62,11],[-50,0],[-35,-6],[-39,-15],[-48,-26],[-58,-35],[-65,-42],[-68,-55],[-74,-50],[-72,-35],[-71,-18],[-81,-5],[-78,2]],
+  [[-10,36],[-9,43],[-2,44],[-5,48],[2,51],[8,54],[10,57],[5,62],[15,69],[28,71],[40,67],[45,60],[50,47],[40,45],[30,46],[28,41],[23,37],[20,40],[14,41],[16,38],[12,44],[8,44],[3,43],[-5,36]],
+  [[45,60],[60,70],[80,73],[105,78],[140,72],[170,70],[180,66],[160,60],[155,50],[142,46],[135,35],[127,35],[122,40],[121,30],[110,20],[108,12],[100,13],[104,1],[98,8],[92,22],[80,15],[77,8],[72,20],[66,25],[57,25],[56,27],[50,30],[48,30],[52,24],[56,23],[59,22],[52,16],[43,13],[39,21],[34,28],[35,36],[27,37],[30,46],[40,45],[50,47]],
+  [[-17,21],[-10,30],[-6,36],[10,37],[11,33],[20,31],[32,31],[34,28],[39,21],[43,12],[51,12],[48,5],[40,-3],[40,-15],[35,-25],[30,-31],[20,-35],[18,-30],[12,-17],[13,-5],[9,4],[-3,5],[-8,4],[-13,8],[-17,14]],
+  [[44,-13],[50,-15],[47,-25],[43,-22]],
+  [[114,-22],[122,-18],[130,-12],[137,-12],[142,-11],[146,-19],[153,-25],[150,-37],[140,-38],[132,-32],[115,-34]],
+  [[130,31],[135,34],[140,36],[142,40],[141,45],[139,41],[132,34]],
+  [[-5,50],[1,51],[0,53],[-3,56],[-5,58],[-6,55],[-3,53],[-5,52]],
+  [[-10,52],[-6,52],[-6,55],[-8,55]],
+  [[95,5],[106,-6],[104,-5],[98,2]],[[105,-6],[114,-7],[114,-8.5],[106,-7.5]],[[109,1],[117,7],[119,1],[116,-4],[110,-3]],[[131,-1],[141,-3],[150,-10],[141,-9],[135,-4]],
+  [[172,-34],[178,-38],[174,-41],[167,-46],[171,-44],[174,-39]]
+];
+function mmXY(lon,lat){ return [Math.round((lon+170)/350*1000),Math.round((80-lat)/138*420)]; }
+let _mm={k:null,jeu:null};
+function mmCarteHTML(){
+  return '<div class="mm" id="mmCarte"><div class="mm-tete"><div class="mm-legende">'+Object.keys(MM_CT).map(function(c){ return '<span style="--c:'+MM_CT[c][1]+'"><i></i>'+MM_CT[c][0]+'</span>'; }).join("")+'</div>'
+    +'<button type="button" class="mm-jeu-b" data-son="nouveau" onclick="mmJeu()"><i class="ph-fill ph-ear"></i> Jeu : d’où vient cette musique&nbsp;?</button></div>'
+    +'<div class="mm-cadre"><svg viewBox="0 0 1000 420" class="mm-svg" role="group" aria-label="Carte du monde des musiques">'
+    +MM_TERRES.map(function(p){ return '<polygon points="'+p.map(function(q){ return mmXY(q[0],q[1]).join(","); }).join(" ")+'"/>'; }).join("")
+    +MM_HALTES.map(function(h,i){ const vrai=mmXY(h.lon,h.lat), xy=h.vu?mmXY(h.vu[0],h.vu[1]):vrai;
+      return (h.vu?'<line class="mm-trait" x1="'+vrai[0]+'" y1="'+vrai[1]+'" x2="'+xy[0]+'" y2="'+xy[1]+'"/><circle class="mm-vrai" cx="'+vrai[0]+'" cy="'+vrai[1]+'" r="4"/>':'')
+        +'<g class="mm-pt" id="mmPt-'+h.k+'" tabindex="0" role="button" aria-label="'+escAttr(h.nom)+'" style="--c:'+MM_CT[h.ct][1]+'" onclick="mmChoisir(\''+h.k+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();mmChoisir(\''+h.k+'\')}">'
+        +'<circle cx="'+xy[0]+'" cy="'+xy[1]+'" r="19"/><text x="'+xy[0]+'" y="'+(xy[1]+6)+'">'+(i+1)+'</text></g>'; }).join("")
+    +'</svg></div><div class="mm-panneau" id="mmPanneau" aria-live="polite"></div></div>';
+}
+function mmInit(){ _mm={k:null,jeu:null}; const z=document.getElementById("mmCarteZone"); if(z)z.innerHTML=mmCarteHTML(); mmPanneauVide(); }
+function mmPanneauVide(){ const z=document.getElementById("mmPanneau"); if(z)z.innerHTML='<p class="mm-invite"><i class="ph ph-hand-pointing"></i> Touche un point de la carte : tu entends sa musique et tu découvres ses instruments.</p>'; }
+function mmChoisir(k){
+  if(_mm.jeu){ mmJeuReponse(k); return; }
+  const h=MM_HALTES.filter(function(x){ return x.k===k; })[0], z=document.getElementById("mmPanneau"); if(!h||!z)return;
+  _mm.k=k; document.querySelectorAll(".mm-pt").forEach(function(g){ g.classList.toggle("on",g.id==="mmPt-"+k); });
+  const L=LECONS[h.lecon];
+  z.innerHTML='<div class="mm-fiche" style="--c:'+MM_CT[h.ct][1]+'"><div class="mm-fiche-t"><span class="mm-num">'+(MM_HALTES.indexOf(h)+1)+'</span><div><b>'+h.nom+'</b><small>'+h.lieu+'</small></div>'
+    +'<button type="button" class="rm-cta mm-ec" onclick="jouerSonBtn({mm:\''+h.k+'\'})"><i class="ph-fill ph-play"></i> Écouter</button></div>'
+    +'<div class="mm-fiche-c"><div><h4>Ce qu’on entend</h4><ul>'+h.traits.map(function(x){ return '<li>'+x+'</li>'; }).join("")+'</ul></div>'
+    +'<div><h4>Les instruments</h4><div class="mm-instr">'+h.instr.map(function(x){ return '<span>'+x+'</span>'; }).join("")+'</div></div></div>'
+    +'<p class="mm-note"><i class="ph ph-info"></i> « Écouter » joue une courte imitation fabriquée par l’application. La vraie musique est dans la vidéo.</p>'
+    +'<div class="compo-yt-grille"><div class="ce-yt" data-yt="'+h.yt[0]+'" data-lib="'+escAttr(h.yt[1])+'"></div></div>'
+    +(L&&h.lecon!=="monde"?'<p class="mm-suite"><button type="button" class="btn-son" onclick="afficherLecon(\''+h.lecon+'\')"><i class="ph ph-arrow-right"></i> En savoir plus : '+L.titre+'</button></p>':'')+'</div>';
+  if(typeof ceMonterYT==="function")ceMonterYT();
+}
+/* le jeu : un son, retrouver d'où il vient (8 manches) */
+function mmJeu(){
+  const L=MM_HALTES.slice().sort(function(){ return Math.random()-0.5; }).slice(0,8);
+  _mm.jeu={L:L,i:0,pts:0,essai:0}; mmJeuManche();
+}
+function mmJeuManche(){
+  const J=_mm.jeu, z=document.getElementById("mmPanneau"); if(!J||!z)return;
+  document.querySelectorAll(".mm-pt").forEach(function(g){ g.classList.remove("on","ok","ko"); });
+  if(J.i>=J.L.length){ const n=J.pts; _mm.jeu=null;
+    z.innerHTML='<div class="mm-jeu fin"><b>'+n+' / '+J.L.length+'</b><span>'+(n>=7?"Bravo, une vraie oreille de voyageur !":(n>=4?"Bien joué ! Rejoue pour mieux reconnaître les instruments.":"Écoute encore chaque région sur la carte, puis rejoue."))+'</span>'
+      +'<button type="button" class="rm-cta" data-son="nouveau" onclick="mmJeu()"><i class="ph ph-arrow-counter-clockwise"></i> Rejouer</button> <button type="button" class="btn-son" onclick="mmJeuQuitter()">Revenir à la carte</button></div>';
+    return; }
+  J.essai=0;
+  z.innerHTML='<div class="mm-jeu"><span class="mm-jeu-n">Manche '+(J.i+1)+' / '+J.L.length+' · '+J.pts+' point'+(J.pts>1?"s":"")+'</span>'
+    +'<button type="button" class="rm-cta" onclick="jouerSonBtn({mm:\''+J.L[J.i].k+'\'})"><i class="ph-fill ph-play"></i> Écouter la musique</button>'
+    +'<span>Puis touche sur la carte l’endroit d’où elle vient. Deux essais.</span><button type="button" class="btn-son" onclick="mmJeuQuitter()">Arrêter le jeu</button></div>';
+  setTimeout(function(){ jouerSonBtn({mm:J.L[J.i].k}); },150);
+}
+function mmJeuReponse(k){
+  const J=_mm.jeu, bon=J.L[J.i].k, g=document.getElementById("mmPt-"+k); if(!J)return;
+  if(k===bon){ if(g)g.classList.add("ok"); if(!J.essai)J.pts++; try{ jouerEffet("valider"); }catch(e){} J.i++; setTimeout(mmJeuManche,900); return; }
+  if(g)g.classList.add("ko"); J.essai++;
+  if(J.essai>=2){ const b=document.getElementById("mmPt-"+bon); if(b)b.classList.add("ok"); const h=J.L[J.i];
+    const z=document.querySelector(".mm-jeu span:not(.mm-jeu-n)"); if(z)z.innerHTML='C’était <b>'+h.nom+'</b> ('+h.lieu+').';
+    J.i++; setTimeout(mmJeuManche,1800); }
+}
+function mmJeuQuitter(){ _mm.jeu=null; document.querySelectorAll(".mm-pt").forEach(function(g){ g.classList.remove("on","ok","ko"); }); mmPanneauVide(); }
+/* ---------- La chanson française : la frise ---------- */
+const CF_EPOQUES=[
+  {d:"1930-1945",t:"Music-hall et swing",c:"#a44f40",traits:["Le music-hall : des revues avec orchestre, danseurs et vedettes","La chanson réaliste : des histoires de la rue, chantées avec émotion","Charles Trenet amène le swing du jazz dans la chanson"],
+   art:["Charles Trenet","Édith Piaf","Joséphine Baker","Fréhel"],yt:[["PXQh9jTwwoA","La Mer · Charles Trenet"],["gRfrUdsL4Pk","J’ai deux amours · Joséphine Baker"]]},
+  {d:"1945-1960",t:"La Rive gauche",c:"#2b70ab",traits:["Les cabarets de Saint-Germain-des-Prés, à Paris","Les auteurs-compositeurs-interprètes : texte soigné, accompagnement simple (guitare, piano)","La poésie entre dans la chanson (Prévert, Aragon mis en musique)"],
+   art:["Georges Brassens","Jacques Brel","Barbara","Léo Ferré","Juliette Gréco"],yt:[["PT7U_GzRIv0","Les copains d’abord · Georges Brassens"],["oR_SZR_tmxM","Ne me quitte pas · Jacques Brel"]]},
+  {d:"1960-1970",t:"Les yéyés",c:"#c0541a",traits:["Le rock et le twist arrivent d’Amérique et d’Angleterre","Beaucoup d’adaptations de chansons anglaises","Les « idoles des jeunes », l’émission et le magazine « Salut les copains »"],
+   art:["Johnny Hallyday","Françoise Hardy","Sylvie Vartan","France Gall"],yt:[["mQeUBXYpxjk","Souvenirs souvenirs · Johnny Hallyday"],["m94_C8Z7wLk","Tous les garçons et les filles · Françoise Hardy"]]},
+  {d:"1965-1980",t:"Chanson à texte et engagée",c:"#1d8a5a",traits:["Des chansons qui dénoncent la guerre ou défendent une cause","Des arrangements plus riches : cordes, cuivres","Serge Gainsbourg mélange chanson, jazz, pop et reggae"],
+   art:["Jean Ferrat","Serge Gainsbourg","Charles Aznavour","Renaud"],yt:[["YW2UXieHWfg","La montagne · Jean Ferrat"],["fVfnEyLOkrM","La bohème · Charles Aznavour"]]},
+  {d:"1980-1990",t:"Pop, rock et synthés",c:"#7a4fb0",traits:["Les synthétiseurs et la boîte à rythmes","Le rock français (Téléphone, Indochine)","Les grands tubes de variété et les clips à la télévision"],
+   art:["Jean-Jacques Goldman","France Gall et Michel Berger","Indochine","Daniel Balavoine"],yt:[["-boDeijWuOY","Quand la musique est bonne · J.-J. Goldman"],["M7X6oYg6iro","L’aventurier · Indochine"]]},
+  {d:"1990-2005",t:"Rap et nouvelle chanson",c:"#5e6d80",traits:["Le texte est rappé sur un rythme, souvent avec des samples","Des jeux de mots et des rimes très travaillés","La chanson à texte continue (Cabrel, Bénabar…)"],
+   art:["MC Solaar","IAM","Diam’s","Francis Cabrel","Bénabar"],yt:[["5_OZuEwqpbo","Caroline · MC Solaar"],["WRHZoMq3TXc","Je l’aime à mourir · Francis Cabrel"]]},
+  {d:"2005 à aujourd’hui",t:"Chanson, électro et urbain",c:"#b8860b",traits:["La chanson rencontre l’électro et le rap","Des artistes belges et suisses très présents","Les plateformes d’écoute et les réseaux sociaux font les tubes"],
+   art:["Stromae","Angèle","Zaz","Orelsan","Aya Nakamura"],yt:[["oiKj0Z_Xnjc","Papaoutai · Stromae"],["Hi7Rx3En7-k","Balance ton quoi · Angèle"]]}
+];
+function cfFriseHTML(){
+  return '<div class="cf" id="cfFrise"><div class="cf-axe" role="tablist" aria-label="Les époques de la chanson française">'
+    +CF_EPOQUES.map(function(e,i){ return '<button type="button" role="tab" class="cf-ep" id="cfEp'+i+'" style="--c:'+e.c+'" onclick="cfChoisir('+i+')"><b>'+e.d+'</b><span>'+e.t+'</span></button>'; }).join("")
+    +'</div><div class="cf-panneau" id="cfPanneau" aria-live="polite"></div></div>';
+}
+function cfInit(){ const z=document.getElementById("cfZone"); if(z)z.innerHTML=cfFriseHTML(); cfChoisir(0); }
+function cfChoisir(i){
+  const e=CF_EPOQUES[i], z=document.getElementById("cfPanneau"); if(!e||!z)return;
+  document.querySelectorAll(".cf-ep").forEach(function(b,j){ b.classList.toggle("on",j===i); b.setAttribute("aria-selected",j===i?"true":"false"); });
+  z.innerHTML='<div class="cf-fiche" style="--c:'+e.c+'"><div class="cf-fiche-t"><small>'+e.d+'</small><b>'+e.t+'</b></div>'
+    +'<div class="mm-fiche-c"><div><h4>Ce qui change</h4><ul>'+e.traits.map(function(x){ return '<li>'+x+'</li>'; }).join("")+'</ul></div>'
+    +'<div><h4>Les artistes</h4><div class="mm-instr">'+e.art.map(function(x){ return '<span>'+x+'</span>'; }).join("")+'</div></div></div>'
+    +'<div class="compo-yt-grille">'+e.yt.map(function(y){ return '<div class="ce-yt" data-yt="'+y[0]+'" data-lib="'+escAttr(y[1])+'"></div>'; }).join("")+'</div>'
+    +'<div class="cf-nav">'+(i>0?'<button type="button" class="btn-son" onclick="cfChoisir('+(i-1)+')"><i class="ph ph-arrow-left"></i> Avant</button>':'<span></span>')
+    +(i<CF_EPOQUES.length-1?'<button type="button" class="btn-son" onclick="cfChoisir('+(i+1)+')">Après <i class="ph ph-arrow-right"></i></button>':'')+'</div></div>';
+  if(typeof ceMonterYT==="function")ceMonterYT();
+}
+/* ---------- Musique, numérique et droits : ateliers (01/11/2026) ----------
+   Le calculateur du streaming (ordres de grandeur, présentés comme tels) et la
+   fabrique de logo sonore (4 notes, un timbre, un rythme). Les sons passent par
+   jouerSonBtn({ns:…}) et les instruments de synthèse des musiques du monde. */
+/* brut → net : cotisations sociales d'environ 22 % (ordre de grandeur), manager souvent 15 % */
+const NS_COTIS=0.22, NS_MANAGER=0.15;
+const NS_PAR_ECOUTE=0.004, NS_PARTS=[["Maison de disques (producteur)",0.64,"#2b70ab"],["Auteurs, compositeurs, éditeurs",0.22,"#7a4fb0"],["Artiste-interprète",0.14,"#c0541a"]];
+function nsEuros(x){ return x>=100?Math.round(x).toLocaleString("fr-FR")+" €":x.toLocaleString("fr-FR",{maximumFractionDigits:2})+" €"; }
+function nsCalcHTML(){
+  return '<div class="ns-calc" id="nsCalc"><div class="ns-calc-t"><i class="ph-fill ph-calculator"></i><b>Combien rapporte une chanson en streaming&nbsp;?</b></div>'
+    +'<label class="ns-curseur"><span>Nombre d’écoutes&nbsp;: <b id="nsN"></b></span><input type="range" id="nsR" min="3" max="9" step="0.25" value="6" oninput="nsCalcMaj()" aria-label="Nombre d’écoutes"></label>'
+    +'<div class="ns-total" id="nsTotal"></div><div class="ns-barre" id="nsBarre"></div><div class="ns-parts" id="nsParts"></div>'
+    +'<div class="ns-net" id="nsNet"></div>'
+    +'<p class="ns-smic" id="nsSmic"></p>'
+    +'<p class="mm-note"><i class="ph ph-info"></i> Ordres de grandeur&nbsp;: environ 0,004&nbsp;€ brut reversés par écoute aux ayants droit, après la part de la plateforme&nbsp;; cotisations d’environ 22&nbsp;%. Les vrais montants changent selon la plateforme, le pays et le contrat de l’artiste.</p></div>';
+}
+function nsCalcMaj(){
+  const r=document.getElementById("nsR"); if(!r)return;
+  const n=Math.round(Math.pow(10,+r.value)), tot=n*NS_PAR_ECOUTE;
+  document.getElementById("nsN").textContent=n.toLocaleString("fr-FR");
+  document.getElementById("nsTotal").innerHTML='Les ayants droit se partagent environ <b>'+nsEuros(tot)+' brut</b>';
+  document.getElementById("nsBarre").innerHTML=NS_PARTS.map(function(p){ return '<span style="flex:'+p[1]+';background:'+p[2]+'"></span>'; }).join("");
+  document.getElementById("nsParts").innerHTML=NS_PARTS.map(function(p){ return '<div style="--c:'+p[2]+'"><i></i><span>'+p[0]+'</span><b>'+nsEuros(tot*p[1])+'<small> brut</small></b></div>'; }).join("");
+  /* ce qu'il reste vraiment à l'artiste */
+  const brut=tot*NS_PARTS[2][1], net=brut*(1-NS_COTIS), netM=brut*(1-NS_MANAGER)*(1-NS_COTIS);
+  document.getElementById("nsNet").innerHTML='<div class="ns-net-t"><i class="ph-fill ph-receipt"></i><b>Attention&nbsp;: ces sommes sont BRUTES, pas nettes</b></div>'
+    +'<p>Le <b>brut</b>, c’est l’argent avant les retenues. Sur ses <b>'+nsEuros(brut)+' brut</b>, l’artiste-interprète paie d’abord des <b>cotisations sociales</b> (environ 22&nbsp;%&nbsp;: santé, retraite…).</p>'
+    +'<div class="ns-net-l"><span>Il lui reste en <b>net</b></span><b class="ns-net-v">≈ '+nsEuros(net)+'</b></div>'
+    +'<div class="ns-net-l"><span>S’il paie un manager (souvent 15&nbsp;% du brut)</span><b class="ns-net-v">≈ '+nsEuros(netM)+'</b></div>'
+    +'<p class="ns-net-p">Ensuite, il paie encore l’<b>impôt sur le revenu</b>, selon sa situation. Et au début, la maison de disques garde souvent tout jusqu’à avoir récupéré l’<b>avance</b> qu’elle lui a versée pour enregistrer l’album.</p>';
+  const mois=Math.round(1400/(1-NS_COTIS)/(NS_PAR_ECOUTE*NS_PARTS[2][1])/1000)*1000;
+  document.getElementById("nsSmic").innerHTML='<i class="ph ph-lightbulb"></i> Pour gagner environ 1&nbsp;400&nbsp;€ <b>net</b> par mois (le salaire minimum) avec le seul streaming, sans manager et avant l’impôt, l’artiste-interprète aurait besoin d’environ <b>'+mois.toLocaleString("fr-FR")+' écoutes chaque mois</b>. C’est pourquoi les concerts restent essentiels.';
+}
+/* ----- le logo sonore ----- */
+const NS_NOTES=[["do",60],["ré",62],["mi",64],["fa",65],["sol",67],["la",69],["si",71],["do aigu",72]];
+const NS_TIMBRES=[["cloches","Cloches"],["piano","Piano"],["synthe","Synthé"],["flute","Flûte"]];
+let _ns={notes:[60,64,67,72],timbre:"cloches",rythme:"egal"};
+function nsLogoHTML(){
+  const sel=function(i){ return '<select aria-label="Note '+(i+1)+'" onchange="_ns.notes['+i+']=+this.value">'+NS_NOTES.map(function(n){ return '<option value="'+n[1]+'"'+(_ns.notes[i]===n[1]?" selected":"")+'>'+n[0]+'</option>'; }).join("")+'</select>'; };
+  return '<div class="ns-logo" id="nsLogo"><div class="ns-calc-t"><i class="ph-fill ph-waveform"></i><b>Fabrique ton logo sonore</b></div>'
+    +'<div class="ns-logo-l"><span class="ns-lab">Les 4 notes</span><div class="ns-notes">'+[0,1,2,3].map(sel).join("")+'</div></div>'
+    +'<div class="ns-logo-l"><span class="ns-lab">Le timbre</span><div class="ns-chips" role="group" aria-label="Timbre">'+NS_TIMBRES.map(function(t){ return '<button type="button" class="'+(_ns.timbre===t[0]?"on":"")+'" onclick="_ns.timbre=\''+t[0]+'\';nsLogoChips()" data-t="'+t[0]+'">'+t[1]+'</button>'; }).join("")+'</div></div>'
+    +'<div class="ns-logo-l"><span class="ns-lab">Le rythme</span><div class="ns-chips" role="group" aria-label="Rythme">'+[["egal","Régulier"],["long","Court-court-court-long"],["saut","Long-court-court-long"]].map(function(t){ return '<button type="button" class="'+(_ns.rythme===t[0]?"on":"")+'" onclick="_ns.rythme=\''+t[0]+'\';nsLogoChips()" data-r="'+t[0]+'">'+t[1]+'</button>'; }).join("")+'</div></div>'
+    +'<div class="ns-logo-b"><button type="button" class="rm-cta" onclick="jouerSonBtn({ns:\'logo\'})"><i class="ph-fill ph-play"></i> Écouter mon logo</button>'
+    +'<button type="button" class="btn-son" data-son="nouveau" onclick="nsLogoHasard()"><i class="ph ph-shuffle"></i> Au hasard</button></div>'
+    +'<p class="mm-note"><i class="ph ph-check-circle"></i> Un bon logo sonore est <b>court</b> (2 à 3 secondes), <b>simple</b>, <b>facile à chanter</b> et se reconnaît dès les premières notes.</p></div>';
+}
+function nsLogoChips(){ document.querySelectorAll("#nsLogo [data-t]").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-t")===_ns.timbre); });
+  document.querySelectorAll("#nsLogo [data-r]").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-r")===_ns.rythme); }); }
+function nsLogoHasard(){ _ns.notes=[0,1,2,3].map(function(){ return NS_NOTES[Math.floor(Math.random()*NS_NOTES.length)][1]; });
+  _ns.timbre=NS_TIMBRES[Math.floor(Math.random()*4)][0]; const z=document.getElementById("nsLogoZone"); if(z)z.innerHTML=nsLogoHTML(); jouerSonBtn({ns:"logo"}); }
+function nsInit(){ const a=document.getElementById("nsCalcZone"); if(a){ a.innerHTML=nsCalcHTML(); nsCalcMaj(); }
+  const b=document.getElementById("nsLogoZone"); if(b)b.innerHTML=nsLogoHTML(); }
+function nsJouer(k){
+  const ctx=audio(); if(ctx.state==="suspended")ctx.resume(); const o={ctx:ctx,out:sonSortie()}, t=ctx.currentTime+0.06;
+  const note=function(x,m,d,tb){ if(tb==="cloches")mmMetal(o,x,mmF(m+12),1.2,0.16,[1,2,3],1); else if(tb==="piano")mmPince(o,x,m,1.1,0.25,"triangle",8);
+    else if(tb==="synthe")mmTenu(o,x,m,d,0.12,"square",0.003,0,0); else mmTenu(o,x,m+12,d,0.14,"sine",0.006,0,0.05); };
+  if(k==="logo"){ const D={egal:[1,1,1,2],long:[0.5,0.5,0.5,2],saut:[1.5,0.5,0.5,2]}[_ns.rythme]; let x=t;
+    _ns.notes.forEach(function(m,i){ note(x,m,D[i]*0.28,_ns.timbre); x+=D[i]*0.28; }); return; }
+  /* la même mélodie : lente et douce, ou rapide et énergique ; majeure ou mineure */
+  const mel=[[60,1],[64,1],[67,1],[72,2],[71,1],[67,1],[69,1],[67,3]], min=[[60,1],[63,1],[67,1],[72,2],[70,1],[67,1],[68,1],[67,3]];
+  const M=k==="mineur"?min:mel, pas=k==="rapide"?0.14:(k==="lent"?0.42:0.26), tb=k==="rapide"?"synthe":"piano";
+  mmSuite(o,t,pas,M,function(x,m,d){ note(x,m,d,tb); });
+  if(k==="rapide")for(let i=0;i<20;i++){ mmTambour(o,t+i*pas,60,0.2,i%2?0.2:0.4); mmBruit(o,t+i*pas+pas/2,0.04,0.08,"highpass",6000); }
+}
 function afficherLecon(id){
   if(id&&String(id).indexOf("evalcours-")===0){ afficherLeconCours(id); return; }
   masquerInterfaceNormale();
@@ -16356,6 +17759,9 @@ function afficherLecon(id){
   if(typeof ceMonterYT==="function")ceMonterYT();
   if(typeof lpMonter==="function")lpMonter();
   if(document.getElementById("onde8"))onde8Monter();
+  if(document.getElementById("mmCarteZone"))mmInit();
+  if(document.getElementById("cfZone"))cfInit();
+  if(document.getElementById("nsCalcZone"))nsInit();
   if(document.getElementById("pmPiano")&&typeof pmMaj==="function"){ _pm={ton:"Do",mel:[],dec:0}; pmMaj(); }
   if(document.getElementById("plAtelier"))plAjuster();
   if(document.getElementById("txAtelier"))txInit();
@@ -17415,6 +18821,7 @@ const LP_DOMAINES={
   "Théorie":{ic:"ph-graduation-cap",c:"var(--dom-theorie)"},
   "Gammes, accords et modes":{ic:"ph-piano-keys",c:"var(--dom-harmonie)"},
   "Styles de musique":{ic:"ph-guitar",c:"var(--dom-styles)"},
+  "Musiques du monde":{ic:"ph-globe-hemisphere-west",c:"var(--dom-monde)"},
   "Pour aller plus loin (hors collège)":{ic:"ph-rocket-launch",c:"var(--dom-loin)"},
   "Compositeurs":{ic:"ph-user-circle",c:"var(--dom-perso)"}
 };
@@ -18532,7 +19939,7 @@ function calcNoteBonus(notes,regles){
 }
 function niveauEleve(){ const g=(typeof gradeDe==="function")?gradeDe(profil.points||0):{niveau:1}; return (g&&g.niveau)||1; }
 /* Niveau scolaire de l'élève, deviné du nom de sa classe (6e/5e/4e/3e/Autres). */
-function niveauClasseEleve(){ return (typeof classeGroupe==="function")?classeGroupe({nom:profil.classeNom||""}):""; }
+function niveauClasseEleve(){ if(typeof classeGroupe!=="function")return ""; const g=classeGroupe({nom:profil.classeNom||""}); return /^c[123]$/.test(g)?"Autres":g; }
 function moyenneEleve(){ return calcMoyenne(notesComptees()); }
 /* Note bonus de l'élève, sur la période en cours (trimestres publiés par le prof). */
 function noteBonusEleve(){
@@ -20225,8 +21632,11 @@ async function ajusterPoints(classId,code){
 /* Supprime un code : le code lui-même, la progression de l'élève, et le nom local. */
 async function supprimerCode(classId,code){
   const lab=labelDe(classId,code);
-  if(!await dlgConfirmer("Supprimer le code "+code+(lab?" ("+lab+")":"")+" ?\n\nLa progression de cet élève sera définitivement effacée.\nCette action est irréversible."))return;
+  if(!await dlgConfirmer("Supprimer le code "+code+(lab?" ("+lab+")":"")+" ?\n\nSa progression reste 30 jours dans la corbeille."))return;
   const s=fbStore(); if(!s){svcIndispo();return;}
+  const C=s.collection("classes").doc(classId), nomCl=(((_profClasses||[]).filter(function(c){ return c.id===classId; })[0])||{}).nom||"";
+  if(!(await cbAvant("code","Code "+code+(nomCl?" · "+nomCl:""),function(){ return cbTout([cbDoc(s.collection("eleveCodes").doc(code)),cbDoc(C.collection("eleves").doc(code)),
+    cbDoc(C.collection("classement").doc(code)),cbDoc(C.collection("travailEleve").doc(code))]); },{cid:classId})))return;
   /* le mot secret d'abord : sa règle de suppression vérifie le propriétaire dans
      eleveCodes, qui ne doit donc pas encore avoir disparu */
   pendant("Suppression…",s.collection("codeSecret").doc(code).delete().catch(function(){}).then(function(){
@@ -21482,9 +22892,10 @@ function genererCodes(classId,n){
    groupe est stockée sur chaque doc de classe (`couleur`) : rien en local,
    car le navigateur du prof peut bloquer localStorage (ouverture en file://). */
 let _mesClasses=[];
-const GROUPE_ORDRE=["6e","5e","4e","3e","Autres"];
-const GROUPE_LIB={"6e":"6ᵉ","5e":"5ᵉ","4e":"4ᵉ","3e":"3ᵉ","Autres":"Autres"};
-const GROUPE_DEF={"6e":"#1a9c6b","5e":"#1e3a63","4e":"#d97706","3e":"#7c3aed","Autres":"#64748b"};
+/* c1, c2, c3 : les classes du primaire (maternelle, cycle 2, cycle 3), reliées à l'éveil musical */
+const GROUPE_ORDRE=["6e","5e","4e","3e","c1","c2","c3","Autres"];
+const GROUPE_LIB={"6e":"6ᵉ","5e":"5ᵉ","4e":"4ᵉ","3e":"3ᵉ","c1":"Maternelle","c2":"Cycle 2 · CP CE1 CE2","c3":"Cycle 3 · CM1 CM2","Autres":"Autres"};
+const GROUPE_DEF={"6e":"#1a9c6b","5e":"#1e3a63","4e":"#d97706","3e":"#7c3aed","c1":"#e0598b","c2":"#2fa36b","c3":"#2374b0","Autres":"#64748b"};
 function classeGroupe(c){
   if(c&&GROUPE_ORDRE.indexOf(c.groupe)>=0)return c.groupe;   /* choix manuel prioritaire */
   const n=((c&&c.nom)||"").toLowerCase();
@@ -21492,6 +22903,9 @@ function classeGroupe(c){
   if(/(^|[^0-9])5\s*[eè]|cinqui[eè]me/.test(n))return "5e";
   if(/(^|[^0-9])4\s*[eè]|quatri[eè]me/.test(n))return "4e";
   if(/(^|[^0-9])3\s*[eè]|troisi[eè]me/.test(n))return "3e";
+  if(/\bcm\s*[12]\b/.test(n))return "c3";
+  if(/\bcp\b|\bce\s*[12]\b/.test(n))return "c2";
+  if(/\b(t?ps|ms|gs)\b|maternelle|(petite|moyenne|grande) section/.test(n))return "c1";
   return "Autres";
 }
 function groupeCouleur(cl,grp){
@@ -21584,6 +22998,7 @@ function dashboardProf(){
             <div class="mc-barre">
               <button class="mc-mini" title="Élèves et codes" aria-label="Élèves et codes" onclick="rosterClasse('${c.id}')"><i class="ph ph-identification-card"></i></button>
               <button class="mc-mini" title="Renommer" aria-label="Renommer" onclick="renommerClasse('${c.id}')"><i class="ph ph-pencil-simple"></i></button>
+              <button class="mc-mini mc-sup" title="Supprimer la classe" aria-label="Supprimer la classe" onclick="supprimerClasse('${c.id}')"><i class="ph ph-trash"></i></button>
               <button class="mc-mini${classeCollegues(c)?" mc-coll-on":""}" title="${classeCollegues(c)?"Classe de collègues : tout est débloqué et ils peuvent lancer des parties. Cliquer pour en refaire une classe d'élèves.":"Faire de cette classe une classe de collègues (tout débloqué, création de parties)"}" aria-label="Classe de collègues" onclick="basculerCollegues('${c.id}')"><i class="ph ph-chalkboard-teacher"></i></button>
               <select class="mc-sel" title="Ranger dans un niveau" onchange="grouperClasse('${c.id}',this.value)">${opts}</select>
             </div>
@@ -21594,6 +23009,7 @@ function dashboardProf(){
       h+=creer;
     }
     h+=`<div class="mc-pied"><span><i class="ph ph-chalkboard-teacher"></i> Session enseignante</span>
+      <button class="action btn-nouv mc-corb" onclick="ecranCorbeille()"><i class="ph ph-trash"></i> Corbeille</button>
       <button class="action btn-nouv" onclick="deconnecterProf()"><i class="ph ph-sign-out"></i> Se déconnecter</button></div>`;
     document.getElementById("zone").innerHTML=h;
     if(cl.length)mcStatsRemplir();
@@ -21624,7 +23040,9 @@ function creerClasse(){
   p.then(()=>{toast("Classe créée !");_tcRows=null;rosterClasse(ref.id);}).catch(()=>toast("Erreur."));
 }
 async function supprimerClasse(classId){
-  if(!await dlgConfirmer("Supprimer cette classe et ses codes ? Les données de suivi seront perdues."))return;
+  const nomCl=(((_profClasses||[]).concat(typeof _mesClasses!=="undefined"?(_mesClasses||[]):[])).filter(function(c){ return c.id===classId; })[0]||{}).nom||"Classe";
+  if(!await dlgConfirmer("Supprimer la classe « "+nomCl+" » et ses codes ?\n\nElle reste 30 jours dans la corbeille (élèves, notes, évaluations, points, classement) : vous pourrez la restaurer."))return;
+  if(!(await cbAvant("classe","Classe « "+nomCl+" »",function(){ return cbClasseDocs(classId); },{cid:classId})))return;
   const s=fbStore(), a=fbAuth(); const u=a&&a.currentUser; if(!s||!u)return;
   /* On interroge par ownerUid (et non par classId) puis on filtre localement :
      les règles Firestore doivent pouvoir PROUVER, à partir de la requête seule,
@@ -21637,7 +23055,7 @@ async function supprimerClasse(classId){
     return Promise.all(cds.map(c=>s.collection("codeSecret").doc(c).delete().catch(()=>{})))
       .then(()=>Promise.all(cds.map(c=>s.collection("eleveCodes").doc(c).delete())
         .concat([s.collection("classes").doc(classId).delete()])));
-  })).then(()=>{toast("Classe supprimée.");_tcRows=null;dashboardProf();}).catch(()=>toast("Erreur."));
+  })).then(()=>{toast("Classe supprimée : elle reste 30 jours dans la corbeille.");_tcRows=null;dashboardProf();}).catch(()=>toast("Erreur."));
 }
 
 /* ---------- Prof : tri de la liste d'élèves ----------
@@ -21740,13 +23158,16 @@ function reinitExecuter(classId,codes,o,tous){
   const s=fbStore(); if(!s)return Promise.reject(new Error("service"));
   const C=s.collection("classes").doc(classId), FV=firebase.firestore.FieldValue, now=Date.now();
   const bilan={evals:0,carnet:0,travail:0,chant:0,eleves:codes.length}, evalIds=[];
+  const nomCl=(((_profClasses||[]).filter(function(c){ return c.id===classId; })[0])||{}).nom||"Classe";
+  const parCode=function(col){ return Promise.all(codes.map(function(c){ return cbSnap(C.collection(col).where("code","==",c)); })).then(function(a){ return [].concat.apply([],a); }); };
+  const photo=tous?cbClasseDocs(classId):cbTout(codes.map(function(c){ return cbTout([cbDoc(C.collection("eleves").doc(c)),cbDoc(C.collection("classement").doc(c)),cbDoc(C.collection("travailEleve").doc(c))]); }).concat([parCode("evals"),parCode("enr")]));
   const refsDe=function(snap){ const l=[]; snap.forEach(function(d){ l.push(d.ref); }); return l; };
   const docsDesCodes=function(col){
     if(tous)return C.collection(col).get().then(refsDe);
     return Promise.all(codes.map(function(c){ return C.collection(col).where("code","==",c).get().then(refsDe); }))
       .then(function(a){ return [].concat.apply([],a); });
   };
-  let p=Promise.resolve();
+  let p=photo.then(function(d){ return d.length?cbEnregistrer("reinit",(tous?"« "+nomCl+" »":"« "+nomCl+" » · "+codes.join(", ")),d,{cid:classId}):null; }).catch(function(){});
   if(o.evals||o.vig)p=p.then(function(){ return docsDesCodes("evals").then(function(l){
     l.forEach(function(r){ evalIds.push(r.id); });
     if(!o.evals)return;
@@ -21989,21 +23410,163 @@ function elcInitiales(t){
 }
 function elcTeinte(code){ let h=0; String(code).split("").forEach(function(c){ h=(h*31+c.charCodeAt(0))>>>0; }); return ELC_TEINTES[h%ELC_TEINTES.length]; }
 function elcRibanHTML(classId,nom){
-  const l=_profClasses||[];
-  let idx=0; for(let i=0;i<l.length;i++){ if(l[i].id===classId){idx=i;break;} }
-  const prev=idx>0?l[idx-1].id:null, next=idx<l.length-1?l[idx+1].id:null;
+  /* les classes du collège, puis celles du primaire (éveil musical, sur cet appareil) */
+  const l=(_profClasses||[]).map(function(c){ return {id:c.id,nom:c.nom||"Classe"}; });
+  const p=elpClasses().map(function(c){ return {id:"ev:"+c.id,nom:c.nom||"Classe"}; }), T=l.concat(p);
+  let idx=-1; for(let i=0;i<T.length;i++){ if(T[i].id===classId){idx=i;break;} }
+  const prev=idx>0?T[idx-1].id:null, next=idx>=0&&idx<T.length-1?T[idx+1].id:null;
   const fl=function(id,ic,t){ return '<button class="ev-rib-fl"'+(id?"":" disabled")+' title="'+t+'" aria-label="'+t+'"'+(id?' onclick="rosterClasse(\''+id+'\')"':"")+'><i class="ph '+ic+'"></i></button>'; };
-  const nav=(l.length>1)
-    ?fl(prev,"ph-caret-left","Classe précédente")
-      +'<select class="ev-rib-sel" aria-label="Classe" onchange="rosterClasse(this.value)">'+l.map(function(c){ return '<option value="'+c.id+'"'+(c.id===classId?" selected":"")+'>'+echapH(c.nom||"Classe")+'</option>'; }).join("")+'</select>'
+  const opt=function(c){ return '<option value="'+c.id+'"'+(c.id===classId?" selected":"")+'>'+echapH(c.nom)+'</option>'; };
+  const nav=T.length>1?fl(prev,"ph-caret-left","Classe précédente")
+      +'<select class="ev-rib-sel" aria-label="Classe" onchange="rosterClasse(this.value)">'
+      +(p.length?'<optgroup label="Mes classes">'+l.map(opt).join("")+'</optgroup><optgroup label="Sur cet appareil (éveil)">'+p.map(opt).join("")+'</optgroup>':l.map(opt).join(""))+'</select>'
       +fl(next,"ph-caret-right","Classe suivante")
     :'<span class="ev-rib-cl">'+echapH(nom||"Classe")+'</span>';
   return '<div class="ev-riban">'+rubanRetourHTML()
     +'<div class="ev-rib-ic"><i class="ph-fill ph-identification-card" style="font-size:1.5rem"></i></div>'
     +'<div class="ev-rib-txt"><div class="ev-rib-titre">Élèves et codes</div><div class="ev-rib-sous">Les noms restent sur cet appareil.</div></div>'
-    +'<div class="ev-rib-nav"><div class="ev-rib-g"><span class="ev-rib-lab">Classe</span><div class="ev-rib-l">'+nav+'</div></div></div></div>';
+    +'<div class="ev-rib-nav"><div class="ev-rib-g"><span class="ev-rib-lab">'+(String(classId).indexOf("ev:")===0?"Classe de primaire":"Classe")+'</span><div class="ev-rib-l">'+nav+'</div></div></div></div>';
+}
+/* ---------- Les classes de primaire dans « Élèves et codes » (01/11/2026) ----------
+   Les élèves de l'éveil musical n'ont ni compte ni code : l'enseignant tape leurs
+   prénoms, qui restent sur cet appareil (rien sur le serveur). Ces classes se créent
+   et se modifient ici, à côté de celles du collège ; l'éveil musical ne garde que le
+   suivi des « Je sais ». Identifiant de page : "ev:<id>", "ev:+" pour une nouvelle. */
+function elpClasses(){ return ((_evS&&_evS.classes)||[]).filter(function(c){ return !c.fs; }); }
+function rosterPrimaire(id){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  titreProf('<i class="ph ph-identification-card"></i> Élèves et codes',"");
+  const z=document.getElementById("zone");
+  if(!_evS){ z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>'; evSuiviCharger().then(function(){ rosterPrimaire(id); }); return; }
+  const cl=elpClasses().filter(function(c){ return c.id===id; })[0];
+  if(!cl){ if(elpClasses().length)rosterPrimaire(elpClasses()[0].id); else dashboardProf(); return; }
+  const cyc=cl?cl.cy:(EV_CYCLES[_evCycle]?_evCycle:"c3");
+  let h='<div class="elc">'+elcRibanHTML("ev:"+id,cl?cl.nom:"Nouvelle classe")
+    +'<input id="elpFichier" type="file" accept=".csv,.txt,text/csv,text/plain" hidden onchange="elpImporter(this)">';
+  if(cl){
+    const C=EV_CYCLES[cl.cy]; let tot=0, acq=0;
+    C.seq.forEach(function(q,i){ q.jesais.forEach(function(x,k){ cl.eleves.forEach(function(el){ tot++; if((((cl.v||{})[el.id])||{})[i+":"+k]===2)acq++; }); }); });
+    const kpi=function(n,lib,cls,ic){ return '<div class="ccs-kpi '+cls+'"><b>'+n+'</b><span><i class="ph '+ic+'"></i> '+lib+'</span></div>'; };
+    h+='<div class="ccs-kpis elc-kpis">'+kpi(cl.eleves.length,"élève"+(cl.eleves.length>1?"s":""),"b","ph-users-three")
+      +kpi(C.nom,C.niv,"o","ph-graduation-cap")
+      +kpi((tot?Math.round(100*acq/tot):0)+"<small>%</small>","des « Je sais » acquis","v","ph-check-circle")+'</div>';
+  }
+  h+='<div class="elp'+(cl?"":" seul")+'">'
+    +'<form class="elp-carte" onsubmit="event.preventDefault();elpEnregistrer(this,\''+id+'\')">'
+    +'<div class="elp-tete"><span class="elp-ic"><i class="ph-fill ph-'+(cl?"pencil-simple":"plus-circle")+'"></i></span><div><h2>'+(cl?"La classe":"Nouvelle classe de primaire")+'</h2>'
+    +'<p>Classe gardée sur cet appareil. Pour la retrouver dans « Mes classes », créez-la là-bas avec le niveau Cycle 1, 2 ou 3.</p></div></div>'
+    +'<label class="imp-champ"><span>Nom de la classe</span><input name="nom" required maxlength="40" value="'+(cl?escAttr(cl.nom):"")+'" placeholder="CE1 de Mme Martin"></label>'
+    +'<fieldset class="elp-cycles"><legend>Cycle</legend>'+Object.keys(EV_CYCLES).map(function(k){
+      return '<label><input type="radio" name="cy" value="'+k+'"'+(cyc===k?" checked":"")+'><span><b>'+EV_CYCLES[k].nom+'</b><small>'+EV_CYCLES[k].niv+'</small></span></label>'; }).join("")+'</fieldset>'
+    +'<label class="imp-champ"><span>Prénoms des élèves, un par ligne</span><textarea name="el" id="elpNoms" rows="9" placeholder="Léa&#10;Hugo&#10;Inès">'+(cl?echapH(cl.eleves.map(function(e){ return e.n; }).join("\n")):"")+'</textarea></label>'
+    +'<button type="button" class="elp-import" onclick="document.getElementById(\'elpFichier\').click()"><i class="ph ph-upload-simple"></i> Importer une liste (ONDE, tableur Nom, Prénom)</button>'
+    +'<div class="elp-actions"><button type="submit" class="rm-cta"><i class="ph-fill ph-floppy-disk"></i> '+(cl?"Enregistrer":"Créer la classe")+'</button>'
+    +(cl?'<button type="button" class="btn-son elp-sup" onclick="elpSupprimer(\''+cl.id+'\')"><i class="ph ph-trash"></i> Supprimer la classe</button>':'')+'</div>'
+    +'<p class="elc-prive"><i class="ph ph-lock"></i> Les prénoms restent sur cet appareil : rien n’est envoyé sur le serveur. Pensez à la sauvegarde (Paramètres).</p>'
+    +'</form>';
+  if(cl){
+    const t=function(fn,ic,lib,teinte,principal){ return '<button type="button" class="elc-tuile'+(principal?" or":"")+'" style="--d:var(--dom-'+teinte+')" onclick="'+fn+'"><span class="elc-tuile-ic"><i class="ph-fill ph-'+ic+'"></i></span><b>'+lib+'</b></button>'; };
+    h+='<div class="elp-carte"><div class="elp-tete"><span class="elp-ic eveil"><i class="ph-fill ph-music-notes-simple"></i></span><div><h2>Éveil musical</h2><p>Le suivi et les documents de cette classe.</p></div></div>'
+      +'<div class="elp-tuiles">'
+      +t("elpEveil('"+cl.id+"','suivi')","check-square-offset","Suivi des « Je sais »","eveil",true)
+      +t("elpEveil('"+cl.id+"','')","play-circle","Prochaine séance","rythme",false)
+      +t("_evSClasse='"+cl.id+"';evImprimerBilans()","certificate","Bilans pour les parents","culture",false)
+      +t("_evSClasse='"+cl.id+"';evImprimerTableau()","table","Tableau de la classe","theorie",false)
+      +t("_evSClasse='"+cl.id+"';evImprimerCahier('"+cl.cy+"')","book-open-text","Cahier d’apprentissage","lire",false)
+      +'</div>'
+      +(cl.eleves.length?'<div class="elp-noms">'+cl.eleves.map(function(e){ return '<span>'+echapH(e.n)+'</span>'; }).join("")+'</div>':'<p class="elp-vide">Aucun élève pour l’instant : tapez les prénoms dans « La classe ».</p>')
+      +'</div>';
+  }
+  z.innerHTML=h+'</div></div>';
+  if(!cl)try{ z.querySelector('input[name="nom"]').focus(); }catch(e){}
+  if(typeof remonter==="function")remonter();
+}
+function elpEnregistrer(f,id){
+  const tous=String(f.el.value||"").split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean).filter(function(x,i,a){ return a.indexOf(x)===i; });
+  const noms=tous.slice(0,40), rd=f.querySelector('input[name="cy"]:checked');
+  let cl=id!=="+"?elpClasses().filter(function(c){ return c.id===id; })[0]:null;
+  if(!cl){ cl={id:"k"+Date.now().toString(36),v:{},eleves:[]}; _evS.classes.push(cl); }
+  cl.nom=String(f.nom.value||"").trim()||"Ma classe"; cl.cy=rd?rd.value:(cl.cy||"c3");
+  const anciens=cl.eleves; cl.eleves=noms.map(function(n,i){ const a=anciens.filter(function(e){ return e.n===n; })[0]; return a||{id:"e"+Date.now().toString(36)+i,n:n}; });
+  evSuiviSauver(); _evSClasse=cl.id; _evSSeq=0;
+  toast((id==="+"?"Classe créée sur cet appareil.":"Classe enregistrée.")+(tous.length>40?" (40 élèves au plus)":""));
+  rosterPrimaire(cl.id);
+}
+async function elpSupprimer(id){
+  if(!(await dlgConfirmer("Supprimer cette classe et tout son suivi sur cet appareil ?")))return;
+  _evS.classes=_evS.classes.filter(function(c){ return c.id!==id; }); evSuiviSauver(); _evSClasse=null;
+  toast("Classe supprimée."); if(elpClasses().length)rosterPrimaire(elpClasses()[0].id); else dashboardProf();
+}
+/* une liste (export ONDE, tableur, texte) : les prénoms s'ajoutent à ceux déjà tapés */
+function elpImporter(inp){
+  const f=inp&&inp.files&&inp.files[0]; if(inp)inp.value=""; if(!f)return;
+  const fr=new FileReader();
+  fr.onload=function(){
+    const a=rosterAnalyser(String(fr.result||""));
+    if(a.err){ toast(a.err); return; }
+    const lus=a.avecCode.map(function(x){ return x.nom; }).concat(a.sansCode);
+    const ta=document.getElementById("elpNoms"); if(!ta)return;
+    const deja=String(ta.value||"").split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean);
+    const nouv=lus.filter(function(n){ return deja.indexOf(n)<0; });
+    ta.value=deja.concat(nouv).join("\n");
+    toast(nouv.length?nouv.length+" prénom"+(nouv.length>1?"s":"")+" ajouté"+(nouv.length>1?"s":"")+" : vérifiez, puis Enregistrer.":"Aucun nouveau nom dans ce fichier.");
+  };
+  fr.onerror=function(){ toast("Lecture du fichier impossible."); };
+  fr.readAsText(f,"utf-8");
+}
+/* vers l'éveil musical, sur cette classe */
+function elpEveil(id,page){
+  const cl=evClassesVues().filter(function(c){ return c.id===id; })[0];
+  _evSClasse=id; _evSSeq=0; if(cl&&EV_CYCLES[cl.cy])_evCycle=cl.cy;
+  ecranEveil(); if(page)evPage(page);
+}
+/* le niveau de la classe (collège ou primaire) ; une classe de primaire est celle de l'éveil musical */
+function elcNiveauHTML(cid,info){
+  const g=classeGroupe(Object.assign({id:cid},info||{})), C=EV_CYCLES[g];
+  if(C)evLierClasses();   /* le suivi de l'éveil est prêt avant le premier clic (impressions) */
+  const b=function(fn,ic,lib){ return '<button type="button" class="elc-ev-b" onclick="'+fn+'"><i class="ph-fill ph-'+ic+'"></i> '+lib+'</button>'; }, id="fs:"+cid;
+  return '<div class="elc-lv'+(C?" prim":"")+'"><label><span>Niveau de la classe</span><select onchange="elcNiveau(\''+cid+'\',this.value)">'
+    +GROUPE_ORDRE.map(function(o){ return '<option value="'+o+'"'+(o===g?" selected":"")+'>'+GROUPE_LIB[o]+'</option>'; }).join("")+'</select></label>'
+    +(C?'<div class="elc-ev"><span class="elc-ev-t"><i class="ph-fill ph-music-notes-simple"></i> Éveil musical · '+C.nom+'</span>'
+      +b("elpEveil('"+id+"','suivi')","check-square-offset","Suivi des « Je sais »")
+      +b("elpEveil('"+id+"','')","play-circle","Prochaine séance")
+      +b("_evSClasse='"+id+"';evImprimerBilans()","certificate","Bilans pour les parents")
+      +b("_evSClasse='"+id+"';evImprimerTableau()","table","Tableau de la classe")
+      +b("_evSClasse='"+id+"';evImprimerCahier('"+g+"')","book-open-text","Cahier")+'</div>'
+     :'<span class="elc-lv-aide">Une classe de primaire (Maternelle, Cycle 2, Cycle 3) est reliée à l’éveil musical.</span>')+'</div>';
+}
+function elcNiveau(cid,g){
+  const s=fbStore(),a=fbAuth(),u=a&&a.currentUser; if(!s||!u)return;
+  const L=_profClasses||[], col=groupeCouleur(L,g);
+  s.collection("classes").doc(cid).set({groupe:g,couleur:col},{merge:true}).then(function(){
+    [_profClasses,typeof _mesClasses!=="undefined"?_mesClasses:null].forEach(function(l){ (l||[]).forEach(function(c){ if(c.id===cid){ c.groupe=g; c.couleur=col; } }); });
+    _tcRows=null; toast(EV_CYCLES[g]?"Classe de primaire ("+EV_CYCLES[g].nom+") : elle est reliée à l’éveil musical.":"Niveau enregistré : "+GROUPE_LIB[g]+".");
+    evLierClasses().then(function(){ rosterClasse(cid); });
+  }).catch(function(){ toast("Erreur : vérifiez la connexion."); });
+}
+/* les classes de « Mes classes » rangées en primaire sont les classes de l'éveil :
+   leurs élèves sont les codes de la classe, avec les noms gardés sur cet appareil */
+function evLierClasses(){
+  return Promise.all([evSuiviCharger(),chargerClassesProf().catch(function(){ return _profClasses||[]; })]).then(function(r){
+    const cls=(r[1]||[]).filter(function(c){ return !!EV_CYCLES[classeGroupe(c)]; });
+    const s=fbStore(),a=fbAuth(),u=a&&a.currentUser;
+    const p=(!cls.length||!s||!u)?Promise.resolve(null):s.collection("eleveCodes").where("ownerUid","==",u.uid).get().catch(function(){ return null; });
+    return p.then(function(snap){
+      const par={}; if(snap)snap.forEach(function(d){ const k=(d.data()||{}).classId; if(k)(par[k]=par[k]||[]).push(d.id); });
+      cls.forEach(function(c){ const id="fs:"+c.id; let e=_evS.classes.filter(function(x){ return x.id===id; })[0];
+        if(!e){ e={id:id,fs:c.id,v:{},eleves:[]}; _evS.classes.push(e); }
+        e.nom=c.nom||"Classe"; e.cy=classeGroupe(c); e.cache=false;
+        if(snap){ const codes=(par[c.id]||[]).slice(); (Array.isArray(c.membres)?c.membres:[]).forEach(function(k){ if(codes.indexOf(k)<0)codes.push(k); });
+          e.eleves=codes.map(function(k){ return {id:k,n:labelDe(c.id,k)||k}; }).sort(function(x,y){ return x.n.localeCompare(y.n,"fr"); }); } });
+      _evS.classes.forEach(function(e){ if(e.fs&&!cls.some(function(c){ return c.id===e.fs; }))e.cache=true; });   /* suivi gardé, classe masquée */
+      evSuiviSauver(); return _evS;
+    });
+  });
 }
 function rosterClasse(classId){
+  if(String(classId||"").indexOf("ev:")===0){ rqNouvellePage(); rosterPrimaire(String(classId).slice(3)); return; }
+  if(!_evS)evSuiviCharger();
   if(!_rq.garde)_elcCherche=""; rqNouvellePage();
   if(classId)_classeProfSel=classId;   /* la classe suit d'une page à l'autre */
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
@@ -22035,7 +23598,7 @@ function rosterClasse(classId){
     const moyenne=notes.length?(notes.reduce(function(x,n){return x+(n.note/n.sur)*20;},0)/notes.length):null;
     const nProt=codes.filter(function(c){ return protege[c]; }).length, nVus=codes.filter(function(c){ return prog[c]; }).length;
     const nNoms=codes.filter(function(c){ return labelDe(classId,c); }).length;
-    let h='<div class="elc">'+elcRibanHTML(classId,info.nom)
+    let h='<div class="elc">'+elcRibanHTML(classId,info.nom)+elcNiveauHTML(classId,info)
       +'<input id="rosterInput" type="file" accept=".csv,.txt,text/csv" style="display:none" onchange="rosterImporterFichier(this,\''+classId+'\')">'
       +'<input id="impLabels" type="file" accept="application/json" style="display:none" onchange="importerLabels(\''+classId+'\',this)">';
     const tuile=function(fn,ic,lib,teinte,principal,titre){
@@ -22048,7 +23611,8 @@ function rosterClasse(classId){
       h+='<section class="elc-vide2"><span class="elc-vide2-ic"><i class="ph-fill ph-users-three"></i></span>'
         +'<h2>Ajoute tes élèves</h2><p>Importe ta liste de classe (export Pronote) : chaque élève reçoit son code.</p>'
         +'<div class="elc-tuiles">'+ajout+'</div>'
-        +'<p class="elc-prive"><i class="ph ph-lock"></i> Les noms restent sur cet appareil, le serveur ne reçoit que les codes.</p></section>';
+        +'<p class="elc-prive"><i class="ph ph-lock"></i> Les noms restent sur cet appareil, le serveur ne reçoit que les codes.</p>'
+        +'<button type="button" class="elc-sup" onclick="supprimerClasse(\''+classId+'\')"><i class="ph ph-trash"></i> Supprimer cette classe</button></section>';
       document.getElementById("zone").innerHTML=h+'</div>';
       return;
     }
@@ -22202,11 +23766,11 @@ async function rosterRetirerMembre(classId,code){
 /* Étiquettes à distribuer : une par élève (nom + code + ligne pour le mot secret),
    disposées en grille à découper au massicot. */
 const CC_CSS=
-  "body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#16233a}"
+  "body{margin:0;font-family:Inter,Arial,sans-serif;color:#16233a}"
  +".cc-grid{display:grid;grid-template-columns:1fr 1fr;}"
  +".cc-card{border:1px solid #7c8ea5;padding:6mm 7mm;min-height:46mm;box-sizing:border-box;display:flex;flex-direction:column;page-break-inside:avoid;}"
  +".cc-top{display:flex;justify-content:space-between;align-items:baseline;font-size:9pt;color:#5c6d84;margin-bottom:3mm;}"
- +".cc-brand{font-weight:800;letter-spacing:.5px;color:#2374b0;}"
+ +".cc-brand{font-weight:800;letter-spacing:.5px;color:#1e3a63;}"
  +".cc-nom{font-size:15pt;font-weight:800;margin-bottom:4mm;min-height:8mm;}"
  +".cc-vide{font-weight:400;color:#5c6d84;font-size:12pt;}"
  +".cc-lab{font-size:8.5pt;text-transform:uppercase;letter-spacing:.6px;color:#5c6d84;}"
@@ -23225,9 +24789,9 @@ function ecranDevoirsProf(classId){
       h+=`<p class="badge-vide">Aucun travail donné pour l'instant.</p>`;
     }else{
       h+=`<div class="dvx-filtres">
-          <button class="on" data-f="tous" onclick="dvFiltre('tous')">Tous <b>${devs.length}</b></button>
-          <button data-f="cours" onclick="dvFiltre('cours')">En cours <b>${enCours}</b></button>
-          <button data-f="retard" onclick="dvFiltre('retard')">Échéance passée <b>${enRetard}</b></button>
+          <button class="on" data-f="cours" onclick="dvFiltre('cours')">En cours <b>${enCours}</b></button>
+          <button data-f="retard" onclick="dvFiltre('retard')">Archivés <b>${enRetard}</b></button>
+          <button data-f="tous" onclick="dvFiltre('tous')">Tous <b>${devs.length}</b></button>
         </div><div class="dvx-liste">`;
       /* d'abord les travaux en cours, échéance la plus proche en tête ; puis ceux dont l'échéance est passée */
       const ordre=devs.slice().sort(function(x,y){ const rx=devoirRetard(x)?1:0, ry=devoirRetard(y)?1:0;
@@ -23242,7 +24806,8 @@ function ecranDevoirsProf(classId){
         const passe=devoirRetard(d);
         const v0=(d.volets||[])[0]||{}, ty=DEVOIR_VOLETS[v0.t]||{};
         const coul=pct>=80?"var(--juste)":(pct>=40?"var(--or)":"var(--faux)");
-        h+=`<article class="dvx-travail${passe?" retard":""}" data-etat="${passe?"retard":"cours"}">
+        _ctDevs[d.id]=d;
+        h+=`<article class="dvx-travail${passe?" retard":""}" data-etat="${passe?"retard":"cours"}"${passe?" hidden":""}>
           <div class="dvx-travail-ic"><i class="ph ph-${ty.ic||"backpack"}"></i></div>
           <div class="dvx-travail-c">
             <b>${echapH(d.titre||"Travail")}</b>
@@ -23254,6 +24819,7 @@ function ecranDevoirsProf(classId){
           <div class="dvx-anneau" style="--p:${pct};--c:${coul}" title="${faits.length} élève${faits.length>1?"s":""} sur ${vises.length} ont rendu"><span><b>${faits.length}</b>/${vises.length}</span></div>
           <div class="dvx-travail-a">
             <button class="dvx-btn" onclick="detailDevoir('${classId}','${d.id}')"><i class="ph ph-eye"></i> Qui a rendu</button>
+            <button class="dvx-btn" onclick="ctDevoir('${classId}','${d.id}')" title="Le texte à coller dans le cahier de textes"><i class="ph ph-notebook"></i> Cahier de textes</button>
             <button class="dvx-btn danger" title="Supprimer ce travail" aria-label="Supprimer ce travail" onclick="supprimerDevoir('${classId}','${d.id}')"><i class="ph ph-trash"></i></button>
           </div>
         </article>`;
@@ -23592,12 +25158,14 @@ function creerDevoir(classId){
   if(!envoi)return;                     /* envoi déjà en cours : on ignore le clic */
   envoi.then(function(){ _dvVocSel=[]; toast(pourTous?"Travail donné à toute la classe !"
                                                 :("Travail donné à "+choisis.length+" élève"+(choisis.length>1?"s":"")+" !"));
-     ecranDevoirsProf(classId); })
+     ecranDevoirsProf(classId);
+     setTimeout(function(){ ctMontrer("Travail donné : le cahier de textes",ctTexteDevoir(classId,doc)); },500); })
    .catch(function(){ dire("Impossible d'enregistrer ce travail. Réessayez dans un instant."); });
 }
 async function supprimerDevoir(classId,devoirId){
-  if(!await dlgConfirmer("Supprimer ce travail ?\n\nIl disparaîtra de l'écran de vos élèves. Ce qu'ils ont déjà fait reste acquis."))return;
+  if(!await dlgConfirmer("Supprimer ce travail ?\n\nIl disparaîtra de l'écran de vos élèves. Ce qu'ils ont déjà fait reste acquis. Il reste 30 jours dans la corbeille."))return;
   const s=fbStore(); if(!s)return;
+  if(!(await cbAvant("devoir",function(d){ return "Travail « "+((d[0]&&d[0].d.titre)||"sans titre")+" »"; },function(){ return cbDoc(s.collection("classes").doc(classId).collection("devoirs").doc(devoirId)); },{cid:classId})))return;
   pendant("Suppression…",s.collection("classes").doc(classId).collection("devoirs").doc(devoirId).delete())
    .then(function(){ toast("Travail supprimé."); ecranDevoirsProf(classId); })
    .catch(function(){ toast("La suppression a échoué."); });
@@ -24430,8 +25998,13 @@ async function chSupprimerChant(id){
     +"• le morceau complet et le karaoké\n"
     +"• TOUS les enregistrements que vos élèves ont rendus dessus, dans toutes vos classes\n\n"
     +"Cette action est irréversible."))return;
-  if(!await dlgConfirmer("Dernière vérification.\n\nLes enregistrements de vos élèves sur « "+c.titre+" » seront perdus.\nContinuer ?"))return;
+  if(!await dlgConfirmer("Dernière vérification.\n\nLe morceau et les enregistrements de vos élèves sur « "+c.titre+" » restent 30 jours dans la corbeille.\nContinuer ?"))return;
   const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return;
+  if(!(await cbAvant("chant","Morceau « "+c.titre+" »",function(){ return chargerClassesProf().then(function(cls){
+    return cbTout([cbDoc(s.collection("teachers").doc(u.uid).collection("chants").doc(id))]
+      .concat(Object.keys(CH_PISTES).map(function(k){ return cbBlocs(chCleBande(c,k)); }))
+      .concat((cls||[]).map(function(k){ return s.collection("classes").doc(k.id).collection("enr").where("chantId","==",id).get().then(function(sn){
+        return cbTout(sn.docs.map(function(d){ return cbBlocs(chCleEnr(k.id,d.data()||{})).then(function(b){ return [{p:d.ref.path,d:d.data()}].concat(b); }); })); }).catch(function(){ return []; }); }))); }); })))return;
   const p=unSeul("chantSuppr",function(){
     return pendant("Suppression…", chargerClassesProf().then(function(cls){
       return Promise.all((cls||[]).map(function(k){
@@ -24957,7 +26530,8 @@ function chSupprimerEnr(classId,enrId){
   s.collection("classes").doc(classId).collection("enr").doc(enrId).get().then(async function(d){
     const v=d.data()||{};
     const qui=labelDe(classId,v.code)||v.code||"cet élève";
-    if(!await dlgConfirmer("Supprimer l'enregistrement de "+qui+" ?\n\nLe fichier audio sera définitivement effacé.\nLa note et le commentaire disparaîtront aussi.\nL'élève pourra s'enregistrer de nouveau."))return null;
+    if(!await dlgConfirmer("Supprimer l'enregistrement de "+qui+" ?\n\nLa note et le commentaire disparaissent aussi ; l'élève pourra s'enregistrer de nouveau. L'enregistrement reste 30 jours dans la corbeille."))return null;
+    if(!(await cbAvant("enr","Enregistrement de "+(v.code||"?")+((chParId(v.chantId)||{}).titre?" · "+chParId(v.chantId).titre:""),function(){ return cbBlocs(chCleEnr(classId,v)).then(function(b){ return [{p:d.ref.path,d:v}].concat(b); }); },{cid:classId})))return null;
     return pendant("Suppression…",
       chEffacerBlocs(chCleEnr(classId,v)).then(function(){ return d.ref.delete(); }))
       .then(function(){ toast("Enregistrement supprimé."); ecranChantRendus(classId); });
@@ -24970,8 +26544,10 @@ async function chViderClasse(classId,chantId){
   if(!await dlgConfirmer("Supprimer TOUS les enregistrements de « "+titreCl+" » sur « "+(c?c.titre:"ce morceau")+" » ?\n\n"
     +"Tous les fichiers audio, toutes les notes et tous les commentaires seront perdus.\n"
     +"Vos élèves pourront s'enregistrer de nouveau."))return;
-  if(!await dlgConfirmer("Dernière vérification.\n\nCette action est irréversible. Continuer ?"))return;
+  if(!await dlgConfirmer("Dernière vérification.\n\nLes enregistrements restent 30 jours dans la corbeille. Continuer ?"))return;
   const s=fbStore(); if(!s)return;
+  if(!(await cbAvant("enr","Enregistrements de "+titreCl+" · "+(c?c.titre:"morceau"),function(){ return s.collection("classes").doc(classId).collection("enr").where("chantId","==",chantId).get().then(function(sn){
+    return cbTout(sn.docs.map(function(d){ return cbBlocs(chCleEnr(classId,d.data()||{})).then(function(b){ return [{p:d.ref.path,d:d.data()}].concat(b); }); })); }); },{cid:classId})))return;
   const p=unSeul("chVider",function(){
     return pendant("Suppression…",
       s.collection("classes").doc(classId).collection("enr").where("chantId","==",chantId).get()
@@ -25649,28 +27225,29 @@ const BUL_CSS=
  ".bul-multi{background:#fff;color:#16233a;font-family:Inter,Arial,sans-serif}"
 +".bul-page{padding:24mm 20mm;box-sizing:border-box;page-break-after:always;font-size:12pt;line-height:1.5;max-width:210mm;margin:0 auto}"
 +".bul-page:last-child{page-break-after:auto}"
-+".bul-en{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:12px;border-bottom:2px solid #2374b0;margin-bottom:16px}"
++".bul-en{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:12px;border-bottom:2px solid #1e3a63;margin-bottom:16px}"
 +".bul-en .bul-eco{font-size:11pt;color:#5c6d84;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}"
-+".bul-en h1{font-size:24pt;line-height:1.1;margin:0;color:#2374b0}"
++".bul-en h1{font-size:24pt;line-height:1.1;margin:0;color:#1e3a63}"
 +".bul-en .bul-sub{font-size:11.5pt;color:#5c6d84;margin-top:4px}"
 +".bul-en .bul-note{font-size:56pt;font-weight:800;line-height:1;text-align:right;letter-spacing:-.02em}"
 +".bul-en .bul-note span{font-size:24pt;opacity:.6}"
 +".bul-body{display:grid;gap:14px;margin-bottom:20px}"
-+".bul-body h3{font-size:13pt;color:#2374b0;margin:0 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(35,116,176,.25);text-transform:uppercase;letter-spacing:.5px}"
++".bul-body h3{font-size:13pt;color:#1e3a63;margin:0 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(30,58,99,.25);text-transform:uppercase;letter-spacing:.5px}"
 +".bul-appr{font-size:12pt;text-align:justify;margin:0}"
 +".bul-list{list-style:none;padding:0;margin:0;font-size:11pt}"
-+".bul-list li{padding:4px 0;border-bottom:1px dashed rgba(35,116,176,.18)}"
++".bul-list li{padding:4px 0;border-bottom:1px dashed rgba(30,58,99,.18)}"
 +".bul-body h3 small{font-size:9.5pt;text-transform:none;letter-spacing:0;color:#5c6d84;font-weight:500}"
 +".bul-comp{width:100%;border-collapse:collapse;font-size:10.5pt}"
 +".bul-comp th{font-size:8.5pt;font-weight:600;color:#5c6d84;text-align:center;padding:0 4px 4px;width:13%}"
 +".bul-comp th:first-child,.bul-comp td:first-child{text-align:left;width:auto}"
-+".bul-comp td{padding:5px 4px;text-align:center;border-bottom:1px dashed rgba(35,116,176,.18);line-height:1.3}"
++".bul-comp td{padding:5px 4px;text-align:center;border-bottom:1px dashed rgba(30,58,99,.18);line-height:1.3}"
 +".bul-comp .pt,.bul-comp .vide{display:inline-block;width:13px;height:13px;border-radius:50%;vertical-align:middle;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
 +".bul-comp .vide{border:1px solid #c5ced9}"
-+".bul-comp .n1{background:#dc2626}.bul-comp .n2{background:#e08a00}.bul-comp .n3{background:#2374b0}.bul-comp .n4{background:#1a9c6b}"
++".bul-comp .n1{background:#dc2626}.bul-comp .n2{background:#e08a00}.bul-comp .n3{background:#1e3a63}.bul-comp .n4{background:#1a9c6b}"
 +".bul-sig{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}"
 +".bul-sig .bul-cadre{border-bottom:1px solid #16233a;height:36px;margin-bottom:4px}"
 +".bul-sig small{color:#5c6d84;font-size:10pt}"
++".me-marque{margin:10mm 20mm 0}"
 +"@page{size:A4;margin:0}:root{--me-haut:0}";
 
 /* ============================================================
@@ -25953,7 +27530,8 @@ function appRendre(){
         <select onchange="appChangerTon(this.value)" style="margin-left:6px;padding:8px 10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;background:var(--surface);color:var(--encre)">
           ${Object.keys(APP_TONS).map(function(k){return `<option value="${k}"${_appTon===k?" selected":""}>${APP_TONS[k].lib}</option>`;}).join("")}
         </select></label>
-      <button class="action btn-corr" onclick="appCopierTout()"><i class="ph ph-copy"></i> Tout copier</button>
+      <button class="action btn-corr" onclick="appPronote()"><i class="ph ph-clipboard-text"></i> Saisie Pronote, élève par élève</button>
+      <button class="action btn-nouv" onclick="appCopierTout()"><i class="ph ph-copy"></i> Tout copier</button>
       <button class="action btn-nouv" onclick="appExporter()"><i class="ph ph-download-simple"></i> Enregistrer (CSV)</button>
       <button class="rm-cta" onclick="bulImprimer()"><i class="ph-fill ph-printer"></i> Bulletins A4</button>
     </div>
@@ -26012,7 +27590,8 @@ function appBlocHTML(){
         <select onchange="appChangerTon(this.value)" style="margin-left:6px;padding:8px 10px;border:1px solid var(--ligne);border-radius:10px;font-family:inherit;background:var(--surface);color:var(--encre)">
           ${Object.keys(APP_TONS).map(function(k){return `<option value="${k}"${_appTon===k?" selected":""}>${APP_TONS[k].lib}</option>`;}).join("")}
         </select></label>
-      <button class="action btn-corr" onclick="appCopierTout()"><i class="ph ph-copy"></i> Tout copier</button>
+      <button class="action btn-corr" onclick="appPronote()"><i class="ph ph-clipboard-text"></i> Saisie Pronote, élève par élève</button>
+      <button class="action btn-nouv" onclick="appCopierTout()"><i class="ph ph-copy"></i> Tout copier</button>
       <button class="action btn-nouv" onclick="appExporter()"><i class="ph ph-download-simple"></i> Appréciations (CSV)</button>
       <button class="rm-cta" onclick="bulImprimer()"><i class="ph-fill ph-printer"></i> Bulletins A4</button>
     </div>
@@ -26113,7 +27692,7 @@ function appCopier(code,btn){
 }
 function appCopierTout(){
   if(!_appDonnees)return;
-  const l=_appDonnees.map(function(e){ return (e.nom||e.code)+"\\t"+appTexteDe(e); }).join("\\n");
+  const l=_appDonnees.map(function(e){ return (e.nom||e.code)+"\t"+appTexteDe(e); }).join("\n");
   appPresse(l);
   toast("Toutes les appréciations sont copiées.");
 }
@@ -26161,8 +27740,8 @@ function appExporter(){
   if(!_appDonnees)return;
   const lignes=[["Nom","Code","Appréciation"]].concat(_appDonnees.map(function(e){
     return [e.nom||"", e.code, appTexteDe(e)]; }));
-  const csv="\\ufeff"+lignes.map(function(l){
-    return l.map(function(x){ return '"'+String(x).replace(/"/g,'""')+'"'; }).join(";"); }).join("\\r\\n");
+  const csv="\ufeff"+lignes.map(function(l){
+    return l.map(function(x){ return '"'+String(x).replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
@@ -26203,63 +27782,102 @@ function dvBilan(e,nbVolets){
   }
   return r;
 }
+/* ---------- Travaux des classes : une vue de TOUTES les classes (01/11/2026) ----------
+   Avant, une classe à la fois et tous les devoirs mélangés, passés compris. Désormais :
+   ce qui arrive d'abord (aujourd'hui, demain, cette semaine, plus tard), toutes classes
+   confondues, avec qui n'a pas encore rendu ; les travaux dont l'échéance est passée
+   sont rangés dans « Archivés », mois par mois. Un filtre par classe au besoin. */
+let _rd={f:"tous",vue:"cours",L:null,tout:false};
+function ecranTravauxTous(){ _rd.f="tous"; _rd.vue="cours"; ecranRendus("__garde__"); }
 function ecranRendus(classId){
-  if(classId)_classeProfSel=classId;   /* la classe suit d'une page à l'autre */
+  if(classId&&classId!=="__garde__")_rd.f=classId;
+  if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
-  titreProf('<i class="ph ph-check-square-offset"></i> Travaux rendus',
-            "Ce que vos élèves ont réellement fait, et dans quelles conditions.");
+  titreProf('<i class="ph ph-check-square-offset"></i> Travaux des classes',"Ce qui arrive, toutes classes confondues, et qui n’a pas encore rendu.");
   const z=document.getElementById("zone");
   const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
   if(!s||!u){ z.innerHTML=svcIndispo(); return; }
-  z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>';
-  Promise.all([ s.collection("classes").doc(classId).collection("devoirs").get(),
-                s.collection("eleveCodes").where("ownerUid","==",u.uid).get(),
-                s.collection("classes").doc(classId).collection("eleves").get() ])
-  .then(function(r){
-    const devs=[]; r[0].forEach(function(d){ const o=Object.assign({id:d.id},d.data()||{});
-      if(!Array.isArray(o.volets))o.volets=[]; devs.push(o); });
-    devs.sort(function(x,y){ return (y.echeance||0)-(x.echeance||0); });
-    const codes=[]; r[1].forEach(function(d){ if((d.data()||{}).classId===classId)codes.push(d.id); });
-    /* élèves invités (chorale) : ils reçoivent aussi le travail de cette classe */
-    const _cl=((_profClasses||[]).filter(function(x){return x.id===classId;})[0]||{});
-    (Array.isArray(_cl.membres)?_cl.membres:[]).forEach(function(c){ if(codes.indexOf(c)<0)codes.push(c); });
-    const prog={}; r[2].forEach(function(d){ prog[d.id]=d.data()||{}; });
-    if(!devs.length){
-      z.innerHTML='<div class="accueil" style="max-width:900px">'+selClasseHTML("ecranRendus",classId)
-        +'<p class="badge-vide">Aucun travail donné à cette classe pour l’instant.</p></div>';
-      return;
-    }
-    let h='<div class="accueil" style="max-width:900px">'+selClasseHTML("ecranRendus",classId)
-      +'<p class="rd-lien"><i class="ph ph-shield-warning"></i> Les conditions de passation des évaluations (absences, copier-coller, captures) sont analysées dans '
-      +'<a href="#" onclick="_evVue=\'vigil\';ouvrirProf(\'evalsClasse\',\''+classId+'\');return false">Notes &amp; bulletins → Vigilance</a>.</p>';
-    devs.forEach(function(d){
-      const vises=Array.isArray(d.eleves)&&d.eleves.length
-        ? codes.filter(function(c){return d.eleves.indexOf(c)>=0;}) : codes;
-      const rendus=vises.filter(function(c){ const e=((prog[c]||{}).devoirs||{})[d.id]; return e&&e.fini; });
-      const pct=vises.length?Math.round(100*rendus.length/vises.length):0;
-      h+='<button class="ex" style="width:100%;text-align:left;display:flex;gap:14px;align-items:center;'
-        +'margin-bottom:10px;cursor:pointer" onclick="detailDevoir(\''+classId+'\',\''+d.id+'\')">'
-        +'<div style="flex:1;min-width:0"><b>'+echapH(d.titre||"Travail")+'</b><br>'
-        +'<span style="font-size:.84rem;color:var(--encre-doux)"><i class="ph ph-calendar-dots"></i> '
-        +devoirDateTxt(d.echeance)+(Array.isArray(d.eleves)&&d.eleves.length?' · '+d.eleves.length+' élève'+(d.eleves.length>1?'s':''):'')+'</span></div>'
-        +'<div style="text-align:center;min-width:88px">'
-        +'<div style="font-family:var(--police-titre);font-weight:800;font-size:1.3rem;color:'
-        +(pct>=80?"var(--juste)":(pct>=40?"var(--or)":"var(--faux)"))+'">'+rendus.length+'/'+vises.length+'</div>'
-        +'<div style="font-size:.76rem;color:var(--encre-doux)">rendus</div></div>'
-        +'<i class="ph ph-arrow-right" style="color:var(--laiton)"></i></button>';
+  if(!_rd.L)z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement de toutes vos classes…</p>';
+  else rdRendre();
+  chargerClassesProf().then(function(cls){
+    cls=(cls||[]).filter(function(c){ return c.collegues!==true; });
+    return Promise.all([s.collection("eleveCodes").where("ownerUid","==",u.uid).get()].concat(cls.map(function(c){
+      const C=s.collection("classes").doc(c.id);
+      return Promise.all([C.collection("devoirs").get(),C.collection("eleves").get().catch(function(){ return {forEach:function(){}}; })]); }))).then(function(r){
+      const parCl={}; r[0].forEach(function(d){ const k=(d.data()||{}).classId; if(k)(parCl[k]=parCl[k]||[]).push(d.id); });
+      const L=[];
+      cls.forEach(function(c,i){
+        const codes=(parCl[c.id]||[]).slice(); (Array.isArray(c.membres)?c.membres:[]).forEach(function(k){ if(codes.indexOf(k)<0)codes.push(k); });
+        const prog={}; r[i+1][1].forEach(function(d){ prog[d.id]=d.data()||{}; });
+        const coul=groupeCouleur(cls,classeGroupe(c));
+        r[i+1][0].forEach(function(d){ const o=Object.assign({id:d.id},d.data()||{}); if(!Array.isArray(o.volets))o.volets=[];
+          const vises=Array.isArray(o.eleves)&&o.eleves.length?codes.filter(function(k){ return o.eleves.indexOf(k)>=0; }):codes;
+          const manq=vises.filter(function(k){ const e=((prog[k]||{}).devoirs||{})[o.id]; return !(e&&e.fini); });
+          L.push({cid:c.id,cnom:c.nom||"Classe",coul:coul,d:o,n:vises.length,manq:manq}); _ctDevs[o.id]=o; });
+      });
+      _rd.L=L; _rd.cls=cls; rdRendre();
     });
-    z.innerHTML=h+'</div>';
   }).catch(function(e){
     const c=String((e&&e.code)||(e&&e.message)||"");
-    if(c.indexOf("permission-denied")>=0){
-      z.innerHTML='<div class="ex" style="max-width:640px;margin:0 auto">'
-        +'<h3 style="margin-top:0"><i class="ph ph-warning" style="color:var(--faux)"></i> Règles Firestore à publier</h3>'
-        +'<p>Le serveur refuse l’accès aux devoirs. Reconnectez-vous puis réessayez.</p></div>';
-    }else z.innerHTML=svcIndispo("Impossible de charger les travaux.");
+    z.innerHTML=c.indexOf("permission-denied")>=0?'<div class="ex" style="max-width:640px;margin:0 auto"><h3 style="margin-top:0"><i class="ph ph-warning" style="color:var(--faux)"></i> Accès refusé</h3><p>Le serveur refuse l’accès aux devoirs. Reconnectez-vous puis réessayez.</p></div>'
+      :svcIndispo("Impossible de charger les travaux.");
   });
 }
+function rdFiltre(f){ _rd.f=f; _rd.tout=false; rdRendre(); }
+function rdVue(v){ _rd.vue=v; _rd.tout=false; rdRendre(); }
+function rdNoms(x,max){ const n=x.manq.map(function(k){ return labelDe(x.cid,k)||k; }).sort(function(a,b){ return a.localeCompare(b,"fr"); });
+  return n.slice(0,max).map(echapH).join(", ")+(n.length>max?" et "+(n.length-max)+" autre"+(n.length-max>1?"s":""):""); }
+function rdRendre(){
+  const z=document.getElementById("zone"); if(!z||!_rd.L)return;
+  const now=Date.now(), J=86400000, auj=new Date(); auj.setHours(0,0,0,0); const a0=auj.getTime();
+  const enCours=function(x){ return !(x.d.echeance&&x.d.echeance<now); };
+  if(_rd.f!=="tous"&&!_rd.cls.some(function(c){ return c.id===_rd.f; }))_rd.f="tous";
+  const dansF=function(x){ return _rd.f==="tous"||x.cid===_rd.f; };
+  const C=_rd.L.filter(function(x){ return enCours(x)&&dansF(x); }).sort(function(a,b){ return (a.d.echeance||0)-(b.d.echeance||0); });
+  const A=_rd.L.filter(function(x){ return !enCours(x)&&dansF(x); }).sort(function(a,b){ return (b.d.echeance||0)-(a.d.echeance||0); });
+  const attente=C.reduce(function(n,x){ return n+x.manq.length; },0), semaine=C.filter(function(x){ return x.d.echeance<a0+7*J; }).length;
+  const nbCl=function(cid){ return _rd.L.filter(function(x){ return x.cid===cid&&enCours(x); }).length; };
+  const ty=function(x){ const v=(x.d.volets||[])[0]||{}; return DEVOIR_VOLETS[v.t]||{}; };
+  const ring=function(x){ const f=x.n-x.manq.length, p=x.n?Math.round(100*f/x.n):0, c=p>=80?"var(--juste)":(p>=40?"var(--or)":"var(--faux)");
+    return '<div class="dvx-anneau" style="--p:'+p+';--c:'+c+'" title="'+f+' sur '+x.n+' ont rendu"><span><b>'+f+'</b>/'+x.n+'</span></div>'; };
+  const chip=function(x){ return '<span class="rd-cl" style="--k:'+x.coul+'">'+echapH(x.cnom)+'</span>'; };
+  let h='<div class="rd">'
+    +'<div class="rd-kpi"><div><b>'+C.length+'</b><span>travaux en cours</span></div><div><b>'+semaine+'</b><span>à rendre cette semaine</span></div><div class="'+(attente?"att":"")+'"><b>'+attente+'</b><span>rendus encore attendus</span></div>'
+    +'<button type="button" class="rd-plus" onclick="ouvrirProf(\'ecranDevoirsProf\''+(_rd.f!=="tous"?',\''+_rd.f+'\'':'')+')"><i class="ph-fill ph-plus-circle"></i> Donner un travail</button></div>'
+    +'<div class="rd-chips" role="group" aria-label="Classe"><button type="button" class="'+(_rd.f==="tous"?"on":"")+'" onclick="rdFiltre(\'tous\')">Toutes les classes <b>'+_rd.L.filter(enCours).length+'</b></button>'
+    +_rd.cls.map(function(c){ const n=nbCl(c.id); return '<button type="button" class="'+(_rd.f===c.id?"on":"")+'" style="--k:'+groupeCouleur(_rd.cls,classeGroupe(c))+'" onclick="rdFiltre(\''+c.id+'\')"><i></i>'+echapH(c.nom||"")+(n?' <b>'+n+'</b>':'')+'</button>'; }).join("")+'</div>'
+    +'<div class="ev-onglets rd-tabs"><button class="'+(_rd.vue==="cours"?"on":"")+'" onclick="rdVue(\'cours\')"><i class="ph ph-hourglass-medium"></i> À venir <span class="dvx-pastille">'+C.length+'</span></button>'
+    +'<button class="'+(_rd.vue==="arch"?"on":"")+'" onclick="rdVue(\'arch\')"><i class="ph ph-archive"></i> Archivés <span class="dvx-pastille">'+A.length+'</span></button></div>';
+  if(_rd.vue==="cours"){
+    if(!C.length)h+='<p class="badge-vide">Aucun travail en cours'+(_rd.f!=="tous"?" pour cette classe":"")+'. <a href="#" onclick="ouvrirProf(\'ecranDevoirsProf\');return false">Donner un travail</a></p>';
+    const grp=function(x){ const t=x.d.echeance||0; if(!t)return "Sans date"; if(t<a0+J)return "Aujourd’hui"; if(t<a0+2*J)return "Demain"; if(t<a0+7*J)return "Cette semaine"; return "Plus tard"; };
+    let der="";
+    C.forEach(function(x){ const g=grp(x); if(g!==der){ h+='<h3 class="rd-g">'+g+'</h3>'; der=g; }
+      const T=ty(x), fini=!x.manq.length;
+      h+='<article class="rd-t'+(fini?" fini":"")+'" style="--k:'+x.coul+'"><div class="rd-t-c">'
+        +'<div class="rd-t-h">'+chip(x)+'<span class="rd-date"><i class="ph ph-calendar-dots"></i> '+devoirDateTxt(x.d.echeance)+'</span></div>'
+        +'<b class="rd-titre"><i class="ph ph-'+(T.ic||"backpack")+'"></i> '+echapH(x.d.titre||"Travail")+'</b>'
+        +(fini?'<span class="rd-ok"><i class="ph-fill ph-check-circle"></i> Tout le monde a rendu</span>'
+          :'<span class="rd-manq"><i class="ph ph-user-circle-dashed"></i> Pas encore rendu&nbsp;: '+rdNoms(x,5)+'</span>')
+        +'</div><div class="rd-t-a"><button class="dvx-btn" onclick="detailDevoir(\''+x.cid+'\',\''+x.d.id+'\')"><i class="ph ph-eye"></i> Qui a rendu</button>'
+        +'<button class="dvx-btn" onclick="ctDevoir(\''+x.cid+'\',\''+x.d.id+'\')" title="Le texte à coller dans le cahier de textes"><i class="ph ph-notebook"></i></button></div>'+ring(x)+'</article>'; });
+  }else{
+    if(!A.length)h+='<p class="badge-vide">Aucun travail archivé.</p>';
+    const lim=now-45*J, vis=_rd.tout?A:A.filter(function(x){ return x.d.echeance>=lim; });
+    let der="";
+    vis.forEach(function(x){ const m=new Date(x.d.echeance).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+      if(m!==der){ h+='<h3 class="rd-g">'+m.charAt(0).toUpperCase()+m.slice(1)+'</h3>'; der=m; }
+      const f=x.n-x.manq.length;
+      h+='<button type="button" class="rd-a" style="--k:'+x.coul+'" onclick="detailDevoir(\''+x.cid+'\',\''+x.d.id+'\')">'+chip(x)+'<b>'+echapH(x.d.titre||"Travail")+'</b>'
+        +'<span class="rd-date">'+new Date(x.d.echeance).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+'</span>'
+        +'<span class="rd-score">'+f+'/'+x.n+'</span>'+(x.manq.length?'<span class="rd-nr">'+x.manq.length+' non rendu'+(x.manq.length>1?"s":"")+'</span>':'<span class="rd-tout"><i class="ph-fill ph-check-circle"></i></span>')+'</button>'; });
+    if(!_rd.tout&&vis.length<A.length)h+='<p style="text-align:center"><button type="button" class="btn-son" onclick="_rd.tout=true;rdRendre()"><i class="ph ph-clock-counter-clockwise"></i> Voir les '+(A.length-vis.length)+' plus anciens</button></p>';
+  }
+  h+='<p class="rd-lien"><i class="ph ph-shield-warning"></i> Les conditions de passation des évaluations sont analysées dans <a href="#" onclick="_evVue=\'vigil\';ouvrirProf(\'evalsClasse\''+(_rd.f!=="tous"?',\''+_rd.f+'\'':'')+');return false">Notes &amp; bulletins → Vigilance</a>.</p></div>';
+  z.innerHTML=h;
+}
 function detailDevoir(classId,devoirId){
-  masquerInterfaceNormale(); majRetour(function(){ecranRendus(classId);},"Travaux rendus");
+  masquerInterfaceNormale(); majRetour(function(){ecranRendus("__garde__");},"Travaux des classes");
   titreProf('<i class="ph ph-eye"></i> Qui a fait ce travail');
   const z=document.getElementById("zone");
   const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return;
@@ -26750,8 +28368,9 @@ function qProfAnnulerEdition(){
   const a=document.getElementById("qpApercu"); if(a)a.innerHTML="";
 }
 async function qProfSupprimer(id){
-  if(!await dlgConfirmer("Supprimer cette question ?\n\nElle ne sera plus proposée à vos élèves."))return;
+  if(!await dlgConfirmer("Supprimer cette question ?\n\nElle ne sera plus proposée à vos élèves. Elle reste 30 jours dans la corbeille."))return;
   const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return;
+  if(!(await cbAvant("question",function(d){ const q=String((d[0]&&(d[0].d.q||d[0].d.question||d[0].d.texte))||"Question"); return q.length>80?q.slice(0,79)+"…":q; },function(){ return cbDoc(s.collection("teachers").doc(u.uid).collection("questions").doc(id)); })))return;
   pendant("Suppression…",s.collection("teachers").doc(u.uid).collection("questions").doc(id).delete())
    .then(function(){ toast("Question supprimée.");
      _qProfCharge=false; qProfCharger(true).then(lpCharger).then(function(){ ecranQuestionsProf(_qpFixe); }); })
@@ -27815,9 +29434,11 @@ async function lpSupprimer(id,depuisGrille){
   if(!await dlgConfirmer("Supprimer la leçon « "+((l&&l.titre)||"")+" » ?\n\n"
     +(nbQ?(nbQ>1?"Ses "+nbQ+" questions seront également supprimées.\n"
                 :"Sa question sera également supprimée.\n"):"")
-    +"Elle disparaîtra de l'écran de vos élèves. Cette action est irréversible."))return;
+    +"Elle disparaîtra de l'écran de vos élèves. Elle reste 30 jours dans la corbeille."))return;
   const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return;
   const base=s.collection("teachers").doc(u.uid);
+  if(!(await cbAvant("lecon","Leçon « "+((l&&l.titre)||"")+" »",function(){ return cbTout([cbDoc(base.collection("lecons").doc(id)),
+    cbSnap(base.collection("questions").where("cat","==","perso-"+id)),cbSnap(base.collection("images").where("lecon","==",id))]); })))return;
   /* les questions d'abord : orphelines, elles resteraient facturées et
      ressortiraient si un futur identifiant de leçon retombait dessus */
   const sup=unSeul("lecon-sup",function(){ return pendant("Suppression…",
@@ -28271,7 +29892,14 @@ function ouvrirProf(fn,classId){
   if(z)z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>';
   chargerClassesProf().then(function(l){
     const cid=classeProfCourante(l,classId);
-    if(!cid){
+    if(!cid&&fn==="rosterClasse"){ evSuiviCharger().then(function(){ if(elpClasses().length)rosterPrimaire(elpClasses()[0].id); else ouvrirProf._sans(); }); return; }
+
+    if(!cid)ouvrirProf._sans();
+    else{ _classeProfSel=cid; try{ window[fn](cid); }catch(e){} }
+  });
+}
+ouvrirProf._sans=function(){
+    {
       masquerInterfaceNormale(); majRetour(accueil,"Accueil");
       titreProf('<i class="ph ph-users-three"></i> Mes classes');
       document.getElementById("zone").innerHTML=`<div class="accueil" style="max-width:520px">
@@ -28280,12 +29908,8 @@ function ouvrirProf(fn,classId){
           <p>Créez d'abord une classe : c'est elle qui porte les codes de vos élèves.</p>
           <button class="rm-cta" onclick="dashboardProf()"><i class="ph-fill ph-plus"></i> Créer une classe</button>
         </div></div>`;
-      return;
     }
-    _classeProfSel=cid;
-    try{ window[fn](cid); }catch(e){}
-  });
-}
+};
 /* Conservés pour les anciens points d'appel : ils passent par le même chemin. */
 /* ================= Sauvegarde du professeur =================
    La donnée la plus fragile n'est PAS sur le serveur : ce sont les NOMS des
@@ -28305,9 +29929,188 @@ function sauvegardeInfoHTML(){
            : '<b style="color:var(--faux)"><i class="ph-fill ph-warning-circle"></i> Vous n\'avez jamais fait de sauvegarde.</b> '
              +'Les noms de vos élèves ne sont enregistrés que sur cet appareil : pensez-y.';
 }
+/* ---------- Corbeille et copie de secours (01/11/2026) ----------
+   Rien n'est plus effacé d'un coup : avant chaque suppression (classe, code d'élève,
+   travail, évaluation, vote, question, leçon, morceau, enregistrement, réinitialisation),
+   une copie de tout ce qui va disparaître est rangée dans la corbeille du professeur
+   (teachers/{uid}/corbeille, le contenu découpé dans corbeilleParts). Elle se restaure
+   en un clic pendant 30 jours, puis s'efface toute seule. Aucun nom d'élève n'y va :
+   seulement les codes, comme partout sur le serveur.
+   La même mécanique (une liste de documents {p: chemin, d: données}) sert à la copie
+   de secours sur clé ou disque dur : la sauvegarde emporte chaque classe entière, et la
+   restauration recrée ce qui manque. */
+const CB_JOURS=30, CB_PART=600000;
+const CB_SOUS=["eleves","classement","devoirs","enr","enrAudio","evals","travailPlan","travailPeriode","travailEleve","notesManuelles","votes"];
+const CB_TYPES={classe:["users-three","Classe"],code:["identification-card","Code d’élève"],devoir:["backpack","Travail"],notes:["exam","Évaluation"],
+  vote:["chart-bar","Vote"],question:["question","Question"],lecon:["book-open-text","Leçon"],chant:["microphone-stage","Morceau"],
+  enr:["microphone","Enregistrement"],reinit:["arrow-counter-clockwise","Avant réinitialisation"]};
+function cbUid(){ const a=fbAuth(), u=a&&a.currentUser; return u?u.uid:null; }
+function cbRefs(){ const s=fbStore(), uid=cbUid(); if(!s||!uid)return null;
+  const T=s.collection("teachers").doc(uid); return {s:s,uid:uid,meta:T.collection("corbeille"),parts:T.collection("corbeilleParts")}; }
+/* lecture : un document, une requête (avec ses sous-collections), une classe entière */
+function cbDoc(ref){ return ref.get().then(function(d){ return d.exists?[{p:ref.path,d:d.data()}]:[]; }).catch(function(){ return []; }); }
+function cbSnap(q,sous){
+  return q.get().then(function(sn){ return Promise.all(sn.docs.map(function(d){ const r=[{p:d.ref.path,d:d.data()}];
+    return (sous&&sous.length)?Promise.all(sous.map(function(n){ return cbSnap(d.ref.collection(n)); })).then(function(a){ return r.concat.apply(r,a); }):r; })); })
+    .then(function(a){ return [].concat.apply([],a); }).catch(function(){ return []; });
+}
+function cbTout(ps){ return Promise.all(ps).then(function(a){ return [].concat.apply([],a); }); }
+function cbClasseDocs(cid){
+  const s=fbStore(), uid=cbUid(), C=s.collection("classes").doc(cid);
+  return cbTout([cbDoc(C)].concat(CB_SOUS.map(function(n){ return cbSnap(C.collection(n),n==="votes"?["reponses"]:null); }))
+    .concat([s.collection("eleveCodes").where("ownerUid","==",uid).get().then(function(sn){ const r=[];
+      sn.forEach(function(d){ if((d.data()||{}).classId===cid)r.push({p:"eleveCodes/"+d.id,d:d.data()}); }); return r; }).catch(function(){ return []; })]));
+}
+/* les blocs audio d'un enregistrement ou d'une bande (clé de chBlocsRef) */
+function cbBlocs(cle){ const r=chBlocsRef(cle); if(!r||!r.nb)return Promise.resolve([]);
+  return cbTout(Array.from({length:r.nb},function(_,i){ return cbDoc(r.col.doc(r.prefixe+"_"+i)); })); }
+/* range une copie dans la corbeille ; renvoie l'identifiant */
+function cbEnregistrer(type,titre,docs,extra){
+  const R=cbRefs(); if(!R)return Promise.reject(new Error("service"));
+  const id="cb"+Date.now().toString(36)+Math.random().toString(36).slice(2,6), json=JSON.stringify(docs), n=Math.max(1,Math.ceil(json.length/CB_PART));
+  let p=Promise.resolve();
+  for(let i=0;i<n;i++)(function(i){ p=p.then(function(){ return R.parts.doc(id+"_"+i).set({parent:id,i:i,d:json.slice(i*CB_PART,(i+1)*CB_PART)}); }); })(i);
+  return p.then(function(){ return R.meta.doc(id).set(Object.assign({type:type,titre:String(titre||"").slice(0,160),quand:Date.now(),n:n,nb:docs.length,taille:json.length},extra||{})); })
+    .then(function(){ return id; });
+}
+/* à appeler juste avant une suppression : la copie d'abord ; si elle échoue, on demande */
+async function cbAvant(type,titre,lire,extra){
+  let ok=false;
+  try{ const docs=await pendant("Copie dans la corbeille…",lire()); if(docs.length){ await cbEnregistrer(type,typeof titre==="function"?titre(docs):titre,docs,extra); } ok=true; }catch(e){ ok=false; }
+  if(ok)return true;
+  return await dlgConfirmer("La copie dans la corbeille n’a pas pu être faite (connexion ?).\n\nSupprimer quand même, sans pouvoir revenir en arrière ?");
+}
+function cbLireCopie(id,meta){
+  const R=cbRefs();
+  return Promise.all(Array.from({length:meta.n||1},function(_,i){ return R.parts.doc(id+"_"+i).get(); }))
+    .then(function(a){ return JSON.parse(a.map(function(d){ return (d.exists&&(d.data()||{}).d)||""; }).join("")); });
+}
+function cbEffacer(id,meta){
+  const R=cbRefs(); if(!R)return Promise.resolve();
+  return Promise.all(Array.from({length:(meta&&meta.n)||1},function(_,i){ return R.parts.doc(id+"_"+i).delete().catch(function(){}); }))
+    .then(function(){ return R.meta.doc(id).delete(); });
+}
+/* réécrit une liste de documents : les classes d'abord (les règles en dépendent), puis
+   les codes (un code déjà là n'est pas touché ; un code recréé perd son ancien mot
+   secret, l'élève en choisira un nouveau), puis le reste par paquets */
+function cbEcrire(docs){
+  const s=fbStore(), bilan={ok:0,ko:0,deja:0};
+  const prof=function(x){ return x.p.split("/").length; };
+  const tete=docs.filter(function(x){ return /^classes\/[^/]+$/.test(x.p); }), codes=docs.filter(function(x){ return /^eleveCodes\//.test(x.p); });
+  const reste=docs.filter(function(x){ return tete.indexOf(x)<0&&codes.indexOf(x)<0; }).sort(function(a,b){ return prof(a)-prof(b); });
+  const un=function(x){ return s.doc(x.p).set(x.d).then(function(){ bilan.ok++; },function(){ bilan.ko++; }); };
+  let p=Promise.all(tete.map(un));
+  p=p.then(function(){ return Promise.all(codes.map(function(x){ return s.doc(x.p).get().then(function(d){
+    if(d.exists){ bilan.deja++; return; } return un({p:x.p,d:Object.assign({},x.d,{actif:false})}); }).catch(function(){ bilan.ko++; }); })); });
+  for(let i=0;i<reste.length;i+=25)(function(l){ p=p.then(function(){ return Promise.all(l.map(un)); }); })(reste.slice(i,i+25));
+  return p.then(function(){ return bilan; });
+}
+/* les copies de plus de 30 jours s'effacent (une fois par session, à l'accueil enseignant) */
+let _cbPurge=false;
+function cbPurger(){
+  if(_cbPurge)return; const R=cbRefs(); if(!R)return; _cbPurge=true;
+  R.meta.get().then(function(sn){ const lim=Date.now()-CB_JOURS*86400000;
+    sn.forEach(function(d){ const v=d.data()||{}; if((v.quand||0)<lim)cbEffacer(d.id,v).catch(function(){}); }); }).catch(function(){});
+}
+/* ---------- la page Corbeille ---------- */
+function ecranCorbeille(){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  titreProf('<i class="ph ph-trash"></i> Corbeille',"Ce qui a été supprimé ces "+CB_JOURS+" derniers jours : un clic pour le remettre.");
+  const z=document.getElementById("zone"), R=cbRefs();
+  if(!R){ z.innerHTML=svcIndispo(); return; }
+  z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>';
+  R.meta.get().then(function(sn){
+    const L=[]; sn.forEach(function(d){ L.push(Object.assign({id:d.id},d.data()||{})); });
+    L.sort(function(a,b){ return (b.quand||0)-(a.quand||0); });
+    const now=Date.now(), J=86400000;
+    let h='<div class="cb"><div class="cb-tete"><span class="cb-ic"><i class="ph-fill ph-trash"></i></span><div><b>'+(L.length?L.length+" élément"+(L.length>1?"s":"")+" à récupérer":"La corbeille est vide")+'</b>'
+      +'<span>Chaque suppression y laisse une copie pendant '+CB_JOURS+' jours, puis elle s’efface toute seule. Les noms des élèves restent sur cet appareil.</span></div>'
+      +'<button type="button" class="btn-son" onclick="paramVue(\'sauvegarde\')"><i class="ph ph-hard-drives"></i> Copie de secours</button></div>';
+    if(L.length)h+='<div class="cb-liste">'+L.map(function(x){ const T=CB_TYPES[x.type]||["file","Élément"], reste=Math.max(0,Math.ceil(((x.quand||0)+CB_JOURS*J-now)/J));
+      return '<div class="cb-l"><span class="cb-l-ic"><i class="ph-fill ph-'+T[0]+'"></i></span><div class="cb-l-t"><small>'+T[1]+'</small><b>'+echapH(x.titre||"")+'</b>'
+        +'<span>Supprimé le '+new Date(x.quand||0).toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+' à '+new Date(x.quand||0).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})
+        +' · effacé dans '+reste+' jour'+(reste>1?"s":"")+'</span></div>'
+        +'<button type="button" class="rm-cta cb-rest" onclick="cbRestaurer(\''+x.id+'\')"><i class="ph-fill ph-arrow-counter-clockwise"></i> '+(x.type==="reinit"?"Revenir avant":"Restaurer")+'</button>'
+        +'<button type="button" class="cb-sup" title="Effacer définitivement" aria-label="Effacer définitivement" onclick="cbSupprimer(\''+x.id+'\')"><i class="ph ph-x"></i></button></div>'; }).join("")+'</div>';
+    z.innerHTML=h+'</div>'; _cbListe=L;
+  }).catch(function(){ z.innerHTML=svcIndispo("Impossible d’ouvrir la corbeille."); });
+}
+let _cbListe=[];
+async function cbRestaurer(id){
+  const x=_cbListe.filter(function(v){ return v.id===id; })[0]; if(!x)return;
+  if(x.type==="reinit"&&!(await dlgConfirmer("Remettre « "+x.titre+" » comme avant la réinitialisation ?\n\nLes notes et la progression de ce moment-là reviennent ; ce qui a été fait depuis sur les mêmes élèves est remplacé.")))return;
+  pendant("Restauration…",cbLireCopie(id,x).then(cbEcrire)).then(function(b){
+    if(b.ko&&!b.ok){ toast("La restauration a échoué : vérifiez la connexion."); return; }
+    return cbEffacer(id,x).then(function(){
+      _tcRows=null; try{ _qProfCharge=false; }catch(e){} try{ delete _evalsCache[x.cid]; }catch(e){}
+      toast("Restauré : "+x.titre+(b.ko?" ("+b.ko+" élément"+(b.ko>1?"s":"")+" n’a pas pu revenir)":"")+".");
+      chargerClassesProf().then(function(){ if(x.type==="classe"&&x.cid)rosterClasse(x.cid); else ecranCorbeille(); });
+    });
+  }).catch(function(){ toast("La restauration a échoué : vérifiez la connexion."); });
+}
+async function cbSupprimer(id){
+  const x=_cbListe.filter(function(v){ return v.id===id; })[0]; if(!x)return;
+  if(!(await dlgConfirmer("Effacer définitivement « "+x.titre+" » ?\n\nIl ne sera plus possible de le récupérer.")))return;
+  pendant("Effacement…",cbEffacer(id,x)).then(function(){ toast("Effacé définitivement."); ecranCorbeille(); }).catch(function(){ toast("Effacement impossible."); });
+}
+/* ---------- copie de secours complète (fichier) ---------- */
+/* toutes les classes, entières, et les contenus du professeur */
+function cbDonneesCompletes(){
+  const s=fbStore(), uid=cbUid(); if(!s||!uid)return Promise.resolve(null);
+  const T=s.collection("teachers").doc(uid);
+  return s.collection("classes").where("ownerUid","==",uid).get().then(function(sn){
+    const ids=[], noms={}; sn.forEach(function(d){ ids.push(d.id); noms[d.id]=(d.data()||{}).nom||"Classe"; });
+    return Promise.all(ids.map(function(cid){ return cbClasseDocs(cid).then(function(docs){ return {id:cid,nom:noms[cid],docs:docs}; }); }))
+      .then(function(classes){ return cbTout([cbDoc(T)].concat(["chants","audio","lecons","images","questions"].map(function(n){ return cbSnap(T.collection(n)); })))
+        .then(function(prof){ return {version:2,uid:uid,classes:classes,prof:prof}; }); });
+  });
+}
+/* une ancienne sauvegarde (avant le 01/11/2026) : les classes en morceaux */
+function cbDepuisAncien(srv){
+  return ((srv&&srv.classes)||[]).map(function(k){ const c=k.classe||{}, id=c.id; if(!id)return null;
+    const docs=[{p:"classes/"+id,d:Object.assign({},c,{id:undefined})}];
+    delete docs[0].d.id;
+    [["eleves","eleves"],["evals","evals"],["devoirs","devoirs"],["enr","enr"]].forEach(function(t){ (k[t[0]]||[]).forEach(function(x){ const d=Object.assign({},x); delete d.id; if(x.id)docs.push({p:"classes/"+id+"/"+t[1]+"/"+x.id,d:d}); }); });
+    return {id:id,nom:c.nom||"Classe",docs:docs}; }).filter(Boolean);
+}
+let _cbFichier=null;
+function ecranRestaurerClasses(data){
+  _cbFichier=data;
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(ecranParametres,"Paramètres");
+  titreProf('<i class="ph ph-hard-drives"></i> Restaurer des classes',"Depuis votre copie de secours du "+(data.dateLisible||"?")+".");
+  const z=document.getElementById("zone");
+  const cls=(data.donnees&&data.donnees.classes)||cbDepuisAncien(data.serveur);
+  chargerClassesProf().then(function(ici){
+    const la=(ici||[]).map(function(c){ return c.id; });
+    const nb=function(c,re){ return c.docs.filter(function(x){ return re.test(x.p); }).length; };
+    let h='<div class="cb"><div class="cb-tete"><span class="cb-ic"><i class="ph-fill ph-hard-drives"></i></span><div><b>'+cls.length+' classe'+(cls.length>1?"s":"")+' dans ce fichier</b>'
+      +'<span>Une classe absente est recréée avec ses codes, ses élèves (progression, points, badges), ses notes, ses évaluations, ses travaux et son classement. Une classe encore là peut être remise comme dans le fichier.</span></div></div>';
+    if(!cls.length)h+='<p class="badge-vide">Ce fichier ne contient aucune classe.</p>';
+    h+='<div class="cb-liste">'+cls.map(function(c,i){ const present=la.indexOf(c.id)>=0;
+      return '<div class="cb-l"><span class="cb-l-ic"><i class="ph-fill ph-users-three"></i></span><div class="cb-l-t"><small>'+(present?"Encore sur votre compte":"Supprimée de votre compte")+'</small><b>'+echapH(c.nom)+'</b>'
+        +'<span>'+[[/\/eleves\//,"élève"],[/\/evals\//,"copie"],[/\/notesManuelles\//,"colonne de notes","colonnes de notes"],[/\/devoirs\//,"travail","travaux"]].map(function(t){ const k=nb(c,t[0]); return k+" "+(k>1?(t[2]||t[1]+"s"):t[1]); }).join(" · ")+'</span></div>'
+        +'<button type="button" class="'+(present?"btn-son":"rm-cta")+' cb-rest" onclick="cbRestaurerFichier('+i+','+present+')"><i class="ph-fill ph-arrow-counter-clockwise"></i> '+(present?"Remettre comme dans le fichier":"Restaurer")+'</button></div>'; }).join("")+'</div>';
+    z.innerHTML=h+'</div>'; _cbFichier._cls=cls;
+  });
+}
+async function cbRestaurerFichier(i,present){
+  const c=_cbFichier&&_cbFichier._cls&&_cbFichier._cls[i]; if(!c)return;
+  const uid=cbUid(); if(!uid){ toast("Connectez-vous d’abord à votre compte enseignant."); return; }
+  if(present&&!(await dlgConfirmer("Remettre « "+c.nom+" » comme dans la copie de secours ?\n\nLa progression, les notes et les copies du fichier remplacent celles d’aujourd’hui pour les mêmes élèves. Ce qui a été ajouté depuis (nouvelles copies, nouveaux travaux) est gardé.\n\nUne copie de l’état actuel va d’abord dans la corbeille.")))return;
+  if(present&&!(await cbAvant("reinit","« "+c.nom+" » avant restauration d’une copie de secours",function(){ return cbClasseDocs(c.id); },{cid:c.id})))return;
+  /* la classe appartient au compte qui restaure */
+  const docs=c.docs.map(function(x){ return (/^classes\/[^/]+$/.test(x.p)||/^eleveCodes\//.test(x.p))?{p:x.p,d:Object.assign({},x.d,{ownerUid:uid})}:x; });
+  pendant("Restauration de « "+c.nom+" »…",cbEcrire(docs)).then(function(b){
+    _tcRows=null; try{ delete _evalsCache[c.id]; }catch(e){}
+    toast(b.ok?"« "+c.nom+" » restaurée"+(b.ko?" ("+b.ko+" élément"+(b.ko>1?"s":"")+" n’a pas pu revenir)":"")+".":"La restauration a échoué : vérifiez la connexion.");
+    if(b.ok)chargerClassesProf().then(function(){ ecranRestaurerClasses(_cbFichier); });
+  }).catch(function(){ toast("La restauration a échoué : vérifiez la connexion."); });
+}
 function sauvegardeCollecter(){
   const local={};
-  try{ [LABELS_KEY,STORE_KEY,CONTACTS_KEY,ROSTER_KEY,"theme"].forEach(function(k){ const v=localStorage.getItem(k); if(v!=null)local[k]=v; }); }catch(e){}
+  try{ [LABELS_KEY,STORE_KEY,CONTACTS_KEY,ROSTER_KEY,"theme","museduc.eveil.suivi"].forEach(function(k){ const v=localStorage.getItem(k); if(v!=null)local[k]=v; }); }catch(e){}
   const base={ app:"MUSEDUC", type:"sauvegarde", version:1, cree:Date.now(),
                dateLisible:new Date().toLocaleString("fr-FR"), local:local, serveur:null };
   const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
@@ -28327,8 +30130,10 @@ function sauvegardeCollecter(){
                            dump(C.collection("devoirs")), dump(C.collection("enr")) ])
         .then(function(sub){ return { classe:k, eleves:sub[0], evals:sub[1], devoirs:sub[2], enr:sub[3] }; });
     })).then(function(classes){
-      base.serveur={ chants:r[0], lecons:r[1], questions:r[2], images:r[4], classes:classes };  /* jamais l'audio */
-      return base;
+      base.serveur={ chants:r[0], lecons:r[1], questions:r[2], images:r[4], classes:[] };
+      /* les classes entières (élèves, points, badges, notes, copies, travaux, classement,
+         enregistrements) : ce qu'il faut pour tout recréer si une classe disparaît */
+      return cbDonneesCompletes().then(function(dn){ base.donnees=dn; return base; },function(){ return base; });
     });
   }).catch(function(){ return base; });
 }
@@ -28363,7 +30168,9 @@ function sauvegardeImporter(input){
   r.onload=function(){
     let data; try{ data=JSON.parse(r.result); }catch(e){ toast("Fichier illisible : ce n'est pas une sauvegarde MusEduc."); return; }
     if(!data||data.app!=="MUSEDUC"||!data.local){ toast("Ce fichier n'est pas une sauvegarde MusEduc."); return; }
-    sauvegardeConfirmerRestauration(data);
+    sauvegardeConfirmerRestauration(data).then(function(ok){ if(ok===false)return;
+      const a=fbAuth(), u=a&&a.currentUser, n=((data.donnees&&data.donnees.classes)||cbDepuisAncien(data.serveur)).length;
+      if(n&&u&&estProf(u))ecranRestaurerClasses(data); });
   };
   r.onerror=function(){ toast("Lecture du fichier impossible."); };
   r.readAsText(f);
@@ -28376,6 +30183,11 @@ function sauvegardeCompterNoms(data){
 }
 function sauvegardeAppliquerLocal(data){
   const loc=data.local||{};
+  /* classes de primaire : on ajoute celles qui manquent, sans toucher aux autres */
+  try{ const ev=JSON.parse(loc["museduc.eveil.suivi"]||"null");
+    if(ev&&Array.isArray(ev.classes))evSuiviCharger().then(function(){
+      const ids=_evS.classes.map(function(c){ return c.id; }), plus=ev.classes.filter(function(c){ return c&&c.id&&ids.indexOf(c.id)<0; });
+      if(plus.length){ _evS.classes=_evS.classes.concat(plus); evSuiviSauver(); } }); }catch(e){}
   /* Noms d'élèves : FUSION. On ne remplace jamais un nom déjà saisi ; on ne
      fait que compléter les manquants. Restaurer ne peut donc rien détruire. */
   try{
@@ -28412,7 +30224,7 @@ async function sauvegardeConfirmerRestauration(data){
     +"Noms d'élèves dans le fichier : "+n+"\n\n"
     +"Vos noms actuels seront COMPLÉTÉS (aucun nom existant ne sera écrasé), "
     +"et vos préférences restaurées. Vos classes et notes restent, elles, "
-    +"conservées en ligne."))return;
+    +"conservées en ligne."))return false;
   sauvegardeAppliquerLocal(data);
   try{ if(typeof majEnteteProfil==="function")majEnteteProfil(); }catch(e){}
   toast("Sauvegarde restaurée : "+n+" nom(s) d'élève.");
@@ -28434,14 +30246,16 @@ function sauvegardeCarteHTML(){
     +'<div class="pm-p-tete"><div class="pm-p-ic"><i class="ph ph-floppy-disk"></i></div><h2>Sauvegarde</h2></div>'
     +'<p class="pm-p-aide">Les noms de vos élèves ne vivent que sur cet appareil : un fichier de sauvegarde, et vous ne perdez plus rien.</p>'
     +'<div class="sauv-bloc"><h3><i class="ph ph-download-simple"></i> Exporter mes données</h3>'
-    +'<p>Téléchargez un fichier de sauvegarde. Il contient <b>les noms de vos élèves</b> (qui ne quittent jamais cet appareil), vos préférences, et une copie de vos classes, morceaux, leçons (avec leurs images) et notes.</p>'
+    +'<p>Un fichier à garder sur une <b>clé USB</b> ou un <b>disque dur</b>. Il contient <b>vos classes entières</b> (codes, progression, points, badges, notes, évaluations, travaux, classement, enregistrements de chant), vos leçons, morceaux et questions, vos réglages, et <b>les noms de vos élèves</b> (qui ne quittent jamais cet appareil). Faites-en une copie de temps en temps : en cas de problème, tout se remet en place.</p>'
     +'<p id="sauvInfo" style="font-size:.88rem;color:var(--encre-doux)">'+sauvegardeInfoHTML()+'</p>'
-    +'<button class="rm-cta" id="sauvExportBtn" onclick="sauvegardeExporter()"><i class="ph-fill ph-download-simple"></i> Télécharger ma sauvegarde</button></div>'
+    +'<button class="rm-cta" id="sauvExportBtn" onclick="sauvegardeExporter()"><i class="ph-fill ph-download-simple"></i> Télécharger ma copie de secours</button></div>'
+    +'<div class="sauv-bloc"><h3><i class="ph ph-trash"></i> Corbeille</h3><p>Tout ce que vous supprimez (classe, élève, travail, évaluation, leçon, morceau…) y reste <b>30 jours</b> avant de s’effacer : un clic pour le remettre.</p>'
+    +'<button class="action btn-corr" onclick="ecranCorbeille()"><i class="ph ph-trash"></i> Ouvrir la corbeille</button></div>'
     +'<div class="sauv-bloc"><h3><i class="ph ph-file-csv"></i> Liste des élèves</h3>'
     +'<p>Un tableau de toutes vos classes : classe, code, nom de l’élève, mot secret choisi ou non. Il s’ouvre dans un tableur et se réimporte dans <b>Élèves et codes</b>.</p>'
     +'<button class="action btn-corr" onclick="rosterExporterCSV()"><i class="ph ph-file-csv"></i> Exporter la liste (CSV)</button></div>'
     +'<div class="sauv-bloc"><h3><i class="ph ph-upload-simple"></i> Restaurer</h3>'
-    +'<p>Vous changez d\'ordinateur, ou vous avez perdu les noms de vos élèves&nbsp;? Rechargez votre fichier&nbsp;: les noms et vos préférences reviennent. Vos classes et vos notes, elles, sont déjà conservées en ligne.</p>'
+    +'<p>Un nouvel ordinateur, des noms perdus, une classe supprimée par erreur&nbsp;? Choisissez votre fichier&nbsp;: les noms et les réglages reviennent, puis vous choisissez les classes à restaurer.</p>'
     +'<input type="file" id="sauvFichier" accept="application/json,.json" style="display:none" onchange="sauvegardeImporter(this)">'
     +'<button class="action btn-nouv" onclick="sauvegardeChoisirFichier()"><i class="ph ph-upload-simple"></i> Choisir un fichier de sauvegarde</button></div>'
     +'<p style="color:var(--encre-doux);font-size:.86rem;margin:4px 0 0"><i class="ph ph-identification-card"></i> Pour <b>importer les noms de vos élèves</b> (liste CSV) ou les saisir, allez dans <b>Élèves et codes</b>. Cette rubrique sauvegarde tout d\'un coup (noms compris).</p>'
@@ -28541,8 +30355,9 @@ function voteBasculer(cid,vid,ouvrir){
     .catch(function(){ toast("Action impossible."); });
 }
 async function voteSupprimer(cid,vid){
-  if(!await dlgConfirmer("Supprimer ce vote et toutes ses réponses ?\n\nCette action est définitive."))return;
+  if(!await dlgConfirmer("Supprimer ce vote et toutes ses réponses ?\n\nIl reste 30 jours dans la corbeille."))return;
   const ref=voteColRef(cid).doc(vid);
+  if(!(await cbAvant("vote",function(d){ return "Vote « "+((d[0]&&(d[0].d.question||d[0].d.titre))||"sans titre")+" »"; },function(){ return cbTout([cbDoc(ref),cbSnap(ref.collection("reponses"))]); },{cid:cid})))return;
   const p=unSeul("voteSup",function(){
     return pendant("Suppression…", ref.collection("reponses").get().then(function(sn){
       return Promise.all(sn.docs.map(function(d){ return d.ref.delete().catch(function(){}); }));
@@ -29615,12 +31430,16 @@ const AP_TUILES={
     ["Travail en classe","Plan de classe, comportements, notes","chalkboard-simple","theorie","ouvrirProf('ecranTravailProf')"],
     ["Notes &amp; bulletins",TRAVAIL_CLASSE?"Cours, chant, comportement, bilan et export Pronote":"Cours, chant, bilan et export Pronote","exam","rythme","ouvrirNotes()"],
     ["Votes","Faire voter la classe, résultats en direct","chart-bar","culture","ouvrirProf('ecranVotesProf')"],
-    ["Diplômes","Les meilleurs d'une classe ou du collège, à imprimer","certificate","ecoute","ecranDiplomesProf()"]],
+    ["Diplômes","Les meilleurs d'une classe ou du collège, à imprimer","certificate","ecoute","ecranDiplomesProf()"],
+    ["La rentrée","Classes, listes, périodes, étiquettes, lettre aux familles","rocket-launch","eval","ecranRentree()"]],
   contenus:[
     ["Mes leçons","Écrire une leçon et ses exercices","chalkboard-teacher","perso","ecranLeconsProf()"],
     ["Badges &amp; niveaux","Ce que gagnent les élèves, et comment","medal","loin","ecranBonusInfoProf()"],
     ["Imprimer","Évaluations QCM sur papier, exercices, recueils de leçons","printer","eval","ecranImpressionProf()"],
-    ["Centre de correction","Copies papier : les cases cochées donnent la note","check-square-offset","rythme","ecranCorrectionPapier()"]]
+    ["Centre de correction","Copies papier : les cases cochées donnent la note","check-square-offset","rythme","ecranCorrectionPapier()"],
+    ["Inspection","Le dossier prêt à remettre : progression, compétences, démarche","seal-check","culture","ecranInspection()"],
+    ["Kit remplaçant","Une absence : la séance clé en main, sur papier","lifebuoy","loin","ecranKitRemplacant()"],
+    ["Lettre aux familles","Le code de chaque élève et l’autorisation d’enregistrer sa voix","envelope-simple","lire","ecranRentree()"]]
 };
 /* une couleur par onglet (Suivi bleu, Contenus vert comme la Théorie, En classe violet) */
 function apTuilesHTML(l,teinte){
@@ -29663,7 +31482,7 @@ function accueilProf(){
           </div>
           <div class="ac-actions">
             <button class="ac-cta" onclick="ouvrirProf('ecranDevoirsProf')"><i class="ph-fill ph-backpack"></i> Donner du travail</button>
-            <button class="ac-cta2" onclick="ouvrirProf('ecranRendus')">Travaux rendus</button>
+            <button class="ac-cta2" onclick="ecranTravauxTous()"><i class="ph ph-check-square-offset"></i> Travaux des classes</button>
             <button class="ac-cta2" onclick="ecranLancerPartie()"><i class="ph-fill ph-play"></i> Lancer une partie</button>
             ${estAdmin()?'<button class="ac-cta2 ac-admin" onclick="ecranAdmin()"><i class="ph-fill ph-shield-star"></i> Administration</button>':''}
           </div>
@@ -29690,6 +31509,7 @@ function accueilProf(){
         </div>
       </div>
     </div>
+    ${afHTML()}
     <div id="presAccueilPanel" class="pres-panel" hidden></div>
     <div class="ap-tabs">
       <div class="ev-onglets">
@@ -29741,6 +31561,7 @@ function majTableauProf(){
                 .then(function(ds){ c.devoirs=ds.size; return c; }, function(){ c.devoirs=null; return c; });
       })).then(function(l){
         _profClasses=l;                       /* pour les raccourcis de l'accueil */
+        try{ afCharger(l.filter(function(c){ return c.collegues!==true; })); pkBouton(); }catch(e){}
         poser("kpDevoirs",String(l.reduce(function(n,c){return n+(c.devoirs||0);},0)));
         try{ if(typeof presenceAccueilMonter==="function")presenceAccueilMonter(); }catch(e){}
         /* La liste des classes qui s'affichait ici faisait doublon avec « Mes classes »
@@ -31873,8 +33694,12 @@ function evColSauver(classId,key){
 }
 async function evColSupprimer(classId,key){
   const src=key.charAt(0), id=key.slice(2);
-  if(!await dlgConfirmer("Supprimer définitivement cette évaluation et toutes les notes associées ?\n\nCette action est irréversible."))return;
+  if(!await dlgConfirmer("Supprimer cette évaluation et toutes les notes associées ?\n\nElle reste 30 jours dans la corbeille."))return;
   const s=fbStore(); if(!s){svcIndispo();return;}
+  const Cl=s.collection("classes").doc(classId);
+  if(!(await cbAvant("notes",function(d){ const t=d.filter(function(x){ return /\/(notesManuelles|devoirs)\//.test(x.p); })[0]; return "Évaluation « "+((t&&t.d.titre)||"sans titre")+" »"; },function(){
+    return src==="m"?cbDoc(Cl.collection("notesManuelles").doc(id))
+      :cbTout([cbDoc(Cl.collection("devoirs").doc(id)),Cl.collection("evals").get().then(function(sn){ const r=[]; sn.forEach(function(d){ if((d.data()||{}).dev===id)r.push({p:d.ref.path,d:d.data()}); }); return r; })]); },{cid:classId})))return;
   const fini=function(){ const x=document.getElementById("evColPop"); if(x)x.remove(); toast("Évaluation supprimée."); delete _evalsCache[classId]; evalsClasse(classId); };
   if(src==="m"){
     pendant("Suppression…",s.collection("classes").doc(classId).collection("notesManuelles").doc(id).delete()).then(fini).catch(function(){toast("Suppression impossible.");});
@@ -32539,8 +34364,9 @@ function evManuelSauver(classId,cat,id){
       else toast("Enregistrement impossible."); });
 }
 async function evManuelSupprimer(classId,id){
-  if(!await dlgConfirmer("Supprimer cette évaluation et toutes ses notes ?"))return;
+  if(!await dlgConfirmer("Supprimer cette évaluation et toutes ses notes ?\n\nElle reste 30 jours dans la corbeille."))return;
   const s=fbStore(); if(!s)return;
+  if(!(await cbAvant("notes",function(d){ return "Évaluation « "+((d[0]&&d[0].d.titre)||"sans titre")+" »"; },function(){ return cbDoc(s.collection("classes").doc(classId).collection("notesManuelles").doc(id)); },{cid:classId})))return;
   s.collection("classes").doc(classId).collection("notesManuelles").doc(id).delete()
     .then(function(){ toast("Évaluation supprimée."); delete _evalsCache[classId]; evalsClasse(classId); })
     .catch(function(){ toast("Suppression impossible."); });
@@ -33099,7 +34925,7 @@ function profReglagesEnvoyer(){
   if(!s||!u||!estProf(u))return Promise.resolve(false);
   profil.reglagesMaj=Date.now(); sauverProfil(profil);
   return s.collection("teachers").doc(u.uid).set({reglages:{periodeType:profil.periodeType||"",trimestres:profil.trimestres||[],
-    diplome:profil.diplome||{},eveil:profil.eveilFait||{},eveilEnCours:profil.eveilEnCours||{},signes:profil.sgPerso||[],maj:profil.reglagesMaj}},{merge:true}).then(function(){ return true; }).catch(function(){ return false; });
+    diplome:profil.diplome||{},inspection:profil.inspection||{},eveil:profil.eveilFait||{},eveilEnCours:profil.eveilEnCours||{},signes:profil.sgPerso||[],afMasques:profil.afMasques||{},maj:profil.reglagesMaj}},{merge:true}).then(function(){ return true; }).catch(function(){ return false; });
 }
 function profReglagesCharger(u){
   const s=fbStore(); if(!s||!u)return Promise.resolve(false);
@@ -33108,7 +34934,7 @@ function profReglagesCharger(u){
     if(!r){ if(profil.diplome||(profil.trimestres&&profil.trimestres.length))profReglagesEnvoyer(); return false; }
     if((profil.reglagesMaj||0)>(r.maj||0)){ profReglagesEnvoyer(); return false; }   /* cet appareil est plus récent */
     profil.periodeType=r.periodeType||profil.periodeType; profil.trimestres=r.trimestres||[];
-    profil.diplome=r.diplome||{}; profil.eveilFait=r.eveil||profil.eveilFait||{}; profil.eveilEnCours=r.eveilEnCours||profil.eveilEnCours||{}; if(Array.isArray(r.signes))profil.sgPerso=r.signes; profil.reglagesMaj=r.maj||Date.now(); sauverProfil(profil);
+    profil.diplome=r.diplome||{}; if(r.inspection)profil.inspection=r.inspection; profil.eveilFait=r.eveil||profil.eveilFait||{}; profil.eveilEnCours=r.eveilEnCours||profil.eveilEnCours||{}; if(Array.isArray(r.signes))profil.sgPerso=r.signes; if(r.afMasques)profil.afMasques=r.afMasques; profil.reglagesMaj=r.maj||Date.now(); sauverProfil(profil);
     return true;
   }).catch(function(){ return false; });
 }
@@ -34382,7 +36208,7 @@ function imprimerEvalDomaine(domId,diff){
    Aucune question n'est conservée, seulement les lettres.
    ===================================================================== */
 const PP_L="ABCDEFGH", PP_ALPHA="ACDEFHJKMNPRTUVWXY3479";
-let _ppLot=null, _ppCles=null;
+let _ppLot=null, _ppCles=null, _ppFaits=null;
 /* une question imprimable en QCM : énoncé, choix, rang du bon choix ; null sinon
    (question à écouter, à saisie libre, ou à plusieurs bonnes réponses) */
 function ppQCM(ex){
@@ -34419,16 +36245,29 @@ function ppNouvelId(){ let s=""; for(let i=0;i<4;i++)s+=PP_ALPHA[Math.floor(Math
 function ppClesCharger(force){
   if(_ppCles&&!force)return Promise.resolve(_ppCles);
   let loc={}; try{ loc=JSON.parse(localStorage.getItem("museducCopiesPapier")||"{}")||{}; }catch(e){}
+  let fl={}; try{ fl=JSON.parse(localStorage.getItem("museducCopiesFaites")||"{}")||{}; }catch(e){}
   const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
-  if(!s||!u){ _ppCles=loc; return Promise.resolve(_ppCles); }
+  if(!s||!u){ _ppCles=loc; _ppFaits=fl; return Promise.resolve(_ppCles); }
   return s.collection("teachers").doc(u.uid).get().then(function(d){
-    _ppCles=Object.assign({},loc,(((d&&d.exists&&d.data())||{}).copiesPapier)||{}); return _ppCles;
-  }).catch(function(){ _ppCles=loc; return _ppCles; });
+    const D=(d&&d.exists&&d.data())||{}, fs=D.copiesPapierFaits||{};
+    _ppCles=Object.assign({},loc,D.copiesPapier||{});
+    _ppFaits=fl; Object.keys(fs).forEach(function(l){ _ppFaits[l]=Object.assign({},_ppFaits[l]||{},fs[l]||{}); });
+    return _ppCles;
+  }).catch(function(){ _ppCles=loc; _ppFaits=fl; return _ppCles; });
+}
+/* une copie corrigée : on retient le code de l'élève dans son lot (pour « À faire aujourd'hui ») */
+function ppFaitNoter(lot,code){
+  if(!lot||!code)return;
+  _ppFaits=_ppFaits||{}; (_ppFaits[lot]=_ppFaits[lot]||{})[code]=Date.now();
+  try{ localStorage.setItem("museducCopiesFaites",JSON.stringify(_ppFaits)); }catch(e){}
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return;
+  const m={}; m[lot]={}; m[lot][code]=Date.now();
+  s.collection("teachers").doc(u.uid).set({copiesPapierFaits:m},{merge:true}).catch(function(){});
 }
 function ppClesSauver(nouv){
   _ppCles=Object.assign(_ppCles||{},nouv);
-  /* on garde les 400 références les plus récentes */
-  const vieux=Object.keys(_ppCles).sort(function(a,b){ return (_ppCles[b].t||0)-(_ppCles[a].t||0); }).slice(400);
+  /* on garde les 1500 références les plus récentes (copies nominatives : une par élève) */
+  const vieux=Object.keys(_ppCles).sort(function(a,b){ return (_ppCles[b].t||0)-(_ppCles[a].t||0); }).slice(1500);
   vieux.forEach(function(k){ delete _ppCles[k]; });
   try{ localStorage.setItem("museducCopiesPapier",JSON.stringify(_ppCles)); }catch(e){}
   const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return Promise.resolve(false);
@@ -34436,36 +36275,81 @@ function ppClesSauver(nouv){
   return s.collection("teachers").doc(u.uid).set({copiesPapier:maj},{merge:true}).then(function(){ return true; }).catch(function(){ return false; });
 }
 /* ---------- Fabrication du lot ---------- */
-function ppPreparer(){
+/* copies nominatives : les élèves à cocher (toute la classe par défaut) */
+let _ppNom={cid:null,codes:[],coches:[]};
+function ppNomCharger(){
+  const sc=document.getElementById("ppNomCl"), z=document.getElementById("ppNomListe"), cid=sc&&sc.value; if(!z||!cid)return;
+  _ppNom={cid:cid,codes:[],coches:[]};
+  z.innerHTML='<p class="pp-attente"><i class="ph ph-hourglass-medium"></i> Chargement des élèves…</p>';
+  ppCodesClasse(cid).then(function(codes){ if(_ppNom.cid!==cid)return;
+    _ppNom.codes=codes; _ppNom.coches=codes.slice(); ppNomRendre(); impMaj(); });
+}
+function ppNomRendre(){
+  const z=document.getElementById("ppNomListe"), N=_ppNom; if(!z)return;
+  if(!N.codes.length){ z.innerHTML='<p class="pp-alerte">Aucun élève dans cette classe.</p>'; return; }
+  z.innerHTML='<div class="pp-nom-barre"><span><b>'+N.coches.length+' / '+N.codes.length+'</b> élèves</span>'
+    +'<button type="button" class="dip-lien" onclick="ppNomTous(true)">Toute la classe</button><button type="button" class="dip-lien" onclick="ppNomTous(false)">Aucun</button></div>'
+    +'<div class="pp-nom-grille">'+N.codes.map(function(c){ const on=N.coches.indexOf(c)>=0, nm=labelDe(N.cid,c);
+      return '<label class="dipP-chip'+(on?' on':'')+'"><input type="checkbox"'+(on?' checked':'')+' onchange="ppNomCocher(\''+c+'\',this.checked)">'+(nm?echapH(nm):'<i>'+c+'</i>')+'</label>'; }).join("")+'</div>';
+}
+function ppNomCocher(c,oui){ const L=_ppNom.coches, i=L.indexOf(c); if(oui&&i<0)L.push(c); if(!oui&&i>=0)L.splice(i,1); ppNomRendre(); impMaj(); }
+function ppNomTous(oui){ _ppNom.coches=oui?_ppNom.codes.slice():[]; ppNomRendre(); impMaj(); }
+/* les codes des élèves d'une classe (et ses invités), dans l'ordre des noms */
+function ppCodesClasse(cid){
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return Promise.resolve([]);
+  return s.collection("eleveCodes").where("ownerUid","==",u.uid).get().then(function(r){
+    const codes=[]; r.forEach(function(d){ if((d.data()||{}).classId===cid)codes.push(d.id); });
+    const cl=(_profClasses||[]).filter(function(x){ return x.id===cid; })[0]||{};
+    (Array.isArray(cl.membres)?cl.membres:[]).forEach(function(c){ if(codes.indexOf(c)<0)codes.push(c); });
+    return codes.sort(function(x,y){ return (labelDe(cid,x)||"￿"+x).localeCompare(labelDe(cid,y)||"￿"+y,"fr"); });
+  }).catch(function(){ return []; });
+}
+function ppPreparer(codesNom){
   const v=function(id){ return (document.getElementById(id)||{}).value; };
   const rd=document.querySelector('input[name="ppDiff"]:checked');
   const dom=v("ppDom"), diff=(rd?parseInt(rd.value,10):0)||2;
-  const n=Math.max(5,Math.min(40,parseInt(v("ppNb"),10)||20)), nc=Math.max(1,Math.min(40,parseInt(v("ppCopies"),10)||1));
+  const n=Math.max(5,Math.min(40,parseInt(v("ppNb"),10)||20)); let nc=Math.max(1,Math.min(40,parseInt(v("ppCopies"),10)||1));
   const m=document.querySelector('input[name="ppMode"]:checked'), mode=m?m.value:"pareil";
   if(!dom||!GEN[dom]){ toast("Choisis un thème."); return; }
   const z=document.getElementById("ppResultat"); if(z)z.innerHTML='<p class="pp-attente"><i class="ph ph-hourglass-medium"></i> Préparation des copies…</p>';
+  /* copies nominatives : d'abord les élèves de la classe (64 au plus : le numéro de la référence) */
+  const cidNom=mode==="nom"?v("ppNomCl"):"";
+  if(mode==="nom"&&!Array.isArray(codesNom)){
+    if(!cidNom){ toast("Choisis la classe."); if(z)z.innerHTML=""; return; }
+    const coch=(_ppNom.cid===cidNom?_ppNom.codes.filter(function(c){ return _ppNom.coches.indexOf(c)>=0; }):[]);
+    if(!coch.length){ toast("Coche au moins un élève."); if(z)z.innerHTML=""; return; }
+    if(coch.length>63){ toast("63 copies au plus à la fois : décoche quelques élèves."); if(z)z.innerHTML=""; return; }
+    ppPreparer(coch); return; }
   ppClesCharger().then(function(){
     const pris=Object.keys(_ppCles||{}); let id;
     do{ id=ppNouvelId(); }while(pris.some(function(k){ return k===id||k.indexOf(id+"-")===0; }));
     const copies=[];
     if(mode==="pareil")copies.push({ref:id,qs:ppGenerer(dom,diff,n)});
+    else if(mode==="nom"){ const qs=ppGenerer(dom,diff,n), cl=(_profClasses||[]).filter(function(x){ return x.id===cidNom; })[0]||{};
+      codesNom.forEach(function(code,i){ copies.push({ref:id+"-"+(i+1),qs:qs,code:code,cid:cidNom,nom:labelDe(cidNom,code)||"",cnom:cl.nom||""}); }); }
     else for(let i=1;i<=nc;i++)copies.push({ref:id+"-"+i,qs:ppGenerer(dom,diff,n)});
     if(copies.some(function(c){ return !c.qs.length; })){
       if(z)z.innerHTML='<p class="pp-alerte"><i class="ph-fill ph-warning"></i> Ce thème n’a pas de questions à choix imprimables (elles se font à l’écoute ou par saisie). Choisis-en un autre.</p>'; return; }
     const t=Date.now(), titre=ppTitre(dom);
-    _ppLot={id:id,dom:dom,titre:titre,diff:diff,n:n,nc:nc,mode:mode,copies:copies,t:t};
+    _ppLot={id:id,dom:dom,titre:titre,diff:diff,n:n,nc:mode==="nom"?copies.length:nc,mode:mode,copies:copies,t:t};
     const cles={}; copies.forEach(function(c){
       cles[c.ref]={k:c.qs.map(function(q){ return PP_L[q.r]; }).join(""), o:c.qs.map(function(q){ return q.opts.length; }).join(""),
-                   titre:titre, dom:dom, diff:diff, lot:id, t:t}; });
+                   titre:titre, dom:dom, diff:diff, lot:id, t:t};
+      if(c.code){ cles[c.ref].code=c.code; cles[c.ref].cid=c.cid; }
+      if(mode==="pareil")cles[c.ref].nc=nc; });
+    const ncop=copies.length;
     ppClesSauver(cles).then(function(ok){
       const court=Math.min.apply(null,copies.map(function(c){ return c.qs.length; }));
+      if(mode==="nom")nc=ncop;
       const refs=mode==="pareil"?id:id+"-1 à "+id+"-"+nc;
+      const sansNom=copies.filter(function(c){ return c.code&&!c.nom; }).length;
       if(z)z.innerHTML='<div class="imp-pret"><span class="imp-pret-ic"><i class="ph-fill ph-check-circle"></i></span>'
         +'<div class="imp-pret-t"><b>'+nc+' copie'+(nc>1?"s":"")+' prête'+(nc>1?"s":"")+'</b><small>'+court+' questions · réf. '+refs+(court<n?' · ce thème n’en offre pas plus':'')+'</small></div>'
         +'<div class="imp-pret-b"><button class="action btn-corr" onclick="ppImprimerSujets()"><i class="ph ph-printer"></i> Sujets</button>'
-        +'<button class="action btn-corr" onclick="ppImprimerCorriges()"><i class="ph ph-key"></i> '+(mode==="pareil"?"Corrigé":"Corrigés")+'</button>'
+        +'<button class="action btn-corr" onclick="ppImprimerCorriges()"><i class="ph ph-key"></i> '+(mode!=="diff"?"Corrigé":"Corrigés")+'</button>'
         +'<button class="action btn-nouv" onclick="ecranCorrectionPapier(\''+(mode==="pareil"?id:id+"-1")+'\')"><i class="ph ph-check-square-offset"></i> Corriger</button></div>'
-        +(ok?'':'<p class="pp-alerte"><i class="ph-fill ph-warning"></i> Pas de connexion : corrigés gardés sur cet appareil seulement.</p>')+'</div>';
+        +(ok?'':'<p class="pp-alerte"><i class="ph-fill ph-warning"></i> Pas de connexion : corrigés gardés sur cet appareil seulement.</p>')
+        +(sansNom?'<p class="pp-alerte"><i class="ph ph-identification-card"></i> '+sansNom+' élève'+(sansNom>1?"s":"")+' sans nom sur cet appareil : sa copie porte seulement son code. Importe la liste dans Élèves et codes.</p>':'')+'</div>';
     });
   });
 }
@@ -34478,7 +36362,8 @@ function ppSujetHTML(L,c){
     +'<div class="pp-tete"><div class="pp-t"><div class="pp-marque">'+marqueDoc()+'</div><h1>Évaluation : '+echapH(L.titre)+'</h1>'
     +'<div class="mini">'+c.qs.length+' questions · '+(NIV_NOMS[L.diff]||"")+'</div></div>'
     +'<div class="pp-note">Note<b>/ 20</b></div><div class="pp-ref">Référence<b>'+c.ref+'</b></div></div>'
-    +'<p class="pp-ident"><span>Nom</span><span>Prénom</span><span class="court">Classe</span></p>'
+    +(c.code?'<p class="pp-ident pp-nomme"><span>Élève <b>'+echapH(c.nom||"")+'</b></span><span class="court">Code <b>'+c.code+'</b></span><span class="court">Classe <b>'+echapH(c.cnom||"")+'</b></span></p>'
+      :'<p class="pp-ident"><span>Nom</span><span>Prénom</span><span class="court">Classe</span></p>')
     +'<div class="pp-haut">'+ppGrilleScanSVG(c,false)
     +'<p class="pp-consigne"><b>Grille de réponses.</b> Pour chaque question, coche <b>une seule case</b> (✗). Pour changer d’avis, noircis entièrement la case à annuler, puis coche la bonne. <b>Seule la grille est corrigée.</b> N’écris rien sur les carrés noirs ni dans le cadre.</p></div>'
     +'<div class="pp-qs">'+c.qs.map(function(q,i){ return '<div class="q"><div class="qtxt"><b class="qn">'+(i+1)+'.</b> '+q.q+'</div><ol class="pp-opts">'
@@ -34522,7 +36407,7 @@ function ppAjuster(d){
 function ppCorrigeHTML(L,c,combien){
   const txt=function(h){ return String(h||"").replace(/<img[^>]*>/gi,"[image]").replace(/<svg[\s\S]*?<\/svg>/gi,"[image]"); };
   return '<section class="pp-corr"><div class="pp-marque">'+marqueDoc()+'</div>'
-    +'<div class="pp-tete"><div><h1>Corrigé : '+echapH(L.titre)+'</h1><div class="mini">'+(combien>1?"Pour les "+combien+" copies de référence ":"Copie de référence ")+'<b>'+c.ref+'</b> · '+c.qs.length+' questions · 1 point par bonne réponse, ramené sur 20</div></div>'
+    +'<div class="pp-tete"><div><h1>Corrigé : '+echapH(L.titre)+'</h1><div class="mini">'+(L.mode==="nom"?"Pour les "+combien+" copies nominatives, références ":(combien>1?"Pour les "+combien+" copies de référence ":"Copie de référence "))+'<b>'+(L.mode==="nom"?L.id+"-1 à "+L.id+"-"+combien:c.ref)+'</b> · '+c.qs.length+' questions · 1 point par bonne réponse, ramené sur 20</div></div>'
     +'<div class="pp-ref">Référence<b>'+c.ref+'</b></div></div>'
     +ppGrilleScanSVG(c,true)
     +'<ol class="pp-sol">'+c.qs.map(function(q){ return '<li><b>'+PP_L[q.r]+'</b> '+txt(q.opts[q.r])+'</li>'; }).join("")+'</ol>'
@@ -34573,7 +36458,9 @@ function ppImprimerSujets(){
 }
 function ppImprimerCorriges(){
   const L=_ppLot; if(!L){ toast("Prépare d’abord les copies."); return; }
-  ouvrirImpression("Corrigés : "+L.titre, L.copies.map(function(c){ return ppCorrigeHTML(L,c,L.mode==="pareil"?L.nc:1); }).join(""), PP_CSS);
+  /* nominatives : mêmes questions pour tous, un seul corrigé */
+  const cs=L.mode==="nom"?[L.copies[0]]:L.copies;
+  ouvrirImpression("Corrigés : "+L.titre, cs.map(function(c){ return ppCorrigeHTML(L,c,L.mode==="pareil"||L.mode==="nom"?L.nc:1); }).join(""), PP_CSS);
 }
 
 /* ---------- Centre de correction (refait le 10/10/2026, style de la page Imprimer) ----------
@@ -34749,55 +36636,67 @@ function ppScanHomo(p){
 }
 /* Lit une photo (image ou canvas). cles = les corrigés du professeur.
    Rend {ref, reps, doutes, annul, marques, vue} ou {erreur}. */
-function ppScanLire(src,cles){
-  const W0=src.naturalWidth||src.width, H0=src.naturalHeight||src.height;
+function ppScanLire(src,cles,max){
+  const W0=src.videoWidth||src.naturalWidth||src.width, H0=src.videoHeight||src.naturalHeight||src.height;
   if(!W0||!H0)return {erreur:"image"};
-  const sc=Math.min(1,2000/Math.max(W0,H0)), w=Math.max(1,Math.round(W0*sc)), h=Math.max(1,Math.round(H0*sc));
+  const sc=Math.min(1,(max||2000)/Math.max(W0,H0)), w=Math.max(1,Math.round(W0*sc)), h=Math.max(1,Math.round(H0*sc));
   const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
   const cx=cv.getContext("2d",{willReadFrequently:true}); cx.drawImage(src,0,0,w,h);
   const px=cx.getImageData(0,0,w,h).data, N=w*h, g=new Uint8Array(N);
   for(let i=0,j=0;i<N;i++,j+=4)g[i]=(px[j]*77+px[j+1]*150+px[j+2]*29)>>8;
   /* moyenne locale (image intégrale) : l'encre est ce qui est nettement plus sombre
      que le papier autour, ce qui résiste aux ombres et à un éclairage inégal */
-  const W1=w+1, I=new Float64Array(W1*(h+1));
+  const W1=w+1, I=new Uint32Array(W1*(h+1));
   for(let y=0;y<h;y++){ let r=0; for(let x=0;x<w;x++){ r+=g[y*w+x]; I[(y+1)*W1+x+1]=I[y*W1+x+1]+r; } }
   const moy=function(x,y,r){ x=Math.round(x); y=Math.round(y);
     const a=Math.max(0,x-r),b=Math.max(0,y-r),c=Math.min(w,x+r+1),d=Math.min(h,y+r+1);
     if(c<=a||d<=b)return 255;
     return (I[d*W1+c]-I[b*W1+c]-I[d*W1+a]+I[b*W1+a])/((c-a)*(d-b)); };
   const R=Math.max(8,Math.round(Math.max(w,h)/10));
-  const B=new Uint8Array(N);
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){ const i=y*w+x; B[i]=(g[i]<190&&g[i]<0.7*moy(x,y,R))?1:0; }
+  /* les carrés des coins se cherchent sur une image deux fois plus petite (au-delà de
+     1100 px) : quatre fois moins de pixels, et ils restent bien assez gros ; les cases
+     se lisent ensuite en pleine résolution. Le papier (clair) est écarté d'emblée :
+     la moyenne locale n'est calculée que pour les pixels assez sombres. */
+  const pas=Math.max(w,h)>1100?2:1, w2=Math.floor(w/pas), h2=Math.floor(h/pas), N2=w2*h2;
+  const B=new Uint8Array(N2);
+  for(let y2=0;y2<h2;y2++){ const y=y2*pas, b0=y>R?y-R:0, d0=y+R+1<h?y+R+1:h, rb=b0*W1, rd=d0*W1, hh=d0-b0, l=y*w, l2=y2*w2;
+    for(let x2=0;x2<w2;x2++){ const x=x2*pas, v=g[l+x]; if(v>=190)continue;
+      const a0=x>R?x-R:0, c0=x+R+1<w?x+R+1:w;
+      if(v*(c0-a0)*hh<0.7*(I[rd+c0]-I[rb+c0]-I[rd+a0]+I[rb+a0]))B[l2+x2]=1; } }
   /* taches sombres d'un seul tenant : les carrés des coins sont pleins, à peu près
      carrés (moments d'inertie), et entourés de blanc */
-  const L=new Int32Array(N), st=new Int32Array(N), cand=[], mx=Math.max(w,h);
+  const L=new Int32Array(N2), st=new Int32Array(N2), cand=[], mx=Math.max(w2,h2), amin=pas>1?8:25;
   let id=0;
-  for(let s0=0;s0<N;s0++){
+  for(let s0=0;s0<N2;s0++){
     if(!B[s0]||L[s0])continue; id++;
     let sp=0; st[sp++]=s0; L[s0]=id;
-    let a=0,sx=0,sy=0,sxx=0,syy=0,sxy=0,x0=w,x1=0,y0=h,y1=0;
-    while(sp){ const p=st[--sp], x=p%w, y=(p-x)/w;
+    let a=0,sx=0,sy=0,sxx=0,syy=0,sxy=0,x0=w2,x1=0,y0=h2,y1=0;
+    while(sp){ const p=st[--sp], x=p%w2, y=(p-x)/w2;
       a++; sx+=x; sy+=y; sxx+=x*x; syy+=y*y; sxy+=x*y;
       if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
       if(x>0&&B[p-1]&&!L[p-1]){ L[p-1]=id; st[sp++]=p-1; }
-      if(x<w-1&&B[p+1]&&!L[p+1]){ L[p+1]=id; st[sp++]=p+1; }
-      if(y>0&&B[p-w]&&!L[p-w]){ L[p-w]=id; st[sp++]=p-w; }
-      if(y<h-1&&B[p+w]&&!L[p+w]){ L[p+w]=id; st[sp++]=p+w; } }
+      if(x<w2-1&&B[p+1]&&!L[p+1]){ L[p+1]=id; st[sp++]=p+1; }
+      if(y>0&&B[p-w2]&&!L[p-w2]){ L[p-w2]=id; st[sp++]=p-w2; }
+      if(y<h2-1&&B[p+w2]&&!L[p+w2]){ L[p+w2]=id; st[sp++]=p+w2; } }
     const bw=x1-x0+1, bh=y1-y0+1;
-    if(a<25||bw>0.3*mx||bh>0.3*mx||a<0.45*bw*bh)continue;
+    if(a<amin||bw>0.3*mx||bh>0.3*mx||a<0.45*bw*bh)continue;
     const mxc=sx/a, myc=sy/a, m20=sxx/a-mxc*mxc, m02=syy/a-myc*myc, m11=sxy/a-mxc*myc;
     const iv=(m20+m02)/a; if(iv<0.145||iv>0.215)continue;
     const tr=m20+m02, det=m20*m02-m11*m11, ds=Math.sqrt(Math.max(0,tr*tr/4-det)), l1=tr/2+ds, l2=tr/2-ds;
     if(l2<=0||l1/l2>2.3)continue;
     const rr=1.15*Math.sqrt(a); let clair=0, vus=0;
     for(let k=0;k<24;k++){ const t=k/24*2*Math.PI, X=Math.round(mxc+rr*Math.cos(t)), Y=Math.round(myc+rr*Math.sin(t));
-      if(X<0||Y<0||X>=w||Y>=h)continue; vus++; if(!B[Y*w+X])clair++; }
+      if(X<0||Y<0||X>=w2||Y>=h2)continue; vus++; if(!B[Y*w2+X])clair++; }
     if(vus<12||clair<vus*0.75)continue;
-    cand.push({x:mxc,y:myc,a:a});
+    cand.push({x:mxc*pas+(pas-1)/2,y:myc*pas+(pas-1)/2,a:a*pas*pas,b:[x0*pas-pas,y0*pas-pas,(x1+2)*pas,(y1+2)*pas]});
   }
   if(cand.length<4)return {erreur:"cadre", n:cand.length};
   cand.sort(function(p,q){ return q.a-p.a; });
   const C=cand.slice(0,14), combos=[];
+  /* centre de chaque carré recalculé en pleine résolution (cherché sur l'image réduite) */
+  if(pas>1)C.forEach(function(q){ const t=0.7*moy(q.x,q.y,R), b=q.b; let n=0,sx=0,sy=0;
+    for(let y=Math.max(0,b[1]);y<Math.min(h,b[3]);y++)for(let x=Math.max(0,b[0]);x<Math.min(w,b[2]);x++)if(g[y*w+x]<t&&g[y*w+x]<190){ n++; sx+=x; sy+=y; }
+    if(n>q.a*0.5){ q.x=sx/n; q.y=sy/n; } });
   for(let i=0;i<C.length;i++)for(let j=i+1;j<C.length;j++)for(let k=j+1;k<C.length;k++)for(let l=k+1;l<C.length;l++){
     const q=[C[i],C[j],C[k],C[l]], amin=Math.min(q[0].a,q[1].a,q[2].a,q[3].a), amax=Math.max(q[0].a,q[1].a,q[2].a,q[3].a);
     if(amin<0.35*amax)continue;
@@ -34856,12 +36755,20 @@ function ppScanLire(src,cles){
       const autres=ligne.filter(function(c,k){ return k!==coche[0]&&!(c.d>=0.55&&c.bords>=3); }).map(function(c){ return c.d; });
       if(ligne[coche[0]].d<seuil+0.06||autres.some(function(d){ return d>=seuil*0.7; }))doutes.push(i); }
     else if(coche.length>1)doutes.push(i);
-    else if(ligne.some(function(c){ return c.d>=seuil*0.6&&!(c.d>=0.55&&c.bords>=3); }))doutes.push(i);
+    else doutes.push(i);
     coche.forEach(function(k){ marques.push({p:ligne[k].p,t:coche.length===1?(doutes.indexOf(i)>=0?"doute":"ok"):"doute"}); });
     if(!coche.length&&doutes.indexOf(i)>=0)marques.push({p:ligne[0].p,t:"vide"});
     reps.push(rep);
   });
-  return {ref:trouve.ref, reps:reps, doutes:doutes, annul:annul, marques:marques, coins:trouve.P, canvas:cv};
+  const ligne=function(i){ const k=9, b=G.blocs[Math.floor(i/10)], c0=G.cell(i,0);
+    const x0=b.x-0.6, x1=b.x+PPS.NUMW+o[i]*PPS.CW+0.6, y0=c0.y-PPS.ROW*0.56, y1=c0.y+PPS.ROW*0.56;
+    const W=Math.round((x1-x0)*k), Hh=Math.round((y1-y0)*k), v=document.createElement("canvas"); v.width=W; v.height=Hh;
+    const c=v.getContext("2d"), im=c.createImageData(W,Hh), d=im.data;
+    for(let yy=0;yy<Hh;yy++)for(let xx=0;xx<W;xx++){ const p=mm(x0+xx/k,y0+yy/k), X=Math.round(p.x), Y=Math.round(p.y), q=(yy*W+xx)*4;
+      if(X<0||Y<0||X>=w||Y>=h){ d[q]=d[q+1]=d[q+2]=255; } else { const s4=(Y*w+X)*4; d[q]=px[s4]; d[q+1]=px[s4+1]; d[q+2]=px[s4+2]; } d[q+3]=255; }
+    c.putImageData(im,0,0); return v; };
+  const pxmm=Math.hypot(trouve.P[1].x-trouve.P[0].x,trouve.P[1].y-trouve.P[0].y)/G.W;
+  return {ref:trouve.ref, reps:reps, doutes:doutes, annul:annul, marques:marques, coins:trouve.P, canvas:cv, ligne:ligne, pxmm:pxmm};
 }
 /* aperçu : la zone du cadre, avec ce qui a été lu (vert : réponse, orange : à vérifier) */
 function ppScanVueHTML(r){
@@ -34893,7 +36800,7 @@ function ppScanFichier(inp){
   img.onload=function(){
     ppClesCharger().then(function(cles){
       let r; try{ r=ppScanLire(img,cles); }catch(e){ r={erreur:"image"}; }
-      URL.revokeObjectURL(url); ppScanAfficher(r);
+      URL.revokeObjectURL(url); ppBip(r.erreur?"ko":(r.doutes.length?"doute":"ok")); ppScanAfficher(r);
     });
   };
   img.src=url;
@@ -34905,7 +36812,7 @@ function ppScanAfficher(r){
       ?'La copie <b>'+echapH(r.ref)+'</b> est lue, mais son corrigé n’est pas sur ce compte.'
       :(r.erreur==="image"?'Image illisible.'
       :'Je ne trouve pas les <b>4 carrés noirs</b> du cadre. Photographie la grille <b>à plat</b>, bien éclairée, sans ombre, les 4 carrés bien visibles. Les copies imprimées avant le 22/10/2026 n’ont pas ce cadre : tape les lettres.');
-    if(z){ z.className="cc-scan-etat ko"; z.innerHTML='<i class="ph-fill ph-warning-circle"></i> '+msg; }
+    if(z){ z.className="cc-scan-etat ko"; z.innerHTML='<i class="ph-fill ph-warning-circle"></i> '+msg+' <button type="button" class="cc-suite" onclick="ppScanChoisir()"><i class="ph-fill ph-camera"></i> Reprendre la photo</button>'; }
     return; }
   _ppScan={ref:r.ref, doutes:r.doutes};
   const rf=document.getElementById("ccRef"), rp=document.getElementById("ccRep");
@@ -34921,90 +36828,265 @@ function ppScanAfficher(r){
   /* copie nominative : le code de l'élève est dans sa référence */
   const K=(_ppCles||{})[r.ref], cc=document.getElementById("ccCode");
   if(K&&K.code&&cc){ cc.value=K.code; ppCcCode(K.code); return; }
-  try{ cc.focus(); }catch(e){}
+  /* au scan en direct sur un téléphone, pas de clavier qui cache la note */
+  try{ if(!_ppLive||window.matchMedia("(pointer:fine)").matches)(document.getElementById(_ppLive?"scxCode":"ccCode")||cc).focus({preventScroll:!!_ppLive}); }catch(e){}
 }
-/* ---------- Scan en direct (27/10/2026) ----------
-   La caméra (webcam de l'ordinateur ou appareil photo du téléphone) filme la copie ;
-   trois fois par seconde, l'image est lue comme une photo. Quand la même lecture
-   revient deux fois de suite (copie immobile), elle est prise toute seule : un petit
-   « toc », la grille annotée, et la note s'enregistre dès que l'élève est connu
-   (copie nominative, ou code tapé). Après l'enregistrement, on présente la copie
-   suivante : la caméra attend d'abord que l'ancienne soit retirée. Rien ne quitte
-   l'appareil. */
+/* ---------- Scan en direct (27/10/2026, refait le 01/11/2026) ----------
+   La caméra (webcam de l'ordinateur ou appareil photo du téléphone) filme la copie,
+   en plein écran. Chaque image est lue dès que la précédente l'est (une dizaine de
+   fois par seconde sur un ordinateur ; l'image rapetisse toute seule sur un appareil
+   lent). Quand la même lecture revient deux fois de suite (copie immobile), elle est
+   prise : un bip (deux notes qui montent : tout est net ; deux notes égales : à
+   vérifier ; grave : copie inconnue), puis la fiche de la copie : la note, ce qui a
+   été lu, les questions à vérifier avec l'image de leur ligne et des boutons A B C D
+   pour trancher, et l'élève (copie nominative : déjà connu ; sinon son code à taper).
+   La note s'enregistre toute seule quand tout est net et l'élève connu ; sinon
+   Entrée. La caméra reprend aussitôt : on enchaîne les copies sans quitter la page.
+   Rien ne quitte l'appareil. */
 let _ppLive=null;
 function ppLiveDispo(){ return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia); }
-function ppLiveEtat(t,cls){ const e=document.getElementById("ccLiveEtat"); if(e){ e.className="cc-live-etat"+(cls?" "+cls:""); e.innerHTML=t; } }
+/* les bips : ok (tout est lu), doute (à vérifier), enr (note enregistrée), ko (copie inconnue) */
+function ppBip(t){
+  try{
+    const ctx=audio(); if(ctx.state==="suspended")ctx.resume();
+    const t0=ctx.currentTime+0.02, N={ok:[[1046,0,.09],[1568,.1,.16]], doute:[[784,0,.12],[784,.18,.14]], enr:[[1318,0,.07],[1760,.08,.07],[2093,.16,.18]], ko:[[196,0,.28]]}[t]||[];
+    N.forEach(function(n){ const o=ctx.createOscillator(), g=ctx.createGain(), d=t0+n[1];
+      o.type=t==="ko"?"triangle":"sine"; o.frequency.value=n[0];
+      g.gain.setValueAtTime(0,d); g.gain.linearRampToValueAtTime(t==="ko"?.5:.32,d+.012); g.gain.exponentialRampToValueAtTime(.0001,d+n[2]);
+      o.connect(g); g.connect(ctx.destination); o.start(d); o.stop(d+n[2]+.03); });
+  }catch(e){}
+  try{ if(navigator.vibrate)navigator.vibrate(t==="doute"?[50,70,50]:(t==="ko"?180:40)); }catch(e){}
+}
+function ppLiveEtat(t,cls){ const L=_ppLive, e=document.getElementById("ccLiveEtat"); if(!e)return;
+  const k=(cls||"")+"|"+t; if(L&&L.etat===k)return; if(L)L.etat=k;
+  e.className="scx-etat"+(cls?" "+cls:""); e.innerHTML=t; }
 function ppLiveDemarrer(){
-  if(_ppLive)return;
-  const z=document.getElementById("ccLive"); if(!z)return;
+  if(_ppLive)ppLiveArreter();
   if(!ppLiveDispo()){ toast("Ce navigateur ne donne pas accès à la caméra."); return; }
-  z.innerHTML='<div class="cc-live-cadre"><video id="ccLiveVideo" playsinline muted autoplay></video><div class="cc-live-guide" aria-hidden="true"></div><div class="cc-live-flash" id="ccLiveFlash"></div></div>'
-    +'<div class="cc-live-bas"><div id="ccLiveEtat" class="cc-live-etat" aria-live="polite"><i class="ph ph-hourglass-medium"></i> Ouverture de la caméra…</div>'
-    +'<button type="button" class="action btn-nouv" onclick="ppLiveArreter()"><i class="ph ph-video-camera-slash"></i> Arrêter</button></div>';
-  _ppLive={stream:null,pause:false,dernier:"",fois:0,retrait:"",timer:null,cv:document.createElement("canvas")};
+  try{ const a=audio(); if(a.state==="suspended")a.resume(); }catch(e){}
+  const ov=document.createElement("div"); ov.className="scx"; ov.id="scx";
+  ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label","Scanner les copies");
+  ov.innerHTML='<div class="scx-haut"><span class="scx-ic"><i class="ph-fill ph-camera"></i></span><b>Scanner les copies</b><span class="scx-nb" id="scxNb"></span>'
+    +'<button type="button" class="scx-fermer" onclick="ppLiveArreter()" aria-label="Fermer le scan" title="Fermer (Échap)"><i class="ph ph-x"></i></button></div>'
+    +'<div class="scx-corps"><div class="scx-cam"><video id="ccLiveVideo" playsinline muted autoplay></video>'
+    +'<div class="scx-guide" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="scx-flash" id="ccLiveFlash"></div>'
+    +'<div id="ccLiveEtat" class="scx-etat" aria-live="polite"><i class="ph ph-hourglass-medium"></i> Ouverture de la caméra…</div></div>'
+    +'<div class="scx-res" id="scxRes"></div></div>';
+  document.body.appendChild(ov); document.body.classList.add("scx-ouvert");
+  _ppLive={stream:null,pause:false,dernier:"",fois:0,retrait:"",timer:null,taille:1280,ms:[],r:null,vu:[],enr:null,etat:""};
+  document.addEventListener("keydown",ppxTouche,true);
+  ppxAttente();
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false}).then(function(st){
     if(!_ppLive){ st.getTracks().forEach(function(t){ t.stop(); }); return; }
     _ppLive.stream=st; const v=document.getElementById("ccLiveVideo"); if(v){ v.srcObject=st; try{ v.play(); }catch(e){} }
-    ppClesCharger().then(function(){ ppLiveEtat('<i class="ph-fill ph-scan"></i> Présente la grille à plat devant la caméra, les <b>4 carrés noirs</b> bien visibles.'); ppLiveBoucle(); });
+    ppClesCharger().then(function(){ ppLiveEtat('<i class="ph ph-scan"></i> Les <b>4 carrés noirs</b> de la grille dans le cadre.'); ppLiveBoucle(); });
   }).catch(function(e){
     ppLiveArreter();
-    const m=document.getElementById("ccLive");
-    if(m)m.innerHTML='<div class="cc-scan-etat ko"><i class="ph-fill ph-warning-circle"></i> '+((e&&e.name)==="NotAllowedError"?"La caméra est refusée : autorise-la pour ce site (icône à gauche de l’adresse), puis réessaie.":"Aucune caméra trouvée sur cet appareil.")+'</div>';
+    const m=document.getElementById("ccScanEtat");
+    if(m){ m.className="cc-scan-etat ko"; m.innerHTML='<i class="ph-fill ph-warning-circle"></i> '+((e&&e.name)==="NotAllowedError"?"La caméra est refusée : autorise-la pour ce site (icône à gauche de l’adresse), puis réessaie.":"Aucune caméra trouvée sur cet appareil."); }
   });
 }
 function ppLiveArreter(){
-  const L=_ppLive; _ppLive=null; if(!L)return;
+  const L=_ppLive; _ppLive=null;
+  document.removeEventListener("keydown",ppxTouche,true);
+  const ov=document.getElementById("scx"); if(ov)ov.remove(); document.body.classList.remove("scx-ouvert");
+  if(!L)return;
   clearTimeout(L.timer);
   if(L.stream)L.stream.getTracks().forEach(function(t){ t.stop(); });
-  const z=document.getElementById("ccLive"); if(z)z.innerHTML="";
 }
 function ppLiveBoucle(){
   const L=_ppLive; if(!L)return;
   const v=document.getElementById("ccLiveVideo");
-  if(!v){ ppLiveArreter(); return; }               /* on a quitté le centre de correction */
-  L.timer=setTimeout(ppLiveBoucle,330);
-  if(L.pause||!v.videoWidth)return;
-  const k=Math.min(1,1280/Math.max(v.videoWidth,v.videoHeight)), cv=L.cv;
-  cv.width=Math.round(v.videoWidth*k); cv.height=Math.round(v.videoHeight*k);
-  cv.getContext("2d").drawImage(v,0,0,cv.width,cv.height);
-  let r; try{ r=ppScanLire(cv,_ppCles||{}); }catch(e){ r={erreur:"image"}; }
+  if(!v||!document.getElementById("ccRef")){ ppLiveArreter(); return; }   /* on a quitté le centre de correction */
+  if(L.pause||!v.videoWidth||v.readyState<2){ L.timer=setTimeout(ppLiveBoucle,150); return; }
+  const t0=performance.now();
+  let r; try{ r=ppScanLire(v,_ppCles||{},L.taille); }catch(e){ r={erreur:"image"}; }
+  /* appareil lent : l'image rapetisse (jusqu'à 960 px) pour garder un scan rapide */
+  L.ms.push(performance.now()-t0); if(L.ms.length>6)L.ms.shift();
+  if(L.ms.length===6&&L.taille>960&&L.ms.slice().sort(function(a,b){ return a-b; })[3]>200){ L.taille-=160; L.ms=[]; }
+  L.timer=setTimeout(ppLiveBoucle,30);
+  ppLiveLu(r);
+}
+function ppLiveLu(r){
+  const L=_ppLive; if(!L)return;
   if(r.erreur){
-    L.dernier=""; L.fois=0;
+    L.dernier=""; L.fois=0; L.vuDepuis=0;
     if(L.retrait)L.retrait="";                     /* l'ancienne copie est partie */
-    if(r.erreur==="ref")ppLiveEtat('<i class="ph-fill ph-warning-circle"></i> Copie <b>'+echapH(r.ref)+'</b> : son corrigé n’est pas sur ce compte.',"ko");
+    if(r.erreur==="ref"){ if(L.refKo!==r.ref){ L.refKo=r.ref; ppBip("ko"); }
+      ppLiveEtat('<i class="ph-fill ph-warning-circle"></i> Copie <b>'+echapH(r.ref)+'</b> : son corrigé n’est pas sur ce compte.',"ko"); }
     else if(r.n>=4)ppLiveEtat('<i class="ph ph-arrows-out"></i> Je vois la feuille : rapproche-la, bien à plat, sans reflet.');
+    else ppLiveEtat('<i class="ph ph-scan"></i> Les <b>4 carrés noirs</b> de la grille dans le cadre.');
     return; }
+  L.refKo="";
+  /* trop loin : les croix seraient trop fines pour être lues sûrement */
+  if(r.pxmm<4.5){ L.dernier=""; L.fois=0; ppLiveEtat('<i class="ph ph-arrows-out"></i> Copie <b>'+echapH(r.ref)+'</b> trop loin : rapproche-la (la grille doit remplir le cadre).',"vu"); return; }
   const sig=r.ref+"|"+r.reps.join("");
-  if(L.retrait&&sig===L.retrait){ ppLiveEtat('<i class="ph-fill ph-check-circle"></i> Déjà enregistrée : présente la copie suivante.',"ok"); return; }
-  L.retrait="";
+  if(L.retrait&&sig===L.retrait){
+    if(!L.vuDepuis)L.vuDepuis=Date.now();
+    ppLiveEtat('<i class="ph-fill ph-check-circle"></i> Déjà enregistrée : présente la copie suivante.'
+      +(Date.now()-L.vuDepuis>3500?' <button type="button" class="scx-mini" onclick="ppLiveAutre()">C’est une autre copie</button>':''),"ok");
+    return; }
+  L.retrait=""; L.vuDepuis=0;
   if(sig===L.dernier)L.fois++; else{ L.dernier=sig; L.fois=1; }
-  ppLiveEtat('<i class="ph ph-scan"></i> Copie <b>'+echapH(r.ref)+'</b> repérée : ne bouge plus…');
+  ppLiveEtat('<i class="ph ph-scan"></i> Copie <b>'+echapH(r.ref)+'</b> repérée : ne bouge plus…',"vu");
   if(L.fois<2)return;
   /* prise ! */
   L.pause=true; L.pris=sig;
-  try{ rbToc(0,true); }catch(e){}
   const f=document.getElementById("ccLiveFlash"); if(f){ f.classList.remove("on"); void f.offsetWidth; f.classList.add("on"); }
-  ppLiveEtat('<i class="ph-fill ph-check-circle"></i> Copie <b>'+echapH(r.ref)+'</b> prise.'+(r.doutes.length?' Vérifie les questions en orange, puis Entrée.':''),"ok");
+  ppBip(r.doutes.length?"doute":"ok");
+  ppLiveEtat('<i class="ph-fill ph-check-circle"></i> Copie <b>'+echapH(r.ref)+'</b> lue.',"ok");
+  ppxResultat(r);
   ppScanAfficher(r);
+  ppxMaj();
 }
-/* après l'enregistrement d'une note : la caméra reprend, et attend la copie suivante */
-function ppLiveSuivante(){
+/* reprendre la caméra sans enregistrer (mauvaise lecture, copie à refaire) */
+function ppLiveReprendre(){
   const L=_ppLive; if(!L)return;
-  L.retrait=L.pris||""; L.dernier=""; L.fois=0; L.pause=false;
-  ppLiveEtat('<i class="ph-fill ph-check-circle"></i> Note enregistrée. Présente la copie suivante.',"ok");
+  L.r=null; L.enr=null; L.vu=[]; L.pause=false; L.retrait=""; L.dernier=""; L.fois=0; _ppScan=null;
+  ["ccRep","ccCode"].forEach(function(k){ const e=document.getElementById(k); if(e)e.value=""; });
+  const se=document.getElementById("ccEleve"); if(se)se.value="";
+  ppCcMaj(); ppxAttente();
+  const ov=document.getElementById("scx"); if(ov)ov.classList.remove("lu");
+  ppLiveEtat('<i class="ph ph-scan"></i> Les <b>4 carrés noirs</b> de la grille dans le cadre.');
+}
+function ppLiveAutre(){ const L=_ppLive; if(L){ L.retrait=""; L.vuDepuis=0; } }
+/* après l'enregistrement d'une note : bip, fiche en vert, et la caméra reprend */
+function ppLiveSuivante(nom,note,bons,n){
+  const L=_ppLive; if(!L)return;
+  L.enr={nom:nom,note:note,bons:bons,n:n}; ppBip("enr");
+  L.retrait=L.pris||""; L.dernier=""; L.fois=0; L.vu=[]; L.pause=false;
+  const ov=document.getElementById("scx"); if(ov)ov.classList.remove("lu");
+  ppxMaj();
+  ppLiveEtat('<i class="ph-fill ph-check-circle"></i> Enregistrée. Présente la copie suivante.',"ok");
+}
+/* le nombre de questions encore à vérifier sur la copie lue */
+function ppDoutesRestants(ref){
+  const L=_ppLive;
+  if(L&&L.r&&L.r.ref===ref)return L.r.doutes.filter(function(i){ return L.vu.indexOf(i)<0; }).length;
+  return (_ppScan&&_ppScan.ref===ref)?_ppScan.doutes.length:0;
+}
+/* ---------- la fiche de la copie, à côté de la caméra ---------- */
+function ppxFaitsHTML(){
+  if(!_ppCcFaits.length)return "";
+  return '<div class="scx-faits"><h3>Déjà corrigées</h3>'+_ppCcFaits.slice(0,8).map(function(f){
+    return '<span><i class="ph-fill ph-check-circle"></i> '+echapH(f.nom)+' <b>'+String(f.note).replace(".",",")+'</b></span>'; }).join("")+'</div>';
+}
+function ppxAttente(){
+  const z=document.getElementById("scxRes"); if(!z)return;
+  const nb=document.getElementById("scxNb"); if(nb)nb.textContent=_ppCcFaits.length?_ppCcFaits.length+" corrigée"+(_ppCcFaits.length>1?"s":""):"";
+  z.innerHTML='<div class="scx-attente"><h3>Une copie après l’autre</h3><ol>'
+    +'<li><span>1</span><p>La grille <b>à plat</b>, bien éclairée, sans reflet.</p></li>'
+    +'<li><span>2</span><p>Les <b>4 carrés noirs</b> dans le cadre doré.</p></li>'
+    +'<li><span>3</span><p>Ne bouge plus : <b>bip</b>, la note s’affiche ici.</p></li>'
+    +'<li><span>4</span><p>Code de l’élève si besoin, puis <b>Entrée</b> : la caméra repart.</p></li></ol></div>'+ppxFaitsHTML();
+}
+function ppxResultat(r){
+  const L=_ppLive, z=document.getElementById("scxRes"); if(!L||!z)return;
+  L.r=r; L.vu=[]; L.enr=null;
+  const K=(_ppCles||{})[r.ref]||{}, n=r.reps.length;
+  const ann=r.annul.map(function(i){ return i+1; }).filter(function(v,i,a){ return a.indexOf(v)===i; });
+  let h='<div class="scx-carte" id="scxCarte"><div class="scx-bandeau" id="scxBandeau"></div>'
+    +'<div class="scx-note"><div class="scx-anneau" id="scxAnneau"></div><div class="scx-note-t"><b>'+echapH(K.titre||"Évaluation")+'</b>'
+    +'<span>Réf. '+echapH(r.ref)+' · '+n+' questions lues'+(ann.length?' · case'+(ann.length>1?"s":"")+' annulée'+(ann.length>1?"s":"")+' : '+ann.join(", "):'')+'</span><span id="scxJustes"></span></div></div>';
+  if(r.doutes.length)h+='<div class="scx-doutes"><h3><i class="ph-fill ph-eye"></i> À vérifier : regarde la ligne, touche la bonne case</h3>'
+    +r.doutes.map(function(i){ const o=+(String(K.o||"")[i])||4;
+      return '<div class="scx-q" id="scxQ'+i+'"><span class="scx-qn">Q'+(i+1)+'</span><span class="scx-crop" id="scxCrop'+i+'"></span><span class="scx-lettres">'
+        +PP_L.slice(0,o).split("").map(function(Lt){ return '<button type="button" data-l="'+Lt+'" onclick="ppxLettre('+i+',\''+Lt+'\')">'+Lt+'</button>'; }).join("")
+        +'<button type="button" data-l="" onclick="ppxLettre('+i+',\'\')" title="Sans réponse">–</button></span></div>'; }).join("")+'</div>';
+  h+='<div class="scx-eleve"><div class="scx-qui" id="scxQui" hidden></div>'
+    +'<div class="scx-saisie" id="scxSaisie"><label for="scxCode">Code de l’élève</label><input id="scxCode" class="cc-code" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7P2M" oninput="ppxCode(this.value)">'
+    +'<select id="scxSel" onchange="ppxChoisir(this.value)" hidden aria-label="Ou choisir l’élève"></select><div id="scxCodeEtat" class="scx-code-etat" aria-live="polite"></div></div></div>'
+    +'<div class="scx-actions"><button type="button" class="btn-son" id="scxRe" onclick="ppLiveReprendre()"><i class="ph ph-arrow-counter-clockwise"></i> Rescanner</button>'
+    +'<button type="button" class="rm-cta" id="scxOk" onclick="ppCcEnregistrer()"><i class="ph-fill ph-floppy-disk"></i> Enregistrer <kbd>Entrée</kbd></button></div></div>'+ppxFaitsHTML();
+  z.innerHTML=h; z.scrollTop=0;
+  const ov=document.getElementById("scx"); if(ov)ov.classList.add("lu");
+  r.doutes.forEach(function(i){ const c=document.getElementById("scxCrop"+i); if(c&&r.ligne)try{ c.appendChild(r.ligne(i)); }catch(e){} });
+  ppxLettresMaj();
+}
+/* l'enseignant tranche une question à vérifier : la lettre va dans « Lettres cochées » */
+function ppxLettre(i,Lt){
+  const L=_ppLive, rp=document.getElementById("ccRep"); if(!L||!L.r||!rp)return;
+  const a=String(rp.value||"").split(""); while(a.length<L.r.reps.length)a.push("-");
+  a[i]=Lt||"-"; rp.value=a.join("");
+  if(L.vu.indexOf(i)<0)L.vu.push(i);
+  ppxLettresMaj(); ppCcMaj();
+}
+function ppxLettresMaj(){
+  const L=_ppLive, rp=document.getElementById("ccRep"); if(!L||!L.r||!rp)return;
+  const v=String(rp.value||"");
+  L.r.doutes.forEach(function(i){ const q=document.getElementById("scxQ"+i); if(!q)return;
+    const cur=/[A-Z]/.test(v[i]||"")?v[i]:""; q.classList.toggle("vu",L.vu.indexOf(i)>=0);
+    q.querySelectorAll("button").forEach(function(b){ const on=b.getAttribute("data-l")===cur; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on?"true":"false"); }); });
+}
+function ppxCode(v){ const cc=document.getElementById("ccCode"); if(cc)cc.value=v; ppCcCode(v); }
+function ppxChoisir(code){
+  const se=document.getElementById("ccEleve"); if(!se||!code)return;
+  se.value=code; const cc=document.getElementById("ccCode"); if(cc)cc.value=code; ppCcMaj();
+}
+function ppxMaj(){
+  const L=_ppLive; if(!L)return;
+  const nb=document.getElementById("scxNb"); if(nb)nb.textContent=_ppCcFaits.length?_ppCcFaits.length+" corrigée"+(_ppCcFaits.length>1?"s":""):"";
+  const ba=document.getElementById("scxBandeau"); if(!L.r||!ba)return;
+  const R=ppCcCalcul(), cid=(document.getElementById("ccClasse")||{}).value, code=(document.getElementById("ccEleve")||{}).value;
+  const nom=code?(labelDe(cid,code)||code):"", reste=L.r.doutes.filter(function(i){ return L.vu.indexOf(i)<0; });
+  let cls, txt;
+  if(L.enr){ cls="enr"; txt='<i class="ph-fill ph-check-circle"></i> Enregistrée : '+echapH(L.enr.nom)+' · '+String(L.enr.note).replace(".",",")+'/20'; }
+  else if(!R.ok){ cls="ko"; txt='<i class="ph-fill ph-warning-circle"></i> '+(R.msg||"Copie incomplète.") ; }
+  else if(reste.length){ cls="doute"; txt='<i class="ph-fill ph-eye"></i> À vérifier : question'+(reste.length>1?"s":"")+' '+reste.map(function(i){ return i+1; }).join(", "); }
+  else if(!code){ cls="code"; txt='<i class="ph-fill ph-check-circle"></i> Tout est lu · '+(L.r.doutes.length?"vérifiée":"rien à vérifier")+' · tape le code de l’élève'; }
+  else { cls="ok"; txt='<i class="ph-fill ph-check-circle"></i> Tout est lu · '+(L.r.doutes.length?"vérifiée":"rien à vérifier"); }
+  ba.className="scx-bandeau "+cls; ba.innerHTML=txt;
+  const ca=document.getElementById("scxCarte"); if(ca)ca.classList.toggle("fini",!!L.enr);
+  const an=document.getElementById("scxAnneau");
+  if(an){ const nt=L.enr?L.enr.note:(R.ok?R.note:null), p=nt==null?0:Math.round(nt*5);
+    an.style.setProperty("--p",p); an.className="scx-anneau"+(nt==null?"":(nt>=14?" v":(nt>=10?" o":" r")));
+    an.innerHTML='<b>'+(nt==null?"?":String(nt).replace(".",","))+'</b><small>/20</small>'; }
+  const B=L.enr&&L.enr.n?{ok:true,bons:L.enr.bons,n:L.enr.n}:R;
+  const ju=document.getElementById("scxJustes"); if(ju)ju.innerHTML=B.ok?'<b>'+B.bons+'</b> bonne'+(B.bons>1?"s":"")+' réponse'+(B.bons>1?"s":"")+' sur '+B.n+(R.pts&&!L.enr?' · moins '+String(R.pts).replace(".",",")+' (tablette)':''):"";
+  const qui=document.getElementById("scxQui"), sa=document.getElementById("scxSaisie");
+  if(qui&&sa){ const connu=!!(cid&&code)||!!L.enr;
+    qui.hidden=!connu; sa.hidden=connu;
+    if(connu)qui.innerHTML='<span class="scx-av">'+echapH(elcInitiales(L.enr?L.enr.nom:nom))+'</span><b>'+echapH(L.enr?L.enr.nom:nom)+'</b>'
+      +(L.enr?'':'<small>'+echapH(code)+'</small><button type="button" class="scx-mini" onclick="ppxAutreEleve()">Changer</button>');
+    const se=document.getElementById("scxSel");
+    if(se&&!connu&&_ppCc.cid&&_ppCc.codes.length&&se.getAttribute("data-cid")!==_ppCc.cid){
+      se.setAttribute("data-cid",_ppCc.cid); se.hidden=false;
+      se.innerHTML='<option value="">ou choisis l’élève…</option>'+_ppCc.codes.map(function(c){ const l=labelDe(_ppCc.cid,c), f=_ppCcFaits.some(function(x){ return x.cid===_ppCc.cid&&x.code===c; });
+        return '<option value="'+c+'">'+(f?"✓ ":"")+(l?echapH(l)+' · ':'')+c+'</option>'; }).join(""); } }
+  const ok=document.getElementById("scxOk"); if(ok){ ok.disabled=!!L.enr||!(R.ok&&cid&&code); ok.hidden=!!L.enr; }
+  const re=document.getElementById("scxRe"); if(re)re.hidden=!!L.enr;
+}
+function ppxAutreEleve(){
+  ["ccCode","scxCode"].forEach(function(k){ const e=document.getElementById(k); if(e)e.value=""; });
+  const se=document.getElementById("ccEleve"); if(se)se.value="";
+  const s2=document.getElementById("scxSel"); if(s2)s2.removeAttribute("data-cid");
+  ppCcMaj(); try{ document.getElementById("scxCode").focus(); }catch(e){}
+}
+/* au clavier : Entrée enregistre, Échap ferme, A B C D… tranche la première question à vérifier */
+function ppxTouche(e){
+  const L=_ppLive; if(!L||document.querySelector(".dlg-voile"))return;
+  if(e.key==="Escape"){ e.preventDefault(); ppLiveArreter(); return; }
+  if(e.key==="Enter"){ const b=document.getElementById("scxOk"); if(b&&!b.disabled&&!b.hidden){ e.preventDefault(); ppCcEnregistrer(); } return; }
+  const t=e.target, saisie=t&&(t.tagName==="INPUT"||t.tagName==="SELECT"||t.tagName==="TEXTAREA");
+  if(saisie||!L.r||L.enr||e.ctrlKey||e.metaKey||e.altKey)return;
+  const k=String(e.key||"").toUpperCase(), reste=L.r.doutes.filter(function(i){ return L.vu.indexOf(i)<0; });
+  if(!reste.length)return;
+  const o=+(String(((_ppCles||{})[L.r.ref]||{}).o||"")[reste[0]])||4;
+  if(k==="-"||(k.length===1&&PP_L.indexOf(k)>=0&&PP_L.indexOf(k)<o)){ e.preventDefault(); ppxLettre(reste[0],k==="-"?"":k); }
 }
 /* le code de l'élève : dès qu'il est complet et connu, la note s'enregistre */
 function ppCcCode(v){
   const code=String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,""), z=document.getElementById("ccCodeEtat");
-  const dire=function(t,cls){ if(z){ z.className="cc-code-etat"+(cls?" "+cls:""); z.innerHTML=t; } };
+  const dire=function(t,cls){ if(z){ z.className="cc-code-etat"+(cls?" "+cls:""); z.innerHTML=t; }
+    const y=document.getElementById("scxCodeEtat"); if(y){ y.className="scx-code-etat"+(cls?" "+cls:""); y.innerHTML=t; } };
   if(code.length<5){ dire(""); return; }
   const choisir=function(){
     const se=document.getElementById("ccEleve"); if(!se)return;
     se.value=code; ppCcMaj();
     const nom=labelDe(_ppCc.cid,code);
-    const R=ppCcCalcul(), dt=(_ppScan&&_ppScan.ref===R.ref)?_ppScan.doutes.length:0;
+    const R=ppCcCalcul(), dt=ppDoutesRestants(R.ref);
     /* des questions à vérifier : on attend la touche Entrée (ou le bouton) */
-    if(R.ok&&dt)dire('<i class="ph-fill ph-eye"></i> '+(nom?echapH(nom):code)+' : vérifie la copie (en orange), puis Entrée pour enregistrer.',"ok");
+    if(R.ok&&dt)dire('<i class="ph-fill ph-eye"></i> '+(nom?echapH(nom):code)+' : vérifie la copie ('+(_ppLive?"questions à vérifier":"en orange")+'), puis Entrée pour enregistrer.',"ok");
     else if(R.ok){ dire('<i class="ph-fill ph-check-circle"></i> '+(nom?echapH(nom):code),"ok"); ppCcEnregistrer(); }
     else dire('<i class="ph-fill ph-user"></i> '+(nom?echapH(nom):code)+' : complète la copie, puis Entrée.',"ok");
   };
@@ -35021,43 +37103,47 @@ function ppCcCode(v){
 }
 function ecranCorrectionPapier(ref){
   if(_ppDic)ppDicStop();
+  if(_ppLive)ppLiveArreter();
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(ecranImpressionProf,"Imprimer");
   titreProf('<i class="ph ph-check-square-offset"></i> Centre de correction',"Une copie papier, une note dans le carnet.");
   const cls=(_profClasses||[]).slice().sort(function(x,y){ return String(x.nom||"").localeCompare(String(y.nom||""),"fr",{numeric:true}); });
-  const tete=function(ic,teinte,lib){ return '<div class="cc-tete"><span class="imp-tuile-ic" style="--d:var(--dom-'+teinte+')"><i class="ph-fill ph-'+ic+'"></i></span><h2>'+lib+'</h2></div>'; };
-  document.getElementById("zone").innerHTML='<div class="imp cc">'
-    +'<div class="cc-cols">'
-    +'<section class="imp-panneau">'+tete("file-text","rythme","La copie")
-    +'<div class="cc-scan"><input type="file" id="ccScanIn" accept="image/*" capture="environment" hidden onchange="ppScanFichier(this)">'
-    +'<button type="button" class="rm-cta cc-scan-btn" onclick="ppScanChoisir()"><i class="ph-fill ph-camera"></i> Photographier la copie</button>'
-    +(ppLiveDispo()?'<button type="button" class="action btn-corr cc-scan-btn" onclick="ppLiveDemarrer()"><i class="ph-fill ph-video-camera"></i> Scanner en direct</button>':'')
-    +'<span class="cc-scan-aide">ou une image scannée · la grille à plat, les 4 carrés noirs visibles · en direct, la copie est prise toute seule</span></div><div id="ccLive" class="cc-live"></div>'
+  /* trois étapes (la copie, l'élève, la note) ; la note reste visible à droite */
+  const etape=function(n,titre,aide){ return '<div class="cc2-et"><span class="cc2-n">'+n+'</span><div><h2>'+titre+'</h2>'+(aide?'<p>'+aide+'</p>':'')+'</div></div>'; };
+  const go=function(cls,fn,ic,titre,sous){ return '<button type="button" class="cc2-go '+cls+'" onclick="'+fn+'"><span class="cc2-go-ic"><i class="ph-fill ph-'+ic+'"></i></span><span class="cc2-go-t"><b>'+titre+'</b><small>'+sous+'</small></span></button>'; };
+  document.getElementById("zone").innerHTML='<div class="cc2">'
+    +'<input type="file" id="ccScanIn" accept="image/*" capture="environment" hidden onchange="ppScanFichier(this)">'
+    +'<div class="cc2-src">'
+    +(ppLiveDispo()?go("a","ppLiveDemarrer()","video-camera","Scanner en direct","Les copies s’enchaînent, un bip à chaque copie"):'')
+    +go("b","ppScanChoisir()","camera","Photo ou image","Une copie à la fois, ou un scan")
+    +go("c","document.getElementById('ccRef').focus()","keyboard","À la main","Référence et lettres, ou dictée")
+    +'</div>'
     +'<div id="ccScanEtat" class="cc-scan-etat" aria-live="polite"></div><div id="ccScanVue" class="cc-scan-vue"></div>'
-    +'<label class="imp-champ"><span>Référence</span><input id="ccRef" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="K7HM-3" value="'+escapeHtml(ref||"")+'" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();document.getElementById(\'ccRep\').focus();}"></label>'
+    +'<div class="cc2-cols"><div class="cc2-g">'
+    +'<section class="cc2-carte">'+etape(1,"La copie","Référence imprimée en haut à droite, puis une lettre par question.")
+    +'<div class="cc2-ligne"><label class="imp-champ cc2-ref"><span>Référence</span><input id="ccRef" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="K7HM-3" value="'+escapeHtml(ref||"")+'" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();document.getElementById(\'ccRep\').focus();}"></label>'
+    +'<label class="imp-champ cc2-rep"><span>Lettres cochées</span><input id="ccRep" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="BADC CABD…" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();ppCcEntree();}"></label></div>'
     +'<div id="ccRefEtat" class="cc-etat" aria-live="polite"></div>'
-    +'<label class="imp-champ"><span>Lettres cochées</span><input id="ccRep" class="cc-code" type="text" autocomplete="off" spellcheck="false" placeholder="BADC CABD…" oninput="ppCcMaj()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();ppCcEntree();}"></label>'
-    +(ppDicDispo()?'<div class="cc-dic"><button type="button" id="ccMic" class="action btn-nouv cc-mic" aria-pressed="false" onclick="ppDicter()"><i class="ph ph-microphone"></i> Dicter les lettres</button>'
+    +(ppDicDispo()?'<div class="cc-dic"><button type="button" id="ccMic" class="cc-mic" aria-pressed="false" onclick="ppDicter()"><i class="ph ph-microphone"></i> Dicter les lettres</button>'
       +'<span id="ccDicEtat" class="cc-dic-etat" aria-live="polite"></span></div>':'')
     +'<div id="ccGrille" class="cc-cases"></div>'
-    +'<p class="cc-aide"><i class="ph ph-info"></i> Un tiret « - » pour une question sans réponse ou avec deux cases cochées.</p>'
+    +'<p class="cc-aide"><i class="ph ph-info"></i> « - » pour une question sans réponse ou avec deux cases cochées.</p>'
     +'</section>'
-    +'<section class="imp-panneau">'+tete("user","lire","L’élève")
-    +'<label class="imp-champ"><span>Code de l’élève</span><input id="ccCode" class="cc-code" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7P2M" oninput="ppCcCode(this.value)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();ppCcEntree();}"></label>'
-    +'<div id="ccCodeEtat" class="cc-code-etat" aria-live="polite"></div>'
+    +'<section class="cc2-carte">'+etape(2,"L’élève","Son code, ou la liste de la classe.")
+    +'<div class="cc2-ligne3"><label class="imp-champ"><span>Code</span><input id="ccCode" class="cc-code" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7P2M" oninput="ppCcCode(this.value)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();ppCcEntree();}"></label><span class="cc2-ou">ou</span>'
     +'<label class="imp-champ"><span>Classe</span><select id="ccClasse" onchange="ppCcClasse(this.value)"><option value="">Choisir…</option>'
     +cls.map(function(c){ return '<option value="'+c.id+'">'+echapH(c.nom||"Classe")+'</option>'; }).join("")+'</select></label>'
-    +'<label class="imp-champ"><span>Élève</span><select id="ccEleve" onchange="ppCcMaj()"><option value="">Choisis la classe</option></select></label>'
+    +'<label class="imp-champ"><span>Élève</span><select id="ccEleve" onchange="ppCcMaj()"><option value="">Choisis la classe</option></select></label></div>'
+    +'<div id="ccCodeEtat" class="cc-code-etat" aria-live="polite"></div>'
+    +'</section></div>'
+    +'<section class="cc2-carte cc2-note">'+etape(3,"La note","")
+    +'<div class="cc2-score"><div id="ccScore" class="cc-score" aria-hidden="true"></div><div id="ccResume" class="cc-resume" aria-live="polite"></div></div>'
     +'<label class="imp-champ"><span>Ranger la note dans</span><select id="ccCol" onchange="ppCcMaj()"><option value="pp">Sa colonne « Papier »</option></select></label>'
     +'<div class="cc-oubli"><label class="imp-chip"><input type="checkbox" id="ccOubli" onchange="ppCcMaj()"><span><i class="ph ph-device-tablet"></i> Oubli de tablette</span></label>'
     +'<span id="ccPtsZ">'+impStepHTML("ccPts",2,0,10,0.5,"Points retirés","ppCcMaj()")+'<small>pt retirés</small></span></div>'
-    +'</section>'
-    +'</div>'
-    +'<div class="imp-panneau cc-bas"><div id="ccScore" class="cc-score" aria-hidden="true"></div>'
-    +'<div id="ccResume" class="cc-resume" aria-live="polite"></div>'
-    +'<button class="rm-cta" id="ccOk" onclick="ppCcEnregistrer()"><i class="ph-fill ph-floppy-disk"></i> Enregistrer la note</button></div>'
+    +'<button class="rm-cta cc2-ok" id="ccOk" onclick="ppCcEnregistrer()"><i class="ph-fill ph-floppy-disk"></i> Enregistrer la note</button>'
     +'<div id="ccFaits" class="cc-faits" aria-live="polite"></div>'
-    +'</div>';
+    +'</section></div></div>';
   if(_ppCc.cid&&cls.some(function(c){ return c.id===_ppCc.cid; })){ document.getElementById("ccClasse").value=_ppCc.cid; ppCcClasse(_ppCc.cid); }
   else if(cls.length===1){ document.getElementById("ccClasse").value=cls[0].id; ppCcClasse(cls[0].id); }
   ppCcFaitsRendre(); ppCcMaj();
@@ -35111,6 +37197,10 @@ function ppCcMaj(){
   const etat=document.getElementById("ccRefEtat"), g=document.getElementById("ccGrille");
   if(!etat||!g)return;
   const refTape=!!String((document.getElementById("ccRef")||{}).value||"").trim();
+  /* copie nominative tapée à la main : l'élève vient avec la référence */
+  const refV=String((document.getElementById("ccRef")||{}).value||"").trim().toUpperCase().replace(/\s+/g,"");
+  const Kn=refV&&(_ppCles||{})[refV], ccN=document.getElementById("ccCode");
+  if(Kn&&Kn.code&&ccN&&!ccN.value&&ppCcMaj._ref!==refV){ ppCcMaj._ref=refV; ccN.value=Kn.code; setTimeout(function(){ ppCcCode(Kn.code); },0); }
   etat.className="cc-etat"+(R.cle?" ok":(refTape?" ko":""));
   etat.innerHTML=R.cle?'<i class="ph-fill ph-check-circle"></i> <b>'+echapH(R.cle.titre||"Évaluation")+'</b> · '+R.n+' questions · '+(NIV_NOMS[R.cle.diff]||"")
     :(refTape?'<i class="ph-fill ph-warning-circle"></i> Référence inconnue':'');
@@ -35130,7 +37220,10 @@ function ppCcMaj(){
   if(z)z.innerHTML=R.ok
     ?'<b>'+R.bons+' / '+R.n+'</b> justes'+(R.pts?' · moins '+String(R.pts).replace(".",",")+' (tablette)':'')+'<br><span>'+(nom?'<i class="ph ph-user"></i> '+echapH(nom):'Choisis l’élève')+'</span>'
     :'<span>'+(R.msg||"")+'</span>';
-  if(b)b.disabled=!(R.ok&&cid&&code);
+  if(b){ b.disabled=!(R.ok&&cid&&code)||!!ppCcEnregistrer._en;
+    /* la note dans le bouton : sur téléphone, il reste fixé en bas de l'écran */
+    b.innerHTML='<i class="ph-fill ph-floppy-disk"></i> Enregistrer la note'+(R.ok?' <span class="cc2-ok-n">'+String(R.note).replace(".",",")+'/20</span>':''); }
+  if(_ppLive)ppxMaj();
 }
 function ppCcFaitsRendre(){
   const z=document.getElementById("ccFaits"); if(!z)return;
@@ -35138,6 +37231,7 @@ function ppCcFaitsRendre(){
     return '<span class="cc-fait"><i class="ph-fill ph-check-circle"></i> '+echapH(f.nom)+' <b>'+String(f.note).replace(".",",")+'</b></span>'; }).join(""):"";
 }
 function ppCcEnregistrer(){
+  if(ppCcEnregistrer._en)return;
   const R=ppCcCalcul(); if(!R.ok){ toast(R.msg||"Copie incomplète."); return; }
   const cid=(document.getElementById("ccClasse")||{}).value, code=(document.getElementById("ccEleve")||{}).value;
   const col=(document.getElementById("ccCol")||{}).value||"pp";
@@ -35157,27 +37251,32 @@ function ppCcEnregistrer(){
     notes[code]=Math.round(R.note*(c.sur||20)/20*100)/100;
     p=s.collection("classes").doc(cid).collection("notesManuelles").doc(col.slice(2)).set({notes:notes,maj:Date.now()},{merge:true});
   }
-  const b=document.getElementById("ccOk"); if(b)b.disabled=true;
+  ppCcEnregistrer._en=true;
+  const b=document.getElementById("ccOk"), bx=document.getElementById("scxOk"); if(b)b.disabled=true; if(bx)bx.disabled=true;
   p.then(function(){
+    ppCcEnregistrer._en=false;
     try{ delete _evalsCache[cid]; }catch(e){}
     const nom=labelDe(cid,code)||code;
     toast("Note enregistrée : "+String(R.note).replace(".",",")+"/20 pour "+nom+".");
     _ppCcFaits=_ppCcFaits.filter(function(f){ return !(f.cid===cid&&f.code===code); });
     _ppCcFaits.unshift({cid:cid,code:code,nom:nom,note:R.note,ref:R.ref});
+    ppFaitNoter(R.cle.lot||R.ref,code);
     ppCcFaitsRendre();
     /* copie suivante : on garde la référence si les copies sont identiques */
     const rep=document.getElementById("ccRep"); if(rep)rep.value="";
     const cc=document.getElementById("ccCode"); if(cc)cc.value="";
     ["ccCodeEtat","ccScanVue"].forEach(function(k){ const e=document.getElementById(k); if(e)e.innerHTML=""; });
     if(_ppScan){ _ppScan=null; const e=document.getElementById("ccScanEtat");
-      if(e){ e.className="cc-scan-etat ok"; e.innerHTML='<i class="ph-fill ph-check-circle"></i> Note enregistrée pour <b>'+echapH(nom)+'</b>. Copie suivante&nbsp;: photographie-la.'; } }
+      if(e){ e.className="cc-scan-etat ok"; e.innerHTML='<i class="ph-fill ph-check-circle"></i> Note enregistrée pour <b>'+echapH(nom)+'</b> ('+String(R.note).replace(".",",")+'/20). '
+        +'<button type="button" class="cc-suite" onclick="ppScanChoisir()"><i class="ph-fill ph-camera"></i> Copie suivante</button>'; }
+      if(!_ppLive)ppBip("enr"); }
     const oub=document.getElementById("ccOubli"); if(oub)oub.checked=false;
     const se=document.getElementById("ccEleve"); if(se)se.value="";
     ppCcElevesRendre();
-    if(R.ref.indexOf("-")>0){ const rf=document.getElementById("ccRef"); if(rf){ rf.value=""; rf.focus(); } } else if(rep)rep.focus();
+    if(R.ref.indexOf("-")>0){ const rf=document.getElementById("ccRef"); if(rf){ rf.value=""; if(!_ppLive)rf.focus(); } } else if(rep&&!_ppLive)rep.focus();
+    ppLiveSuivante(nom,R.note,R.bons,R.n);
     ppCcMaj();
-    ppLiveSuivante();
-  }).catch(function(){ toast("Échec de l'enregistrement : vérifie ta connexion."); ppCcMaj(); });
+  }).catch(function(){ ppCcEnregistrer._en=false; ppBip("ko"); toast("Échec de l'enregistrement : vérifie ta connexion."); ppCcMaj(); });
 }
 /* lit la copie : référence, lettres, note */
 function ppCcCalcul(){
@@ -35245,7 +37344,10 @@ function impQcmHTML(){
     +'<div class="imp-modes" role="radiogroup" aria-label="Copies">'
     +'<label class="imp-mode"><input type="radio" name="ppMode" value="pareil" checked onchange="impMaj()">'+impIllHTML(false)+'<b>Identiques</b><small>Un seul corrigé</small></label>'
     +'<label class="imp-mode"><input type="radio" name="ppMode" value="diff" onchange="impMaj()">'+impIllHTML(true)+'<b>Toutes différentes</b><small>Un corrigé par copie</small></label>'
+    +'<label class="imp-mode"><input type="radio" name="ppMode" value="nom" onchange="impMaj()"><span class="imp-ill imp-ill-nom" aria-hidden="true"><i class="ph-fill ph-identification-card"></i></span><b>Nominatives</b><small>Une par élève : nom et code imprimés, reconnue au scan</small></label>'
     +'</div>'
+    +'<div id="ppNomZ" hidden><label class="imp-champ"><span>Classe</span><select id="ppNomCl" onchange="ppNomCharger()">'
+    +(_profClasses||[]).slice().sort(function(x,y){ return String(x.nom||"").localeCompare(String(y.nom||""),"fr",{numeric:true}); }).map(function(c){ return '<option value="'+c.id+'">'+echapH(c.nom||"Classe")+'</option>'; }).join("")+'</select></label><div id="ppNomListe" class="pp-nom-liste"></div></div>'
     +'<div class="imp-cta"><button class="rm-cta" onclick="ppPreparer()"><i class="ph-fill ph-magic-wand"></i> <span id="ppGoLib">Préparer</span></button></div>'
     +'<div id="ppResultat" aria-live="polite"></div>';
 }
@@ -35281,6 +37383,520 @@ function impRegistreHTML(){
     +'<div><b>Une page par classe</b><small>Le nom de chaque élève face à son code. Document confidentiel.</small></div>'
     +'<button class="rm-cta" onclick="rosterImprimerToutes()"><i class="ph-fill ph-printer"></i> Imprimer le registre</button></div>';
 }
+/* ---------- Inspection (01/11/2026) : insp* ----------
+   Un dossier prêt à remettre à l'inspecteur : page de garde, démarche, progression
+   de la 6ᵉ à la 3ᵉ (les parcours guidés et les cours de collège), compétences du
+   programme et comment elles sont travaillées, classes (sans aucun nom d'élève),
+   données personnelles, pièces à préparer. Pour le primaire, les documents de
+   l'éveil musical. Les champs de la page de garde vont dans le compte du prof
+   (teachers/{uid}.reglages.inspection). */
+const INSP_PARTIES=[
+  ["garde","Page de garde","identification-card"],
+  ["demarche","La démarche d’enseignement","compass"],
+  ["progression","La progression de la 6ᵉ à la 3ᵉ","path"],
+  ["competences","Les compétences du programme","seal-check"],
+  ["classes","Mes classes","users-three"],
+  ["resultats","Les résultats de mes classes (sans nom)","chart-bar"],
+  ["donnees","Données des élèves (RGPD)","shield-check"],
+  ["pieces","Les pièces à préparer","list-checks"]];
+let _inspSans={};   /* parties décochées */
+function inspInfos(){ const I=profil.inspection||{}, D=profil.diplome||{};
+  const an=new Date(), a=an.getMonth()>=7?an.getFullYear():an.getFullYear()-1;
+  return {prof:I.prof||D.prof||"", etab:I.etab||D.college||"", ville:I.ville||D.ville||"", acad:I.acad||"", annee:I.annee||(a+"-"+(a+1)), disc:I.disc||"Éducation musicale et chant choral", projets:I.projets||""}; }
+function inspLireChamps(){ const v=function(id){ const e=document.getElementById(id); return e?String(e.value||"").trim().slice(0,200):""; };
+  return {prof:v("inspProf"),etab:v("inspEtab"),ville:v("inspVille"),acad:v("inspAcad"),annee:v("inspAnnee"),disc:v("inspDisc"),projets:v("inspProjets").slice(0,600)}; }
+function inspSauver(){ profil.inspection=inspLireChamps(); sauverProfil(profil);
+  profReglagesEnvoyer().then(function(ok){ toast(ok?"Enregistré dans votre compte.":"Enregistré sur cet appareil."); }); }
+function ecranInspection(){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  titreProf('<i class="ph ph-seal-check"></i> Inspection',"Un dossier clair, prêt à imprimer et à remettre.");
+  const I=inspInfos(), e=escAttr;
+  const ch=function(id,lab,val,ph){ return '<label class="insp-ch"><span>'+lab+'</span><input id="'+id+'" value="'+e(val)+'" placeholder="'+e(ph||"")+'" maxlength="200" onchange="inspSauver()"></label>'; };
+  document.getElementById("zone").innerHTML='<div class="insp">'
+    +'<section class="insp-carte insp-tete"><span class="insp-ic"><i class="ph-fill ph-seal-check"></i></span><div><h2>Le dossier d’inspection</h2>'
+    +'<p>Tout ce que l’inspecteur demande, mis en page aux couleurs de MusEduc. Aucun nom d’élève n’y figure.</p></div>'
+    +'<button type="button" class="rm-cta" onclick="inspImprimer()"><i class="ph-fill ph-printer"></i> Imprimer le dossier</button></section>'
+    +'<div class="insp-2">'
+    +'<section class="insp-carte"><h3><i class="ph-fill ph-identification-card"></i> La page de garde</h3><div class="insp-champs">'
+    +ch("inspProf","Enseignant(e)",I.prof,"Prénom Nom")+ch("inspEtab","Établissement",I.etab,"Collège …")+ch("inspVille","Ville",I.ville,"")
+    +ch("inspAcad","Académie",I.acad,"Académie de …")+ch("inspAnnee","Année scolaire",I.annee,"")+ch("inspDisc","Discipline",I.disc,"")
+    +'<label class="insp-ch insp-large"><span>Projets de l’année (chorale, concert, partenariats…)</span><textarea id="inspProjets" rows="3" maxlength="600" onchange="inspSauver()" placeholder="Chorale du collège le mercredi, concert de fin d’année…">'+escapeHtml(I.projets)+'</textarea></label>'
+    +'</div><p class="insp-note"><i class="ph ph-cloud-check"></i> Gardé dans votre compte, pour la prochaine fois.</p></section>'
+    +'<section class="insp-carte"><h3><i class="ph-fill ph-files"></i> Ce que contient le dossier</h3><div class="insp-parties">'
+    +INSP_PARTIES.map(function(p){ return '<label class="insp-p"><input type="checkbox"'+(_inspSans[p[0]]?'':' checked')+' onchange="_inspSans[\''+p[0]+'\']=!this.checked"><i class="ph-fill ph-'+p[2]+'"></i><span>'+p[1]+'</span></label>'; }).join("")
+    +'</div></section></div>'
+    +'<section class="insp-carte"><h3><i class="ph-fill ph-printer"></i> Les autres documents utiles</h3><div class="insp-liens">'
+    +'<button type="button" onclick="ouvrirNotes()"><i class="ph-fill ph-exam"></i><b>Notes et compétences</b><small>Bilan de classe, positionnement LSU</small></button>'
+    +'<button type="button" onclick="ecranImpressionProf()"><i class="ph-fill ph-book-open-text"></i><b>Recueil de leçons</b><small>Les cours et exercices sur papier</small></button>'
+    +'<button type="button" onclick="ecranCorrectionPapier()"><i class="ph-fill ph-check-square-offset"></i><b>Évaluations papier</b><small>Copies QCM et corrigés</small></button>'
+    +'</div></section>'
+    +'<section class="insp-carte insp-eveil"><h3><i class="ph-fill ph-baby"></i> Au primaire : l’éveil musical</h3><p>Pour une inspection en école&nbsp;: la progression de la classe (séances faites, dates, compétences) et le cours complet de l’année.</p>'
+    +'<div class="insp-liens">'+Object.keys(EV_CYCLES).map(function(k){ const C=EV_CYCLES[k];
+      return '<div class="insp-cy"><b>'+C.nom+'</b><small>'+C.niv+'</small><button type="button" class="btn-son" onclick="evImprimerSuiviProf(\''+k+'\')"><i class="ph ph-seal-check"></i> Progression</button><button type="button" class="btn-son" onclick="evImprimerCours(\''+k+'\')"><i class="ph ph-book-open-text"></i> Cours complet</button></div>'; }).join("")
+    +'</div></section></div>';
+  inspChargerResultats();
+  if(typeof remonter==="function")remonter();
+}
+function inspNomLecon(id){ let n=id; try{ CATEGORIES.forEach(function(g){ (g.items||[]).forEach(function(it){ if(it.id===id)n=it.nom; }); }); }catch(e){}
+  return String(n).replace(/<i[^>]*arrows-left-right[^>]*><\/i>/g,"↔").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim(); }
+const INSP_CSS="*{-webkit-print-color-adjust:exact;print-color-adjust:exact}@page{size:A4;margin:12mm}:root{--me-haut:12mm}"
+  +".page{break-after:page;page-break-after:always}.page:last-child{break-after:auto}"
+  +"p{margin:0 0 2.2mm}.k{font-size:9pt;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#b07c00}"
+  +".gd{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:250mm;gap:5mm;border:2.5mm solid #1e3a63;border-radius:7mm;padding:10mm;box-sizing:border-box;background:linear-gradient(180deg,#fffaf0,#fff)}"
+  +".gd h1{border:0;padding:0;font-size:32pt;margin:0}.gd .rb{width:120mm;height:8mm;background:#F2C94C;clip-path:polygon(0 0,100% 0,96% 50%,100% 100%,0 100%,4% 50%)}"
+  +".gd .disc{display:inline-block;padding:1.5mm 6mm;border-radius:10mm;background:#1e3a63;color:#F2C94C;font-weight:800;font-size:12pt}"
+  +".gd .id{display:grid;grid-template-columns:auto 1fr;gap:2mm 6mm;text-align:left;font-size:12pt;margin-top:4mm;min-width:120mm}.gd .id span{color:#566782}.gd .id b{border-bottom:1px dotted #8a97a8;min-height:6mm}"
+  +".gd img{width:40mm}.gd .proj{max-width:150mm;font-size:10.5pt;color:#16233a;background:#fdf6df;border-radius:3mm;padding:3mm 5mm;text-align:left}"
+  +".bl{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin:3mm 0}.bl div{border:1px solid #d6dee8;border-left:2.5mm solid #F2C94C;border-radius:3mm;padding:3mm 4mm;break-inside:avoid}.bl b{display:block;font-family:'Baloo 2',Arial,sans-serif;color:#1e3a63;font-size:12pt;margin-bottom:1mm}"
+  +".nv{display:flex;align-items:center;gap:4mm;padding:3.5mm 5mm;border-radius:4mm;color:#fff;margin:0 0 3mm}.nv .n{font-family:'Baloo 2',Arial,sans-serif;font-weight:800;font-size:24pt;line-height:1}.nv b{font-family:'Baloo 2',Arial,sans-serif;font-size:15pt;display:block;line-height:1.1}.nv small{opacity:.9;font-weight:700}"
+  +".cc{border:1.5px solid #F2C94C;background:#fdf6df;border-radius:3mm;padding:3mm 4mm;margin:3mm 0;break-inside:avoid}.cc b{color:#1e3a63}"
+  +".coche li{list-style:none;margin:0 0 2mm;padding-left:7mm;position:relative}.coche li::before{content:'';position:absolute;left:0;top:.8mm;width:4mm;height:4mm;border:1.4px solid #1e3a63;border-radius:1mm}"
+  +".lg{border-bottom:1px dotted #8a97a8;height:8mm}";
+function inspImprimer(){
+  if(document.getElementById("inspProf")){ profil.inspection=inspLireChamps(); sauverProfil(profil); }
+  const I=inspInfos(), e=echapH, on=function(k){ return !_inspSans[k]; };
+  let h="";
+  if(on("garde"))h+='<section class="page gd"><img src="'+IMG_LOGO+'" alt=""><span class="disc">'+e(I.disc)+'</span><h1>Dossier d’inspection</h1><div class="rb"></div>'
+    +'<div style="font-size:14pt">Année scolaire '+e(I.annee)+'</div>'
+    +'<div class="id"><span>Enseignant(e)</span><b>'+e(I.prof)+'</b><span>Établissement</span><b>'+e(I.etab)+(I.ville?", "+e(I.ville):"")+'</b><span>Académie</span><b>'+e(I.acad)+'</b><span>Date de l’inspection</span><b></b></div>'
+    +(I.projets?'<div class="proj"><b>Projets de l’année.</b> '+e(I.projets)+'</div>':'')
+    +'<div style="margin-top:6mm;color:#566782;font-size:10pt">Outil utilisé en classe et à la maison&nbsp;: <b style="color:#1e3a63">MusEduc</b> (museduc.fr)</div></section>';
+  if(on("demarche"))h+='<section class="page"><div class="k">Présentation</div><h1>La démarche d’enseignement</h1>'
+    +'<p>Les cours d’éducation musicale s’appuient sur la pratique (chant, écoute, création) et sur MusEduc, un outil en ligne qui prolonge le cours&nbsp;: les élèves y retrouvent les leçons, s’entraînent à leur rythme et sont évalués sur ce qui a été travaillé en classe.</p>'
+    +'<div class="bl"><div><b>Apprendre</b>Des leçons courtes par domaine (lire la musique, rythme, écoute, culture, théorie, styles), avec écoutes et exercices, et des cours interactifs propres à chaque niveau. Un parcours guidé propose un ordre de la 6ᵉ à la 3ᵉ, sans rien verrouiller.</div>'
+    +'<div><b>S’entraîner</b>Trois paliers (facile, intermédiaire, difficile) avant l’évaluation&nbsp;: un palier est validé après trois séries réussies (au moins 15 sur 20). L’élève sait toujours où il en est et ce qu’il doit faire ensuite.</div>'
+    +'<div><b>Évaluer</b>Seules les évaluations demandées par le professeur comptent&nbsp;; le travail libre donne une note bonus séparée. Évaluations en ligne ou sur papier (copies QCM corrigées par photo), avec un journal de passation pour vérifier les conditions.</div>'
+    +'<div><b>Positionner par compétences</b>Les quatre compétences du programme sont positionnées sur les quatre niveaux du livret scolaire&nbsp;: l’outil propose un niveau quand il peut le mesurer, le professeur décide.</div>'
+    +'<div><b>Différencier</b>Temps majoré pour les élèves avec un PAP, paliers à son rythme, rattrapage ciblé des notions ratées («&nbsp;À revoir&nbsp;»), travail refait sur demande.</div>'
+    +'<div><b>Pratiquer ensemble</b>Chant enregistré et noté, votes de classe, jeux collectifs au tableau (équipes équilibrées, aucun nom affiché), classe en direct où l’élève peut demander de l’aide.</div></div>'
+    +'<h2>Une séance type</h2><p>Mise en route (écoute ou chant), découverte de la notion avec un support projeté, pratique collective, trace écrite, puis entraînement sur MusEduc en classe ou à la maison&nbsp;; l’évaluation vient quand les paliers sont franchis.</p></section>';
+  if(on("progression")){
+    h+='<section class="page"><div class="k">Progression</div><h1>La progression de la 6ᵉ à la 3ᵉ</h1><p>Chaque niveau est découpé en chapitres&nbsp;; chaque chapitre réunit des leçons, et l’année se termine par un cours interactif de collège avec son évaluation. Le professeur peut changer le niveau d’un cours.</p>';
+    PG_ORDRE.forEach(function(n,ix){ const P=PG_NIVEAUX[n]; if(!P)return;
+      const cy=n==="6e"?"Cycle 3 · consolidation":"Cycle 4 · approfondissements";
+      h+='<div style="break-inside:avoid;margin-bottom:5mm"><div class="nv" style="background:'+P.c+'"><span class="n">'+CC_NIV_LIB[n]+'</span><div><b>'+e(P.titre)+'</b><small>'+cy+'</small></div></div>'
+        +'<table><tr><th style="width:34%">Chapitre</th><th>Leçons et cours</th></tr>'
+        +P.ch.map(function(c){ const L=c.cours?[c.cours,c.cours2].filter(Boolean).map(function(k){ const D=COURS_DEF[k], X=ccInfo(k); return D?'<b>Cours&nbsp;: '+e(D.titre)+'</b>'+(X.res?'<br><span class="mini">'+e(X.res)+'</span>':''):""; }).join("<br>")
+            :(c.l||[]).map(function(id){ return e(inspNomLecon(id)); }).join(" · ");
+          return '<tr><td><b>'+e(c.t)+'</b></td><td>'+L+'</td></tr>'; }).join("")+'</table></div>';
+    });
+    h+='</section>'; }
+  if(on("competences")){
+    const T=[["Chant enregistré par l’élève sur le morceau du professeur, écouté et noté ; chant collectif en classe ; chorale.","Chant, interprétation"],
+      ["Écoutes guidées, dictées (notes, rythmes, intervalles), grandes mélodies, vocabulaire de l’écoute, leçons de culture et de styles ; mesuré par les évaluations, thème par thème.","Écoute, vocabulaire, culture"],
+      ["Studio de recréation musicale, boîte à rythmes, polyrythmie, ostinatos, orchestrateur : l’élève invente, transforme, enregistre.","Création"],
+      ["Votes de classe sur des écoutes, débats, critique de sa production et de celle des autres, avec le vocabulaire appris.","Argumentation"]];
+    h+='<section class="page"><div class="k">Programme</div><h1>Les compétences du programme</h1><p>En 6ᵉ (cycle 3) comme de la 5ᵉ à la 3ᵉ (cycle 4), quatre compétences, positionnées pour chaque élève sur les quatre niveaux du livret scolaire unique&nbsp;: '+LSU_NIV.slice(1).join(", ").toLowerCase()+'.</p>'
+      +'<table><tr><th style="width:26%">Cycle 3 (6ᵉ)</th><th style="width:30%">Cycle 4 (5ᵉ à 3ᵉ)</th><th>Comment elle est travaillée et observée</th></tr>'
+      +[0,1,2,3].map(function(i){ return '<tr><td><b>C'+(i+1)+'.</b> '+e(LSU_COMP.c3[i])+'</td><td>'+e(LSU_COMP.c4[i])+'</td><td>'+e(T[i][0])+'</td></tr>'; }).join("")+'</table>'
+      +'<div class="cc"><b>Positionnement.</b> Pour C1 et C2, l’outil propose un niveau à partir des notes de chant et des évaluations de la période&nbsp;; pour C3 et C4, il montre ce que l’élève a créé ou défendu, et le professeur positionne. Le professeur garde toujours la décision.</div></section>'; }
+  if(on("resultats")){ if(_inspRes)h+=inspResultatsHTML(); else { inspChargerResultats(); toast("Les résultats se chargent : cliquez de nouveau dans un instant."); return; } }
+  if(on("classes")){
+    const L=(_profClasses||[]).filter(function(c){ return c.collegues!==true; });
+    h+='<section class="page"><div class="k">Organisation</div><h1>Mes classes</h1>'
+      +(L.length?'<table><tr><th>Classe</th><th>Niveau</th><th>Cycle</th><th>Remarques</th></tr>'+L.map(function(c){ const g=classeGroupe(c);
+          return '<tr><td><b>'+e(c.nom||"")+'</b></td><td>'+(CC_NIV_LIB[g]||e(GROUPE_LIB[g]||g||""))+'</td><td>'+(g==="6e"?"Cycle 3":(PG_NIVEAUX[g]?"Cycle 4":(EV_CYCLES[g]?EV_CYCLES[g].nom:"")))+'</td><td></td></tr>'; }).join("")+'</table>'
+        :'<p class="mini">Aucune classe chargée&nbsp;: ouvrez l’accueil enseignant, puis revenez ici.</p><table><tr><th>Classe</th><th>Niveau</th><th>Effectif</th><th>Remarques</th></tr>'+'<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>'.repeat(6)+'</table>')
+      +'<h2>Élèves à besoins particuliers</h2><p class="mini">À compléter à la main (PAP, PPS, PAI)&nbsp;: aucune information de ce type n’est enregistrée sur le serveur.</p><div class="lg"></div><div class="lg"></div><div class="lg"></div></section>'; }
+  if(on("donnees"))h+='<section class="page"><div class="k">Données personnelles</div><h1>Les données des élèves</h1>'
+    +'<div class="bl"><div><b>Des élèves sous pseudonyme</b>Chaque élève se connecte avec un code et un mot secret&nbsp;: le serveur ne connaît ni son nom ni son prénom.</div>'
+    +'<div><b>Les noms chez le professeur</b>La correspondance entre codes et noms reste sur l’appareil du professeur (avec une sauvegarde qu’il garde lui-même).</div>'
+    +'<div><b>Un hébergement en France</b>Serveurs situés en France, sans service hors de l’Union européenne. Jamais de publicité ni de sollicitation des élèves.</div>'
+    +'<div><b>Ce qui est enregistré</b>Les résultats d’entraînement et d’évaluation, le temps de travail, les enregistrements de chant&nbsp;: ce qui sert à suivre les apprentissages, rien d’autre. Données supprimées après 12 mois sans activité.</div></div>'
+    +'<p>Le responsable du traitement est le chef d’établissement&nbsp;; les familles sont informées par l’établissement et le professeur.</p>'
+    +'<p class="mini">Mentions légales, politique de confidentialité et déclaration d’accessibilité&nbsp;: museduc.fr/legal.html</p></section>';
+  if(on("pieces"))h+='<section class="page"><div class="k">À préparer</div><h1>Les pièces à avoir sous la main</h1><ul class="coche">'
+    +["Le cahier de textes des classes (Pronote), à jour","Cette progression et la séquence en cours, avec la fiche de la séance observée","Les supports projetés pendant la séance (MusEduc ouvert sur la leçon du jour)","Des évaluations corrigées et leur barème (copies papier ou relevé en ligne)","Le positionnement par compétences d’une classe (Notes et bulletins, onglet Compétences)","Des traces d’élèves : cahiers, productions, enregistrements de chant","Le projet de chorale ou les projets de l’année (concert, partenariats, sorties)","Les adaptations pour les élèves à besoins particuliers"]
+      .map(function(x){ return '<li>'+x+'</li>'; }).join("")+'</ul>'
+    +'<h2>Notes pour l’entretien</h2>'+'<div class="lg"></div>'.repeat(8)+'</section>';
+  if(!h){ toast("Cochez au moins une partie du dossier."); return; }
+  ouvrirImpression("Dossier d’inspection",h,INSP_CSS);
+}
+/* =====================================================================
+   FACILITER LA VIE DE L'ENSEIGNANT (01/11/2026)
+   af*  « À faire aujourd'hui » sur l'accueil : ce qui attend une action
+   ct*  le cahier de textes tout prêt (travail donné, séance d'éveil)
+   rt*  la rentrée en un assistant
+   lf*  la lettre aux familles (avec le code de chaque élève et l'autorisation
+        d'enregistrer sa voix)
+   kr*  le kit du remplaçant
+   pk*  la recherche rapide (Ctrl+K)
+   ===================================================================== */
+function afHTML(){ return '<section class="af" id="apAFaire" aria-live="polite"><div class="af-t"><i class="ph-fill ph-list-checks"></i><b>À faire aujourd’hui</b><span class="af-date">'+new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</span></div>'
+  +'<div class="af-l" id="afListe"><p class="af-vide"><i class="ph ph-spinner-gap"></i> Je regarde vos classes…</p></div></section>'; }
+/* une ligne : [icône, couleur, texte, action, libellé du bouton] */
+function afLigne(x){ const b='<button type="button" class="af-i" style="--c:'+x[1]+'" onclick="'+x[3]+'"><span class="af-ic"><i class="ph-fill ph-'+x[0]+'"></i></span><span class="af-x">'+x[2]+'</span><span class="af-go">'+(x[4]||"Ouvrir")+' <i class="ph ph-caret-right"></i></span></button>';
+  return x[5]?'<div class="af-w">'+b+'<button type="button" class="af-masq" title="Retirer de la liste" aria-label="Retirer de la liste" onclick="afMasquer(\''+x[5]+'\',this)"><i class="ph ph-x"></i></button></div>':b; }
+/* « Retirer de la liste » : gardé dans le compte (réglages), ne revient plus */
+function afMasque(k){ return !!((profil.afMasques||{})[k]); }
+function afMasquer(k,btn){
+  profil.afMasques=profil.afMasques||{}; profil.afMasques[k]=Date.now();
+  const ks=Object.keys(profil.afMasques).sort(function(a,b){ return profil.afMasques[b]-profil.afMasques[a]; }); ks.slice(200).forEach(function(x){ delete profil.afMasques[x]; });
+  sauverProfil(profil); profReglagesEnvoyer();
+  const w=btn&&btn.closest(".af-w"); if(w)w.remove();
+  const l=document.getElementById("afListe"); if(l&&!l.querySelector(".af-i"))l.innerHTML='<p class="af-vide"><i class="ph-fill ph-check-circle"></i> Rien d’urgent : vos classes sont à jour.</p>';
+  toast("Retiré de la liste.");
+}
+function afCharger(classes){
+  const z=document.getElementById("afListe"); if(!z)return;
+  cbPurger();
+  const s=fbStore(); if(!s)return;
+  const L=[], now=Date.now(), J=86400000;
+  if(!classes.length){ z.innerHTML=afLigne(["rocket-launch","#1e3a63","<b>Préparez la rentrée</b> : classes, listes d’élèves, périodes, étiquettes et lettre aux familles, dans l’ordre.","ecranRentree()","Commencer"]); return; }
+  Promise.all(classes.map(function(c){
+    const C=s.collection("classes").doc(c.id);
+    return Promise.all([
+      C.collection("enr").get().catch(function(){ return null; }),
+      C.collection("devoirs").where("echeance",">",now-7*J).get().catch(function(){ return null; }),
+      dxRt("afM"+c.id,function(db){ return db.ref("mains/"+c.id).once("value"); }).catch(function(){ return null; })
+    ]).then(function(r){
+      const nom=echapH(c.nom||"Classe");
+      let n=0; if(r[0])r[0].forEach(function(d){ const v=d.data()||{}; const no=(v.note!=null)?v.note:(typeof chNote==="function"?chNote(v.crit):null); if(no==null)n++; });
+      if(n)L.push([2,["microphone-stage","#a63d68","<b>"+n+" chant"+(n>1?"s":"")+" à écouter et noter</b> · "+nom,"ouvrirProf('ecranChantProf','"+c.id+"')","Noter"]]);
+      if(r[1])r[1].forEach(function(d){ const v=d.data()||{}, t=echapH(v.titre||"Travail");
+        if(v.echeance<=now)L.push([3,["calendar-x","#e08a00","<b>Échéance passée</b> : « "+t+" » · "+nom+" · voir qui n’a pas rendu","detailDevoir('"+c.id+"','"+d.id+"')","Qui a rendu"]]);
+        else if(v.echeance-now<2*J)L.push([4,["hourglass-medium","#2374b0","<b>À rendre "+(new Date(v.echeance).toDateString()===new Date().toDateString()?"aujourd’hui":"demain")+"</b> : « "+t+" » · "+nom,"detailDevoir('"+c.id+"','"+d.id+"')","Suivre"]]); });
+      const m=r[2]&&r[2].val?Object.keys(r[2].val()||{}).length:0;
+      if(m)L.push([1,["hand-palm","#e53935","<b>"+m+" main"+(m>1?"s":"")+" levée"+(m>1?"s":"")+"</b> · "+nom,"ouvrirProf('ecranDirect','"+c.id+"')","Répondre"]]);
+    });
+  }).concat([afCopiesPapier(classes,L)])).then(function(){
+    /* l'éveil : seulement pour une classe de primaire, et une séance faite ces trois dernières semaines */
+    try{ const F=evFaits(), rec=Object.keys(F).some(function(k){ return +F[k]>Date.now()-21*86400000; }), prim=classes.filter(function(c){ return !!EV_CYCLES[classeGroupe(c)]; });
+      const cy=prim.length?classeGroupe(prim[0]):_evCycle, P=(rec&&(prim.length||elpClasses().length))?evProchaine(cy):null;
+      if(P&&!afMasque("ev:"+cy+":"+P[0]+":"+P[1])){ const q=EV_CYCLES[cy].seq[P[0]], se=q.s[P[1]]; L.push([5,["baby","#2fb36b","<b>Éveil musical</b> · prochaine séance : « "+echapH(se.t)+" » ("+EV_CYCLES[cy].nom+")","ecranEveil()","Préparer","ev:"+cy+":"+P[0]+":"+P[1]]]); } }catch(e){}
+    const mo=new Date().getMonth(); if((mo===7||mo===8)&&!rtFini())L.push([0,["rocket-launch","#1e3a63","<b>La rentrée</b> : il reste des étapes à faire (listes, étiquettes, lettre aux familles).","ecranRentree()","Continuer"]]);
+    L.sort(function(a,b){ return a[0]-b[0]; });
+    const y=document.getElementById("afListe"); if(!y)return;
+    y.innerHTML=L.length?L.slice(0,8).map(function(x){ return afLigne(x[1]); }).join("")+(L.length>8?'<p class="af-vide">et '+(L.length-8)+' autre'+(L.length>8+1?"s":"")+' chose'+(L.length>8+1?"s":"")+'…</p>':'')
+      :'<p class="af-vide"><i class="ph-fill ph-check-circle"></i> Rien d’urgent : vos classes sont à jour.</p>';
+  });
+}
+
+/* les copies papier à corriger : chaque lot imprimé ces 30 derniers jours (et pas
+   dans les 6 dernières heures) qui n'a pas encore toutes ses notes ; les notes déjà
+   rangées dans la colonne « Papier » d'une classe comptent aussi */
+function afCopiesPapier(classes,L){
+  const s=fbStore(); if(!s)return Promise.resolve();
+  return ppClesCharger().then(function(cles){
+    const now=Date.now(), lots={};
+    Object.keys(cles||{}).forEach(function(ref){ const k=cles[ref]||{}, lot=k.lot||ref;
+      if(!(k.t>now-30*86400000&&k.t<now-6*3600000))return;
+      const o=lots[lot]=lots[lot]||{lot:lot,titre:k.titre||"Évaluation",t:k.t,n:0,nc:0,cid:k.cid||"",ref:ref,refs:0};
+      o.refs++; if(k.code)o.n++; else o.nc=Math.max(o.nc,k.nc||0); });
+    const T=Object.keys(lots).map(function(l){ const o=lots[l]; if(!o.n)o.n=o.nc||(o.refs>1?o.refs:0); return o; })
+      .sort(function(a,b){ return b.t-a.t; }).slice(0,6);
+    if(!T.length)return;
+    return Promise.all(T.map(function(o){
+      const faits=Object.assign({},(_ppFaits||{})[o.lot]||{});
+      return Promise.all(classes.map(function(c){ return s.collection("classes").doc(c.id).collection("notesManuelles").doc("pp_"+o.lot).get()
+        .then(function(d){ const v=(d&&d.exists&&d.data())||{}; Object.keys(v.notes||{}).forEach(function(k){ faits[k]=1; }); }).catch(function(){}); }))
+      .then(function(){
+        const f=Object.keys(faits).length; if(o.n?f>=o.n:f>0)return; if(afMasque("pp:"+o.lot))return;
+        const cl=o.cid&&(classes.filter(function(c){ return c.id===o.cid; })[0]||{}).nom;
+        L.push([2,["exam","#3d6ba3","<b>Copies papier à corriger</b> : « "+echapH(o.titre)+" »"+(cl?" · "+echapH(cl):"")
+          +" · "+(f?f+(o.n?" sur "+o.n:"")+" corrigée"+(f>1?"s":""):(o.n?o.n+" copie"+(o.n>1?"s":"")+", aucune corrigée":"pas encore corrigées")),
+          "ecranCorrectionPapier('"+(o.refs===1&&!o.cid?o.ref:"")+"')","Corriger","pp:"+o.lot]]);
+      });
+    }));
+  }).catch(function(){});
+}
+/* ---------- le cahier de textes ---------- */
+function ctDateTxt(ms){ try{ return new Date(ms).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}); }catch(e){ return ""; } }
+function ctTexteDevoir(classId,d){
+  const cl=((_profClasses||[]).filter(function(c){ return c.id===classId; })[0])||{};
+  const v=(d.volets||[]).map(function(x){ return devoirVoletNom(x); }).filter(Boolean);
+  return (cl.nom?cl.nom+" · ":"")+"Pour le "+ctDateTxt(d.echeance)+" : "+(d.titre||"travail")+".\n"
+    +"À faire sur MusEduc (museduc.fr, « Je suis élève », avec ton code et ton mot secret)"+(v.length?" : "+v.join(" ; ")+".":".")
+    +(d.consigne?"\nConsigne : "+d.consigne:"")
+    +(Array.isArray(d.eleves)&&d.eleves.length?"\n(Travail donné à "+d.eleves.length+" élève"+(d.eleves.length>1?"s":"")+" seulement.)":"");
+}
+function ctTexteEveil(cy,i,j){
+  const C=EV_CYCLES[cy], q=C.seq[i], s=q.s[j], txt=function(h){ const e=document.createElement("div"); e.innerHTML=String(h||""); return (e.textContent||"").replace(/\s+/g," ").trim(); };
+  return "Éducation musicale · "+q.t+" (séance "+(j+1)+" sur "+q.s.length+") : "+txt(s.t)+".\n"
+    +"Objectif : "+txt(s.obj)+"\n"
+    +"Activités : "+s.e.map(function(x){ return txt(x[1]); }).join(", ")+".\n"
+    +"À retenir : "+txt(s.ret)
+    +(s.mots&&s.mots.length?"\nMots : "+s.mots.join(", ")+".":"");
+}
+let _ctDevs={};
+function ctDevoir(classId,id){ const d=_ctDevs[id]; if(d)ctMontrer("Le cahier de textes",ctTexteDevoir(classId,d)); }
+function ctMontrer(titre,texte){
+  const ov=document.createElement("div"); ov.className="dlg-voile";
+  ov.innerHTML='<div class="dlg ct" role="dialog" aria-modal="true" aria-label="'+escAttr(titre)+'"><div class="dlg-ic"><i class="ph-fill ph-notebook"></i></div><h3 class="dlg-titre">'+echapH(titre)+'</h3>'
+    +'<p class="ct-aide">Prêt à coller dans Pronote. Vous pouvez le retoucher ici avant de copier.</p><textarea class="ct-txt" rows="7"></textarea>'
+    +'<div class="dlg-actions"><button type="button" class="action btn-nouv" data-k="f">Fermer</button><button type="button" class="action btn-corr" data-k="c"><i class="ph ph-copy"></i> Copier</button></div></div>';
+  const ta=ov.querySelector(".ct-txt"); ta.value=texte;
+  const fermer=function(){ document.removeEventListener("keydown",esc,true); ov.remove(); };
+  const esc=function(e){ if(e.key==="Escape"){ e.preventDefault(); e.stopPropagation(); fermer(); } };
+  ov.querySelector('[data-k="f"]').onclick=fermer;
+  ov.querySelector('[data-k="c"]').onclick=function(){ appPresse(ta.value); this.innerHTML='<i class="ph-fill ph-check-circle"></i> Copié'; setTimeout(fermer,700); };
+  ov.addEventListener("mousedown",function(e){ if(e.target===ov)fermer(); });
+  document.addEventListener("keydown",esc,true);
+  document.body.appendChild(ov); setTimeout(function(){ ta.focus(); ta.select(); },30);
+}
+
+/* ---------- la rentrée ---------- */
+function rtCle(){ const d=new Date(), a=d.getMonth()>=6?d.getFullYear():d.getFullYear()-1; return "museduc.rentree."+a; }
+function rtEtat(){ try{ return JSON.parse(localStorage.getItem(rtCle())||"{}")||{}; }catch(e){ return {}; } }
+function rtNoter(k,cid){ const E=rtEtat(); E[k]=E[k]||{}; E[k][cid||"_"]=Date.now(); try{ localStorage.setItem(rtCle(),JSON.stringify(E)); }catch(e){} }
+function rtFini(){ const E=rtEtat(), L=_profClasses||[]; if(!L.length)return false;
+  return L.every(function(c){ return (E.etiq||{})[c.id]&&(E.lettre||{})[c.id]; }); }
+let _rtCodes=null;
+function ecranRentree(){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  titreProf('<i class="ph ph-rocket-launch"></i> La rentrée',"Six étapes, dans l’ordre. Chacune se coche toute seule quand elle est faite.");
+  const z=document.getElementById("zone"); z.innerHTML='<p style="color:var(--encre-doux)"><i class="ph ph-spinner-gap"></i> Chargement…</p>';
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser;
+  Promise.all([chargerClassesProf(), (s&&u)?s.collection("eleveCodes").where("ownerUid","==",u.uid).get().catch(function(){ return null; }):Promise.resolve(null)]).then(function(r){
+    const cls=(r[0]||[]).filter(function(c){ return c.collegues!==true; }), parCl={};
+    if(r[1])r[1].forEach(function(d){ const c=(d.data()||{}).classId; if(c)(parCl[c]=parCl[c]||[]).push(d.id); });
+    _rtCodes=parCl; rtRendre(cls);
+  });
+}
+function rtRendre(cls){
+  const z=document.getElementById("zone"); if(!z)return;
+  const E=rtEtat(), nb=function(cid){ return (_rtCodes[cid]||[]).length; }, noms=function(cid){ return (_rtCodes[cid]||[]).filter(function(k){ return labelDe(cid,k); }).length; };
+  const per=periodeType()!=="annee"||(profil.trimestres||[]).length;
+  const etape=function(n,ok,t,txt,corps){ return '<section class="rt-e'+(ok?" ok":"")+'"><span class="rt-n">'+(ok?'<i class="ph-bold ph-check"></i>':n)+'</span><div class="rt-c"><h3>'+t+'</h3><p>'+txt+'</p>'+(corps||"")+'</div></section>'; };
+  const parClasse=function(fn){ return cls.length?'<div class="rt-cls">'+cls.map(fn).join("")+'</div>':''; };
+  const bt=function(on,ok,lib,go){ return '<button type="button" class="rt-b'+(ok?" ok":"")+'" onclick="'+go+'">'+(ok?'<i class="ph-fill ph-check-circle"></i> ':'')+lib+'</button>'; };
+  let h='<div class="rt">'
+    +etape(1,cls.length>0,"Créer mes classes",cls.length?cls.length+" classe"+(cls.length>1?"s":"")+" : "+cls.map(function(c){ return echapH(c.nom||""); }).join(", ")+".":"Une classe par groupe d’élèves (6e A, 5e B…). Le niveau se devine du nom.",
+      '<button type="button" class="rm-cta" onclick="dashboardProf()"><i class="ph-fill ph-plus-circle"></i> '+(cls.length?"Gérer mes classes":"Créer une classe")+'</button>')
+    +etape(2,cls.length>0&&cls.every(function(c){ return nb(c.id)&&noms(c.id)>=nb(c.id); }),"Importer les listes d’élèves","Un fichier Pronote ou un tableur (Nom, Prénom) : un code est créé pour chaque élève. Les noms restent sur cet appareil.",
+      parClasse(function(c){ const n=nb(c.id), k=noms(c.id); return bt(1,n&&k>=n,echapH(c.nom||"")+' · '+(n?k+"/"+n+" noms":"aucun élève"),"rosterClasse('"+c.id+"')"); }))
+    +etape(3,!!per,"Régler les périodes de l’année",per?"Fait : "+(periodeType()==="semestres"?"semestres":"trimestres")+".":"Trimestres ou semestres : les notes et les bilans se rangent tout seuls.",
+      '<button type="button" class="btn-son" onclick="paramVue(\'trimestres\')"><i class="ph ph-calendar"></i> Régler les périodes</button>')
+    +etape(4,cls.length>0&&cls.every(function(c){ return (E.etiq||{})[c.id]; }),"Imprimer les étiquettes de codes","Une étiquette par élève, à découper : son nom, son code et une ligne pour son mot secret.",
+      parClasse(function(c){ return bt(1,(E.etiq||{})[c.id],echapH(c.nom||""),"rtNoter('etiq','"+c.id+"');rosterImprimerCartes('"+c.id+"');rtRendre(_rtCls)"); }))
+    +etape(5,cls.length>0&&cls.every(function(c){ return (E.lettre||{})[c.id]; }),"Imprimer la lettre aux familles","Une lettre par élève, avec son code, ce qui est enregistré, et l’autorisation d’enregistrer sa voix à rapporter signée.",
+      parClasse(function(c){ return bt(1,(E.lettre||{})[c.id],echapH(c.nom||""),"rtNoter('lettre','"+c.id+"');lfImprimer('"+c.id+"');rtRendre(_rtCls)"); }))
+    +etape(6,!!(E.travail||{})._,"Donner un premier travail","Une leçon courte de révision, pour que chaque élève essaie son code dès la première semaine.",
+      '<button type="button" class="btn-son" onclick="rtNoter(\'travail\');ouvrirProf(\'ecranDevoirsProf\')"><i class="ph ph-backpack"></i> Donner du travail</button>')
+    +'</div>';
+  _rtCls=cls; z.innerHTML=h;
+}
+let _rtCls=[];
+
+/* ---------- la lettre aux familles ---------- */
+const LF_CSS="@page{size:A4;margin:12mm}:root{--me-haut:12mm}.lf{break-after:page;page-break-after:always;font-size:10.5pt}.lf:last-child{break-after:auto}"
+  +".lf-tete{display:flex;justify-content:space-between;align-items:flex-start;gap:6mm;margin:0 0 4mm}.lf-tete small{display:block;color:#566782}.lf-tete b{color:#1e3a63}"
+  +".lf h1{font-size:17pt;margin:2mm 0 3mm}.lf p{margin:0 0 2.2mm;text-align:justify}"
+  +".lf-code{display:flex;align-items:center;gap:6mm;padding:3mm 5mm;border:2px solid #1e3a63;border-radius:3mm;background:#f4f7fb;margin:3mm 0}.lf-code .c{font:800 20pt 'Baloo 2',Arial,sans-serif;letter-spacing:3px;color:#1e3a63}.lf-code small{display:block;color:#566782}"
+  +".lf-2{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin:2mm 0}.lf-2 div{border-left:2mm solid #F2C94C;background:#fdf8ea;border-radius:2mm;padding:2mm 3mm;font-size:9.5pt}.lf-2 b{color:#1e3a63}"
+  +".lf-cut{margin:5mm 0 3mm;border-top:1.5px dashed #8a97a8;text-align:center;font-size:8.5pt;color:#566782;line-height:0}.lf-cut span{background:#fff;padding:0 3mm}"
+  +".lf-coupon{border:1.5px solid #1e3a63;border-radius:3mm;padding:3mm 5mm;break-inside:avoid}.lf-coupon h3{margin:0 0 2mm;font-size:12pt}.lf-coupon .ch{display:flex;gap:3mm;align-items:flex-start;margin:0 0 2mm}.lf-coupon .ch i{flex:none;width:4mm;height:4mm;border:1.4px solid #16233a;border-radius:1mm;margin-top:.6mm}"
+  +".lf-sig{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4mm;margin-top:3mm;font-size:9pt;color:#566782}.lf-sig span{border-bottom:1px dotted #8a97a8;height:9mm}";
+function lfLettre(cl,nom,code,I){
+  const e=echapH;
+  return '<section class="lf"><div class="lf-tete"><div><b>'+e(I.etab||"Collège")+'</b>'+(I.ville?'<small>'+e(I.ville)+'</small>':'')+'</div><div style="text-align:right"><b>Éducation musicale</b><small>'+e(I.prof||"")+(cl?' · '+e(cl):'')+'</small></div></div>'
+    +'<h1>Aux familles'+(nom?' de '+e(nom):'')+'</h1>'
+    +'<p>Madame, Monsieur,</p><p>En éducation musicale, votre enfant utilise cette année <b>MusEduc</b> (museduc.fr), un site gratuit et sans publicité. Il y retrouve les leçons vues en classe, s’entraîne à son rythme et fait les travaux demandés, en classe ou à la maison, sur un ordinateur, une tablette ou un téléphone.</p>'
+    +'<div class="lf-code"><div><small>Le code de connexion'+(nom?' de '+e(nom):'')+'</small><span class="c">'+(code?e(code):'__________')+'</span></div><div style="font-size:9.5pt">Sur museduc.fr, choisir «&nbsp;Je suis élève&nbsp;», puis taper ce code et le <b>mot secret</b> choisi en classe. Ce mot secret ne doit être confié à personne.</div></div>'
+    +'<div class="lf-2"><div><b>Un pseudonyme, pas un nom.</b> Le site ne connaît que ce code&nbsp;: le nom de votre enfant reste sur l’appareil du professeur.</div>'
+    +'<div><b>Ce qui est enregistré.</b> Les résultats des exercices et des évaluations, le temps de travail et, si vous l’autorisez, l’enregistrement de sa voix.</div>'
+    +'<div><b>Où et combien de temps.</b> Sur des serveurs situés en France. Les données sont supprimées après 12 mois sans activité.</div>'
+    +'<div><b>Vos droits.</b> Le responsable du traitement est le chef d’établissement&nbsp;: vous pouvez lui demander l’accès aux données ou leur suppression.</div></div>'
+    +'<p>Pour le chant, votre enfant peut s’enregistrer en chantant sur un accompagnement préparé par le professeur. Seul le professeur écoute l’enregistrement pour le noter&nbsp;; il n’est jamais diffusé et peut être supprimé à tout moment (la note reste). Merci de nous indiquer votre choix ci-dessous.</p>'
+    +'<p>Je reste à votre disposition pour toute question.</p><p style="text-align:right"><b>'+e(I.prof||"Le professeur d’éducation musicale")+'</b></p>'
+    +'<div class="lf-cut"><span>✂ à découper et à rapporter au professeur</span></div>'
+    +'<div class="lf-coupon"><h3>Enregistrement de la voix · '+(nom?e(nom):'Nom et prénom de l’élève : ………………………………')+(cl?' · '+e(cl):'')+'</h3>'
+    +'<div class="ch"><i></i><span>J’autorise mon enfant à enregistrer sa voix sur MusEduc pour le travail de chant (écouté et noté par le professeur seulement).</span></div>'
+    +'<div class="ch"><i></i><span>Je n’autorise pas l’enregistrement&nbsp;: mon enfant chantera en classe, sans enregistrement.</span></div>'
+    +'<div class="lf-sig"><div>Date<span></span></div><div>Nom du responsable légal<span></span></div><div>Signature<span></span></div></div></div></section>';
+}
+/* les codes d'une classe, déjà en mémoire (rentrée, Notes) ; sinon chargés, et l'on redemande
+   le clic : une fenêtre d'impression ouverte après un chargement serait bloquée par le navigateur */
+function codesClasseMemo(cid){ const L=(_rtCodes&&_rtCodes[cid])||(typeof _evCodes!=="undefined"&&_evCodes[cid]); if(!L)return null;
+  return L.slice().sort(function(x,y){ return String(labelDe(cid,x)||"￿").localeCompare(String(labelDe(cid,y)||"￿"),"fr",{numeric:true}); }); }
+function codesClasseCharger(){ const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return Promise.resolve(false);
+  return s.collection("eleveCodes").where("ownerUid","==",u.uid).get().then(function(snap){ const P={}; snap.forEach(function(d){ const c=(d.data()||{}).classId; if(c)(P[c]=P[c]||[]).push(d.id); }); _rtCodes=P; return true; }).catch(function(){ return false; }); }
+function lfImprimer(classId){
+  const I=inspInfos(), cl=((_profClasses||[]).filter(function(c){ return c.id===classId; })[0])||null;
+  if(!classId){ ouvrirImpression("Lettre aux familles",lfLettre("","","",I),LF_CSS); return; }
+  const codes=codesClasseMemo(classId);
+  if(!codes){ toast("Chargement des codes de la classe…"); codesClasseCharger().then(function(ok){ toast(ok?"C’est prêt : cliquez de nouveau pour imprimer les lettres.":"Impossible de charger les codes."); }); return; }
+  const h=codes.length?codes.map(function(k){ return lfLettre(cl&&cl.nom,labelDe(classId,k),k,I); }).join(""):lfLettre(cl&&cl.nom,"","",I);
+  ouvrirImpression("Lettre aux familles · "+((cl&&cl.nom)||""),h,LF_CSS);
+}
+
+/* ---------- le kit du remplaçant ---------- */
+function krLecons(){ const L=[]; try{ CATEGORIES.forEach(function(g){ if(g.special)return; (g.items||[]).forEach(function(it){ L.push({id:it.id,nom:inspNomLecon(it.id),g:g.groupe}); }); }); }catch(e){}
+  try{ COURS_COLLEGE.forEach(function(c){ const D=COURS_DEF[c.id]; if(D)L.push({id:"cours-"+c.id,nom:D.titre,g:"Cours de collège"}); }); }catch(e){} return L; }
+function ecranKitRemplacant(){
+  if(typeof fermerMenu==="function")fermerMenu();
+  masquerInterfaceNormale(); majRetour(accueil,"Accueil");
+  titreProf('<i class="ph ph-lifebuoy"></i> Kit remplaçant',"Une absence ? Tout ce qu’il faut pour que la séance ait lieu, sur papier.");
+  const cls=(_profClasses||[]).filter(function(c){ return c.collegues!==true; }), L=krLecons(), G={};
+  L.forEach(function(x){ (G[x.g]=G[x.g]||[]).push(x); });
+  document.getElementById("zone").innerHTML='<div class="insp"><section class="insp-carte"><div class="insp-champs">'
+    +'<label class="insp-ch"><span>La classe</span><select id="krCl">'+(cls.length?cls.map(function(c){ return '<option value="'+c.id+'"'+(c.id===_classeProfSel?" selected":"")+'>'+echapH(c.nom||"")+'</option>'; }).join(""):'<option value="">(aucune classe)</option>')+'</select></label>'
+    +'<label class="insp-ch"><span>La leçon de la séance</span><select id="krLec">'+Object.keys(G).map(function(g){ return '<optgroup label="'+escAttr(g)+'">'+G[g].map(function(x){ return '<option value="'+x.id+'">'+echapH(x.nom)+'</option>'; }).join("")+'</optgroup>'; }).join("")+'</select></label>'
+    +'<label class="insp-ch"><span>Date</span><input id="krDate" type="date"></label>'
+    +'<label class="insp-ch"><span>Durée</span><select id="krDur"><option value="55">55 minutes</option><option value="50">50 minutes</option><option value="45">45 minutes</option></select></label>'
+    +'<label class="insp-ch insp-large"><span>Mon mot au remplaçant (règles de la classe, élèves à placer, matériel…)</span><textarea id="krMot" rows="3" maxlength="800" placeholder="Les élèves s’installent dans le calme, les tablettes sont dans l’armoire du fond…"></textarea></label>'
+    +'</div><div class="insp-parties" style="margin-top:12px">'
+    +'<label class="insp-p"><input type="checkbox" id="krCodes" checked><i class="ph-fill ph-identification-card"></i><span>Joindre la liste des élèves et de leurs codes</span></label>'
+    +'<label class="insp-p"><input type="checkbox" id="krExos" checked><i class="ph-fill ph-pencil-simple-line"></i><span>Joindre la leçon et sa fiche d’exercices (pour une séance sans écran)</span></label>'
+    +'<label class="insp-p"><input type="checkbox" id="krCorr" checked><i class="ph-fill ph-key"></i><span>Joindre le corrigé</span></label></div>'
+    +'<div style="margin-top:14px;text-align:center"><button type="button" class="rm-cta" onclick="krImprimer()"><i class="ph-fill ph-printer"></i> Imprimer le kit</button></div></section></div>';
+  try{ const d=new Date(); d.setDate(d.getDate()+1); document.getElementById("krDate").value=d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }catch(e){}
+}
+const KR_CSS=".me-marque{display:flex!important}.kr .k{font-size:9pt;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#b07c00}.kr h1{font-family:'Baloo 2',Arial,sans-serif;color:#1e3a63;font-size:20pt;margin:0 0 2mm}.kr h2{font-family:'Baloo 2',Arial,sans-serif;color:#1e3a63;font-size:13pt;margin:5mm 0 2mm}"
+  +".kr{break-after:page;page-break-after:always;font-size:10.5pt}.kr-p{display:flex;gap:2mm;flex-wrap:wrap;margin:1mm 0 4mm}.kr-p span{padding:1mm 3mm;border-radius:10mm;background:#eef2f7;font-weight:700;color:#1e3a63;font-size:9pt}"
+  +".kr-et{display:grid;grid-template-columns:16mm 1fr;gap:3mm;padding:2mm 0;border-top:1px solid #e1e6ee;break-inside:avoid}.kr-et .m{background:#1e3a63;color:#fff;border-radius:2.5mm;text-align:center;font:800 12pt 'Baloo 2',Arial,sans-serif;padding:1.5mm 0}.kr-et .m small{display:block;font:600 7pt Inter,Arial,sans-serif}"
+  +".kr-mot{border:1.5px solid #F2C94C;background:#fdf6df;border-radius:3mm;padding:3mm 4mm;margin:3mm 0;white-space:pre-wrap}.kr-lg{border-bottom:1px dotted #8a97a8;height:7mm}"
+  +".kr-ok{display:grid;grid-template-columns:1fr 1fr;gap:3mm}.kr-ok div{border:1px solid #d6dee8;border-radius:3mm;padding:2.5mm 3.5mm}.kr-ok b{display:block;color:#1e3a63;font-family:'Baloo 2',Arial,sans-serif}";
+function krImprimer(){
+  const cid=(document.getElementById("krCl")||{}).value, id=(document.getElementById("krLec")||{}).value; if(!id){ toast("Choisissez une leçon."); return; }
+  const dur=+((document.getElementById("krDur")||{}).value||55), dt=(document.getElementById("krDate")||{}).value, mot=String((document.getElementById("krMot")||{}).value||"").trim();
+  const codesOk=(document.getElementById("krCodes")||{}).checked, exosOk=(document.getElementById("krExos")||{}).checked, corrOk=(document.getElementById("krCorr")||{}).checked;
+  const cl=((_profClasses||[]).filter(function(c){ return c.id===cid; })[0])||{}, I=inspInfos(), e=echapH;
+  const cc=id.indexOf("cours-")===0?rcCoursCollege(id.slice(6)):null, lec=cc?{titre:cc.titre,html:cc.html}:(LECONS[id]||{}), titre=lec.titre||inspNomLecon(id);
+  const dom=rcDomaineDe(id), lieu=cc?"Cours de collège":"Leçons › "+dom.nom;
+  const r=Math.max(0,dur-50), et=[[5,"Accueil et appel","Faire entrer les élèves dans le calme, faire l’appel (Pronote)."],[15+r,"La leçon, projetée","Sur l’ordinateur de la classe : museduc.fr, puis "+lieu+" › « "+titre+" ». Pas besoin de compte : lire la leçon avec la classe, faire écouter les exemples."],
+    [15,"Exercices tous ensemble","Faire les exercices de la leçon au tableau, à l’oral (un élève répond, la classe valide). Sans écran : la fiche d’exercices jointe."],
+    [10,"Entraînement individuel","Sur tablette ou ordinateur : « Je suis élève », code et mot secret (liste jointe). Ouvrir la même leçon et s’entraîner au niveau Facile."],[5,"Bilan","Deux ou trois élèves disent ce qu’ils ont appris. Ranger le matériel."]];
+  let h='<section class="kr"><div class="k">Kit pour le remplaçant</div><h1>'+e(cl.nom||"La classe")+' · '+e(titre)+'</h1>'
+    +'<div class="kr-p">'+(dt?'<span>'+e(ctDateTxt(new Date(dt+"T12:00").getTime()))+'</span>':'')+'<span>'+dur+' minutes</span><span>Éducation musicale</span>'+(I.prof?'<span>Professeur : '+e(I.prof)+'</span>':'')+'</div>'
+    +(mot?'<div class="kr-mot"><b>Le mot du professeur.</b>\n'+e(mot)+'</div>':'<div class="kr-mot"><b>Le mot du professeur.</b><div class="kr-lg"></div><div class="kr-lg"></div></div>')
+    +'<h2>Le déroulé proposé</h2>'+et.map(function(x,i){ return '<div class="kr-et"><div class="m">'+x[0]+'<small>min</small></div><div><b>'+(i+1)+'. '+x[1]+'.</b> '+e(x[2])+'</div></div>'; }).join("")
+    +'<h2>Bon à savoir</h2><div class="kr-ok"><div><b>Si l’ordinateur ne marche pas</b>La fiche d’exercices jointe se fait sur papier&nbsp;; le corrigé est à la fin.</div><div><b>Si un élève a oublié son mot secret</b>Il travaille avec un camarade ou sur la fiche papier&nbsp;; le professeur le réinitialisera.</div>'
+    +'<div><b>Le travail à noter</b>Rien n’est noté pendant la séance&nbsp;: ramasser les fiches, le professeur les verra à son retour.</div><div><b>À la fin</b>Merci de noter ici ce qui s’est passé&nbsp;:<div class="kr-lg"></div><div class="kr-lg"></div></div></div></section>';
+  const fin=function(codes){
+    if(codes&&codes.length)h+='<section class="kr"><div class="k">'+e(cl.nom||"")+'</div><h1>Les élèves et leurs codes</h1><p class="mini">Le mot secret n’est connu que de l’élève. Ne pas afficher cette liste.</p><table><tr><th>Élève</th><th>Code</th><th>Présent</th></tr>'
+      +codes.map(function(k){ return '<tr><td>'+e(labelDe(cid,k)||"")+'</td><td><b>'+e(k)+'</b></td><td></td></tr>'; }).join("")+'</table></section>';
+    if(exosOk){ const st=rcVars(dom.c), tete=function(part,ic){ return '<header class="rc-tete"><span class="rc-num">01</span><div class="rc-tt"><span class="rc-dom">'+e(dom.nom)+'</span><h1>'+e(titre)+'</h1></div><span class="rc-part"><i class="ph-fill ph-'+ic+'"></i> '+part+'</span></header>'; };
+      if(lec.html)h+='<section class="rc-page" style="'+st+'">'+tete("Cours","book-open-text")+'<div class="rc-cours lecon">'+(cc?cc.html:rcCoursPapier(lec.html))+'</div></section>';
+      const exos=exosImprimables(cc?"evalcours-"+id.slice(6):id,1,8);
+      if(exos.length){ h+='<section class="rc-page" style="'+st+'">'+tete("Exercices","pencil-simple-line")+'<div class="rc-ident"><span>Nom</span><span>Prénom</span><span class="court">Classe</span><span class="court">Date</span></div>'+rcExosHTML(exos)+'</section>';
+        if(corrOk)h+='<section class="rc-page"><div class="rc-corr-t"><i class="ph-fill ph-key"></i><h2>Corrigé</h2><small>Pour le remplaçant</small></div><div class="rc-cb" style="'+st+'"><h3><b>01</b>'+e(titre)+'</h3>'+rcCorrigeHTML(exos)+'</div></section>'; } }
+    rcImprimer("Kit remplaçant · "+(cl.nom||""),h,KR_CSS);
+  };
+  if(!codesOk||!cid){ fin(null); return; }
+  const L=codesClasseMemo(cid);
+  if(L){ fin(L); return; }
+  toast("Chargement des codes de la classe…");
+  codesClasseCharger().then(function(ok){ toast(ok?"C’est prêt : cliquez de nouveau sur « Imprimer le kit ».":"Codes indisponibles : décochez la liste des codes."); });
+}
+
+/* ---------- la recherche rapide (Ctrl+K) ---------- */
+const PK_PAGES=[["Accueil","house","accueil()"],["Leçons","graduation-cap","ouvrir('_lecons')"],["Cours de collège","chalkboard-simple","ouvrir('_cours_college')"],["Mon parcours","path","ouvrir('_parcours')"],
+  ["Compositeurs","user-sound","ouvrir('_compositeurs')"],["Vocabulaire","cards","ouvrir('_vocab')"],["Éveil musical","baby","ecranEveil()"],["Corbeille","trash","ecranCorbeille()"],["Copie de secours","hard-drives","paramVue('sauvegarde')"],["Jouer","game-controller","ouvrir('_jouer')"],["Paramètres","gear","ecranParametres()"]];
+function pkProf(){ try{ const a=fbAuth(), u=a&&a.currentUser; return !!(u&&estProf(u)); }catch(e){ return false; } }
+function pkItems(q){
+  const n=rqNorm(q).trim(), mots=n?n.split(/\s+/):[], ok=function(t){ const x=rqNorm(t); return mots.every(function(m){ return x.indexOf(m)>=0; }); }, R=[];
+  const prof=pkProf();
+  PK_PAGES.forEach(function(p){ if(!n||ok(p[0]))R.push({t:p[0],s:"Page",ic:p[1],go:p[2]}); });
+  if(prof){
+    [].concat(AP_TUILES.suivi,AP_TUILES.contenus).forEach(function(t){ const lib=t[0].replace(/&amp;/g,"&"); if(!n||ok(lib+" "+t[1]))R.push({t:lib,s:"Enseignant",ic:t[2],go:t[4]}); });
+    [["La rentrée","rocket-launch","ecranRentree()"],["Kit remplaçant","lifebuoy","ecranKitRemplacant()"],["Lettre aux familles","envelope-simple","lfImprimer(null)"]].forEach(function(p){ if(!n||ok(p[0]))R.push({t:p[0],s:"Enseignant",ic:p[1],go:p[2]}); });
+    if(n)(_profClasses||[]).forEach(function(c){ if(ok(c.nom||""))R.push({t:c.nom,s:"Classe · notes",ic:"users-three",go:"evalsClasse('"+c.id+"')"},{t:c.nom,s:"Classe · élèves et codes",ic:"identification-card",go:"rosterClasse('"+c.id+"')"}); });
+    if(n&&_rq.index)rqTrouver(q,"roster").forEach(function(e){ R.push({t:e.nom||e.code,s:"Élève · "+e.cnom+" · "+e.code,ic:"student",go:"detailEleve('"+e.cid+"','"+e.code+"')"}); });
+  }
+  if(n){ krLecons().forEach(function(x){ if(ok(x.nom+" "+x.g))R.push({t:x.nom,s:x.g,ic:x.id.indexOf("cours-")===0?"chalkboard-simple":"book-open-text",go:x.id.indexOf("cours-")===0?"afficherLeconCours('"+x.id.slice(6)+"')":"afficherLecon('"+x.id+"')"}); }); }
+  return R.slice(0,12);
+}
+let _pk=null;
+function pkOuvrir(){
+  if(document.querySelector(".pk-voile"))return;
+  if(pkProf())rqCharger().then(function(){ if(_pk)pkMaj(); });
+  const ov=document.createElement("div"); ov.className="pk-voile dlg-voile";
+  ov.innerHTML='<div class="pk" role="dialog" aria-modal="true" aria-label="Recherche rapide"><label class="pk-champ"><i class="ph ph-magnifying-glass"></i><input type="search" placeholder="'+(pkProf()?"Une page, une classe, un élève, une leçon…":"Une page, une leçon…")+'" autocomplete="off" spellcheck="false" aria-label="Rechercher"><kbd>Échap</kbd></label><div class="pk-res" role="listbox"></div><p class="pk-aide"><kbd>↑</kbd><kbd>↓</kbd> choisir · <kbd>Entrée</kbd> ouvrir · <kbd>Ctrl</kbd>+<kbd>K</kbd> partout</p></div>';
+  _pk={ov:ov,i:0,L:[]};
+  const inp=ov.querySelector("input");
+  inp.oninput=function(){ _pk.i=0; pkMaj(); };
+  inp.onkeydown=function(e){
+    if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); _pk.i=(_pk.i+(e.key==="ArrowDown"?1:-1)+_pk.L.length)%Math.max(1,_pk.L.length); pkMaj(true); }
+    else if(e.key==="Enter"){ e.preventDefault(); pkAller(_pk.i); }
+    else if(e.key==="Escape"){ e.preventDefault(); pkFermer(); } };
+  ov.addEventListener("mousedown",function(e){ if(e.target===ov)pkFermer(); });
+  document.body.appendChild(ov); pkMaj(); setTimeout(function(){ inp.focus(); },20);
+}
+function pkMaj(garde){
+  if(!_pk)return; const inp=_pk.ov.querySelector("input"), z=_pk.ov.querySelector(".pk-res");
+  if(!garde)_pk.L=pkItems(inp.value);
+  z.innerHTML=_pk.L.length?_pk.L.map(function(x,i){ return '<button type="button" role="option" class="pk-o'+(i===_pk.i?" on":"")+'" aria-selected="'+(i===_pk.i)+'" onmousedown="event.preventDefault()" onclick="pkAller('+i+')"><i class="ph ph-'+x.ic+'"></i><b>'+echapH(x.t)+'</b><small>'+echapH(x.s)+'</small></button>'; }).join("")
+    :'<p class="pk-vide">Rien trouvé.</p>';
+  const on=z.querySelector(".on"); if(on&&on.scrollIntoView)on.scrollIntoView({block:"nearest"});
+}
+function pkAller(i){ const x=_pk&&_pk.L[i]; pkFermer(); if(!x)return; try{ if(typeof fermerMenu==="function")fermerMenu(); (new Function(x.go))(); if(typeof remonter==="function")remonter(); }catch(e){} }
+function pkFermer(){ if(_pk&&_pk.ov)_pk.ov.remove(); _pk=null; }
+document.addEventListener("keydown",function(e){
+  if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.key==="k"||e.key==="K")){ e.preventDefault(); if(_pk)pkFermer(); else pkOuvrir(); }
+});
+/* la loupe dans la rangée de boutons ronds du haut (professeur) */
+function pkBouton(){
+  const zone=document.getElementById("appControls"); let b=document.getElementById("pkBtn");
+  if(!pkProf()||!zone){ if(b)b.remove(); return; }
+  if(!b){ b=document.createElement("button"); b.type="button"; b.id="pkBtn"; b.className="app-btn"; b.onclick=pkOuvrir;
+    b.title="Rechercher une page, une classe, un élève, une leçon (Ctrl+K)"; b.setAttribute("aria-label",b.title);
+    b.innerHTML='<i class="ph ph-magnifying-glass"></i>'; zone.insertBefore(b,zone.firstChild); }
+}
+
+/* ---------- appréciations : la saisie dans Pronote, élève par élève ---------- */
+let _appPr=null;
+function appPronote(){
+  if(!_appDonnees||!_appDonnees.length){ toast("Aucune appréciation."); return; }
+  const L=_appDonnees.slice().sort(function(x,y){ return String(x.nom||"￿").localeCompare(String(y.nom||"￿"),"fr",{sensitivity:"base"}); });
+  const ov=document.createElement("div"); ov.className="dlg-voile";
+  ov.innerHTML='<div class="dlg ct app-pr" role="dialog" aria-modal="true" aria-label="Saisie dans Pronote"><div class="dlg-ic"><i class="ph-fill ph-clipboard-text"></i></div><h3 class="dlg-titre">Saisie dans Pronote</h3>'
+    +'<p class="ct-aide">Dans Pronote, ouvrez la saisie des appréciations, dans le même ordre alphabétique. Ici&nbsp;: <b>Copier et suivant</b>, puis collez dans la case de l’élève (Ctrl+V).</p>'
+    +'<div class="app-pr-n"></div><div class="app-pr-bar"><span></span></div><textarea class="ct-txt" rows="5"></textarea>'
+    +'<div class="dlg-actions"><button type="button" class="action btn-nouv" data-k="f">Fermer</button><button type="button" class="action btn-nouv" data-k="p"><i class="ph ph-caret-left"></i> Précédent</button><button type="button" class="action btn-corr" data-k="c"><i class="ph ph-copy"></i> Copier et suivant</button></div></div>';
+  _appPr={L:L,i:0,ov:ov};
+  const ta=ov.querySelector(".ct-txt");
+  const montrer=function(){ const e=L[_appPr.i]; ov.querySelector(".app-pr-n").innerHTML='<b>'+(_appPr.i+1)+' / '+L.length+'</b> · '+(e.nom?echapH(e.nom):'<i>sans nom</i>')+' <small>'+e.code+'</small>';
+    ov.querySelector(".app-pr-bar span").style.width=Math.round(100*(_appPr.i+1)/L.length)+"%"; ta.value=appTexteDe(e); };
+  ta.oninput=function(){ const e=L[_appPr.i]; appEditer(e.code,ta.value); const t=document.getElementById("app-"+e.code); if(t)t.value=ta.value; };
+  const fermer=function(){ document.removeEventListener("keydown",cl,true); ov.remove(); _appPr=null; };
+  const suivant=function(){ appPresse(ta.value); const b=ov.querySelector('[data-k="c"]');
+    if(_appPr.i<L.length-1){ _appPr.i++; montrer(); b.innerHTML='<i class="ph-fill ph-check-circle"></i> Copié · suivant'; setTimeout(function(){ if(_appPr)b.innerHTML='<i class="ph ph-copy"></i> Copier et suivant'; },900); }
+    else{ toast("Dernière appréciation copiée : c’est terminé !"); fermer(); } };
+  const cl=function(e){ if(e.key==="Escape"){ e.preventDefault(); e.stopPropagation(); fermer(); } else if(e.key==="Enter"&&(e.ctrlKey||document.activeElement!==ta)){ e.preventDefault(); e.stopPropagation(); suivant(); } };
+  ov.querySelector('[data-k="f"]').onclick=fermer;
+  ov.querySelector('[data-k="p"]').onclick=function(){ if(_appPr.i>0){ _appPr.i--; montrer(); } };
+  ov.querySelector('[data-k="c"]').onclick=suivant;
+  document.addEventListener("keydown",cl,true);
+  document.body.appendChild(ov); montrer(); setTimeout(function(){ ov.querySelector('[data-k="c"]').focus(); },30);
+}
+
+/* ---------- l'inspection, chiffrée : résultats des classes (sans nom) ---------- */
+let _inspRes=null;
+function inspChargerResultats(){
+  const s=fbStore(), a=fbAuth(), u=a&&a.currentUser; if(!s||!u)return Promise.resolve(null);
+  if(_inspRes&&Date.now()-_inspRes.t<600000)return Promise.resolve(_inspRes);
+  return chargerClassesProf().then(function(cls){
+    cls=(cls||[]).filter(function(c){ return c.collegues!==true; });
+    return Promise.all([s.collection("eleveCodes").where("ownerUid","==",u.uid).get().catch(function(){ return null; })].concat(cls.map(function(c){
+      const C=s.collection("classes").doc(c.id);
+      return Promise.all([C.collection("evals").get().catch(function(){ return null; }),C.collection("notesManuelles").get().catch(function(){ return null; }),C.collection("travailPlan").doc("lsu-annee").get().catch(function(){ return null; })]); }))).then(function(r){
+      const eff={}; if(r[0])r[0].forEach(function(d){ const k=(d.data()||{}).classId; if(k)eff[k]=(eff[k]||0)+1; });
+      const L=cls.map(function(c,i){ const x=r[i+1], notes=[], themes={};
+        if(x[0])x[0].forEach(function(d){ const v=d.data()||{}; if(v.note==null||v._travail)return; notes.push(20*v.note/(v.sur||20)); themes[v.theme||"?"]=1; });
+        if(x[1])x[1].forEach(function(d){ const v=d.data()||{}, sur=v.sur||20; themes[v.titre||"Évaluation"]=1; Object.keys(v.notes||{}).forEach(function(k){ const n=v.notes[k]; if(n!=null&&n!=="")notes.push(20*Number(n)/sur); }); });
+        const R=[0,0,0,0]; notes.forEach(function(n){ R[n<8?0:(n<12?1:(n<16?2:3))]++; });
+        const lsu=(x[2]&&x[2].exists&&(x[2].data()||{}).c)||{}, P=[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
+        Object.keys(lsu).forEach(function(k){ [0,1,2,3].forEach(function(j){ const v=+(lsu[k]||{})["c"+(j+1)]||0; if(v>=1&&v<=4)P[j][v]++; }); });
+        return {nom:c.nom||"",niv:classeGroupe(c),eff:eff[c.id]||0,nb:notes.length,ev:Object.keys(themes).length,moy:notes.length?notes.reduce(function(a,b){ return a+b; },0)/notes.length:null,R:R,P:P}; });
+      _inspRes={t:Date.now(),L:L}; return _inspRes;
+    });
+  }).catch(function(){ return null; });
+}
+function inspResultatsHTML(){
+  const e=echapH, R=_inspRes; if(!R||!R.L.length)return "";
+  const f=function(n){ return n==null?"-":String(Math.round(n*10)/10).replace(".",","); };
+  let h='<section class="page"><div class="k">Résultats</div><h1>Les résultats de mes classes</h1><p>Chiffres de l’année en cours, sans aucun nom d’élève&nbsp;: notes des évaluations (en ligne, papier et chant noté), ramenées sur 20.</p>'
+    +'<table><tr><th>Classe</th><th>Niveau</th><th>Effectif</th><th>Évaluations</th><th>Notes</th><th>Moyenne</th><th>Moins de 8</th><th>8 à 12</th><th>12 à 16</th><th>16 et plus</th></tr>'
+    +R.L.map(function(c){ return '<tr><td><b>'+e(c.nom)+'</b></td><td>'+(CC_NIV_LIB[c.niv]||e(c.niv||""))+'</td><td>'+c.eff+'</td><td>'+c.ev+'</td><td>'+c.nb+'</td><td><b>'+f(c.moy)+'</b></td>'+c.R.map(function(n){ return '<td>'+(c.nb?Math.round(100*n/c.nb)+"&nbsp;%":"-")+'</td>'; }).join("")+'</tr>'; }).join("")+'</table>';
+  const avecLsu=R.L.filter(function(c){ return c.P.some(function(p){ return p[1]+p[2]+p[3]+p[4]; }); });
+  if(avecLsu.length)h+='<h2>Positionnement par compétences (année)</h2><p class="mini">Nombre d’élèves à chaque niveau&nbsp;: insuffisante · fragile · satisfaisante · très bonne.</p><table><tr><th>Classe</th><th>C1</th><th>C2</th><th>C3</th><th>C4</th></tr>'
+    +avecLsu.map(function(c){ return '<tr><td><b>'+e(c.nom)+'</b></td>'+c.P.map(function(p){ return '<td>'+p.slice(1).join(" · ")+'</td>'; }).join("")+'</tr>'; }).join("")+'</table>';
+  try{ const F=evFaits(), n=Object.keys(F).length; if(n)h+='<h2>Éveil musical (primaire)</h2><p>'+n+' séance'+(n>1?"s":"")+' faite'+(n>1?"s":"")+' cette année&nbsp;; le détail daté est dans la progression de l’éveil.</p>'; }catch(x){}
+  return h+'</section>';
+}
 function ecranImpressionProf(){
   if(typeof fermerMenu==="function")fermerMenu();
   masquerInterfaceNormale(); majRetour(accueil,"Accueil");
@@ -35293,6 +37909,8 @@ function ecranImpressionProf(){
         +'<span class="imp-tuile-ic"><i class="ph-fill ph-'+v[3]+'"></i></span><span class="imp-tuile-t"><b>'+v[1]+'</b><small>'+v[2]+'</small></span></button>'; }).join("")
     +'<button type="button" class="imp-tuile imp-tuile-lien" style="--d:var(--dom-theorie)" onclick="ecranCorrectionPapier()">'
     +'<span class="imp-tuile-ic"><i class="ph-fill ph-check-square-offset"></i></span><span class="imp-tuile-t"><b>Centre de correction</b><small>Noter les copies QCM</small></span><i class="ph ph-arrow-right imp-fl" aria-hidden="true"></i></button>'
+    +'<button type="button" class="imp-tuile imp-tuile-lien" style="--d:var(--dom-culture)" onclick="ecranInspection()">'
+    +'<span class="imp-tuile-ic"><i class="ph-fill ph-seal-check"></i></span><span class="imp-tuile-t"><b>Inspection</b><small>Le dossier à remettre</small></span><i class="ph ph-arrow-right imp-fl" aria-hidden="true"></i></button>'
     +'</div>'
     +'<section class="imp-panneau" id="impP_qcm" aria-labelledby="impT_qcm"'+(_impVue==="qcm"?"":" hidden")+'>'+impQcmHTML()+'</section>'
     +'<section class="imp-panneau" id="impP_recueil" aria-labelledby="impT_recueil"'+(_impVue==="recueil"?"":" hidden")+'>'+impRecueilHTML()+'</section>'
@@ -35324,7 +37942,11 @@ function impDomTout(i,v){
 function impMaj(){
   const nc=parseInt((document.getElementById("ppCopies")||{}).value,10)||1;
   const m=document.querySelector('input[name="ppMode"]:checked'), lib=document.getElementById("ppGoLib");
-  if(lib)lib.textContent="Préparer "+nc+" copie"+(nc>1?"s":"")+(nc>1&&m&&m.value==="diff"?" différentes":"");
+  const nom=!!(m&&m.value==="nom"), nz=document.getElementById("ppNomZ"); if(nz)nz.hidden=!nom;
+  if(nom){ const sc=document.getElementById("ppNomCl"); if(sc&&sc.value&&_ppNom.cid!==sc.value)ppNomCharger(); }
+  const cz=document.getElementById("ppCopies"), cr=cz&&cz.closest(".imp-reg"); if(cr)cr.hidden=nom;
+  const nCoch=_ppNom.coches?_ppNom.coches.length:0;
+  if(lib)lib.textContent=nom?"Préparer "+nCoch+" copie"+(nCoch>1?"s":"")+" nominative"+(nCoch>1?"s":""):"Préparer "+nc+" copie"+(nc>1?"s":"")+(nc>1&&m&&m.value==="diff"?" différentes":"");
   document.querySelectorAll(".imp-dom-p").forEach(function(p,i){
     const tot=p.querySelectorAll(".imp-chk").length, n=p.querySelectorAll(".imp-chk:checked").length;
     const b=document.getElementById("impDomN"+i); if(b){ b.textContent=n+"/"+tot; b.classList.toggle("plein",n>0); }
@@ -35912,20 +38534,28 @@ function ouvrirImpression(titre,corps,cssSup,tete){
   corps=rcPapier(corps);   /* images différées : voir rcPapier (copies QCM, fiches, recueils) */
   const w=window.open("","_blank","width=820,height=920");
   if(!w){toast("Autorise les fenêtres pop-up pour imprimer.");return;}
-  const css="body{font-family:Georgia,serif;margin:32px;color:#111}h1{font-size:1.4rem;margin:0 0 4px}"
-    +"h2{font-size:1rem;margin:18px 0 6px;border-bottom:1px solid #999;padding-bottom:3px}"
-    +"table{border-collapse:collapse;width:100%;font-size:.86rem;margin-top:8px}"
-    +"th,td{border:1px solid #999;padding:5px 7px;text-align:left}th{background:#eee}"
-    +".mini{color:#555;font-size:.8rem}.gros{font-size:2rem;font-weight:bold}"
+  /* la charte du site (01/11/2026) : Inter pour le texte, Baloo 2 pour les titres,
+     marine et or ; chaque document peut la compléter (cssSup) */
+  const css="*{-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+    +"body{font-family:Inter,Arial,sans-serif;font-size:10.5pt;line-height:1.45;margin:32px;color:#16233a}"
+    +"h1,h2,h3{font-family:'Baloo 2',Arial,sans-serif;color:#1e3a63}h1{font-size:20pt;line-height:1.1;margin:0 0 4px;padding-left:10px;border-left:6px solid #F2C94C}"
+    +"h2{font-size:13pt;margin:18px 0 6px;border-bottom:1.5px solid #d6dee8;padding-bottom:3px}"
+    +"table{border-collapse:collapse;width:100%;font-size:9.5pt;margin-top:8px}"
+    +"th,td{border:1px solid #c9d2dd;padding:5px 7px;text-align:left;vertical-align:top}th{background:#1e3a63;color:#fff;font-weight:700}"
+    +"tr:nth-child(even) td{background:#f6f8fb}tr{break-inside:avoid}"
+    +".mini{color:#566782;font-size:.82rem}.gros{font-family:'Baloo 2',Arial,sans-serif;font-size:2.2rem;font-weight:800;color:#1e3a63}"
     +".q{border:1px solid #bbb;border-left:5px solid #bbb;padding:8px 11px;margin:9px 0;page-break-inside:avoid}"
     +".q.ok{border-left-color:#2f9e63}.q.ko{border-left-color:#e0483b}"
     +".qnum{font-size:.72rem;text-transform:uppercase;letter-spacing:.6px;color:#555;margin-bottom:5px}"
     +".qtxt{font-size:.92rem}.qrep,.qsol{font-size:.85rem;margin-top:5px}"
     +".qsol{color:#a3271b}img,svg{max-width:100%;height:auto}"
-    +".me-marque{display:flex;justify-content:space-between;gap:12px;margin:0 0 12px;padding:0 0 4px;border-bottom:1px solid #ccc;font:8.5pt Arial,sans-serif;color:#555}"
-    +".me-marque b{color:#1e3a63}.me-pied{display:none;font:7.5pt Arial,sans-serif;color:#555;text-align:center;background:#fff}"
+    +".me-marque{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 6mm;padding:2mm 4mm;border-radius:2.5mm;background:#1e3a63;color:#dfe6f0;box-shadow:0 1.2mm 0 #F2C94C;font:8.5pt Inter,Arial,sans-serif}"
+    +".me-marque b{color:#F2C94C;font:800 12pt 'Baloo 2',Arial,sans-serif;letter-spacing:.4px}.me-pied{display:none;font:7.5pt Inter,Arial,sans-serif;color:#566782;text-align:center;background:#fff}"
     +marquePiedCSS();
-  const marque='<div class="me-marque"><span><b>MusEduc</b> · '+MUSEDUC_AUTEUR+'</span><span>'+MUSEDUC_SITE+'</span></div>';
+  const marque='<div class="me-marque"><span><b>MusEduc</b> · '+MUSEDUC_AUTEUR+'</span><span>'+MUSEDUC_SITE+' · '+new Date().toLocaleDateString("fr-FR")+'</span></div>';
+  /* les polices du site, même pour un document qui n'en demande pas */
+  if(String(tete||"").indexOf("polices.css")<0){ const base=location.href.replace(/[#?].*$/,"").replace(/[^/]*$/,"");
+    tete=(String(tete||"").indexOf("<base")<0?'<base href="'+escapeHtml(base)+'">':'')+'<link rel="stylesheet" href="polices/polices.css">'+(tete||""); }
   /* Pas de marge en haut de page : Chrome y imprimait sa ligne « date, titre » (en-têtes
      du navigateur, ajoutés dès qu'il y a de la place). L'espace du haut devient un
      retrait intérieur répété en haut de chaque page (box-decoration-break: clone),
@@ -37209,7 +39839,7 @@ function evVarie(g,n){ let k, essai=0; do{ k=g+(1+Math.floor(Math.random()*n)); 
 function evStop(){
   _ev.min.forEach(clearTimeout); _ev.min=[]; evTaire(); try{ evChStop(); }catch(e){}
   clearTimeout(_ev.fin); _ev.pause=false; _ev.suite=null; _ev.reprise=null;
-  evMusiqueArret(); evGestesArret(); evMonstreArret(); evMarcheArret(); _evC.auto=false;
+  evMusiqueArret(); evGestesArret(); evMonstreArret(); evMarcheArret(); evCanonArret(); evBouclesArret(); _evC.auto=false;
   try{ sonBtnCouper(); }catch(e){}
 }
 /* ---------- sons ---------- */
@@ -37362,7 +39992,7 @@ const EV_COURS=[
        [5,"Le souffle","Inspirer par le nez en gonflant le ventre, souffler longtemps sur « sss » comme un pneu qui se dégonfle.",null],
        [5,"La voix qui monte et descend","Le chef montre « ça monte », « ça descend » : la classe suit avec la voix sur « ouuu ».",["jeu","chef"]],
        [15,"L’écho chanté","Chanter en écho les mélodies, d’abord sol-mi, puis avec plus de notes. Un élève peut chanter seul le modèle.",["jeu","echant"]],
-       [10,"La chanson de la classe","Apprendre ou reprendre une chanson phrase par phrase, en écho (l’enseignant chante, la classe répète).",["chants"]],
+       [10,"La chanson","Apprendre « À la claire fontaine » phrase par phrase, en écho (l’enseignant chante, la classe répète).",["chant","claire-fontaine"]],
        [5,"Trace écrite","Lire « À retenir ».",null]],
     ret:"Pour bien chanter, on prépare son <b>corps</b> (bien droit), son <b>souffle</b> (on respire avec le ventre) et sa <b>voix</b>. Chanter <b>juste</b>, c’est chanter les mêmes notes que le modèle. On apprend une chanson par <b>imitation</b>, phrase par phrase.",
     mots:["souffle","respiration","chanter juste","imitation","phrase"],
@@ -37371,7 +40001,7 @@ const EV_COURS=[
     mat:"Le tableau, les haut-parleurs, une tablette ou un téléphone pour enregistrer la classe.",
     e:[[5,"Échauffement","Reprendre l’échauffement de la séance précédente (corps, souffle, sirène).",null],
        [10,"L’écoute","Dans l’Ode à la joie, la mélodie est d’abord jouée doucement, puis le chœur chante tous ensemble, très fort. Quelle impression cela donne-t-il ?",["yt","ode"]],
-       [10,"Le chef d’orchestre","Chanter la chanson de la classe en suivant les signes du chef : doux, fort, crescendo.",["jeu","chef"]],
+       [10,"Le chef d’orchestre","Chanter « À la claire fontaine » en suivant les signes du chef : doux, fort, crescendo.",["jeu","chef"]],
        [10,"Deux interprétations","Chanter la chanson de deux façons choisies par la classe (douce et lente ; forte et rapide). Les enregistrer.",null],
        [10,"On écoute, on donne son avis","Écouter les deux enregistrements. « Laquelle va le mieux avec les paroles ? Pourquoi ? »",null]],
     ret:"<b>Interpréter</b> une chanson, c’est choisir comment la chanter : plus ou moins <b>fort</b> (la nuance), plus ou moins <b>vite</b> (le tempo), avec un <b>caractère</b> (joyeux, triste, mystérieux). Le choix doit aller avec le sens des paroles.",
@@ -37718,12 +40348,12 @@ const EV_COURS1=[
    {t:"La petite voix et la grosse voix",obj:"Faire une voix aiguë et une voix grave.",comp:["VOI","ECO"],mat:"Le tableau, les haut-parleurs.",
     e:[[5,"Les animaux","Imiter l’oiseau (cui-cui tout aigu) et l’ours (ouh tout grave).",null],
        [10,"Écoute et bouge","Oiseau : bras en l’air. Ours : accroupis.",["jeu","bouge:hauteur"]],
-       [5,"La comptine","Une comptine de la classe, une fois avec la voix de l’oiseau, une fois avec celle de l’ours.",["chants"]]],
+       [5,"La comptine","Chanter « Il était un petit chat » : « Miaou » une fois avec la petite voix de l’oiseau, une fois avec la grosse voix de l’ours.",["chant","petit-chat"]]],
     ret:"L’oiseau a une <b>petite voix</b> aiguë. L’ours a une <b>grosse voix</b> grave.",mots:["petite voix","grosse voix"],ev:"L’enfant fait la petite et la grosse voix."},
    {t:"Le lion et la souris",obj:"Faire une voix forte et une voix douce.",comp:["VOI","ECO"],mat:"Le tableau, les haut-parleurs.",
     e:[[5,"Rugir, chuchoter","Rugir comme un lion, chuchoter comme une souris.",null],
        [10,"Fort ou doux ?","Au tableau : la classe montre le lion (grands bras) ou la souris (petites mains).",["jeu","intensite"]],
-       [5,"La comptine","La comptine de la classe, très fort puis tout doucement.",["chants"]]],
+       [5,"La comptine","Chanter « Trois p’tits chats » très fort, puis tout doucement.",["chant","trois-chats"]]],
     ret:"Le lion fait un son <b>fort</b>. La souris fait un son <b>doux</b>.",mots:["fort","doux"],ev:"L’enfant chante fort puis doux sur un signe."},
    {t:"Les oiseaux qui chantent",obj:"Écouter une musique qui imite les oiseaux et en parler.",comp:["ECO","VOI"],mat:"Le tableau, les haut-parleurs.",
     e:[[5,"Écouter","Les yeux fermés, écouter les chanteurs qui imitent les oiseaux.",["yt","oiseaux"]],
@@ -37745,7 +40375,7 @@ const EV_COURS1=[
        [5,"Silence !","Tous ensemble, puis « Silence ! ».",null]],
     ret:"Le <b>vent</b>, la <b>pluie</b>, la <b>chouette</b> : on peut les faire avec la voix et le corps.",mots:["vent","pluie","bruit"],ev:"L’enfant joue son bruit et s’arrête au signal."},
    {t:"Le monstre tout doux",obj:"Contrôler sa voix pour chanter tout doucement.",comp:["VOI","REP"],mat:"Le tableau, le micro.",
-    e:[[5,"La comptine","Chanter la comptine de la classe.",["chants"]],
+    e:[[5,"La comptine","Chanter « Dodo, l’enfant do » tout doucement, comme pour endormir.",["chant","dodo"]],
        [10,"Le monstre du bruit","Défi « Tout doux » : chanter si doucement que le monstre reste petit.",["jeu","monstre"]],
        [5,"Et très fort !","Défi « Très fort », puis on se repose dans le silence.",["jeu","monstre"]]],
     ret:"Je peux chanter <b>tout doux</b> ou <b>très fort</b>.",mots:["tout doux","très fort"],ev:"L’enfant chante doucement pendant le défi."}]},
@@ -37756,16 +40386,16 @@ const EV_COURS1=[
    {t:"La sirène",obj:"Faire monter et descendre sa voix.",comp:["VOI"],mat:"Le tableau.",
     e:[[5,"La fusée","La voix monte sur « ouuu » comme une fusée, puis redescend.",null],
        [10,"Le chef d’orchestre","Mode « Aigu, grave » : ça monte, ça descend.",["jeu","chef"]],
-       [5,"La comptine","Chanter la comptine de la classe.",["chants"]]],
+       [5,"La comptine","Chanter « Au clair de la lune » : la main monte sur « lu-ne », redescend ensuite.",["chant","clair-lune"]]],
     ret:"Ma voix peut <b>monter</b> comme une fusée et <b>descendre</b> comme un toboggan.",mots:["monter","descendre"],ev:"L’enfant suit la main avec sa voix."},
    {t:"Coucou !",obj:"Chanter en écho deux notes (sol-mi).",comp:["VOI","REP"],mat:"Le tableau.",
     e:[[5,"Coucou","Chanter « cou-cou » comme le coucou, sur deux notes.",null],
        [10,"L’écho chanté","Niveau 1 : répéter « sol-mi » en écho.",["jeu","echant"]],
-       [5,"La comptine","Une comptine avec un « coucou » dedans.",["chants"]]],
+       [5,"La comptine","Chanter « Frère Jacques » : sur « ding, dang, dong », la voix descend comme une cloche.",["chant","frere-jacques"]]],
     ret:"Faire un <b>écho</b>, c’est chanter <b>pareil</b> que ce qu’on vient d’entendre.",mots:["écho","pareil"],ev:"L’enfant répète « sol-mi »."},
    {t:"Notre chanson",obj:"Chanter une comptine ensemble, avec des gestes.",comp:["REP","VOI"],mat:"Aucun.",
     e:[[5,"Se préparer","S’étirer, bâiller, souffler comme le vent.",null],
-       [10,"Apprendre","Une comptine phrase par phrase, en écho, avec des gestes.",["chants"]],
+       [10,"Apprendre","Apprendre « À cheval, gendarme » phrase par phrase, en écho, en trottant sur place.",["chant","a-cheval"]],
        [5,"La chanter","Toute la classe la chante, puis une fois tout doux.",null]],
     ret:"On apprend une <b>comptine</b> en répétant chaque phrase, avec des <b>gestes</b>.",mots:["comptine","chanter ensemble"],ev:"L’enfant chante la comptine avec les autres."}]},
  {e:"👣",c:"#00acc1",t:"Marcher, courir, s’arrêter",txt:"Bouger sur la musique : lentement, vite, et sur la pulsation.",
@@ -37785,7 +40415,7 @@ const EV_COURS1=[
    {t:"Les statues",obj:"Danser et s’arrêter avec la musique.",comp:["ECO","CRE"],mat:"De la place.",
     e:[[10,"Les statues musicales","On danse, on devient statue quand la musique s’arrête.",["jeu","statues"]],
        [5,"Inventer","Chacun invente une statue rigolote, les autres l’imitent.",null],
-       [5,"La comptine","La comptine de la classe, en marchant.",["chants"]]],
+       [5,"La comptine","Chanter « Notre beau bateau » en tournant ; sur « Plouf ! », tout le monde s’accroupit.",["chant","beau-bateau"]]],
     ret:"Quand la musique <b>s’arrête</b>, je deviens une <b>statue</b>.",mots:["danser","statue"],ev:"L’enfant se fige à l’arrêt de la musique."}]},
  {e:"👏",c:"#e53935",t:"Frapper les mots",txt:"Frapper son prénom, des mots, et répéter le tambour.",
   liens:"Langage : les syllabes, une préparation essentielle à la lecture.",
@@ -37863,8 +40493,8 @@ function evAvanceeSauver(){
 function evMarquerFait(cy,i,j,fait){ const F=evFaits(), k=cy+":"+i+":"+j; if(fait){ if(!F[k])F[k]=Date.now(); } else delete F[k]; evAvanceeSauver(); }
 function evFaitBascule(cy,i,j){ const f=!evEstFait(cy,i,j); evMarquerFait(cy,i,j,f); toast(f?"Séance cochée comme faite.":"Séance remise à faire."); evRendre(); }
 /* la séance où reprendre : celle qu'on a commencée, sinon la première pas faite, dans l'ordre */
-function evProchaine(cy){ const S=EV_CYCLES[cy].seq;
-  for(let i=0;i<S.length;i++)for(let j=0;j<S[i].s.length;j++)if(!evEstFait(cy,i,j))return [i,j]; return null; }
+function evProchaine(cy){ const L=evSeqOrd(EV_CYCLES[cy]);
+  for(let n=0;n<L.length;n++){ const q=L[n]; for(let j=0;j<q.s.length;j++)if(!evEstFait(cy,q._i,j))return [q._i,j]; } return null; }
 function evReprise(cy){
   const E=evEnCours()[cy], S=EV_CYCLES[cy].seq;
   if(E&&S[E.i]&&S[E.i].s[E.j]&&!evEstFait(cy,E.i,E.j))return {i:E.i,j:E.j,k:E.k||0};
@@ -37879,37 +40509,43 @@ function evCyclesHTML(){
     return '<button type="button" class="'+(k===_evCycle?"on":"")+'" aria-pressed="'+(k===_evCycle)+'" onclick="evCycleChoisir(\''+k+'\')"><b>'+X.nom+'</b><small>'+X.niv+'</small></button>'; }).join("")+'</div>';
 }
 /* ---------- l'accueil de l'enseignant : la séance du jour, le chemin, les portes ---------- */
-function evCoursHTML(){
+/* W : les parties à montrer (espace « Au tableau » : séance du jour et chemin seulement) */
+function evCoursHTML(W){
+  W=W||{jour:1,chemin:1,portes:1,imprimer:1,programme:1};
   const cy=_evCycle, C=EV_CYCLES[cy], tot=evNbSeances(cy), R=evReprise(cy), N=C.seq.length;
-  let faites=0, rang=0; C.seq.forEach(function(q,i){ q.s.forEach(function(s,j){ if(evEstFait(cy,i,j))faites++; if(R&&(i<R.i||(i===R.i&&j<R.j)))rang++; }); });
+  let faites=0, rang=0; C.seq.forEach(function(q,i){ q.s.forEach(function(s,j){ if(evEstFait(cy,i,j))faites++; if(R&&(q._n<C.seq[R.i]._n||(i===R.i&&j<R.j)))rang++; }); });
   let h='';
   /* 1. la séance du jour */
-  if(R){ const q=C.seq[R.i], s=q.s[R.j], E=evEtapesMener(s), n=E.length, deja=R.k>0;
+  if(W.jour){ if(R){ const q=C.seq[R.i], s=q.s[R.j], E=evEtapesMener(s), n=E.length, deja=R.k>0;
     h+='<section class="evh-auj" style="--c:'+q.c+'" aria-labelledby="evhAuj">'
       +'<div class="evh-num"><small>Séance</small><b>'+(rang+1)+'</b><span><i class="ph ph-clock"></i> '+C.min+' min</span></div>'
-      +'<div class="evh-info"><span class="evh-k">À faire aujourd’hui · séquence '+(R.i+1)+', séance '+(R.j+1)+' sur '+q.s.length+'</span>'
+      +'<div class="evh-info"><span class="evh-k">À faire aujourd’hui · séquence '+(C.seq[R.i]._n+1)+', séance '+(R.j+1)+' sur '+q.s.length+'</span>'
       +'<h3 id="evhAuj">'+s.t+'</h3>'
       +'<ol class="evh-etapes">'+E.map(function(e,x){ return '<li class="'+(deja&&x<R.k-1?"ok":(deja&&x===R.k-1?"ici":""))+'"><b>'+(x+1)+'</b>'+e[1]+'</li>'; }).join("")+'</ol>'
       +'<div class="evh-actions"><button type="button" class="evh-go" onclick="evOuvrir(\'mener:'+cy+':'+R.i+':'+R.j+':'+R.k+'\')"><i class="ph-fill ph-play"></i> '
       +(deja?"Continuer":(faites?"Commencer la séance":"Commencer le parcours"))+'</button>'
-      +'<button type="button" class="evh-prep" onclick="evOuvrir(\'seance:'+cy+':'+R.i+':'+R.j+'\')"><i class="ph ph-eye"></i> Préparer la séance</button></div></div></section>';
+      +(W.tableau?'':'<button type="button" class="evh-prep" onclick="evOuvrir(\'seance:'+cy+':'+R.i+':'+R.j+'\')"><i class="ph ph-eye"></i> Préparer la séance</button>')+'</div></div></section>';
   }else h+='<section class="evh-auj fini" style="--c:#2fb36b"><div class="evh-num"><b>🏆</b></div><div class="evh-info"><span class="evh-k">'+C.nom+'</span><h3>Tout le parcours est fait&nbsp;!</h3><p>Touchez une séquence du chemin pour refaire une séance.</p></div></section>';
+  }
   /* 2. le chemin des séquences */
-  const pos=R?R.i:N-1;
+  if(W.chemin){
+  const pos=R?C.seq[R.i]._n:N-1;
   h+='<section class="evh-chemin-z" aria-labelledby="evhChemin"><div class="evh-chemin-t"><h3 id="evhChemin">Notre parcours</h3><span>'+faites+' / '+tot+' séances faites</span></div>'
     +'<div class="evh-defile"><ol class="evh-chemin" style="--n:'+N+';--p:'+(N>1?pos/(N-1):0)+'">'
-    +C.seq.map(function(q,i){
+    +evSeqOrd(C).map(function(q){ const i=q._i;
       const n=q.s.filter(function(x,j){ return evEstFait(cy,i,j); }).length, finie=n===q.s.length, ici=!!R&&R.i===i;
       let jj=0; while(jj<q.s.length-1&&evEstFait(cy,i,jj))jj++;
-      const cible=ici?'mener:'+cy+':'+i+':'+R.j+':'+R.k:'seance:'+cy+':'+i+':'+jj;
+      const cible=ici?'mener:'+cy+':'+i+':'+R.j+':'+R.k:(W.tableau?'mener:'+cy+':'+i+':'+jj+':0':'seance:'+cy+':'+i+':'+jj);
       return '<li class="evh-seq'+(finie?" finie":"")+(ici?" ici":"")+'" style="--c:'+q.c+'">'
-        +'<button type="button" class="evh-rond" onclick="evOuvrir(\''+cible+'\')" aria-label="Séquence '+(i+1)+' : '+escAttr(q.t)+(finie?', faite':(ici?', en cours':''))+'">'
-        +'<span class="evh-emo">'+q.e+'</span><i class="evh-pastille">'+(finie?'<i class="ph-fill ph-check"></i>':(i+1))+'</i></button>'
+        +'<button type="button" class="evh-rond" onclick="evOuvrir(\''+cible+'\')" aria-label="Séquence '+(q._n+1)+' : '+escAttr(q.t)+(finie?', faite':(ici?', en cours':''))+'">'
+        +'<span class="evh-emo">'+q.e+'</span><i class="evh-pastille">'+(finie?'<i class="ph-fill ph-check"></i>':(q._n+1))+'</i></button>'
         +(ici?'<span class="evh-la">On en est là</span>':'')
         +'<b>'+q.t+'</b><span class="evh-points">'+q.s.map(function(x,j){ const f=evEstFait(cy,i,j), auj=ici&&R.j===j;
           return '<button type="button" class="'+(f?"fait":(auj?"auj":""))+'" onclick="evOuvrir(\'mener:'+cy+':'+i+':'+j+':'+(auj?R.k:0)+'\')" title="Séance '+(j+1)+' : '+escAttr(x.t)+'" aria-label="Séance '+(j+1)+' : '+escAttr(x.t)+(f?', faite':(auj?', aujourd’hui':''))+'"></button>'; }).join("")+'</span></li>'; }).join("")
     +'</ol></div><p class="evh-legende"><span class="fait"></span> faite <span class="auj"></span> aujourd’hui <span></span> à faire</p></section>';
+  }
   /* 3. les portes */
+  if(W.portes){
   const nA={}; EV_FAMILLES.forEach(function(F){ F.a.forEach(function(id){ if(EV_ACTS[id]&&EV_ACTS[id].c)nA[id]=1; }); }); const nAct=Object.keys(nA).length;
   const P=[["lecons","ph-projector-screen","#3d8bfd","Leçons en images","À projeter : une question, on écoute, on devine",Object.keys(EV_LECONS).length+" leçons"],
     ["chants","ph-music-notes","#c75a86","Comptines et chansons","Écouter, apprendre phrase par phrase, chanter ensemble",EV_CHANTS.length+" chansons"],
@@ -37918,16 +40554,119 @@ function evCoursHTML(){
     ["suivi","ph-clipboard-text","#8e5bd8","Suivi des élèves","Qui sait quoi, bilans pour les parents","Prénoms gardés sur l’appareil"]];
   h+='<nav class="evh-portes" aria-label="Rubriques de l’éveil">'+P.map(function(x){
     return '<button type="button" class="evh-porte" style="--c:'+x[2]+'" onclick="evOnglet(\''+x[0]+'\')"><span class="evh-ico"><i class="ph-fill '+x[1]+'"></i></span><b>'+x[3]+'</b><small>'+x[4]+'</small><em>'+x[5]+'</em></button>'; }).join("")+'</nav>';
+  }
   /* 4. à imprimer, et le programme */
-  h+='<div class="evh-imprimer"><span><i class="ph-fill ph-printer"></i> À imprimer</span>'
+  if(W.imprimer)h+='<div class="evh-imprimer"><span><i class="ph-fill ph-printer"></i> À imprimer</span>'
     +'<button type="button" onclick="evImprimerCours(\''+cy+'\')">Le cours complet (enseignant)</button>'
     +'<button type="button" onclick="evImprimerCahier(\''+cy+'\')">Cahier de l’élève</button>'
     +'<button type="button" onclick="evImprimerSuiviProf(\''+cy+'\')">Progression de la classe (inspection)</button>'
     +'<button type="button" onclick="evOnglet(\'suivi\')">Bilans pour les parents</button></div>';
-  h+='<details class="evc-prog"><summary><i class="ph-fill ph-scroll"></i> Le programme ('+C.court.toLowerCase()+')</summary>'
+  if(W.programme)h+='<details class="evc-prog"'+(W.ouvert?' open':'')+'><summary><i class="ph-fill ph-scroll"></i> Le programme ('+C.court.toLowerCase()+')</summary>'
     +'<div class="evc-champs">'+Object.keys(C.champs).map(function(k){ return '<div>'+evChampPuce(k)+'<p>'+C.champs[k][1]+'</p></div>'; }).join("")+'</div>'
     +'<p class="evc-src">Sources&nbsp;: programme de l’école maternelle (B.O. spécial n°2 du 26 mars 2015) ; programmes des cycles 2 et 3 (B.O. spécial n°11 du 26 novembre 2015) ; ressources Eduscol.</p></details>';
   return h;
+}
+/* =====================================================================
+   ÉVEIL MUSICAL, CÔTÉ ENSEIGNANT (refait le 29/10/2026)
+   Trois publics, trois façons d'afficher :
+   - l'enseignant (jamais projeté) : une page d'accueil légère, puis Mon année,
+     À projeter, Suivi des élèves, Imprimer et inspection ;
+   - la classe (projeté) : tout ce que voient les enfants s'ouvre en MODE TABLEAU,
+     plein écran sombre, sans menu ni texte pour l'enseignant ; la séance s'y déroule
+     étape par étape ;
+   - les enfants seuls : rien ici (les jeux sur tablette restent au mode solo).
+   ===================================================================== */
+let _evPage="";
+const EV_PAGES={annee:["ph-path","Mon année"],projeter:["ph-projector-screen-chart","À projeter"],suivi:["ph-clipboard-text","Suivi des élèves"],imprimer:["ph-printer","Imprimer et inspection"]};
+function evPage(p){ _evPage=p||""; evTableauOff(); _ev.vue=""; evRendre(); if(typeof remonter==="function")remonter(); }
+/* ---------- le mode tableau ---------- */
+function evTableauOn(){
+  if(_ev.tableau)return; _ev.tableau=true;
+  document.body.classList.add("ev-tableau");
+  try{ if(typeof estPleinEcran==="function"&&!estPleinEcran()&&typeof entrerPleinEcran==="function")entrerPleinEcran(); }catch(e){}
+}
+function evTableauOff(){
+  if(!_ev.tableau&&!document.body.classList.contains("ev-tableau"))return;
+  _ev.tableau=false; document.body.classList.remove("ev-tableau");
+  try{ if(typeof estPleinEcran==="function"&&estPleinEcran()&&typeof sortirPleinEcran==="function"&&!modeProjection)sortirPleinEcran(); }catch(e){}
+}
+/* ce qui se projette : la séance menée, les leçons en images, les chansons, les activités */
+function evVueProjetee(v){ const b=evBase(v); return !!v&&b!=="seance"; }
+/* ---------- l'accueil ---------- */
+function evProfHTML(){
+  const p=_evPage;
+  if(!p)return evRubanHTML(true)+evAccueilProfHTML();
+  const P=EV_PAGES[p]||["",""];
+  let h='<div class="evp-tete"><button type="button" class="evp-retour" onclick="evPage(\'\')" aria-label="Retour à l’accueil de l’éveil musical"><i class="ph ph-arrow-left"></i></button>'
+    +'<span class="evp-ic"><i class="ph-fill '+P[0]+'"></i></span><h2>'+P[1]+'</h2>'
+    +(p==="annee"||p==="imprimer"?'<div class="evp-cycle">'+evCyclesHTML()+'</div>':'')+'</div>';
+  if(p==="annee")h+=evAnneeHTML();
+  else if(p==="projeter")h+=evProjeterHTML();
+  else if(p==="suivi")h+=evSuiviHTML();
+  else if(p==="imprimer")h+=evImprimerPageHTML();
+  return h;
+}
+function evAccueilProfHTML(){
+  const cy=_evCycle, C=EV_CYCLES[cy], R=evReprise(cy), tot=evNbSeances(cy);
+  let faites=0; C.seq.forEach(function(q,i){ q.s.forEach(function(s,j){ if(evEstFait(cy,i,j))faites++; }); });
+  let h='<div class="evp-accueil">';
+  if(R){ const q=C.seq[R.i], s=q.s[R.j], E=evEtapesMener(s);
+    h+='<section class="evp-hero" style="--c:'+q.c+'"><div class="evp-hero-ill" aria-hidden="true">'+q.e+'</div>'
+      +'<div class="evp-hero-t"><span class="evp-k">Prochaine séance · '+C.court+' · séquence '+(C.seq[R.i]._n+1)+', séance '+(R.j+1)+'</span>'
+      +'<h3>'+s.t+'</h3><p><i class="ph ph-clock"></i> '+C.min+' min · '+E.length+' étapes · '+q.t+'</p>'
+      +'<div class="evp-hero-b"><button type="button" class="evp-lancer" onclick="evOuvrir(\'mener:'+cy+':'+R.i+':'+R.j+':'+R.k+'\')"><i class="ph-fill ph-projector-screen-chart"></i> '+(R.k>0?"Reprendre au tableau":"Lancer au tableau")+'</button>'
+      +'<button type="button" class="evp-preparer" onclick="evOuvrir(\'seance:'+cy+':'+R.i+':'+R.j+'\')"><i class="ph ph-book-open-text"></i> Préparer</button></div></div></section>';
+  }else h+='<section class="evp-hero fini" style="--c:#2fb36b"><div class="evp-hero-t"><span class="evp-k">'+C.nom+'</span><h3>Toutes les séances sont faites</h3><p>Choisissez une séance à refaire dans « Mon année ».</p></div></section>';
+  const tuile=function(p,t,sous,teinte){ const P=EV_PAGES[p];
+    return '<button type="button" class="evp-tuile" style="--c:'+teinte+'" onclick="evPage(\''+p+'\')"><span><i class="ph-fill '+P[0]+'"></i></span><b>'+P[1]+'</b><small>'+sous+'</small></button>'; };
+  h+='<div class="evp-tuiles">'
+    +tuile("annee","","Séquences et séances · "+faites+" / "+tot+" faites","#3d8bfd")
+    +tuile("projeter","",EV_CHANTS.length+" chansons, leçons en images, activités","#f08a00")
+    +tuile("suivi","","Qui sait quoi, bilans pour les parents","#8e5bd8")
+    +tuile("imprimer","","Cours, cahier de l’élève, inspection","#2fb36b")
+    +'</div><p class="evp-astuce"><i class="ph ph-projector-screen-chart"></i> Tout ce qui est pour les enfants s’ouvre <b>au tableau</b>, en plein écran ; ces pages-ci restent pour vous.</p></div>';
+  return h;
+}
+/* ---------- Mon année : séquences et séances ---------- */
+function evAnneeHTML(){
+  const cy=_evCycle, C=EV_CYCLES[cy], R=evReprise(cy);
+  let h='', per=-1;
+  evSeqOrd(C).forEach(function(q){ const i=q._i, p=evPeriodeDe(q._n,C.seq.length);
+    if(p!==per){ h+=(per>=0?'</div>':'')+'<h3 class="evp-periode">'+EV_PERIODES[p]+'</h3><div class="evp-seqs">'; per=p; }
+    const n=q.s.filter(function(x,j){ return evEstFait(cy,i,j); }).length;
+    h+='<section class="evp-seq'+(R&&R.i===i?" ici":"")+'" style="--c:'+q.c+'"><div class="evp-seq-t"><span class="evp-seq-ill" aria-hidden="true">'+q.e+'</span>'
+      +'<div><small>Séquence '+(q._n+1)+'</small><h3>'+q.t+'</h3></div><em>'+n+' / '+q.s.length+'</em></div><ol>'
+      +q.s.map(function(s,j){ const f=evEstFait(cy,i,j), auj=R&&R.i===i&&R.j===j;
+        return '<li class="'+(f?"fait":(auj?"auj":""))+'"><span class="evp-et">'+(f?'<i class="ph-fill ph-check-circle"></i>':(auj?'<i class="ph-fill ph-star"></i>':(j+1)))+'</span>'
+          +'<b>'+s.t+'</b>'+(auj?'<em class="evp-auj">Prochaine</em>':'')
+          +'<button type="button" class="evp-mini" onclick="evOuvrir(\'seance:'+cy+':'+i+':'+j+'\')"><i class="ph ph-book-open-text"></i> Préparer</button>'
+          +'<button type="button" class="evp-mini tab" onclick="evOuvrir(\'mener:'+cy+':'+i+':'+j+':0\')"><i class="ph-fill ph-projector-screen-chart"></i> Au tableau</button></li>'; }).join("")
+      +'</ol></section>'; });
+  return h+'</div>'+evCoursHTML({programme:1});
+}
+/* ---------- À projeter : ce qu'on montre à la classe hors séance ---------- */
+let _evProj="chants";
+function evProjeterHTML(){
+  const ong=[["chants","ph-music-notes","Chansons"],["lecons","ph-projector-screen","Leçons en images"],["classe","ph-users-three","Activités pour la classe"]];
+  let h='<div class="evp-ong" role="tablist">'+ong.map(function(o){ return '<button type="button" role="tab" aria-selected="'+(_evProj===o[0])+'" class="'+(_evProj===o[0]?"on":"")+'" onclick="_evProj=\''+o[0]+'\';evRendre()"><i class="ph-fill '+o[1]+'"></i> '+o[2]+'</button>'; }).join("")+'</div>';
+  if(_evProj==="chants")return h+evChansonsHTML();
+  if(_evProj==="lecons")return h+'<div class="ev-tuiles ev-tuiles-jeux">'+Object.keys(EV_LECONS).map(function(k){ const L=EV_LECONS[k];
+      return '<button type="button" class="ev-tuile grand" style="--c:'+L.c+'" onclick="evOuvrir(\'lecev:'+k+':0\')"><span class="ev-emo">'+L.e+'</span><b>'+L.t+'</b><small>'+L.q+'</small></button>'; }).join("")+'</div>';
+  return h+EV_FAMILLES.map(function(F){ const L=F.a.filter(function(id){ return EV_ACTS[id].c; }); if(!L.length)return "";
+    return '<section class="ev-famille" style="--c:'+F.c+'"><div class="ev-fam-t"><span>'+F.e+'</span><div><h3>'+F.nom+'</h3><p>'+F.txt+'</p></div></div>'
+      +'<div class="ev-tuiles">'+L.map(function(id){ return evTuileHTML(id,false); }).join("")+'</div></section>'; }).join("")+evVoixReglagesHTML();
+}
+/* tout ce qui s'imprime, à un seul endroit */
+function evImprimerPageHTML(){
+  const cy=_evCycle, C=EV_CYCLES[cy];
+  const c=function(ic,t,sous,go){ return '<button type="button" class="evx-imp" onclick="'+go+'"><span><i class="ph-fill '+ic+'"></i></span><b>'+t+'</b><small>'+sous+'</small></button>'; };
+  return '<p class="evx-cycle">'+C.nom+' · '+C.niv+' (le cycle se change en haut)</p><div class="evx-imps">'
+    +c("ph-book-open-text","Le cours complet","Page de garde, séquences et séances développées, programme","evImprimerCours(\'"+cy+"\')")
+    +c("ph-notebook","Le cahier de l’élève","Ce que les enfants apprennent, à colorier et compléter","evImprimerCahier(\'"+cy+"\')")
+    +c("ph-music-notes","Le carnet de chants","Les paroles des chansons du répertoire","evChImprimer()")
+    +c("ph-seal-check","Progression pour l’inspection","Séances faites, dates, compétences travaillées","evImprimerSuiviProf(\'"+cy+"\')")
+    +c("ph-users","Bilans pour les parents","Une page par élève, depuis le suivi","evOnglet(\'suivi\')")
+    +'</div>';
 }
 /* l'outil d'une étape : un jeu, une œuvre, une leçon (ret : la vue où revenir) */
 function evOutilHTML(o,ret){
@@ -37942,7 +40681,7 @@ function evOutilHTML(o,ret){
     return '<button type="button" class="evc-outil" onclick="evLeconDepuis(\''+o[1]+'\',\''+ret+'\')"><span>📖</span> Ouvrir la leçon&nbsp;: <b>'+echapH(nom)+'</b></button>'; }
   return "";
 }
-function evDepuis(id,ret){ evOuvrir(id); _ev.retourSeance=ret; evRendreSuite(); }
+function evDepuis(id,ret){ _ev.retourSeance=ret; evOuvrir(id); _ev.retourSeance=ret; evRendreSuite(); }
 function evRendreSuite(){ const z=document.getElementById("evScene"); if(!z||!_ev.retourSeance||z.querySelector(".ev-suite-seance"))return;
   const t=z.querySelector(".ev-tete"); if(t)t.insertAdjacentHTML("afterend",'<button type="button" class="rm-cta ev-suite-seance" onclick="evContinuerSeance()"><i class="ph-fill ph-play"></i> Continuer la séance</button>');
   const b=z.querySelector(".ev-retour"); if(b){ b.setAttribute("onclick","evOuvrir(\''+_ev.retourSeance+'\')"); b.setAttribute("aria-label","Retour à la séance"); } }
@@ -37954,17 +40693,19 @@ function evSeanceTrouver(v){ const p=String(v).split(":"), C=EV_CYCLES[p[1]], q=
 function evEtapesMener(s){ const l=s.e[s.e.length-1];
   return (l&&!l[3]&&/^(Bilan|Trace écrite|Je retiens)$/.test(l[1]))?s.e.slice(0,-1):s.e; }
 function evConsigneFin(s){ const l=s.e[s.e.length-1]; return evEtapesMener(s).length<s.e.length?l[2]:""; }
-function evSuivante(cy,i,j){ const S=EV_CYCLES[cy].seq; if(S[i].s[j+1])return [i,j+1]; if(S[i+1])return [i+1,0]; return null; }
+function evSuivante(cy,i,j){ const S=EV_CYCLES[cy].seq; if(S[i].s[j+1])return [i,j+1];
+  const L=evSeqOrd(EV_CYCLES[cy]), q=L[S[i]._n+1]; return q?[q._i,0]:null; }
 /* ---------- la fiche de préparation (tout le déroulé, à lire avant) ---------- */
 function evSeanceHTML(X){
   const cy=X.cy, i=X.i, j=X.j, q=X.q, s=X.s, C=X.C, ici='seance:'+cy+':'+i+':'+j, fait=evEstFait(cy,i,j);
   return '<div class="evc-seance" style="--c:'+q.c+'">'
-    +'<div class="evc-bandeau"><span>'+q.e+'</span><div><small>'+C.nom+' · séquence '+(i+1)+' · séance '+(j+1)+' sur '+q.s.length+'</small>'
+    +'<div class="evc-bandeau"><span>'+q.e+'</span><div><small>'+C.nom+' · séquence '+(q._n+1)+' · séance '+(j+1)+' sur '+q.s.length+'</small>'
     +'<p class="evc-obj"><b>Objectif.</b> '+s.obj+'</p><div class="evc-puces"><span class="evc-duree"><i class="ph ph-clock"></i> '+C.min+' min</span>'+s.comp.map(evChampPuce).join("")+'</div></div></div>'
     +'<div class="ev-duo evc-actions"><button type="button" class="rm-cta" onclick="evOuvrir(\'mener:'+cy+':'+i+':'+j+':0\')"><i class="ph-fill ph-play"></i> Mener la séance</button>'
     +'<button type="button" class="btn-son evc-fait'+(fait?" on":"")+'" aria-pressed="'+fait+'" onclick="evFaitBascule(\''+cy+'\','+i+','+j+')"><i class="ph'+(fait?"-fill":"")+' ph-check-circle"></i> '+(fait?"Faite":"Marquer comme faite")+'</button>'
     +'<button type="button" class="btn-son" onclick="evImprimerEleve(\''+cy+'\','+i+','+j+')"><i class="ph ph-printer"></i> Fiche élève</button>'
-    +'<button type="button" class="btn-son" onclick="evImprimerSeance(\''+cy+'\','+i+','+j+')"><i class="ph ph-printer"></i> Fiche enseignant</button></div>'
+    +'<button type="button" class="btn-son" onclick="evImprimerSeance(\''+cy+'\','+i+','+j+')"><i class="ph ph-printer"></i> Fiche enseignant</button>'
+    +'<button type="button" class="btn-son" onclick="ctMontrer(\'Le cahier journal\',ctTexteEveil(\''+cy+'\','+i+','+j+'))"><i class="ph ph-notebook"></i> Cahier journal</button></div>'
     +'<p class="evc-mat"><i class="ph-fill ph-backpack"></i> <b>Matériel.</b> '+s.mat+'</p>'
     +'<ol class="evc-etapes">'+s.e.map(function(e){ return '<li><span class="evc-min">'+e[0]+' min</span><div><b>'+e[1]+'</b><p>'+e[2]+'</p>'+evOutilHTML(e[3],ici)+evOutilHTML(e[4],ici)+'</div></li>'; }).join("")+'</ol>'
     +'<div class="cle evc-ret"><b><i class="ph-fill ph-push-pin"></i> À retenir</b><p>'+s.ret+'</p></div>'
@@ -37972,9 +40713,20 @@ function evSeanceHTML(X){
     +'<p class="evc-liens"><i class="ph ph-link"></i> '+q.liens+'</p></div>';
 }
 /* ---------- mener la séance : couverture (0), étapes (1 à n), fin (n + 1) ---------- */
-let _evChr={reste:0,total:0,timer:null};
+let _evChr={reste:0,total:0,timer:null,cle:""};
 function evChronoArret(){ if(_evChr.timer){ clearInterval(_evChr.timer); _evChr.timer=null; } }
-function evChronoAff(){ const z=document.getElementById("evChrono2"); if(!z)return;
+/* Le minuteur continue quand on ouvre l'outil d'une étape (jeu, écoute, leçon) : il
+   s'affiche alors en petit, en bas à droite, et retrouve sa place au retour dans la séance. */
+function evChronoFlottant(){
+  let f=document.getElementById("evChronoFlot"); const ici=document.getElementById("evChrono2");
+  if(!_evChr.timer||ici||!document.getElementById("evScene")){ if(f)f.remove(); return; }
+  if(!f){ f=document.createElement("div"); f.id="evChronoFlot"; f.className="ev-chrono-flot"; document.body.appendChild(f); }
+  const r=Math.max(0,_evChr.reste), m=Math.floor(r/60), s=r%60;
+  f.innerHTML='<i class="ph-fill ph-timer"></i><b>'+m+':'+(s<10?"0":"")+s+'</b>'
+    +'<button type="button" onclick="evChronoBascule()" aria-label="Mettre le minuteur en pause"><i class="ph-fill ph-pause"></i></button>'
+    +(_ev.retourSeance?'<button type="button" onclick="evOuvrir(_ev.retourSeance)" aria-label="Revenir à l’étape de la séance" title="Revenir à l’étape"><i class="ph ph-arrow-u-up-left"></i></button>':'');
+}
+function evChronoAff(){ evChronoFlottant(); const z=document.getElementById("evChrono2"); if(!z)return;
   const r=Math.max(0,_evChr.reste), m=Math.floor(r/60), s=r%60;
   z.querySelector("b").textContent=m+":"+(s<10?"0":"")+s;
   const b=document.getElementById("evChronoBtn"); if(b)b.innerHTML=_evChr.timer?'<i class="ph-fill ph-pause"></i>':'<i class="ph-fill ph-timer"></i>';
@@ -37982,10 +40734,10 @@ function evChronoAff(){ const z=document.getElementById("evChrono2"); if(!z)retu
   const i=z.querySelector("i.evm-anneau"); if(i)i.style.setProperty("--p",(_evChr.total?(1-r/_evChr.total)*100:0)+"%");
   z.classList.toggle("fini",r<=0); z.classList.toggle("marche",!!_evChr.timer); }
 function evChronoBascule(){
-  if(_evChr.timer){ evChronoArret(); evChronoAff(); return; }
+  if(_evChr.timer){ evChronoArret(); evChronoAff(); evChronoFlottant(); return; }
   if(_evChr.reste<=0)_evChr.reste=_evChr.total;
   _evChr.timer=setInterval(function(){
-    if(!document.getElementById("evChrono2")){ evChronoArret(); return; }
+    if(!document.getElementById("evScene")){ evChronoArret(); evChronoFlottant(); return; }   /* on a quitté l'éveil */
     _evChr.reste--; if(_evChr.reste<=0){ _evChr.reste=0; evChronoArret(); try{ evXyloSon(783.99,0,0.6); evXyloSon(1046.5,0.18,0.6); }catch(e){} }
     evChronoAff(); },1000);
   evChronoAff();
@@ -38000,7 +40752,7 @@ function evMenerHTML(X){
     return '<div class="evm" style="--c:'+q.c+'"><div class="evm-couv">'
       +(X.j===0?'<span class="evm-nouv"><i class="ph-fill ph-sparkle"></i> Nouvelle séquence</span>':'')
       +(X.j>0&&!evEstFait(X.cy,X.i,X.j-1)?'<p class="evm-avant"><i class="ph-fill ph-warning"></i> La séance '+X.j+' «&nbsp;'+q.s[X.j-1].t+'&nbsp;» n’est pas encore faite&nbsp;: elle prépare celle-ci. <button type="button" class="evm-lien" onclick="evOuvrir(\'mener:'+X.cy+':'+X.i+':'+(X.j-1)+':0\')">La faire d’abord</button></p>':'')
-      +'<span class="evm-couv-emo">'+q.e+'</span><small>'+X.C.nom+' · séquence '+(X.i+1)+' · séance '+(X.j+1)+' sur '+q.s.length+'</small>'
+      +'<span class="evm-couv-emo">'+q.e+'</span><small>'+X.C.nom+' · séquence '+(X.q._n+1)+' · séance '+(X.j+1)+' sur '+q.s.length+'</small>'
       +'<h3>'+s.t+'</h3>'+(X.j===0?'<p class="evm-seq">'+q.txt+'</p>':'')
       +'<p class="evm-obj"><i class="ph-fill ph-target"></i> '+s.obj+'</p>'
       +'<div class="evm-plan">'+E.map(function(e){ const A=e[3]&&e[3][0]==="jeu"?EV_ACTS[e[3][1]]:null;
@@ -38019,11 +40771,37 @@ function evMenerHTML(X){
       +'<button type="button" class="btn-son" onclick="evOuvrir(\'\')"><i class="ph ph-path"></i> Revenir au parcours</button></div></div>';
   }
   const e=E[k-1];
+  /* pour les enfants : de grands dessins et le titre ; la consigne de l'enseignant
+     reste repliée en bas (elle s'ouvre d'un clic, et le reste pour les étapes suivantes) */
   return '<div class="evm" style="--c:'+q.c+'">'+pts
-    +'<div class="evm-carte"><div class="evm-haut"><span class="evm-num">'+k+'</span><h3>'+e[1]+'</h3>'
+    +'<div class="evm-carte evm-enfants"><div class="evm-haut"><span class="evm-num">'+k+'</span>'
     +'<div class="evm-chrono" id="evChrono2"><i class="evm-anneau"></i><b>'+e[0]+':00</b><button type="button" class="evm-chrono-b" id="evChronoBtn" onclick="evChronoBascule()" aria-label="Lancer le minuteur"><i class="ph-fill ph-timer"></i></button></div></div>'
-    +'<p>'+e[2]+'</p>'+evOutilHTML(e[3],base+k)+evOutilHTML(e[4],base+k)+'</div>'
+    +evPictosEtape(e,q)+'<h3>'+e[1]+'</h3>'
+    +'<div class="evm-outils">'+evOutilHTML(e[3],base+k)+evOutilHTML(e[4],base+k)+'</div>'
+    +'<details class="evm-prof"'+(_ev.consigneOuverte?' open':'')+' ontoggle="_ev.consigneOuverte=this.open"><summary><i class="ph ph-chalkboard-teacher"></i> Consigne pour l’enseignant</summary><p>'+e[2]+'</p></details></div>'
     +nav(k-1,"evOuvrir('"+base+(k+1)+"')",k===n?"À retenir":"Suite")+'</div>';
+}
+/* les dessins d'une étape : l'activité lancée, puis les mots de l'étape (oiseau, tambour,
+   chanter…) ; trois au plus, seulement des dessins qui existent (EV_ILLU) */
+const EV_PICTO_MOTS=[[/oiseau/,"🐦"],[/\bours\b/,"🐻"],[/lion/,"🦁"],[/souris/,"🐭"],[/tortue/,"🐢"],[/lapin/,"🐇"],[/éléphant/,"🐘"],[/\bchats?\b/,"🐱"],
+  [/\bchiens?\b/,"🐶"],[/\bloup/,"🐺"],[/grenouille/,"🐸"],[/serpent/,"🐍"],[/chant|chanson|comptine/,"🎤"],[/écout|oreille/,"👂"],[/\bvoix\b/,"🗣"],
+  [/frapp|applaudi|tape/,"👏"],[/march/,"🚶"],[/cour(ir|ent|s)\b/,"🏃"],[/\bpieds?\b/,"🦶"],[/dans(e|er|ent)\b/,"💃"],[/tambour|percussion/,"🥁"],
+  [/piano|clavier/,"🎹"],[/violon/,"🎻"],[/trompette/,"🎺"],[/guitare/,"🎸"],[/flûte/,"🪈"],[/silence|chut/,"🤫"],[/\bfort\b/,"📢"],[/\bdoux\b|doucement/,"😌"],
+  [/aigu/,"⬆"],[/grave/,"⬇"],[/\bmonte/,"↗"],[/descend/,"↘"],[/rapide|vite/,"🏃"],[/pluie/,"🌧"],[/\bvent\b/,"🌬"],[/orage/,"⛈"],[/\bmer\b|vague/,"🌊"],
+  [/forêt|arbre/,"🌳"],[/\bnuit\b|dormi|berceuse/,"🌙"],[/cloche/,"🔔"],[/statue/,"🗿"],[/ronde|cercle/,"👥"],[/partition/,"🎼"],[/\bnotes?\b/,"🎵"],
+  [/pulsation|cœur/,"❤"],[/enregistr|micro/,"🎤"],[/orchestre/,"🎻"],[/geste|mime/,"🙌"]];
+function evPictosEtape(e,q){
+  const L=[], ok=function(x){ return x&&(typeof EV_ILLU==="undefined"||EV_ILLU[x])&&L.indexOf(x)<0; };
+  [e[3],e[4]].forEach(function(o){ if(!o)return; let x=null;
+    if(o[0]==="jeu"&&EV_ACTS[o[1]])x=EV_ACTS[o[1]].e;
+    else if(o[0]==="lecev"&&EV_LECONS[o[1]]&&EV_LECONS[o[1]].cartes[0])x=EV_LECONS[o[1]].cartes[0].e;
+    else if(o[0]==="yt")x="🎧"; else if(o[0]==="orguide")x="🎻"; else if(o[0]==="chants")x="🎤";
+    else if(o[0]==="chant"){ const C=evChTrouver(o[1]); x=C&&C.e; }
+    if(ok(x))L.push(x); });
+  const t=String(e[1]+" "+e[2]).toLowerCase();
+  EV_PICTO_MOTS.forEach(function(m){ if(L.length<3&&m[0].test(t)&&ok(m[1]))L.push(m[1]); });
+  if(!L.length&&ok(q.e))L.push(q.e);
+  return '<div class="evm-pictos" aria-hidden="true">'+L.map(function(x){ return '<span>'+x+'</span>'; }).join("")+'</div>';
 }
 /* contrôle des cours (au chargement) : durée de chaque séance, outils qui existent,
    « Je sais » rattachés à une séance ; les problèmes sont signalés dans la console */
@@ -38071,7 +40849,7 @@ function evMenerNoter(X){
 }
 document.addEventListener("keydown",function(e){
   if(!document.querySelector(".evm,.evl")||/INPUT|TEXTAREA|SELECT/.test((e.target||{}).tagName||""))return;
-  if(evBase(_ev.vue)==="lecev"){ const Y=evLecTrouver(_ev.vue); if(!Y)return; const t=5+Y.L.cartes.length;
+  if(evBase(_ev.vue)==="lecev"){ const Y=evLecTrouver(_ev.vue); if(!Y)return; const t=6+Y.L.cartes.length;
     if(e.key==="ArrowRight"&&Y.k<t-1){ e.preventDefault(); evOuvrir("lecev:"+Y.id+":"+(Y.k+1)); } else if(e.key==="ArrowLeft"&&Y.k>0){ e.preventDefault(); evOuvrir("lecev:"+Y.id+":"+(Y.k-1)); } return; }
   const X=evSeanceTrouver(_ev.vue); if(!X||evBase(_ev.vue)!=="mener")return;
   const n=X.ep.length;
@@ -38079,7 +40857,10 @@ document.addEventListener("keydown",function(e){
   else if(e.key==="ArrowLeft"&&X.k>0){ e.preventDefault(); evOuvrir('mener:'+X.cy+':'+X.i+':'+X.j+':'+(X.k-1)); }
 });
 /* ---------- impressions ---------- */
-const EVC_CSS="@page{size:A4;margin:12mm}:root{--me-haut:12mm}body{font-family:Inter,Arial,sans-serif;color:#16233a;font-size:11pt;line-height:1.45}"
+const EVC_CSS="*{-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+  +".me-marque{align-items:center;background:#1e3a63;color:#dfe6f0;padding:2.2mm 4mm;border:0;border-radius:2.5mm;font:8.5pt Inter,Arial,sans-serif;box-shadow:0 1.2mm 0 #F2C94C;margin:0 0 7mm}"
+  +".me-marque b{color:#F2C94C;font:800 12pt 'Baloo 2',Arial,sans-serif;letter-spacing:.4px}.me-pied{font-family:Inter,Arial,sans-serif;color:#566782}"
+  +"@page{size:A4;margin:12mm}:root{--me-haut:12mm}body{font-family:Inter,Arial,sans-serif;color:#16233a;font-size:11pt;line-height:1.45}"
   +"h1{font-family:'Baloo 2',Arial,sans-serif;font-size:20pt;margin:0 0 2mm;color:#1e3a63}h2{font-family:'Baloo 2',Arial,sans-serif;font-size:13pt;margin:5mm 0 2mm;color:#1e3a63}"
   +"h3{font-family:'Baloo 2',Arial,sans-serif;font-size:11.5pt;margin:4mm 0 1.5mm;color:#16233a}"
   +".k{font-size:9pt;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#b07c00}"
@@ -38099,15 +40880,6 @@ const EVC_CSS="@page{size:A4;margin:12mm}:root{--me-haut:12mm}body{font-family:I
 function evImpr(titre,corps,css){ const base=location.href.replace(/[#?].*$/,"").replace(/[^/]*$/,"");
   ouvrirImpression(titre,corps,EVC_CSS+(css||""),'<base href="'+escapeHtml(base)+'"><link rel="stylesheet" href="polices/polices.css">'); }
 function evDateFr(t){ try{ return new Date(t).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}); }catch(e){ return ""; } }
-function evImprimerEleve(cy,i,j){
-  const C=EV_CYCLES[cy], q=C.seq[i], s=q.s[j], der=j===q.s.length-1;
-  evImpr("Fiche élève · "+s.t,'<div class="k">Musique · '+C.nom+' · '+q.t+'</div><h1>'+s.t+'</h1>'
-    +'<div class="nom"><span>Prénom</span><span>Date</span></div>'
-    +'<h2>À retenir</h2><div class="ret">'+s.ret+'</div>'
-    +'<h2>Les mots</h2><div class="mots">'+s.mots.map(function(m){ return '<span>'+m+'</span>'; }).join("")+'</div>'
-    +'<h2>Mon dessin</h2><div class="dessin"></div>'
-    +(der?'<h2>Je sais…</h2><ul class="js">'+q.jesais.map(function(x){ return '<li>'+x+'</li>'; }).join("")+'</ul>':''));
-}
 /* l'outil d'une étape, en une ligne pour le papier */
 function evOutilTxt(o){ if(!o)return ""; if(o[0]==="yt"){ const Y=EV_YT[o[1]]; return Y?'<div class="outil">Écoute : '+echapH(Y[1])+' · youtu.be/'+Y[0]+'</div>':""; }
   if(o[0]==="jeu"){ const A=EV_ACTS[o[1]]; return A?'<div class="outil">Au tableau sur MusEduc : Éveil musical · '+A.t+'</div>':""; }
@@ -38143,14 +40915,14 @@ function evImprimerCours(cy){
     +'<div class="url">museduc.fr<small>Éveil musical · cours clés en main</small></div></section>';
   /* sommaire */
   h+='<section class="page"><div class="k">Éducation musicale · '+e(C.nom)+'</div><h1>Sommaire</h1><ol class="som">'
-    +C.seq.map(function(q,i){ return '<li><b>'+e(q.t)+'</b><br><small>'+q.s.map(function(s,j){ return (j+1)+'. '+e(s.t); }).join(" · ")+'</small></li>'; }).join("")+'</ol>'
+    +evSeqOrd(C).map(function(q){ return '<li><b>'+e(q.t)+'</b><br><small>'+q.s.map(function(s,j){ return (j+1)+'. '+e(s.t); }).join(" · ")+'</small></li>'; }).join("")+'</ol>'
     +'<h2>Le programme</h2><p>Les séances travaillent les compétences du programme ('+e(C.court.toLowerCase())+')&nbsp;:</p>'
     +'<div class="cps">'+Object.keys(C.champs).map(function(k){ const n=C.seq.reduce(function(a,q){ return a+q.s.filter(function(s){ return s.comp.indexOf(k)>=0; }).length; },0);
       return '<div><b>'+e(C.champs[k][0])+'</b>'+e(C.champs[k][1])+'<br><small style="color:#566782">'+n+' séance'+(n>1?"s":"")+'</small></div>'; }).join("")+'</div>'
     +'<p class="leg">Sources : programme de l’école maternelle (B.O. spécial n°2 du 26 mars 2015) ; programmes des cycles 2 et 3 (B.O. spécial n°11 du 26 novembre 2015) ; ressources Eduscol.</p></section>';
   /* les séquences */
-  C.seq.forEach(function(q,i){
-    h+='<section class="page" style="--c:'+q.c+'"><div class="sqh" style="background:'+q.c+'"><span class="n">'+(i+1)+'</span><div><small>Séquence '+(i+1)+' · '+q.s.length+' séances</small><b>'+e(q.t)+'</b></div></div>'
+  evSeqOrd(C).forEach(function(q){ const i=q._i;
+    h+='<section class="page" style="--c:'+q.c+'"><div class="sqh" style="background:'+q.c+'"><span class="n">'+(q._n+1)+'</span><div><small>'+EV_PERIODES[evPeriodeDe(q._n,C.seq.length)]+' · séquence '+(q._n+1)+' · '+q.s.length+' séances</small><b>'+e(q.t)+'</b></div></div>'
       +'<p>'+q.txt+'</p>'
       +'<div class="app2"><b>Ce que les enfants apprennent</b><ul>'+q.jesais.map(function(x){ return '<li>'+x+'</li>'; }).join("")+'</ul></div>'
       +'<p><b>Liens avec les autres enseignements.</b> '+q.liens+'</p>'
@@ -38163,14 +40935,6 @@ function evImprimerCours(cy){
       +'</section>';
   });
   evImpr("Cours d’éducation musicale · "+C.nom,h,EVCO_CSS);
-}
-function evImprimerSeance(cy,i,j){
-  const C=EV_CYCLES[cy], q=C.seq[i], s=q.s[j];
-  evImpr("Séance · "+s.t,'<div class="k">'+C.nom+' · séquence '+(i+1)+' · '+q.t+' · séance '+(j+1)+' sur '+q.s.length+' · '+C.min+' min</div><h1>'+s.t+'</h1>'
-    +'<p><b>Objectif.</b> '+s.obj+'</p><p><b>Compétences.</b> '+s.comp.map(function(k){ return C.champs[k][0]; }).join(" ; ")+'.</p><p><b>Matériel.</b> '+s.mat+'</p>'
-    +'<h2>Déroulé</h2><ol>'+s.e.map(function(e){ return '<li><span class="min">'+e[0]+' min</span> · <b>'+e[1]+'.</b> '+e[2]+evOutilTxt(e[3])+evOutilTxt(e[4])+'</li>'; }).join("")+'</ol>'
-    +'<h2>À retenir</h2><div class="ret">'+s.ret+'</div>'
-    +'<h2>Évaluer</h2><p>'+s.ev+'</p><h2>Liens avec les autres enseignements</h2><p>'+q.liens+'</p>');
 }
 /* le cahier d'apprentissage de l'élève, adapté à l'âge : en maternelle (c1) de grandes
    images, peu de mots (lus par l'adulte), des smileys à colorier et de grands cadres
@@ -38229,6 +40993,105 @@ function cahPictos(q,s,max){
     else if(o[0]==="orguide")A.push(["🎻","L’orchestre","a"]); }); });
   return P.slice(0,max).concat(A).slice(0,max+2);
 }
+/* Les fiches de l'éveil (29/10/2026) : la leçon en images d'une séance (sinon celle de
+   sa séquence), l'objectif dit par l'enfant (« Je sais… »), et les deux fiches refaites. */
+function evSeanceLecon(q,s){ let L=null;
+  const f=function(x){ x.e.forEach(function(e){ [e[3],e[4]].forEach(function(o){ if(!L&&o&&o[0]==="lecev"&&EV_LECONS[o[1]])L=o[1]; }); }); };
+  f(s); if(!L)q.s.forEach(f); return L; }
+const EV_MOI=[[/\bsa voix/g,"ma voix"],[/\bson prénom/g,"mon prénom"],[/\bet se taire/g,"et me taire"],[/\bs’arrêter/g,"m’arrêter"],[/\bson mouvement/g,"mon mouvement"],
+  [/\bson histoire/g,"notre histoire"],[/\bson spectacle/g,"notre spectacle"],[/\bsa propre/g,"ma propre"],[/\bson corps/g,"mon corps"],[/\bsa partie/g,"ma partie"],
+  [/\bsa composition/g,"ma composition"],[/\bson goût/g,"mon goût"],[/\bses choix/g,"mes choix"]];
+function evJeSais(obj){ let t=String(obj).replace(/\.\s*$/,""); t=t.charAt(0).toLowerCase()+t.slice(1);
+  EV_MOI.forEach(function(r){ t=t.replace(r[0],r[1]); }); return "Je sais "+t+"."; }
+/* « Je retiens » à trous : les mots en gras deviennent des traits, rangés dans une boîte à mots */
+function evTrous(ret){ const M=[]; const t=String(ret).replace(/<b>(.*?)<\/b>/g,function(a,m){ M.push(m.replace(/<[^>]+>/g,"")); return '<span class="tr"></span>'; });
+  const vu={}, B=M.filter(function(m){ const k=m.toLowerCase(); if(vu[k])return false; vu[k]=1; return true; }).sort(function(a,b){ return a.localeCompare(b,"fr"); });
+  return {t:t,mots:B}; }
+function evFicheTete(k,titre,c){ return '<div class="fe-tete" style="--c:'+(c||"#1e3a63")+'"><div><div class="k">'+k+'</div><h1>'+titre+'</h1></div></div>'; }
+const EVF_CSS="*{-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+  +".fe-tete{display:flex;align-items:center;gap:4mm;padding:0 0 3mm 4mm;border-left:2.5mm solid var(--c);margin:0 0 4mm}.fe-tete h1{margin:.5mm 0 0;line-height:1.1}"
+  +".fe-puces{display:flex;flex-wrap:wrap;gap:2mm;margin:0 0 4mm}.fe-puces span{padding:1mm 3mm;border-radius:10mm;background:#eef2f7;font-size:9pt;font-weight:700;color:#1e3a63}.fe-puces span.or{background:#fdf1c9;color:#7a5600}"
+  +".fe-obj{display:flex;gap:3mm;align-items:flex-start;padding:3mm 4mm;border-radius:3mm;background:#1e3a63;color:#fff;margin:0 0 4mm}.fe-obj b{color:#F2C94C;flex:none}"
+  /* frise des étapes */
+  +".fe-frise{display:flex;height:11mm;border-radius:2.5mm;overflow:hidden;margin:1mm 0 1.5mm}.fe-frise span{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:9pt;border-right:1.2px solid #fff;white-space:nowrap;overflow:hidden}"
+  +".fe-frise span:last-child{border-right:0}.fe-frise-l{display:flex;font-size:7.5pt;color:#566782;margin:0 0 3mm}.fe-frise-l span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:1mm}"
+  /* deux colonnes */
+  +".fe-2{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin:4mm 0 3mm;break-inside:avoid}.fe-bloc{border:1px solid #d6dee8;border-radius:3mm;padding:2.5mm 3.5mm;break-inside:avoid}"
+  +".fe-bloc h3{margin:0 0 1.5mm;font-size:11pt;color:#1e3a63;display:flex;align-items:center;gap:2mm}.fe-bloc h3 i{font-style:normal;width:6mm;height:6mm;border-radius:50%;background:#F2C94C;color:#1e3a63;display:inline-flex;align-items:center;justify-content:center;font-size:8.5pt}"
+  +".fe-bloc ul{margin:0;padding:0;list-style:none}.fe-bloc li{margin:0 0 1.2mm;padding-left:5.5mm;position:relative;font-size:10pt}"
+  +".fe-coche li::before{content:'';position:absolute;left:0;top:1mm;width:3.2mm;height:3.2mm;border:1.3px solid #1e3a63;border-radius:.8mm}"
+  +".fe-mots span{display:inline-block;margin:0 1.5mm 1.5mm 0;padding:.6mm 2.6mm;border-radius:10mm;background:#fdf1c9;font-weight:700;font-size:9.5pt}"
+  /* déroulé */
+  +".fe-et{display:grid;grid-template-columns:13mm 1fr;gap:3mm;padding:1.6mm 0;border-top:1px solid #e1e6ee;break-inside:avoid}.fe-et:first-of-type{border-top:0}"
+  +".fe-et .m{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:2.5mm;color:#fff;font-weight:800;font-size:12pt;line-height:1;padding:1.5mm 0}.fe-et .m small{font-size:7pt;font-weight:600;opacity:.9}"
+  +".fe-et p{margin:0;font-size:10pt}.fe-et .outil{margin-top:.8mm;font-size:8.8pt;color:#1e3a63}.fe-et .outil::before{content:'▶ ';color:#b08416}"
+  +".fe-dif{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.fe-dif .fe-bloc p{margin:0 0 1mm;font-weight:700;font-size:10pt}.fe-dif ol{margin:0;padding:0 0 0 5mm;font-size:9.3pt}.fe-dif ol li{padding-left:0}.fe-ret2{margin:0 0 2mm;font-size:9.8pt;padding:2mm 3mm;border-radius:2mm;background:#fdf6df}.fe-dif ol li{margin:0 0 .8mm}"
+  /* grille d'observation */
+  +".fe-gr{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.fe-gr table{font-size:9pt}.fe-gr td{height:5.6mm;padding:0 1.5mm}.fe-gr th{font-size:8pt;text-align:center;padding:1mm}.fe-gr th:first-child{text-align:left;width:46%}"
+  +".fe-garde{break-inside:avoid;page-break-inside:avoid;padding-top:3mm}.fe-lig{border-bottom:1px dotted #8a97a8;height:6mm}"
+  /* fiche élève */
+  +".fe-nom{display:grid;grid-template-columns:2fr 1fr;gap:4mm;margin:0 0 4mm}.fe-nom div{border:1.5px solid #1e3a63;border-radius:3mm;padding:1.5mm 3mm;height:9mm;font-size:9pt;font-weight:700;color:#566782}"
+  +".fe-ex{break-inside:avoid;margin:0 0 4mm}.fe-ex h2{display:flex;align-items:center;gap:2.5mm;border:0;margin:0 0 1.5mm}.fe-ex h2 .n{flex:none;width:8mm;height:8mm;border-radius:50%;background:var(--c);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11pt}"
+  +".fe-cons{font-size:9pt;color:#566782;margin:0 0 2mm}"
+  +".fe-ec{display:grid;grid-template-columns:20mm 1fr;align-items:center;gap:3mm;padding:1.5mm 0;border-top:1px dashed #d6dee8}.fe-ec:first-of-type{border-top:0}"
+  +".fe-ec b{font-family:'Baloo 2',Arial,sans-serif;font-size:12pt;color:#1e3a63}.fe-ec .cs{display:grid;gap:2.5mm}"
+  +".fe-ec .cs span{display:flex;align-items:center;gap:1.5mm;min-height:10mm;padding:0 3mm 0 1.5mm;border:1.5px solid #c9d2dd;border-radius:10mm;font-size:8.5pt;font-weight:700;line-height:1.05;box-sizing:border-box}.fe-ec .cs i{font-style:normal;font-size:15pt}"
+  +".fe-c1 .fe-ec .cs span{min-height:15mm;font-size:11pt}.fe-c1 .fe-ec .cs i{font-size:24pt}"
+  +".tr{display:inline-block;min-width:26mm;border-bottom:1.5px solid #16233a;margin:0 1mm;height:5mm;vertical-align:-1mm}"
+  +".fe-boite{display:flex;flex-wrap:wrap;gap:2mm;padding:2mm 3mm;border:1.5px dashed var(--c);border-radius:3mm;margin:2mm 0 0}.fe-boite b{width:100%;font-size:8.5pt;color:#566782}.fe-boite span{padding:.8mm 3mm;border-radius:10mm;background:#f4f7fb;font-weight:700}"
+  +".fe-ret{font-size:12pt;line-height:2}.fe-c1 .fe-ret{font-size:15pt}"
+  +".fe-faces{display:flex;align-items:center;gap:4mm}.fe-faces p{flex:1;margin:0;font-weight:700}.fe-faces .fc svg{width:13mm;height:13mm}.fe-c1 .fe-faces .fc svg{width:17mm;height:17mm}"
+  +".fe-c1{font-size:13pt}.fe-c1 h1{font-size:24pt}";
+function evImprimerSeance(cy,i,j){
+  const C=EV_CYCLES[cy], q=C.seq[i], s=q.s[j], lid=evSeanceLecon(q,s), P=lid?EV_LEC_PUB[lid]:null, e=echapH;
+  const frise='<div class="fe-frise">'+s.e.map(function(x,n){ return '<span style="flex:'+x[0]+';background:'+q.c+';opacity:'+(n%2?.78:1)+'">'+x[0]+' min</span>'; }).join("")+'</div>'
+    +'<div class="fe-frise-l">'+s.e.map(function(x,n){ return '<span style="flex:'+x[0]+'">'+(n+1)+'. '+x[1]+'</span>'; }).join("")+'</div>';
+  const mat=String(s.mat).replace(/\.$/,"").split(/, | ; /).filter(Boolean);
+  const avant=mat.concat(["Ouvrir MusEduc : Éveil musical, « "+s.t+" »","Vérifier le son des haut-parleurs"]);
+  /* différencier : le jeu du cycle d'en dessous pour aider, celui d'au-dessus pour aller plus loin */
+  let dif="";
+  if(P){ const aide=cy==="c1"?null:(cy==="c2"?P.c1:P.c2), plus=cy==="c1"?P.c2:(cy==="c2"?P.c3:null);
+    const bloc=function(t,X,soin){ return '<div class="fe-bloc"><h3><i>'+(soin?"+":"−")+'</i>'+t+'</h3>'+(X[0]===t?'':'<p>'+evNbsp(X[0])+'</p>')+'<ol>'+X[1].map(function(x){ return '<li>'+evNbsp(x)+'</li>'; }).join("")+'</ol></div>'; };
+    const a=aide?bloc("Pour aider",aide,0):'<div class="fe-bloc"><h3><i>−</i>Pour aider</h3><ol><li>Faire avec l’enfant, en miroir, avant de le laisser seul.</li><li>Montrer l’image ou le geste en même temps que le son.</li><li>Réduire le choix à deux réponses.</li></ol></div>';
+    const b=plus?bloc("Pour aller plus loin",plus,1):bloc("Pour aller plus loin",[P.c3[0],P.c3[1].filter(function(x){ return !/^Défi/.test(x); }).slice(0,1).concat(P.c3[1].filter(function(x){ return /^Défi/.test(x); }))],1);
+    dif='<h2>Différencier</h2><div class="fe-dif">'+a+b+'</div>'; }
+  const lignes=function(n){ let t=""; for(let x=0;x<n;x++)t+='<tr><td></td><td></td><td></td><td></td></tr>'; return t; };
+  const tab='<table><tr><th>Prénom</th><th>Réussi</th><th>En cours</th><th>Pas encore</th></tr>'+lignes(13)+'</table>';
+  const h='<section>'+evFicheTete(e(C.nom)+' · séquence '+(q._n+1)+' · '+e(q.t),s.t,q.c)
+    +'<div class="fe-puces"><span>'+e(C.niv)+'</span><span>Séance '+(j+1)+' sur '+q.s.length+'</span><span>'+C.min+' minutes</span><span class="or">'+EV_PERIODES[evPeriodeDe(q._n,C.seq.length)]+'</span>'
+    +s.comp.map(function(k){ return '<span>'+e(C.champs[k][0])+'</span>'; }).join("")+'</div>'
+    +'<div class="fe-obj"><b>Objectif</b><span>'+s.obj+'</span></div>'+frise
+    +'<h2>Déroulé</h2>'+s.e.map(function(x,n){ return '<div class="fe-et"><div class="m" style="background:'+q.c+'">'+x[0]+'<small>min</small></div><div><p><b>'+(n+1)+'. '+x[1]+'.</b> '+x[2]+'</p>'+evOutilTxt(x[3])+evOutilTxt(x[4])+'</div></div>'; }).join("")
+    
+    +'<div class="fe-2"><div class="fe-bloc fe-coche"><h3><i>1</i>Avant la séance</h3><ul>'+avant.map(function(x){ return '<li>'+evNbsp(x.charAt(0).toUpperCase()+x.slice(1))+'</li>'; }).join("")+'</ul></div>'
+    +'<div class="fe-bloc"><h3><i>2</i>À retenir et les mots à faire dire</h3><p class="fe-ret2">'+s.ret+'</p><div class="fe-mots">'+s.mots.map(function(m){ return '<span>'+m+'</span>'; }).join("")+'</div>'
+    +(lid?'<p style="margin:2mm 0 0;font-size:9pt;color:#566782">Leçon en images&nbsp;: «&nbsp;'+EV_LECONS[lid].t+'&nbsp;»</p>':'')+'</div></div>'+'</section>'
+    +'<section><div class="fe-garde">'+evFicheTete("Évaluer et garder une trace","Ce que je regarde pendant la séance",q.c)
+    +'<div class="fe-obj"><b>Critère</b><span>'+s.ev+'</span></div>'
+    +dif+'</div>'
+    +'<div class="fe-garde"><h2>Grille d’observation</h2><p class="leg">Une croix par enfant. Les prénoms restent sur le papier.</p><div class="fe-gr">'+tab+tab+'</div></div>'
+    +'<h2>Après la séance</h2><div class="fe-2"><div class="fe-bloc"><h3><i>✓</i>Ce qui a marché</h3><div class="fe-lig"></div><div class="fe-lig"></div></div>'
+    +'<div class="fe-bloc"><h3><i>↻</i>À reprendre</h3><div class="fe-lig"></div><div class="fe-lig"></div></div></div>'
+    +'<p style="font-size:9.5pt;margin:0"><b>Liens avec les autres enseignements.</b> '+q.liens+'</p></section>';
+  evImpr("Séance · "+s.t,h,EVF_CSS);
+}
+function evImprimerEleve(cy,i,j){
+  const C=EV_CYCLES[cy], q=C.seq[i], s=q.s[j], der=j===q.s.length-1, lid=evSeanceLecon(q,s), L=lid?EV_LECONS[lid]:null, c1=cy==="c1";
+  let n=0; const ex=function(t,cons,corps){ n++; return '<div class="fe-ex"><h2><span class="n">'+n+'</span>'+t+'</h2>'+(cons?'<p class="fe-cons">'+cons+'</p>':'')+corps+'</div>'; };
+  let h='<div class="fe fe-'+cy+'" style="--c:'+q.c+'">'+evFicheTete("Musique · "+C.nom+" · "+q.t,s.t,q.c)
+    +'<div class="fe-nom"><div>Prénom</div><div>Date</div></div>';
+  if(L){ const nb=c1?3:4, cs=L.cartes.slice(0,6);
+    let rows=""; for(let r=1;r<=nb;r++)rows+='<div class="fe-ec"><b>Son '+r+'</b><div class="cs" style="grid-template-columns:repeat('+cs.length+',minmax(0,'+(cs.length<3?"42mm":"1fr")+'))">'+cs.map(function(c){ return '<span><i>'+c.e+'</i>'+c.t.replace(/ : .*/,"").replace(/ · .*/,"")+'</span>'; }).join("")+'</div></div>';
+    h+=ex(c1?"J’écoute et j’entoure":"J’écoute et j’entoure la bonne réponse","Pour l’enseignant : faire écouter "+nb+" sons de la leçon «&nbsp;"+L.t+"&nbsp;» (les boutons «&nbsp;Écouter&nbsp;»).",rows); }
+  if(c1)h+=ex("Je retiens","L’adulte lit, l’enfant répète.",'<div class="ret fe-ret">'+s.ret+'</div>');
+  else { const T=evTrous(s.ret);
+    h+=T.mots.length?ex("Je complète avec les mots de la boîte","",'<div class="fe-ret">'+T.t+'</div><div class="fe-boite"><b>La boîte à mots</b>'+shuffle(T.mots.slice()).map(function(m){ return '<span>'+m+'</span>'; }).join("")+'</div>')
+      :ex("Je retiens","",'<div class="ret fe-ret">'+s.ret+'</div>'); }
+  h+=ex(c1?"Je dessine":"Je dessine ce que j’ai appris",c1?"":"Avec les mots : "+s.mots.join(", ")+".",'<div class="dessin" style="height:'+(c1?50:L?40:58)+'mm"></div>');
+  h+=ex("Je colorie mon visage","",'<div class="fe-faces"><p>'+evJeSais(s.obj)+'</p><span class="fc">'+cahFace("h")+cahFace("m")+cahFace("t")+'</span></div>');
+  if(der)h+='<h2>Je sais… (fin de la séquence)</h2><ul class="js">'+q.jesais.map(function(x){ return '<li>'+x+'</li>'; }).join("")+'</ul>';
+  evImpr("Fiche élève · "+s.t,h+'</div>',EVF_CSS);
+}
 function evImprimerCahier(cy){
   const C=EV_CYCLES[cy], F=evFaits(), petit=cy==="c1", moyen=cy==="c2";
   const sous={c1:"Je chante, j’écoute, je bouge",c2:"J’écoute, je chante, je joue",c3:"Écouter, chanter, créer"}[cy];
@@ -38237,8 +41100,8 @@ function evImprimerCahier(cy){
     +(cy!=="c3"?'<div class="portrait">Mon portrait</div>':'')
     +'<div class="lg">'+(petit?'Je m’appelle':'Prénom')+' <span></span></div>'+(petit?'':'<div class="lg">Classe <span></span></div>')
     +'<div class="notes">🎻 🎤 🪇 🎸 🎼</div></section>';
-  C.seq.forEach(function(q,i){
-    h+='<section class="page" style="--s:'+q.c+'"><div class="cbd" style="background:'+q.c+'"><span class="e">'+q.e+'</span><div><small>'+(petit?'Partie ':'Séquence ')+(i+1)+'</small><b>'+q.t+'</b></div></div>';
+  evSeqOrd(C).forEach(function(q){ const i=q._i;
+    h+='<section class="page" style="--s:'+q.c+'"><div class="cbd" style="background:'+q.c+'"><span class="e">'+q.e+'</span><div><small>'+(petit?'Partie ':'Séquence ')+(q._n+1)+'</small><b>'+q.t+'</b></div></div>';
     q.s.forEach(function(s,j){ const d=F[cy+":"+i+":"+j], P=cahPictos(q,s,petit?3:4);
       h+='<div class="cse" style="--f:'+CAH_COUL[(i+j)%CAH_COUL.length]+'"><div class="cse-t"><span class="n">'+(j+1)+'</span><span class="t">'+s.t+'</span></div>'
         +(P.length?'<div class="pic">'+P.map(function(p){ return '<span'+(p[2]?' class="a"':'')+'><i>'+p[0]+'</i>'+p[1]+'</span>'; }).join("")+'</div>':'')
@@ -38254,7 +41117,7 @@ function evImprimerCahier(cy){
   /* ma progression : une étoile par séance (pleine si la séance est faite) */
   h+='<section class="page"><div class="cbd" style="background:#1e3a63"><span class="e">🏆</span><div><small>'+C.nom+'</small><b>Ma progression</b></div></div>'
     +'<p class="t" style="font-size:12pt">'+(petit?'Une étoile à colorier pour chaque séance de musique&nbsp;!':'À chaque séance, je colorie une étoile.')+'</p>';
-  C.seq.forEach(function(q,i){ h+='<div class="prg"><div class="pq">'+q.e+' '+(i+1)+'. '+q.t+'</div>'
+  evSeqOrd(C).forEach(function(q){ const i=q._i; h+='<div class="prg"><div class="pq">'+q.e+' '+(q._n+1)+'. '+q.t+'</div>'
     +q.s.map(function(s,j){ const d=F[cy+":"+i+":"+j]; return '<div>'+cahEtoile(q.c,!!d)+(petit?'':s.t)+(d?'<br><span style="color:#566782;font-weight:400">'+evDateFr(d)+'</span>':'')+'</div>'; }).join("")+'</div>'; });
   evImpr("Cahier de musique · "+C.nom,h+'</section></div>',CAH_CSS);
 }
@@ -38264,14 +41127,19 @@ function evImprimerSuiviProf(cy){
   const C=EV_CYCLES[cy], F=evFaits(), cpt={};
   Object.keys(C.champs).forEach(function(k){ cpt[k]=0; });
   let lignes="", faites=0;
-  C.seq.forEach(function(q,i){ q.s.forEach(function(s,j){ const d=F[cy+":"+i+":"+j]; if(d){ faites++; s.comp.forEach(function(k){ cpt[k]++; }); }
-    lignes+='<tr><td>'+(i+1)+'.'+(j+1)+'</td><td>'+(j===0?'<b>'+q.t+'</b><br>':'')+s.t+'</td><td>'+s.obj+'</td><td>'+s.comp.map(function(k){ return C.champs[k][0]; }).join(", ")+'</td><td>'+(d?evDateFr(d):'')+'</td></tr>'; }); });
+  let per=-1;
+  evSeqOrd(C).forEach(function(q){ const i=q._i, p=evPeriodeDe(q._n,C.seq.length);
+    if(p!==per){ per=p; lignes+='<tr class="per"><td colspan="5">'+EV_PERIODES[p]+'</td></tr>'; }
+    q.s.forEach(function(s,j){ const d=F[cy+":"+i+":"+j]; if(d){ faites++; s.comp.forEach(function(k){ cpt[k]++; }); }
+    lignes+='<tr><td>'+(q._n+1)+'.'+(j+1)+'</td><td>'+(j===0?'<b>'+q.t+'</b><br>':'')+s.t+'</td><td>'+s.obj+'</td><td>'+s.comp.map(function(k){ return C.champs[k][0]; }).join(", ")+'</td><td>'+(d?evDateFr(d):'')+'</td></tr>'; }); });
   evImpr("Progression · "+C.nom,'<div class="k">Éducation musicale · '+C.nom+' ('+C.niv+') · séances de '+C.min+' minutes</div><h1>Progression de la classe</h1>'
     +'<p>Classe&nbsp;: ……………………………… &nbsp; Enseignant(e)&nbsp;: ………………………………</p>'
     +'<p><b>'+faites+'</b> séances faites sur <b>'+evNbSeances(cy)+'</b>. Compétences du programme travaillées (nombre de séances faites)&nbsp;:</p>'
     +'<table><tr>'+Object.keys(C.champs).map(function(k){ return '<th>'+C.champs[k][0]+'</th>'; }).join("")+'</tr><tr>'+Object.keys(C.champs).map(function(k){ return '<td class="c">'+cpt[k]+'</td>'; }).join("")+'</tr></table>'
     +'<h2>Détail des séances</h2><table><tr><th>N°</th><th>Séance</th><th>Objectif</th><th>Compétences</th><th>Faite le</th></tr>'+lignes+'</table>'
-    +'<p class="leg">Séances conçues sur le programme officiel ; détail de chaque séance dans MusEduc, rubrique Éveil musical.</p>');
+    +'<p class="leg">Séances conçues sur le programme officiel (B.O. spécial n°2 du 26 mars 2015 ; B.O. spécial n°11 du 26 novembre 2015) ; détail de chaque séance dans MusEduc, rubrique Éveil musical.</p>'
+    +'<div class="visa"><div><b>Observations</b></div><div><b>Visa</b></div></div>',"tr.per{break-after:avoid;page-break-after:avoid}.per td{background:#1e3a63;color:#F2C94C;font-weight:800;font-family:'Baloo 2',Arial,sans-serif;font-size:10.5pt}tr{break-inside:avoid}"
+    +".visa{display:grid;grid-template-columns:2fr 1fr;gap:4mm;margin-top:5mm;break-inside:avoid}.visa div{border:1.5px solid #1e3a63;border-radius:3mm;height:30mm;padding:2mm 3mm;color:#1e3a63}");
 }
 /* ---------- le suivi des élèves : qui a validé quoi, bilans pour les parents ----------
    Les élèves du primaire n'ont pas de compte : l'enseignant tape leurs prénoms, et ils
@@ -38292,20 +41160,21 @@ function evSuiviSauver(){
   try{ localStorage.setItem("museduc.eveil.suivi",JSON.stringify(_evS)); }catch(e){}
   evVoixDB().then(function(db){ db.transaction("etat","readwrite").objectStore("etat").put(JSON.parse(JSON.stringify(_evS)),"suivi"); }).catch(function(){});
 }
-function evClasse(){ if(!_evS)return null; const id=String(_evSClasse||"").replace(/^edit:/,""); return _evS.classes.filter(function(c){ return c.id===id; })[0]||_evS.classes[0]||null; }
+function evClassesVues(){ return ((_evS&&_evS.classes)||[]).filter(function(c){ return !c.cache; }); }
+function evClasse(){ if(!_evS)return null; const id=String(_evSClasse||""), L=evClassesVues(); return L.filter(function(c){ return c.id===id; })[0]||L[0]||null; }
 const EV_ETATS=[["","Pas encore"],["◐","En cours"],["✓","Acquis"]];
 function evSuiviHTML(){
-  if(!_evS){ evSuiviCharger().then(function(){ if(_ev.vue===""&&evOngletActif()==="suivi")evRendre(); }); return '<p class="ev-sous">Chargement…</p>'; }
+  if(!_evS||!evSuiviHTML._lie){ evSuiviHTML._lie=true; evLierClasses().then(function(){ if(_ev.vue===""&&evOngletActif()==="suivi")evRendre(); }); if(!_evS)return '<p class="ev-sous">Chargement…</p>'; }
   const cl=evClasse();
   let h='<p class="evs-rgpd"><i class="ph-fill ph-shield-check"></i> Les prénoms restent <b>sur cet appareil</b> : rien n’est envoyé sur le serveur.</p>';
-  if(!cl||_evSClasse==="nouvelle")return h+evSuiviFormHTML(null);
-  h+='<div class="evs-classes">'+_evS.classes.map(function(c){ return '<button type="button" class="'+(c.id===cl.id?"on":"")+'" onclick="_evSClasse=\''+c.id+'\';_evSSeq=0;evRendre()">'+echapH(c.nom)+'<small>'+EV_CYCLES[c.cy].nom+' · '+c.eleves.length+'</small></button>'; }).join("")
-    +'<button type="button" class="evs-plus" onclick="_evSClasse=\'nouvelle\';evRendre()"><i class="ph ph-plus"></i> Classe</button></div>';
-  if(String(_evSClasse).indexOf("edit:")===0)return h+evSuiviFormHTML(cl);
+  if(!cl)return h+'<div class="evs-aucune"><i class="ph-fill ph-users-three"></i><p>Créez votre classe dans <b>Mes classes</b> et choisissez son niveau&nbsp;: Maternelle, Cycle 2 ou Cycle 3. Elle apparaît ici, avec ses élèves.</p>'
+    +'<button type="button" class="rm-cta" onclick="dashboardProf()"><i class="ph-fill ph-users-three"></i> Mes classes</button></div>';
+  h+='<div class="evs-classes">'+evClassesVues().map(function(c){ return '<button type="button" class="'+(c.id===cl.id?"on":"")+'" onclick="_evSClasse=\''+c.id+'\';_evSSeq=0;evRendre()">'+echapH(c.nom)+'<small>'+EV_CYCLES[c.cy].nom+' · '+c.eleves.length+'</small></button>'; }).join("")
+    +'<button type="button" class="evs-plus" onclick="dashboardProf()"><i class="ph ph-plus"></i> Classe</button></div>';
   const C=EV_CYCLES[cl.cy], si=Math.min(_evSSeq,C.seq.length-1), q=C.seq[si];
-  h+='<div class="evs-seqs">'+C.seq.map(function(x,i){ return '<button type="button" class="'+(i===si?"on":"")+'" style="--c:'+x.c+'" onclick="_evSSeq='+i+';evRendre()" title="'+escAttr(x.t)+'"><span>'+x.e+'</span>'+(i+1)+'</button>'; }).join("")+'</div>'
+  h+='<div class="evs-seqs">'+evSeqOrd(C).map(function(x){ const i=x._i; return '<button type="button" class="'+(i===si?"on":"")+'" style="--c:'+x.c+'" onclick="_evSSeq='+i+';evRendre()" title="'+escAttr(x.t)+'"><span>'+x.e+'</span>'+(x._n+1)+'</button>'; }).join("")+'</div>'
     +'<h3 class="evs-titre" style="--c:'+q.c+'">'+q.e+' '+q.t+'</h3>';
-  if(!cl.eleves.length)h+='<p>Aucun élève : ajoutez les prénoms avec « Modifier la classe ».</p>';
+  if(!cl.eleves.length)h+='<p>Aucun élève : ajoutez-les avec « Élèves de la classe » (import de la liste).</p>';
   else h+='<div class="evs-grille" role="table"><div class="evs-l evs-t" role="row"><span role="columnheader">Élève</span>'
     +q.jesais.map(function(x,k){ return '<span role="columnheader">'+x+'<button type="button" class="evs-tous" onclick="evSuiviTous('+si+','+k+')" title="Toute la classe : acquis">✓ tous</button></span>'; }).join("")+'</div>'
     +cl.eleves.map(function(el){ const V=(cl.v&&cl.v[el.id])||{};
@@ -38315,30 +41184,8 @@ function evSuiviHTML(){
   h+='<div class="ev-duo evc-actions"><button type="button" class="rm-cta" onclick="evImprimerBilans()"><i class="ph-fill ph-printer"></i> Bilans pour les parents</button>'
     +'<button type="button" class="btn-son" onclick="evImprimerTableau()"><i class="ph ph-table"></i> Tableau de la classe</button>'
     +'<button type="button" class="btn-son" onclick="evImprimerCahier(\''+cl.cy+'\')"><i class="ph ph-book-open-text"></i> Cahier d’apprentissage</button>'
-    +'<button type="button" class="btn-son" onclick="_evSClasse=\'edit:'+cl.id+'\';evRendre()"><i class="ph ph-pencil-simple"></i> Modifier la classe</button></div>';
+    +'<button type="button" class="btn-son" onclick="rosterClasse(\''+(cl.fs||"ev:"+cl.id)+'\')"><i class="ph ph-identification-card"></i> Élèves de la classe</button></div>';
   return h;
-}
-function evSuiviFormHTML(cl){
-  return '<form class="evs-form" onsubmit="event.preventDefault();evSuiviEnregistrer(this,'+(cl?'\''+cl.id+'\'':'null')+')">'
-    +'<h3>'+(cl?"Modifier la classe":"Créer ma classe")+'</h3>'
-    +'<label>Nom de la classe <input name="nom" required maxlength="40" value="'+(cl?escAttr(cl.nom):"")+'" placeholder="CE1 de Mme Martin"></label>'
-    +'<label>Cycle <select name="cy">'+Object.keys(EV_CYCLES).map(function(k){ return '<option value="'+k+'"'+((cl?cl.cy:_evCycle)===k?" selected":"")+'>'+EV_CYCLES[k].nom+' ('+EV_CYCLES[k].niv+')</option>'; }).join("")+'</select></label>'
-    +'<label>Prénoms des élèves, un par ligne <textarea name="el" rows="8" placeholder="Léa&#10;Hugo&#10;Inès">'+(cl?echapH(cl.eleves.map(function(e){ return e.n; }).join("\n")):"")+'</textarea></label>'
-    +'<div class="ev-duo"><button type="submit" class="rm-cta"><i class="ph-fill ph-floppy-disk"></i> Enregistrer</button>'
-    +(_evS&&_evS.classes.length?'<button type="button" class="btn-son" onclick="_evSClasse=null;evRendre()">Annuler</button>':'')
-    +(cl?'<button type="button" class="btn-son evs-sup" onclick="evSuiviSupprimer(\''+cl.id+'\')"><i class="ph ph-trash"></i> Supprimer la classe</button>':'')+'</div></form>';
-}
-function evSuiviEnregistrer(f,id){
-  const noms=String(f.el.value||"").split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean).slice(0,40);
-  let cl=id?_evS.classes.filter(function(c){ return c.id===id; })[0]:null;
-  if(!cl){ cl={id:"k"+Date.now().toString(36),v:{},eleves:[]}; _evS.classes.push(cl); }
-  cl.nom=String(f.nom.value||"Ma classe").trim(); cl.cy=f.cy.value;
-  const anciens=cl.eleves; cl.eleves=noms.map(function(n,i){ const a=anciens.filter(function(e){ return e.n===n; })[0]; return a||{id:"e"+Date.now().toString(36)+i,n:n}; });
-  evSuiviSauver(); _evSClasse=cl.id; _evSSeq=0; toast("Classe enregistrée sur cet appareil."); evRendre();
-}
-async function evSuiviSupprimer(id){
-  if(!(await dlgConfirmer("Supprimer cette classe et tout son suivi sur cet appareil ?")))return;
-  _evS.classes=_evS.classes.filter(function(c){ return c.id!==id; }); evSuiviSauver(); _evSClasse=null; evRendre();
 }
 function evSuiviCocher(eid,si,k){ const cl=evClasse(); if(!cl)return; cl.v=cl.v||{}; const V=cl.v[eid]=cl.v[eid]||{}, c=si+":"+k;
   V[c]=((V[c]||0)+1)%3; if(!V[c])delete V[c]; evSuiviSauver(); evRendre(); }
@@ -38349,7 +41196,7 @@ function evImprimerBilans(){
   const cl=evClasse(); if(!cl||!cl.eleves.length){ toast("Ajoutez d’abord les élèves."); return; }
   const C=EV_CYCLES[cl.cy], marque=function(e){ return e===2?'<b style="color:#1d7a4a">✓ acquis</b>':(e===1?'<span style="color:#b07c00">◐ en cours</span>':'<span style="color:#8a97a8">○ pas encore</span>'); };
   const h=cl.eleves.map(function(el){ const V=(cl.v&&cl.v[el.id])||{}; let n=0, tot=0;
-    const seqs=C.seq.map(function(q,i){ return '<div class="sea"><div class="seq" style="background:'+q.c+'"><span>'+q.e+'</span><b>'+q.t+'</b></div><table>'
+    const seqs=evSeqOrd(C).map(function(q){ const i=q._i; return '<div class="sea"><div class="seq" style="background:'+q.c+'"><span>'+q.e+'</span><b>'+q.t+'</b></div><table>'
       +q.jesais.map(function(x,k){ const e=V[i+":"+k]||0; tot++; if(e===2)n++; return '<tr><td>'+x+'</td><td style="width:32mm">'+marque(e)+'</td></tr>'; }).join("")+'</table></div>'; }).join("");
     return '<section class="page"><div class="k">Éducation musicale · '+C.nom+' · '+echapH(cl.nom)+'</div><h1>Le bilan de musique de '+echapH(el.n)+'</h1>'
       +'<p>Voici ce que '+echapH(el.n)+' a appris en musique cette année&nbsp;: <b>'+n+'</b> compétence'+(n>1?"s":"")+' acquise'+(n>1?"s":"")+' sur '+tot+'.</p>'+seqs
@@ -38359,7 +41206,7 @@ function evImprimerBilans(){
 /* le tableau de toute la classe, séquence par séquence (pour le cahier de suivi) */
 function evImprimerTableau(){
   const cl=evClasse(); if(!cl)return; const C=EV_CYCLES[cl.cy];
-  const h=C.seq.map(function(q,i){ return '<section class="sea"><div class="seq" style="background:'+q.c+'"><span>'+q.e+'</span><b>'+(i+1)+'. '+q.t+'</b></div><table><tr><th>Élève</th>'
+  const h=evSeqOrd(C).map(function(q){ const i=q._i; return '<section class="sea"><div class="seq" style="background:'+q.c+'"><span>'+q.e+'</span><b>'+(q._n+1)+'. '+q.t+'</b></div><table><tr><th>Élève</th>'
     +q.jesais.map(function(x){ return '<th>'+x+'</th>'; }).join("")+'</tr>'
     +cl.eleves.map(function(el){ const V=(cl.v&&cl.v[el.id])||{}; return '<tr><td>'+echapH(el.n)+'</td>'+q.jesais.map(function(x,k){ const e=V[i+":"+k]||0; return '<td class="c">'+(e===2?"✓":(e===1?"◐":""))+'</td>'; }).join("")+'</tr>'; }).join("")+'</table></section>'; }).join("");
   evImpr("Suivi de la classe · "+cl.nom,'<div class="k">Éducation musicale · '+C.nom+'</div><h1>Suivi de la classe · '+echapH(cl.nom)+'</h1><p class="leg">✓ acquis · ◐ en cours</p>'+h);
@@ -38381,17 +41228,22 @@ const EV_ACTS={
   gestes:{t:"La partition des gestes",e:"🦶",c:1,d:"10 à 15 min",s:"Lire une partition de gestes, tous ensemble."},
   timbre:{t:"Qui joue ?",e:"🎺",d:"8 questions"},
   "familles:gestes":{t:"Les familles d’instruments",e:"🎻",c:1,d:"10 min",s:"Une photo, un son : on frappe, on frotte, on souffle ?"},
+  canon:{t:"Le canon",e:"🔁",c:1,d:"10 min",s:"Chaque groupe entre à son tour ; sa phrase s’allume."},"canon:row-boat":{t:"Le canon",e:"🔁",c:1,d:"10 min"},
+  boucles:{t:"Les boucles du corps",e:"🔄",c:1,d:"10 à 15 min",s:"Mains, pieds, cuisses, doigts : des boucles qui se superposent."},
   "familles:orchestre":{t:"Les familles d’instruments",e:"🎻",c:1,d:"10 min"}, paysage:{t:"Le paysage sonore",e:"🌳",c:1,d:"15 min",s:"Chaque groupe fait un bruit ; le chef les mélange."}
 };
 const EV_FAMILLES=[
-  {nom:"La hauteur",e:"🎵",c:"#3d8bfd",txt:"Aigu ou grave : les sons qui montent et qui descendent.",a:["hauteur","xylo","bouge:hauteur","echant"]},
-  {nom:"L’intensité",e:"🔊",c:"#f08a00",txt:"Fort ou doux : jouer avec le volume, et le silence.",a:["intensite","chef","monstre"]},
+  {nom:"La hauteur",e:"🎵",c:"#3d8bfd",txt:"Aigu ou grave : les sons qui montent et qui descendent.",a:["hauteur","xylo","bouge:hauteur"]},
+  {nom:"L’intensité",e:"🔊",c:"#f08a00",txt:"Fort ou doux : jouer avec le volume, et le silence.",a:["intensite","bouge:intensite","chef","monstre"]},
   {nom:"La durée et le tempo",e:"⏱️",c:"#2fb36b",txt:"Long ou court, lent ou rapide, et la pulsation.",a:["duree","tempo","marche","statues"]},
-  {nom:"Le rythme",e:"🥁",c:"#e53935",txt:"Frapper, répéter, lire un rythme simple.",a:["echo","mots","gestes"]},
+  {nom:"Le rythme",e:"🥁",c:"#e53935",txt:"Frapper, répéter, lire un rythme simple.",a:["echo","mots","gestes","boucles"]},
+  {nom:"Chanter ensemble",e:"🎤",c:"#c75a86",txt:"Chanter juste en écho, puis à plusieurs voix en canon.",a:["echant","canon"]},
   {nom:"Le timbre",e:"🎻",c:"#8e5bd8",txt:"Reconnaître qui joue, inventer des paysages de sons.",a:["timbre","familles:gestes","paysage"]}
 ];
 /* les fiches pour l'enseignant : ce qu'on apprend, comment mener l'activité */
 const EV_FICHES={
+  canon:["Chanter à plusieurs voix en canon : tenir sa voix en entendant les autres.",["Apprendre d’abord la chanson tous ensemble, à l’unisson.","Former les groupes (2 à 4) : chaque groupe regarde sa colonne.","« Lancer le canon » : le groupe 1 commence, chaque groupe entre quand sa phrase s’allume ; chacun chante deux fois."],"« Avec la musique » pour apprendre, puis sans : la classe chante seule sur la pulsation.","canon, voix, entrée, polyphonie"],
+  boucles:["Tenir un ostinato rythmique en groupe et le superposer à d’autres.",["Montrer les quatre gestes : mains, pieds, cuisses, doigts.","Un groupe par ligne ; lancer les boucles : chaque groupe joue quand sa case s’allume.","« Entrées une par une » : un groupe de plus toutes les deux boucles."],"Toucher les cases pour inventer la boucle de la classe ; faire sortir un groupe, puis le faire revenir.","ostinato, boucle, superposer, pulsation"],
   hauteur:["Distinguer un son aigu d’un son grave.",["Faire écouter, laisser l’enfant choisir l’animal.","Faire redire : « c’était aigu », « c’était grave »."],"Imiter avec la voix : la petite voix de l’oiseau, la grosse voix de l’ours.","aigu, grave, monter, descendre"],
   xylo:["Explorer la hauteur des sons et mémoriser une courte suite de notes.",["Jouer librement : les lames courtes sont aiguës, les longues graves.","« Répète après moi » : écouter, puis rejouer la suite."],"Chanter le nom des notes en même temps (do, ré, mi…).","note, aigu, grave, mémoriser"],
   "bouge:hauteur":["Associer un geste à une caractéristique du son ; écouter avec tout le corps.",["Montrer les deux gestes avec les élèves debout.","« Son suivant » : tout le monde réagit, puis on regarde la réponse.","Passer en automatique quand la classe a compris."],"Changer de notion (fort / doux, long / court, lent / rapide) avec les boutons du haut.","aigu, grave, fort, doux, long, court, lent, rapide"],
@@ -38418,11 +41270,12 @@ function evFicheHTML(id){
 }
 function ecranEveil(){
   if(typeof fermerMenu==="function")fermerMenu();
+  evSuiviHTML._lie=false;   /* les classes de primaire seront relues (élèves ajoutés entre-temps) */
   evStop(); masquerInterfaceNormale(); majRetour(null);
   const _t=document.getElementById("titre"), _i=document.getElementById("intro");
   if(_t){ _t.textContent="Éveil musical"; _t.style.display="none"; }
   if(_i){ _i.textContent=""; _i.style.display="none"; }
-  _ev.vue=""; evRendre();
+  _ev.vue=""; _evPage=""; evTableauOff(); evRendre();
   evVoixCharger(); evEtatCharger().then(function(){ if(!_ev.vue)evRendre(); });
   try{ speechSynthesis.getVoices(); }catch(e){}
   if(typeof remonter==="function")remonter();
@@ -38438,10 +41291,15 @@ function evTitre(v){
 function evEstClasse(v){ const b=evBase(v); if(b==="mener"||b==="lecev"||b==="chant")return true; const A=evAct(v); return !!(A&&A.c); }
 /* les trois portes d'entrée de l'accueil */
 const EV_ONGLETS={cours:["📚","Accueil","De la maternelle au CM2"],lecons:["📖","Leçons en images","À projeter"],chants:["🎤","Chansons","Écouter, apprendre, chanter"],classe:["🙌","Activités pour la classe","À projeter au tableau"],jeux:["🧒","Jeux pour les enfants","Sur une tablette"],suivi:["📋","Suivi des élèves","Bilans pour les parents"]};
-function evOngletsPermis(){ return evProf()?["cours","lecons","chants","classe","jeux","suivi"]:["jeux","chants","lecons","classe"]; }
+function evOngletsPermis(){ return ["jeux","chants","lecons","classe"]; }
 let _evOnglet=(function(){ try{ return localStorage.getItem("museduc.eveil.onglet")||""; }catch(e){ return ""; } })();
-function evOngletActif(){ const P=evOngletsPermis(); return P.indexOf(_evOnglet)>=0?_evOnglet:P[0]; }
-function evOnglet(o){ _evOnglet=o; try{ localStorage.setItem("museduc.eveil.onglet",o); }catch(e){} evRendre(); }
+function evOngletActif(){ if(evProf())return _evPage||"accueil"; const P=evOngletsPermis(); return P.indexOf(_evOnglet)>=0?_evOnglet:P[0]; }
+function evOnglet(o){
+  if(evProf()){ /* anciens liens : vers la page qui convient */
+    if(o==="suivi"||o==="imprimer"||o==="annee")return evPage(o);
+    if(o==="chants"||o==="lecons"||o==="classe"){ _evProj=o; return evPage("projeter"); }
+    return evPage(""); }
+  _evOnglet=o; try{ localStorage.setItem("museduc.eveil.onglet",o); }catch(e){} evRendre(); }
 function evTuileHTML(id,grand){ const A=EV_ACTS[id], F=EV_FAMILLES.filter(function(f){ return f.a.indexOf(id)>=0; })[0]||{c:"#1e3a63"};
   return '<button type="button" class="ev-tuile'+(grand?" grand":"")+'" style="--c:'+F.c+'" onclick="evOuvrir(\''+id+'\')"><span class="ev-emo">'+A.e+'</span><b>'+A.t+'</b>'
     +(A.s&&!grand?'<small>'+A.s+'</small>':'')+(A.d?'<span class="ev-badge"><i class="ph ph-clock"></i> '+A.d+'</span>':'')+'</button>'; }
@@ -38715,18 +41573,15 @@ function evChImprimer(){
     return '<section class="cc"><div class="cc-t"><span class="cc-ill">'+evIllustrerChaine(C.e)+'</span><h2>'+C.t+'</h2></div>'
       +lignes.filter(function(l){ return l.length; }).map(function(l){ return '<p>'+l.join(" ")+'</p>'; }).join("")
       +(C.cpl||[]).map(function(c,i){ return '<h3>Couplet '+(i+2)+'</h3>'+c.map(function(x){ return '<p>'+echapH(x)+'</p>'; }).join(""); }).join("")+'</section>'; }).join("");
-  ouvrirImpression("Carnet de chants",corps,".cc{page-break-inside:avoid;border:2px solid #1e3a63;border-radius:14px;padding:14px 18px;margin:0 0 14px}.cc-t{display:flex;align-items:center;gap:12px}.cc-ill svg{width:56px;height:56px}.cc h2{border:0;font-size:1.5rem;margin:0}.cc p{font-size:1.25rem;margin:4px 0}.cc h3{font-size:1rem;margin:10px 0 2px;color:#555}");
+  evImpr("Carnet de chants",corps,".cc{page-break-inside:avoid;border:2px solid #1e3a63;border-radius:14px;padding:14px 18px;margin:0 0 14px}.cc-t{display:flex;align-items:center;gap:12px}.cc-ill svg{width:56px;height:56px}.cc h2{border:0;font-size:1.5rem;margin:0}.cc p{font-size:1.25rem;margin:4px 0}.cc h3{font-size:1rem;margin:10px 0 2px;color:#555}");
 }
 function evIllustrerChaine(e){ const k=evIlCle(e); return k?evIlSVG(k):echapH(e); }
 
 function evAccueilHTML(){
   const P=evOngletsPermis(), o=evOngletActif(), prof=evProf();
-  let h=evRubanHTML(prof&&o==="cours");
-  if(prof){
-    if(o==="cours")return h+evCoursHTML();
-    h+='<nav class="evh-nav" aria-label="Éveil musical">'+P.map(function(k){ const O=EV_ONGLETS[k];
-      return '<button type="button" class="'+(k===o?"on":"")+'"'+(k===o?' aria-current="page"':'')+' onclick="evOnglet(\''+k+'\')">'+(k==="cours"?'<i class="ph-fill ph-house"></i> Accueil':'<span>'+O[0]+'</span> '+O[1])+'</button>'; }).join("")+'</nav>';
-  }else h+='<div class="ev-portes" role="tablist" aria-label="Éveil musical">'+P.map(function(k){ const O=EV_ONGLETS[k];
+  if(prof)return evProfHTML();
+  let h=evRubanHTML(false);
+  h+='<div class="ev-portes" role="tablist" aria-label="Éveil musical">'+P.map(function(k){ const O=EV_ONGLETS[k];
       return '<button type="button" role="tab" aria-selected="'+(k===o)+'" class="ev-porte'+(k===o?" on":"")+'" onclick="evOnglet(\''+k+'\')"><span class="ev-emo">'+O[0]+'</span><b>'+(k==="classe"?"Activités à plusieurs":O[1])+'</b><small>'+(k==="classe"?"En famille ou entre amis":O[2])+'</small></button>'; }).join("")+'</div>';
   if(o==="cours")h+=evCoursHTML();
   else if(o==="lecons")h+='<div class="ev-tuiles ev-tuiles-jeux">'+Object.keys(EV_LECONS).map(function(k){ const L=EV_LECONS[k];
@@ -38763,7 +41618,8 @@ function evRendre(){
   const X=doc?evSeanceTrouver(_ev.vue):null;
   const retour=(_ev.retourSeance&&!doc)?_ev.retourSeance:(base==="mener"?'seance:'+X.cy+':'+X.i+':'+X.j:"");
   const tete='<div class="ev-tete">'
-    +'<button type="button" class="ev-retour" onclick="evOuvrir(\''+retour+'\')" aria-label="'+(retour?"Retour à la séance":"Retour à l’éveil musical")+'"><i class="ph ph-arrow-left"></i></button>'
+    +((_ev.tableau&&(base==="mener"||!retour))?'<button type="button" class="ev-quitter" onclick="evOuvrir(\'\')"><i class="ph ph-x"></i> Quitter le tableau</button>'
+      :'<button type="button" class="ev-retour" onclick="evOuvrir(\''+retour+'\')" aria-label="'+(retour?"Retour à la séance":"Retour à l’éveil musical")+'"><i class="ph ph-arrow-left"></i></button>')
     +'<h2>'+evTitre(_ev.vue)+'</h2>'
     +(base==="seance"||classe?''
       :'<button type="button" class="ev-voix" id="evPauseBtn" onclick="evPause()" aria-label="Mettre en pause"><i class="ph-fill ph-pause"></i></button>'
@@ -38786,11 +41642,15 @@ function evRendre(){
   else if(base==="mots")h=evMotsHTML();
   else if(base==="timbre")h=evTimbreHTML();
   else if(base==="familles")h=evFamillesHTML();
+  else if(base==="canon")h=evCanonHTML(String(_ev.vue).split(":")[1]);
+  else if(base==="boucles")h=evBouclesHTML();
   else h=evPaysageHTML();
   const suite=(!doc&&_ev.retourSeance)?'<button type="button" class="rm-cta ev-suite-seance" onclick="evContinuerSeance()"><i class="ph-fill ph-play"></i> Continuer la séance</button>':'';
   z.innerHTML='<div class="ev'+(classe?" ev-classe":"")+'" id="evScene">'+tete+suite+h+(doc?"":evFicheHTML(_ev.vue))+'</div>';
 }
-function evOuvrir(v){ evStop(); evChronoArret(); _ev.vue=v; _ev.rep=null; _ev.bloque=false;
+function evOuvrir(v){ evStop(); if(!v||String(v).indexOf("seance:")===0)evChronoArret();   /* le minuteur suit dans les outils d'une étape */
+  _ev.vue=v; _ev.rep=null; _ev.bloque=false;
+  if(evProf()){ if(evVueProjetee(v))evTableauOn(); else evTableauOff(); }
   const base=evBase(v);
   if(!v||base==="seance"||base==="mener")_ev.retourSeance=null;
   if(base==="bouge")_evB.dim=v.split(":")[1]||_evB.dim;
@@ -38808,10 +41668,13 @@ function evOuvrir(v){ evStop(); evChronoArret(); _ev.vue=v; _ev.rep=null; _ev.bl
   else if(base==="mots"){ evDire("k_mots"); evMotsSuivant(); }
   else if(base==="timbre"){ evDire("c_timbre"); evDepart("c_timbre",function(){ evTimbreNouveau(true); }); }
   else if(base==="paysage"){ evDire("k_paysage"); evPaysRendre(); }
-  else if(base==="lecev"){ const Y=evLecTrouver(v); if(Y&&Y.k===3+Y.L.cartes.length)evLecDevine(Y.id); if(Y&&Y.k===4+Y.L.cartes.length&&Y.L.oeuvre&&typeof ceMonterYT==="function")ceMonterYT(); }
+  else if(base==="lecev"){ const Y=evLecTrouver(v); if(Y&&Y.k===4+Y.L.cartes.length)evLecDevine(Y.id); if(Y&&Y.k===5+Y.L.cartes.length&&Y.L.oeuvre&&typeof ceMonterYT==="function")ceMonterYT(); }
   else if(base==="familles"){ evDire("k_familles"); _evF.mode=v.split(":")[1]==="orchestre"?"orchestre":"gestes"; evDepart("k_familles",evFamillesDebut); }
   else if(base==="seance"||base==="mener"){ try{ ceMonterYT(); }catch(e){}
-    if(base==="mener"){ const X=evSeanceTrouver(v); if(X){ evMenerNoter(X); const e=X.ep[X.k-1]; _evChr.total=_evChr.reste=e?e[0]*60:0; evChronoAff(); } } }
+    if(base==="mener"){ const X=evSeanceTrouver(v); if(X){ evMenerNoter(X); const e=X.ep[X.k-1];
+      /* même étape (retour depuis son outil) : le minuteur garde son temps */
+      if(_evChr.cle!==v){ evChronoArret(); _evChr.cle=v; _evChr.total=_evChr.reste=e?e[0]*60:0; }
+      evChronoAff(); } } else evChronoFlottant(); }
   if(typeof remonter==="function")remonter(); }
 /* Écran de départ : la consigne est dite et affichée, l'activité (et son premier son) n'attend
    que le clic sur « Commencer ». Sinon le son de l'activité partait PENDANT la consigne. */
@@ -39341,6 +42204,120 @@ function evMarcheBascule(){
   },50);
 }
 function evMarcheArret(){ if(_evP.timer){ clearInterval(_evP.timer); _evP.timer=null; } const b=document.getElementById("evMarcheBtn"); if(b)b.innerHTML='<i class="ph-fill ph-play"></i><span>Lancer</span>'; }
+/* ---------- classe : le canon (29/10/2026) ----------
+   Chaque groupe a sa couleur et sa colonne de paroles ; le groupe 1 commence, les autres
+   entrent l'un après l'autre (décalage d'une phrase). La phrase que chante chaque groupe
+   s'allume. « Avec la musique » : chaque groupe a son instrument ; « Sans » : seulement la
+   pulsation, la classe chante seule. Chaque groupe chante deux fois la chanson. */
+const EV_CANONS={"frere-jacques":{decal:8,tours:2},"row-boat":{decal:6,tours:2}};
+const EV_CANON_COUL=["#3d8bfd","#e0485a","#2fb36b","#f08a00"], EV_CANON_TIMBRES=["piano","flute","cordes","orgue"];
+let _evK={id:"frere-jacques",n:2,musique:true,timer:null,t0:0,prochain:0,notes:null,pos:0};
+function evCanonPrep(id){
+  const C=evChTrouver(id), N=evChNotes(C), P=evChPhrases(C);
+  let t=0; const debut=N.map(function(x){ const d=t; t+=x[1]; return d; });
+  return {C:C,N:N,debut:debut,long:t,phr:P.map(function(ids){ return {a:debut[ids[0]],b:debut[ids[ids.length-1]]+N[ids[ids.length-1]][1],txt:ids.map(function(i){ return (C.p[i]||"").replace(/¶$/,""); }).join(" ").replace(/ ~/g,"").replace(/\s+/g," ").trim()}; })};
+}
+function evCanonHTML(id){
+  if(id&&EV_CANONS[id])_evK.id=id;
+  const K=evCanonPrep(_evK.id);
+  return '<div class="ev-dims" role="group" aria-label="Chanson">'+Object.keys(EV_CANONS).map(function(k){ const C=evChTrouver(k);
+      return '<button type="button" class="'+(_evK.id===k?"on":"")+'" onclick="evCanonArret();_evK.id=\''+k+'\';evRendre()">'+(C?C.t:k)+'</button>'; }).join("")+'</div>'
+    +'<div class="ev-dims" role="group" aria-label="Nombre de groupes">'+[2,3,4].map(function(n){ return '<button type="button" class="'+(_evK.n===n?"on":"")+'" onclick="evCanonArret();_evK.n='+n+';evRendre()">'+n+' groupes</button>'; }).join("")
+    +'<button type="button" class="'+(_evK.musique?"on":"")+'" onclick="_evK.musique=!_evK.musique;this.classList.toggle(\'on\',_evK.musique)">Avec la musique</button></div>'
+    +'<div class="ev-canon" style="--n:'+_evK.n+'">'+Array.from({length:_evK.n},function(x,g){
+      return '<div class="ev-canon-g" style="--c:'+EV_CANON_COUL[g]+'"><b>Groupe '+(g+1)+'</b><ol>'+K.phr.map(function(p,k){ return '<li id="evK'+g+'_'+k+'">'+echapH(p.txt)+'</li>'; }).join("")+'</ol><span class="ev-canon-etat" id="evKe'+g+'">Attend son tour</span></div>'; }).join("")+'</div>'
+    +'<div class="ev-duo"><button type="button" class="ev-ecoute" id="evCanonBtn" onclick="evCanonBascule()"><i class="ph-fill ph-play"></i><span>Lancer le canon</span></button></div>'
+    +'<p class="ev-msg" id="evMsg" aria-live="polite">Le groupe 1 commence ; chaque groupe entre quand le précédent arrive à la phrase suivante.</p>';
+}
+function evCanonBascule(){
+  if(_evK.timer){ evCanonArret(); return; }
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const K=evCanonPrep(_evK.id), q=60/(K.C.bpm||100), E=EV_CANONS[_evK.id], dest=sonSortie();
+  const fin=((_evK.n-1)*E.decal+E.tours*K.long);
+  _evK.t0=ctx.currentTime+0.3; _evK.pos=0; _evK.K=K;
+  const b=document.getElementById("evCanonBtn"); if(b)b.innerHTML='<i class="ph-fill ph-stop"></i><span>Arrêter</span>';
+  /* toutes les notes, triées par instant, jouées au fil de l'eau (jamais tout d'un coup) */
+  const evts=[];
+  for(let g=0;g<_evK.n;g++)for(let r=0;r<E.tours;r++)K.N.forEach(function(x,i){ if(x[0]===null)return;
+    evts.push({t:g*E.decal+r*K.long+K.debut[i],m:x[0],d:x[1],g:g}); });
+  for(let p=0;p<fin;p++)evts.push({t:p,tick:1});
+  evts.sort(function(a,c){ return a.t-c.t; });
+  let k=0;
+  _evK.timer=setInterval(function(){
+    if(!document.getElementById("evCanonBtn")){ evCanonArret(); return; }
+    const now=ctx.currentTime, pos=(now-_evK.t0)/q;
+    while(k<evts.length&&_evK.t0+evts[k].t*q<now+0.25){ const v=evts[k], at=_evK.t0+v.t*q;
+      if(v.tick)evBruit(Math.max(0,at-now),2600,6,0.03,_evK.musique?0.25:0.6,dest);
+      else if(_evK.musique)txSon(at,v.m,v.d*q*0.95,EV_CANON_TIMBRES[v.g],0.13,dest);
+      k++; }
+    /* la phrase de chaque groupe s'allume */
+    for(let g=0;g<_evK.n;g++){ const loc=pos-g*E.decal, e=document.getElementById("evKe"+g);
+      let ph=-1; if(loc>=0&&loc<E.tours*K.long){ const x=loc%K.long; K.phr.forEach(function(p,j){ if(x>=p.a&&x<p.b)ph=j; }); }
+      K.phr.forEach(function(p,j){ const li=document.getElementById("evK"+g+"_"+j); if(li)li.classList.toggle("on",j===ph); });
+      if(e)e.textContent=loc<0?"Attend son tour":(loc>=E.tours*K.long?"A fini":"Chante : tour "+(Math.floor(loc/K.long)+1)+" sur "+E.tours); }
+    if(pos>fin+0.5){ evCanonArret(); const m=document.getElementById("evMsg"); if(m)m.innerHTML="<b>Bravo&nbsp;!</b> Chaque groupe a tenu sa voix jusqu’au bout."; }
+  },60);
+}
+function evCanonArret(){ if(_evK.timer){ clearInterval(_evK.timer); _evK.timer=null; }
+  const b=document.getElementById("evCanonBtn"); if(b)b.innerHTML='<i class="ph-fill ph-play"></i><span>Lancer le canon</span>';
+  document.querySelectorAll(".ev-canon li.on").forEach(function(x){ x.classList.remove("on"); }); }
+/* ---------- classe : les boucles du corps (29/10/2026) ----------
+   Quatre lignes (mains, pieds, cuisses, doigts) de huit cases (quatre temps, chaque temps
+   coupé en deux). Chaque groupe garde sa boucle ; on fait entrer les groupes un par un
+   (« Entrées une par une ») ou tous ensemble. Les cases se changent d'un clic. */
+const EV_BOUCLES_SONS=[["mains","👏","Mains"],["pieds","🦶","Pieds"],["cuisses","🦵","Cuisses"],["doigts","🫰","Doigts"]];
+const EV_BOUCLES_MODELES={
+  simple:{t:"Simple",g:["10101010","10001000","00100010","00000000"]},
+  marche:{t:"La marche",g:["00100010","10001000","10101010","00000000"]},
+  rock:{t:"Rock",g:["00100010","10001000","11111111","00000000"]},
+  bolero:{t:"Le Boléro",g:["10111010","10001000","00000000","10101011"]}
+};
+let _evB2={g:EV_BOUCLES_MODELES.simple.g.map(function(x){ return x.split("").map(Number); }),on:[true,true,false,false],bpm:84,timer:null,pas:0,prochain:0,entrees:false,modele:"simple"};
+function evBouclesHTML(){
+  const B=_evB2;
+  return '<div class="ev-dims" role="group" aria-label="Modèle">'+Object.keys(EV_BOUCLES_MODELES).map(function(k){ return '<button type="button" class="'+(B.modele===k?"on":"")+'" onclick="evBouclesModele(\''+k+'\')">'+EV_BOUCLES_MODELES[k].t+'</button>'; }).join("")+'</div>'
+    +'<div class="ev-boucles">'+EV_BOUCLES_SONS.map(function(S,l){
+      return '<div class="ev-bl'+(B.on[l]?" on":"")+'" id="evBl'+l+'"><button type="button" class="ev-bl-t" onclick="evBouclesLigne('+l+')" aria-pressed="'+B.on[l]+'"><span class="ev-emo">'+S[1]+'</span><b>'+S[2]+'</b><small>Groupe '+(l+1)+'</small></button>'
+        +'<div class="ev-bl-cases">'+B.g[l].map(function(x,c){ return '<button type="button" class="ev-bc'+(x?" x":"")+(c%2?"":" temps")+'" data-c="'+c+'" onclick="evBouclesCase('+l+','+c+')" aria-label="'+S[2]+', case '+(c+1)+'">'+(x?S[1]:'')+'</button>'; }).join("")+'</div></div>'; }).join("")+'</div>'
+    +'<div class="ev-dims" role="group" aria-label="Vitesse">'+[["Lent",66],["Moyen",84],["Rapide",104]].map(function(t){ return '<button type="button" class="'+(B.bpm===t[1]?"on":"")+'" onclick="evBouclesVitesse('+t[1]+',this)">'+t[0]+'</button>'; }).join("")+'</div>'
+    +'<div class="ev-dims" role="group" aria-label="Entrées"><button type="button" class="'+(B.entrees?"on":"")+'" onclick="evBouclesEntrees(this)">Entrées une par une</button></div>'
+    +'<div class="ev-duo"><button type="button" class="ev-ecoute" id="evBouclesBtn" onclick="evBouclesBascule()"><i class="ph-fill ph-play"></i><span>Lancer les boucles</span></button></div>'
+    +'<p class="ev-msg" id="evMsg" aria-live="polite">Chaque groupe joue sa ligne en boucle, sans s’arrêter. Touchez une ligne pour la faire entrer ou sortir.</p>';
+}
+function evBouclesEntrees(el){ _evB2.entrees=!_evB2.entrees; el.classList.toggle("on",_evB2.entrees); }
+function evBouclesVitesse(v,el){ _evB2.bpm=v; el.parentNode.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on",x===el); }); }
+function evBouclesModele(k){ evBouclesArret(); _evB2.modele=k; _evB2.g=EV_BOUCLES_MODELES[k].g.map(function(x){ return x.split("").map(Number); });
+  _evB2.on=_evB2.g.map(function(L){ return L.some(function(x){ return x; }); }); evRendre(); }
+function evBouclesLigne(l){ _evB2.on[l]=!_evB2.on[l]; const e=document.getElementById("evBl"+l); if(e){ e.classList.toggle("on",_evB2.on[l]); const b=e.querySelector(".ev-bl-t"); if(b)b.setAttribute("aria-pressed",_evB2.on[l]); } }
+function evBouclesCase(l,c){ _evB2.g[l][c]=_evB2.g[l][c]?0:1; const e=document.querySelector('#evBl'+l+' .ev-bc[data-c="'+c+'"]');
+  if(e){ e.classList.toggle("x",!!_evB2.g[l][c]); e.textContent=_evB2.g[l][c]?EV_BOUCLES_SONS[l][1]:""; } }
+function evBouclesSon(l,d,dest){ const k=EV_BOUCLES_SONS[l][0];
+  if(k==="mains")evClap(d,dest); else if(k==="cuisses")evCuisse(d,dest);
+  else if(k==="pieds"){ evTambour(d,0.9,dest); evBruit(d,160,0.7,0.18,3,dest); }
+  else{ evBruit(d,2900,5,0.025,4,dest); evBruit(d,1300,3,0.02,1.5,dest); } }
+function evBouclesBascule(){
+  if(_evB2.timer){ evBouclesArret(); return; }
+  const ctx=audio(); try{ ctx.resume(); }catch(e){}
+  const dest=sonSortie(), B=_evB2;
+  if(B.entrees){ B.on=[true,false,false,false]; B.on.forEach(function(x,l){ const e=document.getElementById("evBl"+l); if(e)e.classList.toggle("on",x); }); }
+  B.prochain=ctx.currentTime+0.15; B.pas=0;
+  const b=document.getElementById("evBouclesBtn"); if(b)b.innerHTML='<i class="ph-fill ph-stop"></i><span>Arrêter</span>';
+  B.timer=setInterval(function(){
+    if(!document.getElementById("evBouclesBtn")){ evBouclesArret(); return; }
+    while(B.prochain<ctx.currentTime+0.2){
+      const d=Math.max(0,B.prochain-ctx.currentTime), c=B.pas%8;
+      /* entrées une par une : un groupe de plus toutes les deux boucles */
+      if(B.entrees&&c===0&&B.pas>0&&B.pas%16===0){ const l=B.on.indexOf(false); if(l>=0&&B.g[l].some(function(x){ return x; })){ B.on[l]=true; _ev.min.push(setTimeout(function(){ const e=document.getElementById("evBl"+l); if(e)e.classList.add("on"); },d*1000)); } }
+      B.g.forEach(function(L,l){ if(B.on[l]&&L[c])evBouclesSon(l,d,dest); });
+      if(c%2===0)evBruit(d,2600,6,0.02,0.25,dest);
+      _ev.min.push(setTimeout(function(){ document.querySelectorAll(".ev-bc.joue").forEach(function(x){ x.classList.remove("joue"); });
+        document.querySelectorAll('.ev-bc[data-c="'+c+'"]').forEach(function(x){ x.classList.add("joue"); }); },d*1000));
+      B.pas++; B.prochain+=60/B.bpm/2; }
+  },50);
+}
+function evBouclesArret(){ if(_evB2.timer){ clearInterval(_evB2.timer); _evB2.timer=null; }
+  const b=document.getElementById("evBouclesBtn"); if(b)b.innerHTML='<i class="ph-fill ph-play"></i><span>Lancer les boucles</span>';
+  document.querySelectorAll(".ev-bc.joue").forEach(function(x){ x.classList.remove("joue"); }); }
 /* ---------- classe : on frappe les mots (les syllabes à l'oral) ---------- */
 const EV_MOTS=[["🐱","chat",["chat"]],["🐰","lapin",["la","pin"]],["🐭","souris",["sou","ris"]],["🐢","tortue",["tor","tue"]],["🐘","éléphant",["é","lé","phant"]],
   ["🐊","crocodile",["cro","co","dile"]],["🦛","hippopotame",["hi","ppo","po","tame"]],["🦋","papillon",["pa","pi","llon"]],["🐌","escargot",["es","car","got"]],["🦒","girafe",["gi","rafe"]],
@@ -39587,11 +42564,11 @@ const EV_LECONS={
   principe:{t:"Ça vibre vite, ou ça vibre lentement",txt:"Quand ça vibre <b>vite</b>, le son est <b>aigu</b>. Quand ça vibre <b>lentement</b>, le son est <b>grave</b>.",anim:"vitesse"},
   combien:"Il y a <b>2 mots</b> à retenir&nbsp;: <b>aigu</b> et <b>grave</b>.",
   cartes:[
-   {e:"🐦",t:"Aigu",vibre:"<b>Petit</b>, <b>court</b>, <b>fin</b>&nbsp;: ça vibre vite.",geste:"La petite voix de l’oiseau, la petite lame du xylophone.",anim:"vite",
+   {e:"🐦",t:"Aigu",vibre:"<b>Petit</b> et <b>fin</b>&nbsp;: ça vibre vite.",geste:"La petite voix de l’oiseau, la petite lame du xylophone.",anim:"vite",
     ex:[["la petite lame","🎹",["ton","lame",84,1,0.9]],["la flûte","images/img-075.webp",["ton","flute",84,1.2,0.3]],["la voix de l’oiseau","🐦",["ton","flute",91,0.8,0.3]],["une voix aiguë","🗣️",["solmi",0],"sons/voix-ex-aigue.mp3"]]},
-   {e:"🐻",t:"Grave",vibre:"<b>Grand</b>, <b>long</b>, <b>épais</b>&nbsp;: ça vibre lentement.",geste:"La grosse voix de l’ours, la grande lame du xylophone.",anim:"lent",
+   {e:"🐻",t:"Grave",vibre:"<b>Grand</b> et <b>épais</b>&nbsp;: ça vibre lentement.",geste:"La grosse voix de l’ours, la grande lame du xylophone.",anim:"lent",
     ex:[["la grande lame","🎹",["ton","lame",48,1.2,1]],["le violoncelle","images/img-069.webp",["ton","cordes",40,1.4,0.35]],["le trombone","images/img-080.webp",["ton","cuivre",41,1.2,0.35]],["une voix grave","🗣️",["solmi",0],"sons/voix-ex-grave.mp3"]]}],
-  retiens:"Petit, court, fin&nbsp;: le son est <b>aigu</b>. Grand, long, épais&nbsp;: le son est <b>grave</b>. Une mélodie qui va vers l’aigu <b>monte</b>&nbsp;; vers le grave, elle <b>descend</b>."},
+  retiens:"Petit et fin (la petite lame, l’oiseau)&nbsp;: le son est <b>aigu</b>. Grand et épais (la grande lame, l’ours)&nbsp;: le son est <b>grave</b>. Une mélodie qui va vers l’aigu <b>monte</b>&nbsp;; vers le grave, elle <b>descend</b>."},
  intensite:{t:"Fort ou doux",e:"🦁",c:"#f08a00",q:"Pourquoi un son est-il fort ou doux&nbsp;?",
   principe:{t:"Ça vibre beaucoup, ou un tout petit peu",txt:"Si je frappe ou je souffle <b>fort</b>, ça vibre beaucoup&nbsp;: le son est <b>fort</b>. Si je le fais tout doucement, le son est <b>doux</b>.",anim:"amplitude"},
   combien:"Les musiciens disent <b>forte</b> (fort) et <b>piano</b> (doux). Et le son peut aussi <b>grandir</b>.",
@@ -39914,11 +42891,111 @@ function evAnimSVG(a){
     return S(L.map(function(l,i){ const x=120-(L.length*(w+6)-6)/2+i*(w+6); return '<g class="eva-pt" style="animation-delay:'+(i*0.3)+'s"><rect x="'+x+'" y="34" width="'+w+'" height="52" rx="10" fill="'+C[l]+'"/><text x="'+(x+w/2)+'" y="70" text-anchor="middle" font-size="26" font-weight="800" fill="#fff">'+l+'</text></g>'; }).join("")); }
   return "";
 }
+/* Les leçons en images selon le public (29/10/2026) : une page « On joue ! » propre à
+   chaque cycle, avant « Devine ! ». Maternelle : un jeu avec le corps. Cycle 2 : un jeu
+   de classe. Cycle 3 : « Pour aller plus loin » (savoirs, mots du musicien, un défi).
+   r1 : un « Je retiens » plus court pour la maternelle. Le cycle est celui de la séance
+   en cours, sinon celui choisi à l'accueil de l'éveil. */
+const EV_LEC_PUB={
+ familles:{c1:["Mime l’instrument",["J’écoute un instrument.","Je mime son geste : frotter l’archet, souffler, frapper.","Si c’est un tambour, tout le monde tape sur ses genoux !"]],
+  c2:["Le jeu des quatre coins",["Chaque coin de la classe est une famille : cordes, bois, cuivres, percussions.","L’enseignant fait écouter un instrument.","Chacun va dans le bon coin, puis on vérifie ensemble."]],
+  c3:["Pour aller plus loin",["Un bois n’est pas toujours en bois : la flûte traversière est en métal, mais l’air vibre sur un bord, c’est un bois.","Le saxophone est en métal, mais il a une anche : c’est aussi un bois.","Défi : dans l’orchestre, où sont placées les cordes ? Et les percussions ? (Les cordes devant, les percussions tout au fond.)"],"archet, anche, embouchure, pizzicato"],
+  r1:"Dans un instrument, quelque chose <b>vibre</b> : une corde, l’air, ou ce qu’on frappe."},
+ gestes:{c1:["Les mains font les gestes",["On frotte les mains, on souffle, on frappe, on secoue.","L’enseignant montre l’image d’un instrument.","Les enfants font le bon geste sans bruit… puis avec le son !"]],
+  c2:["La boîte mystère",["Un instrument de la classe est caché derrière un tissu.","Un élève le joue en cachette.","La classe devine le geste : frotté, pincé, soufflé, frappé ou secoué ?"]],
+  c3:["Pour aller plus loin",["Un même instrument peut changer de geste : au violon, on frotte la corde avec l’archet, ou on la pince (pizzicato).","Au piano, on appuie sur une touche… mais à l’intérieur, un petit marteau frappe une corde !","Défi : trouver un objet de la classe qui sonne avec au moins trois gestes différents."],"frotté, pincé, soufflé, frappé, secoué, pizzicato"],
+  r1:"Pour faire du son, je <b>frotte</b>, je <b>souffle</b>, je <b>frappe</b> ou je <b>secoue</b>."},
+ hauteur:{c1:["L’oiseau et l’ours",["Son aigu : sur la pointe des pieds, les bras en l’air, comme un oiseau.","Son grave : accroupi, on marche lourdement, comme un ours.","L’enseignant joue au xylophone ou chante : tout le monde bouge !"]],
+  c2:["L’ascenseur",["Debout, ma main est un ascenseur : en haut pour l’aigu, en bas pour le grave.","L’enseignant joue deux sons : lequel est le plus aigu ?","Puis un élève joue au xylophone et la classe répond avec la main."]],
+  c3:["Pour aller plus loin",["La vitesse de vibration se compte en hertz (Hz) : le la du diapason vibre 440 fois par seconde.","Notre oreille entend environ de 20 Hz (très grave) à 20 000 Hz (très aigu). Le chien entend des sons encore plus aigus !","Sur la portée, plus la note est placée haut, plus elle est aiguë."],"aigu, grave, hauteur, fréquence, hertz, diapason"],
+  r1:"Aigu comme l’<b>oiseau</b>, grave comme l’<b>ours</b>."},
+ intensite:{c1:["Le lion et la souris",["Le tambour joue fort : je suis un lion, je marche en grand.","Il joue doux : je suis une souris, sur la pointe des pieds.","Le tambour se tait : tout le monde s’arrête !"]],
+  c2:["Le chef des nuances",["Un élève est le chef : mains écartées, c’est fort ; mains rapprochées, c’est doux.","La classe chante une chanson connue en suivant ses mains.","On essaie un crescendo : de tout doux à très fort."]],
+  c3:["Pour aller plus loin",["Les nuances s’écrivent en italien : pp (pianissimo, très doux), p, mf (mezzo forte), f, ff (fortissimo, très fort).","Le contraire du crescendo est le decrescendo : de plus en plus doux.","Le volume se mesure en décibels (dB). Un son très fort, longtemps, abîme l’oreille : on protège ses oreilles !"],"nuance, pianissimo, mezzo forte, fortissimo, crescendo, decrescendo"],
+  r1:"<b>Fort</b> comme le lion, <b>doux</b> comme la souris."},
+ duree:{c1:["Le serpent et la grenouille",["Son long : je glisse comme un serpent en faisant « sssss ».","Son court : je saute comme une grenouille, « hop ! ».","Silence : statues ! Personne ne bouge."]],
+  c2:["Je dessine le son",["Un son long, c’est un long trait ; un son court, c’est un point.","L’enseignant joue une petite suite de sons : la classe la dessine.","On relit le dessin ensemble, avec la voix."]],
+  c3:["Pour aller plus loin",["Sur la partition, la durée s’écrit avec des figures : ronde, blanche, noire, croche.","Le silence aussi s’écrit : la pause, la demi-pause, le soupir, le demi-soupir.","Défi : inventer un code de 4 sons (longs, courts, silences) et le faire jouer par un camarade."],"durée, son tenu, son piqué, silence, soupir"],
+  r1:"Un son peut être <b>long</b> ou <b>court</b>. Quand rien ne vibre : le <b>silence</b>."},
+ tempo:{c1:["La tortue et le lapin",["Le tambour bat lentement : je marche comme la tortue.","Il bat vite : je cours sur place comme le lapin.","Je garde bien le pas avec le tambour !"]],
+  c2:["Le métronome humain",["Toute la classe frappe la pulsation sur les genoux.","Un élève choisit : tortue (lent) ou lapin (rapide).","On chante la même chanson aux deux tempos : qu’est-ce que ça change ?"]],
+  c3:["Pour aller plus loin",["Le tempo se mesure en battements par minute (BPM), avec un métronome. Ton cœur au repos bat environ 80 fois par minute.","Les musiciens l’écrivent en italien : Largo (très lent), Andante (allant, au pas), Allegro (rapide), Presto (très rapide).","Accelerando : on accélère. Ritardando : on ralentit."],"pulsation, tempo, métronome, Andante, Allegro, Presto"],
+  r1:"La musique a un <b>cœur</b> qui bat : <b>lent</b> ou <b>rapide</b>."},
+ rythme:{c1:["Mon prénom en rythme",["Chacun frappe son prénom : Lé-a (2), Ma-thé-o (3).","La classe le répète en écho.","On frappe aussi le nom du doudou de la classe !"]],
+  c2:["Le train des mots",["Choisir 4 mots : un de 1, de 2, de 3 et de 4 syllabes.","On les frappe l’un après l’autre sans s’arrêter, comme les wagons d’un train.","Puis on frappe sans parler : les camarades devinent les mots."]],
+  c3:["Pour aller plus loin",["Un rythme s’écrit avec des figures : « chat », une noire ; « la-pin », deux croches.","On peut lire les rythmes avec des syllabes : ta (noire), ti-ti (deux croches), ta-a (blanche).","Défi : écrire le rythme de ton prénom, puis l’enchaîner avec ceux de deux camarades."],"rythme, syllabe, noire, croche, motif"],
+  r1:"Je frappe une fois par <b>syllabe</b> : chat (1), la-pin (2), é-lé-phant (3)."},
+ voix:{c1:["La voix qui se promène",["On parle comme un géant, puis comme une petite souris.","On chuchote un secret à son voisin.","On chante « bonjour » tout doux, puis on appelle le doudou… sans crier !"]],
+  c2:["L’échauffement de la voix",["Le corps : on s’étire, on bâille, on masse ses joues.","Le souffle : on souffle une bougie imaginaire, tout doucement et longtemps.","La voix : on fait la sirène sur « ou », du grave à l’aigu."]],
+  c3:["Pour aller plus loin",["Les cordes vocales sont deux petits replis de 1 à 2 cm. Plus elles vibrent vite, plus la voix est aiguë.","Les voix d’adultes : soprano et alto (aiguës), ténor et basse (graves). Vers 12 à 15 ans, la voix mue, surtout celle des garçons.","Pour garder sa voix : boire de l’eau, ne pas crier, respirer avec le ventre."],"cordes vocales, souffle, soprano, alto, ténor, basse, mue"],
+  r1:"Ma voix peut <b>parler</b>, <b>chuchoter</b> et <b>chanter</b>. Je ne crie pas."},
+ melodie:{c1:["La main qui chante",["La mélodie monte : ma main monte jusqu’au ciel.","La mélodie descend : ma main descend jusqu’au sol.","On monte un escalier avec les pieds en chantant do, ré, mi !"]],
+  c2:["Le dessin de la mélodie",["Écouter une courte mélodie deux fois.","Dessiner son chemin sur l’ardoise : une ligne qui monte, descend ou saute.","Comparer les dessins : lequel ressemble le plus à la mélodie ?"]],
+  c3:["Pour aller plus loin",["Les notes de la gamme montent : do, ré, mi, fa, sol, la, si, do. Sur la portée, elles montent aussi.","Quand la mélodie passe d’une note à sa voisine, on dit qu’elle avance par degrés conjoints ; quand elle saute, par degrés disjoints.","Défi : au xylophone, inventer une mélodie de 5 notes qui monte puis redescend."],"mélodie, gamme, portée, conjoint, disjoint"],
+  r1:"La mélodie <b>monte</b> vers l’aigu ou <b>descend</b> vers le grave."},
+ caractere:{c1:["Les visages de la musique",["J’écoute un court extrait.","Je montre avec mon visage : joyeux, triste, calme ou peur.","Puis je bouge comme la musique : je saute, je marche doucement, je me cache…"]],
+  c2:["Les cartes émotions",["Chaque élève a 4 cartes : joyeuse, triste, calme, effrayante.","Après chaque écoute, chacun lève une carte.","On explique avec un mot de musique : « Elle est joyeuse parce qu’elle est rapide. »"]],
+  c3:["Pour aller plus loin",["Le mode change l’émotion : le mode majeur sonne souvent lumineux, le mode mineur plus sombre ou triste.","Au cinéma, la musique nous dit ce qu’il faut ressentir : regarde une scène sans le son, puis avec.","Défi : choisir une musique pour une scène (une poursuite, un réveil, un adieu) et la justifier avec trois mots de la leçon."],"caractère, majeur, mineur, musique de film"],
+  r1:"Une musique peut être <b>joyeuse</b>, <b>triste</b>, <b>calme</b> ou faire <b>peur</b>."},
+ forme:{c1:["Les cartes de couleur",["Une carte rouge pour la phrase A, une carte bleue pour la phrase B.","Pendant la chanson, l’enseignant lève la bonne carte.","On bouge différemment : A, on tourne ; B, on tape des mains."]],
+  c2:["La chanson en couleurs",["Chanter une chanson à refrain que la classe connaît.","Lever la carte rouge pour le refrain, la bleue pour les couplets.","Écrire la forme au tableau avec des lettres : A B A C A…"]],
+  c3:["Pour aller plus loin",["A B A, c’est la forme lied. A B A C A, où le refrain revient entre des couplets, c’est le rondo.","Le thème et variations : un même thème revient, transformé à chaque fois (Mozart, sur « Ah ! vous dirai-je, maman »).","Défi : écouter une chanson actuelle et écrire sa forme : introduction, couplet, refrain, pont…"],"forme, phrase, refrain, couplet, rondo, variation"],
+  r1:"Une phrase peut <b>revenir</b> (pareil) ou <b>changer</b> (différent)."},
+ ensemble:{c1:["Un doigt, une main, deux bras",["Un seul instrument joue : je lève un doigt.","Quelques instruments jouent : je lève une main.","Tout l’orchestre joue : je lève les deux bras !"]],
+  c2:["Solo et tutti en classe",["On chante une chanson : le couplet en solo (un volontaire), le refrain en tutti (toute la classe).","Puis un groupe seul, puis tout le monde.","On écoute la différence : qu’est-ce qui change ?"]],
+  c3:["Pour aller plus loin",["2 musiciens : un duo ; 3 : un trio ; 4 : un quatuor. Le quatuor à cordes : deux violons, un alto, un violoncelle.","Un orchestre symphonique réunit souvent de 60 à 100 musiciens, dirigés par un chef d’orchestre.","Dans un concerto, un soliste dialogue avec tout l’orchestre."],"solo, soliste, duo, trio, quatuor, tutti, concerto"],
+  r1:"Un seul musicien : <b>solo</b>. Tous ensemble : <b>tutti</b>."},
+ pierre:{c1:["Les marionnettes de Pierre",["Montrer l’image du personnage quand son instrument joue.","Les enfants l’imitent : l’oiseau vole, le canard se dandine, le chat marche à pas de velours.","Les cors jouent : chut, le loup arrive !"]],
+  c2:["Qui joue ?",["Distribuer les 7 cartes des personnages à 7 groupes.","Pendant l’écoute, un groupe se lève quand son personnage joue.","Puis on raconte l’histoire avec ses mots, dans l’ordre."]],
+  c3:["Pour aller plus loin",["Prokofiev donne à chaque personnage un thème qui revient chaque fois qu’il apparaît : on appelle cela un leitmotiv.","À la fin, on entend encore le hautbois : le canard est vivant, dans le ventre du loup !","Défi : inventer un leitmotiv (un rythme ou une petite mélodie) pour un nouveau personnage."],"leitmotiv, récitant, conte musical, timbre"],
+  r1:"Chaque personnage a son <b>instrument</b> : l’oiseau, la <b>flûte</b> ; le loup, les <b>cors</b>."},
+ carnaval:{c1:["La parade des animaux",["J’écoute un animal du carnaval.","Je le devine parmi deux images.","Toute la classe défile comme lui : lourd ou léger, lent ou rapide."]],
+  c2:["Le carnaval de la classe",["Choisir un animal qui n’est pas dans le carnaval : l’escargot, le singe…","Décider : lent ou rapide ? grave ou aigu ? fort ou doux ?","Le jouer avec les instruments de la classe : les autres devinent."]],
+  c3:["Pour aller plus loin",["Saint-Saëns s’amuse : dans « Les Tortues », il joue très lentement une danse rapide et célèbre, le galop d’Offenbach.","Dans « Fossiles », il cite des airs connus, comme « Ah ! vous dirai-je, maman ».","De son vivant, il a refusé qu’on publie l’œuvre, sauf « Le Cygne ». Défi : comparer « L’Éléphant » (contrebasse) et « Le Cygne » (violoncelle)."],"suite, mouvement, imitation, citation"],
+  r1:"Avec la musique, Saint-Saëns fait des <b>animaux</b> : le lion, l’éléphant, le cygne…"},
+ corps:{c1:["Le corps orchestre",["L’enseignant montre une partie du corps : les mains, les pieds, les cuisses.","Tout le monde la fait sonner en même temps.","Le jeu du miroir : on imite le rythme de l’enseignant."]],
+  c2:["La machine à sons",["Chaque groupe a un son du corps : mains, pieds, cuisses ou doigts.","Le chef montre un groupe : il joue ; il ferme le poing : il s’arrête.","Puis on superpose les groupes avec « Les boucles du corps »."]],
+  c3:["Pour aller plus loin",["Les percussions corporelles existent partout dans le monde : la gumboot d’Afrique du Sud, les palmas du flamenco, le hambone des États-Unis.","Avec la bouche aussi : c’est le beatbox (boum, tchak, tss).","Défi : composer une boucle de 8 temps avec 3 sons du corps et l’apprendre à la classe."],"percussions corporelles, beatbox, boucle, timbre"],
+  r1:"Mon corps est un <b>instrument</b> : mains, pieds, cuisses, doigts."},
+ matieres:{c1:["Le marché aux sons",["Au milieu du cercle : des instruments en bois, en métal, avec une peau, avec des graines.","Un enfant en joue un pendant que les autres ferment les yeux.","On ouvre les yeux : quel instrument a joué ? On le montre."]],
+  c2:["Le tri des matières",["Quatre cerceaux au sol : bois, métal, peau, graines.","Chaque élève joue un instrument et le pose dans le bon cerceau.","Bonus : fabriquer des maracas avec une boîte et des graines."]],
+  c3:["Pour aller plus loin",["La « couleur » d’un son s’appelle son timbre : deux instruments jouent la même note, et pourtant on les reconnaît.","La résonance : le métal vibre longtemps après le coup ; le bois s’arrête très vite.","Défi : fabriquer un instrument avec des objets de récupération et dire sa matière et son geste."],"timbre, résonance, son sec, son résonant"],
+  r1:"Le <b>bois</b> fait toc, le <b>métal</b> fait ding, la <b>peau</b> fait boum, les <b>graines</b> font tchik."},
+ loin:{c1:["Le camion arrive",["Tout le monde accroupi : le camion est loin.","Il arrive : on se lève doucement en faisant « pin-pon » de plus en plus fort.","Il s’en va : on redescend, la voix devient toute petite."]],
+  c2:["D’où vient le son ?",["Les yeux fermés, la classe écoute.","Un élève joue du triangle, tout près ou loin, à gauche ou à droite.","On montre du doigt d’où vient le son : près ou loin ?"]],
+  c3:["Pour aller plus loin",["Avec deux oreilles, on sait d’où vient un son : il arrive un tout petit peu plus tôt à l’oreille la plus proche.","La sirène des pompiers paraît plus aiguë quand le camion arrive et plus grave quand il s’éloigne : c’est l’effet Doppler.","Certains compositeurs placent des musiciens en coulisse, pour que le son paraisse lointain."],"proche, lointain, crescendo, decrescendo, écho"],
+  r1:"Tout <b>près</b> : fort. Très <b>loin</b> : doux."},
+ durees:{c1:["Le géant et la souris",["La ronde : un pas de géant, très lent (on compte jusqu’à 4).","La noire : je marche normalement.","La croche : je trottine comme une souris !"]],
+  c2:["Ta et ti-ti",["La noire se dit « ta », deux croches se disent « ti-ti ».","L’enseignant écrit 4 cases au tableau : ta, ti-ti, ta, ta.","La classe lit en frappant, puis invente sa propre suite."]],
+  c3:["Pour aller plus loin",["Plus courte encore : la double croche dure un quart de temps (4 doubles croches = 1 temps).","Un point après une note l’allonge de la moitié : une blanche pointée dure 3 temps.","Défi : écrire une mesure de 4 temps avec au moins 3 figures différentes, puis la frapper."],"ronde, blanche, noire, croche, mesure, temps"],
+  r1:"Une note peut être <b>longue</b> ou <b>courte</b> : on compte les temps."},
+ canon:{c1:["Moi d’abord, toi après",["L’enseignant chante une phrase, les enfants la répètent : c’est l’écho.","Puis tout le monde chante ensemble : c’est l’unisson.","Sur « Frère Jacques », l’enseignant commence et la classe entre après lui, quand il arrive à « Dormez-vous ? »."]],
+  c2:["Le canon en deux groupes",["Chanter la chanson tous ensemble, jusqu’à bien la connaître.","Deux groupes, chacun avec un chef qui donne le départ.","Lancer « Le canon » : le groupe 2 entre quand sa phrase s’allume."]],
+  c3:["Pour aller plus loin",["Le Canon de Pachelbel (XVIIᵉ siècle) : trois violons jouent la même mélodie en décalé, sur une basse qui tourne.","Dans une fugue (Bach), un thème entre à chaque voix l’une après l’autre, puis se transforme.","Défi : chanter un canon à quatre groupes, sans la musique, avec un chef."],"monodie, unisson, canon, polyphonie, fugue"],
+  r1:"Tous ensemble : l’<b>unisson</b>. L’un après l’autre : le <b>canon</b>."},
+ ostinato:{c1:["La petite boucle",["Tout le monde tapote « pom, pom » sur les genoux, sans s’arrêter.","Pendant ce temps, l’enseignant chante une comptine par-dessus.","Tout le monde s’arrête quand l’enseignant lève la main."]],
+  c2:["Les boucles de la classe",["Un groupe dit « pain chaud » en boucle en frappant.","Un autre groupe dit « croissant » sur un autre rythme.","Avec « Les boucles du corps », on superpose les groupes un par un."]],
+  c3:["Pour aller plus loin",["Dans le Boléro de Ravel, la caisse claire répète le même rythme pendant environ 15 minutes, du début à la fin.","Le rap, l’électro et le rock utilisent beaucoup de boucles (« loops » en anglais), souvent fabriquées à l’ordinateur.","Défi : créer une boucle de 8 temps avec les instruments de la classe et chanter une comptine par-dessus."],"ostinato, boucle, motif, superposer"],
+  r1:"Un <b>ostinato</b>, c’est une petite <b>boucle</b> qui tourne sans s’arrêter."},
+ epoques:{c1:["Le château et la fusée",["Une musique d’autrefois : on danse comme au château, avec des révérences.","Une musique d’aujourd’hui : on danse comme on veut !","Autrefois ou aujourd’hui ? On montre le château ou la fusée."]],
+  c2:["La frise du temps",["Au sol, une frise de 5 cases, du Moyen Âge à aujourd’hui.","On écoute un extrait et on va se placer sur la bonne case.","Des indices : le clavecin et l’orgue (Baroque), la guitare électrique et l’ordinateur (aujourd’hui)."]],
+  c3:["Pour aller plus loin",["Vers l’an 1000, un moine, Guido d’Arezzo, invente les lignes de la portée et donne leur nom aux notes : ut (notre do), ré, mi…","Mozart compose dès l’âge de 5 ans ; Beethoven continue à composer en devenant sourd.","Défi : placer sur la frise trois musiques que tu aimes."],"Moyen Âge, Baroque, Classique, Romantisme, siècle"],
+  r1:"La musique change avec le <b>temps</b> : autrefois, aujourd’hui."}
+};
+function evLecCycle(){ const r=_ev.retourSeance; if(r){ const p=String(r).split(":"); if(EV_CYCLES[p[1]])return p[1]; } return EV_CYCLES[_evCycle]?_evCycle:"c3"; }
+function evNbsp(t){ return String(t).replace(/ ([?!:;»])/g,"&nbsp;$1").replace(/« /g,"«&nbsp;"); }
+function evLecPubHTML(id){
+  const cy=evLecCycle(), P=(EV_LEC_PUB[id]||{})[cy]; if(!P)return '<p class="evl-txt">Pas de jeu pour cette leçon.</p>';
+  const lib=(cy==="c3"?"":"On joue&nbsp;! · ")+EV_CYCLES[cy].nom+" · "+EV_CYCLES[cy].niv;
+  return '<small class="evl-k">'+lib+'</small><h3>'+evNbsp(P[0])+'</h3><ol class="evl-pub evl-pub-'+cy+'">'
+    +P[1].map(function(t){ const d=/^Défi/.test(t); return '<li'+(d?' class="defi"':'')+'>'+(d?'<i class="ph-fill ph-trophy"></i> ':'')+evNbsp(t)+'</li>'; }).join("")+'</ol>'
+    +(P[2]?'<div class="evl-mots"><b><i class="ph-fill ph-book-open-text"></i> Les mots du musicien</b>'+P[2].split(", ").map(function(m){ return '<span>'+m+'</span>'; }).join("")+'</div>':'');
+}
 let _evLq={id:"",manche:null};
 function evLecTrouver(v){ const p=String(v).split(":"), L=EV_LECONS[p[1]]; return L?{id:p[1],L:L,k:+(p[2]||0)}:null; }
 function evLecImg(x){ return /\.webp$/.test(x)?'<img src="'+x+'" alt="">':(x==="svg:maracas"?EV_MARACAS_SVG:'<span class="evl-emo">'+x+'</span>'); }
 function evLecHTML(X){
-  const L=X.L, n=L.cartes.length, tot=5+n, k=Math.max(0,Math.min(tot-1,X.k)), base='lecev:'+X.id+':';
+  const L=X.L, n=L.cartes.length, tot=6+n, cy=evLecCycle(), Pb=EV_LEC_PUB[X.id]||{}, k=Math.max(0,Math.min(tot-1,X.k)), base='lecev:'+X.id+':';
   const pts='<div class="evm-points">'+Array.apply(null,{length:tot}).map(function(z,x){ return '<button type="button" class="'+(x<k?"ok":(x===k?"en":""))+'" onclick="evOuvrir(\''+base+x+'\')" aria-label="Page '+(x+1)+'"><i>'+(x+1)+'</i></button>'; }).join("")+'</div>';
   const nav=function(lib){ const der=k===tot-1, suite=der?(_ev.retourSeance?"evContinuerSeance()":"evOuvrir('')"):"evOuvrir('"+base+(k+1)+"')";
     return '<div class="evm-nav">'+(k?'<button type="button" class="evm-fl" onclick="evOuvrir(\''+base+(k-1)+'\')" aria-label="Précédent"><i class="ph ph-caret-left"></i></button>':'<span></span>')
@@ -39933,9 +43010,10 @@ function evLecHTML(X){
       +'<div class="evl-fam-c">'+evAnimSVG(c.anim)+'<div><p class="evl-txt"><i class="ph-fill ph-wave-sine"></i> '+c.vibre+'</p><p class="evl-txt2"><i class="ph-fill ph-hand-pointing"></i> '+c.geste+'</p></div></div>'
       +(c.ex.length?'<div class="evl-exs">'+c.ex.map(function(x,j){ return '<button type="button" class="evl-ex" onclick="evLecEcouter(\''+X.id+'\','+(k-3)+','+j+',this)">'+evLecImg(x[1])+'<b>'+x[0]+'</b><span><i class="ph-fill ph-play"></i> Écouter</span></button>'; }).join("")+'</div>':'')+'</div>'+nav();
   }
-  else if(k===3+n)h+='<div class="evl-page"><small class="evl-k">À toi&nbsp;!</small><h3>Devine&nbsp;!</h3><div id="evLecDev"></div></div>'+nav();
+  else if(k===3+n)h+='<div class="evl-page evl-jeu">'+evLecPubHTML(X.id)+'</div>'+nav();
+  else if(k===4+n)h+='<div class="evl-page"><small class="evl-k">À toi&nbsp;!</small><h3>Devine&nbsp;!</h3><div id="evLecDev"></div></div>'+nav();
   else h+='<div class="evl-page evl-fin"><small class="evl-k">Je retiens</small><div class="evl-cartes evl-mini">'+L.cartes.map(function(c){ return '<div class="evl-carte"><span class="evl-emo">'+c.e+'</span><b>'+c.t+'</b></div>'; }).join("")+'</div>'
-    +'<div class="cle evl-ret"><b><i class="ph-fill ph-push-pin"></i> Je retiens</b><p>'+L.retiens+'</p></div>'
+    +'<div class="cle evl-ret"><b><i class="ph-fill ph-push-pin"></i> Je retiens</b><p>'+(cy==="c1"&&Pb.r1?evNbsp(Pb.r1):L.retiens)+'</p></div>'
     +(L.oeuvre?'<div class="evl-oeuvre"><b><i class="ph-fill ph-headphones"></i> Une œuvre à écouter</b><p>'+L.oeuvre[2]+'</p><div class="compo-yt-grille"><div class="ce-yt" data-yt="'+L.oeuvre[0]+'" data-lib="'+escAttr(L.oeuvre[1])+'"></div></div></div>':'')+'</div>'+nav();
   return h+'</div>';
 }
@@ -39943,7 +43021,7 @@ function evLecEcouter(id,c,j,el){ const x=EV_LECONS[id].cartes[c].ex[j]; if(el){
 /* « Devine ! » : 4 sons cachés, on trouve la bonne carte */
 function evLecDevine(id){
   const L=EV_LECONS[id], P=[]; L.cartes.forEach(function(c,i){ c.ex.forEach(function(x){ P.push({c:i,x:x}); }); });
-  _evLq={id:id,tours:shuffle(P).slice(0,Math.min(4,P.length)),i:0,fini:false}; evLecTour();
+  _evLq={id:id,tours:shuffle(P).slice(0,Math.min(evLecCycle()==="c1"?3:4,P.length)),i:0,fini:false}; evLecTour();
 }
 function evLecTour(){
   const z=document.getElementById("evLecDev"), L=EV_LECONS[_evLq.id]; if(!z)return;
@@ -39967,11 +43045,11 @@ const EV_LECONS_DANS=[["c1",0,0,0,"hauteur",5],["c1",0,1,0,"intensite",5],["c1",
   ["c2",0,0,0,"hauteur",5],["c2",1,0,0,"intensite",5],["c2",2,0,0,"tempo",5],["c2",3,0,0,"rythme",5],["c2",4,1,0,"voix",5],["c2",4,2,0,"gestes",5],
   ["c3",0,0,1,"hauteur",10],["c3",0,1,1,"intensite",10],["c3",0,2,1,"duree",10],["c3",1,0,1,"tempo",10],["c3",1,1,1,"rythme",10],["c3",2,0,1,"voix",5],["c3",3,0,1,"familles",10],
   ["c1",2,1,0,"melodie",5],["c1",2,2,0,"caractere",5],["c1",5,0,0,"ensemble",5],
-  ["c2",0,1,0,"melodie",5],["c2",4,0,0,"pierre",10],["c2",5,2,0,"caractere",5],
-  ["c3",2,0,2,"melodie",5],["c3",3,1,1,"pierre",10],["c3",3,2,1,"ensemble",5],["c3",5,0,1,"forme",10],["c3",5,1,1,"caractere",5],
-  ["c1",0,2,0,"carnaval",5],["c1",4,2,0,"corps",5],["c1",5,2,0,"matieres",5],["c1",1,1,0,"loin",5],
-  ["c2",5,1,0,"carnaval",5],["c2",3,2,0,"corps",5],["c2",4,2,1,"matieres",5],
-  ["c3",1,2,1,"durees",10],["c3",2,2,1,"canon",10],["c3",4,2,1,"ostinato",10],["c3",5,2,1,"epoques",10]];
+  ["c2",0,1,0,"melodie",5],["c2",5,2,0,"caractere",5],
+  ["c3",3,1,1,"pierre",10],["c3",3,2,1,"ensemble",5],["c3",5,0,1,"forme",10],["c3",5,1,1,"caractere",5],
+  ["c1",4,2,0,"corps",5],["c1",5,2,0,"matieres",5],["c1",1,1,0,"loin",5],
+  ["c2",3,2,0,"corps",5],
+  ["c3",1,2,1,"durees",10],["c3",2,2,1,"canon",10],];
 EV_LECONS_DANS.forEach(function(r){
   const S=EV_CYCLES[r[0]].seq[r[1]].s[r[2]], L=EV_LECONS[r[4]]; if(!S||!L)return;
   let reste=r[5];
@@ -39985,6 +43063,398 @@ const EV_JESAIS_SEANCE={
   c2:[[0,1,1],[0,0,1],[0,1,2],[0,1,2],[0,1,2],[0,0,2]],
   c3:[[0,1,2,2],[0,1,2,2],[0,0,1,2],[0,0,1,2],[0,0,1,1],[0,1,2,2]]
 };
+/* Six séquences de plus par cycle (29/10/2026) : douze séquences, trente-six séances,
+   une par semaine sur toute l'année. Ajoutées APRÈS les six premières : la progression
+   déjà enregistrée (cycle:séquence:séance) ne bouge pas. Uniquement des ressources déjà
+   vérifiées : activités, leçons en images, écoutes, chansons du répertoire. */
+EV_COURS1.push(
+ {e:"🙌",c:"#e0485a",t:"Les comptines à gestes",txt:"Chanter en montrant : chaque mot a son geste, le corps aide à retenir la chanson.",
+  liens:"Langage : nommer les parties du corps. Agir avec son corps : coordonner geste et voix.",
+  jesais:["Je sais chanter une comptine en faisant ses gestes.","Je sais montrer les parties de mon corps en chantant."],
+  s:[{t:"Tête, épaules et genoux, pieds",obj:"Chanter une comptine en touchant les parties du corps nommées.",comp:["REP","VOI"],mat:"Le tableau, de la place debout.",
+      e:[[5,"Mon corps",'Toucher sa tête, ses épaules, ses genoux, ses pieds en les nommant tous ensemble.',null],
+         [10,"La chanson",'Écouter puis chanter « Tête, épaules et genoux, pieds » en touchant chaque partie du corps.',["chant","tete-epaules"]],
+         [5,"Plus vite !",'La rechanter de plus en plus vite sans se tromper de geste.',null]],
+      ret:"Je chante avec mon <b>corps</b> : tête, épaules, genoux, pieds.",mots:["tête","épaules","genoux","pieds"],ev:"L’enfant fait les bons gestes en chantant."},
+     {t:"Ainsi font, font, font",obj:"Chanter en faisant tourner les mains comme des marionnettes.",comp:["REP","RYT"],mat:"Le tableau, les mains !",
+      e:[[5,"Les marionnettes",'Les mains deviennent des marionnettes : elles tournent, elles se cachent dans le dos.',null],
+         [10,"La chanson",'Chanter « Ainsi font, font, font » avec les gestes ; à la fin, les mains se cachent.',["chant","ainsi-font"]],
+         [5,"Sans la voix",'Faire les gestes seulement, puis rechanter à voix haute.',null]],
+      ret:"Les <b>marionnettes</b> font trois petits tours et puis s’en vont.",mots:["marionnette","geste"],ev:"L’enfant enchaîne les gestes au bon moment."},
+     {t:"Jean Petit qui danse",obj:"Faire danser une partie du corps nommée, en la gardant à chaque couplet.",comp:["REP","RYT"],mat:"Le tableau, de la place debout.",
+      e:[[5,"Ça danse",'Faire danser un doigt, puis la main, puis le pied, au rythme de la voix de l’adulte.',null],
+         [10,"La chanson",'Chanter « Jean Petit qui danse » en ajoutant une partie du corps à chaque couplet.',["chant","jean-petit"]],
+         [5,"Je retiens",'Chacun montre la partie du corps qu’il a préférée faire danser.',null]],
+      ret:"Dans la chanson, chaque <b>couplet</b> ajoute une partie du corps qui danse.",mots:["danser","couplet"],ev:"L’enfant ajoute la bonne partie du corps."}]},
+ {e:"🦁",c:"#f08a00",t:"Le carnaval des animaux",txt:"Écouter comment la musique imite les animaux : le lion, l’éléphant, la tortue.",
+  liens:"Découvrir le monde du vivant : les animaux et leur façon de bouger. Langage : décrire ce qu’on entend.",
+  jesais:["Je sais reconnaître un animal dans une musique.","Je sais bouger lentement ou vite comme l’animal."],
+  s:[{t:"Les animaux en musique",obj:"Reconnaître un animal évoqué par la musique.",comp:["ECO","VOI"],mat:"Le tableau, les haut-parleurs.",
+      e:[[10,"La leçon en images",'Projeter « Le carnaval des animaux » : écouter, deviner quel animal la musique imite.',["lecev","carnaval"]],
+         [5,"Imiter",'Marcher comme le lion, lourd comme l’éléphant, tout doucement comme la tortue.',null],
+         [5,"Je retiens",'Dire quel animal on a reconnu, et à quoi.',null]],
+      ret:"La musique peut <b>imiter</b> un animal : lourde et grave pour l’éléphant, lente pour la tortue.",mots:["imiter","lent","lourd"],ev:"L’enfant reconnaît un animal dans un extrait."},
+     {t:"Une souris verte",obj:"Chanter une comptine et mimer l’histoire de la souris.",comp:["REP","VOI"],mat:"Le tableau.",
+      e:[[5,"La petite souris",'Les doigts courent comme une souris dans l’herbe, tout légers.',null],
+         [10,"La chanson",'Chanter « Une souris verte » en mimant : l’attraper, la tremper dans l’huile, puis dans l’eau.',["chant","souris-verte"]],
+         [5,"Vite et lent",'Chanter la souris vite et légère, puis lente et endormie.',["jeu","bouge:tempo"]]],
+      ret:"La souris court <b>vite</b> ; je peux chanter vite ou lentement.",mots:["vite","lentement"],ev:"L’enfant chante et mime la comptine."},
+     {t:"L’éléphant qui se balance",obj:"Se balancer sur la pulsation d’une chanson.",comp:["RYT","REP"],mat:"Le tableau, de la place pour marcher.",
+      e:[[5,"Balancer",'Se balancer d’un pied sur l’autre, lourdement, comme un éléphant.',null],
+         [10,"La chanson",'Chanter « Un éléphant qui se balançait » : à chaque couplet, un éléphant de plus entre dans la file.',["chant","elephant"]],
+         [5,"La marche",'Marcher sur la pulsation, s’arrêter quand la musique s’arrête.',["jeu","marche"]]],
+      ret:"Je me balance sur la <b>pulsation</b>, régulière comme les pas de l’éléphant.",mots:["pulsation","balancer"],ev:"L’enfant se balance régulièrement."}]},
+ {e:"🌙",c:"#5b5bd6",t:"Doux comme une berceuse",txt:"Chanter tout doux, lentement, pour endormir : la berceuse et la nuit.",
+  liens:"Langage : dire doux, fort, lent. Vivre ensemble : se calmer, écouter.",
+  jesais:["Je sais chanter tout doucement.","Je sais reconnaître une berceuse."],
+  s:[{t:"Dodo, l’enfant do",obj:"Chanter une berceuse doucement et lentement.",comp:["VOI","REP"],mat:"Le tableau, la lumière baissée.",
+      e:[[5,"Fort ou doux ?",'Écouter et bouger : tout petit quand c’est doux, grand quand c’est fort.',["jeu","bouge:intensite"]],
+         [10,"La berceuse",'Chanter « Dodo, l’enfant do » en berçant un bébé imaginaire, tout doucement.',["chant","dodo"]],
+         [5,"Je retiens",'Les yeux fermés, écouter le silence après la berceuse.',null]],
+      ret:"Une <b>berceuse</b> se chante <b>doucement</b> et <b>lentement</b>, pour endormir.",mots:["berceuse","doux"],ev:"L’enfant chante sans crier."},
+     {t:"Au clair de la lune",obj:"Chanter doucement une chanson de la nuit en montrant la mélodie.",comp:["VOI","ECO"],mat:"Le tableau.",
+      e:[[5,"Ma voix monte",'Sur « ouuu », la voix monte et descend avec la main.',null],
+         [10,"La chanson",'Chanter « Au clair de la lune » doucement ; la main montre « lu-ne » qui monte.',["chant","clair-lune"]],
+         [5,"Le monstre endormi",'Ne pas réveiller le monstre : chanter tout bas.',["jeu","monstre"]]],
+      ret:"La nuit, on chante <b>doucement</b>. Ma voix peut <b>monter</b> et <b>descendre</b>.",mots:["la nuit","doucement"],ev:"L’enfant chante doucement en suivant la main."},
+     {t:"Twinkle, Twinkle, Little Star",obj:"Chanter une comptine en anglais et reconnaître un air connu.",comp:["VOI","ECO"],mat:"Le tableau.",
+      e:[[5,"La petite étoile",'Les mains s’ouvrent et se ferment comme une étoile qui brille.',null],
+         [10,"En anglais",'Écouter « Twinkle, Twinkle, Little Star » : c’est l’air de « Ah ! vous dirai-je, maman » ! Le chanter.',["chant","twinkle"]],
+         [5,"En français",'Chanter la même mélodie en français : même air, autres paroles.',["chant","dirai-je"]]],
+      ret:"La même <b>mélodie</b> peut se chanter en français et en <b>anglais</b>.",mots:["mélodie","anglais"],ev:"L’enfant reconnaît l’air dans les deux langues."}]},
+ {e:"💃",c:"#c75a86",t:"Rondes et défilés",txt:"Danser ensemble en rond, défiler en file pour le carnaval, jouer à la ronde du loup : la musique organise le groupe.",
+  liens:"Agir avec son corps : se déplacer en groupe. Vivre ensemble : se donner la main, attendre son tour. Les fêtes : le carnaval.",
+  jesais:["Je sais tourner en ronde en chantant.","Je sais marcher en file sur la pulsation."],
+  s:[{t:"Sur le pont d’Avignon",obj:"Danser en ronde en chantant.",comp:["REP","RYT"],mat:"Une grande place, le tableau.",
+      e:[[5,"En rond",'Se donner la main et tourner en rond sans se lâcher.',null],
+         [10,"La ronde",'Chanter « Sur le pont d’Avignon » en tournant ; sur « l’on y danse », on s’arrête et on salue.',["chant","pont-avignon"]],
+         [5,"Les statues",'La musique s’arrête : on devient une statue.',["jeu","statues"]]],
+      ret:"Dans une <b>ronde</b>, on tourne ensemble en chantant.",mots:["ronde","saluer"],ev:"L’enfant tourne et s’arrête avec le groupe."},
+     {t:"Le défilé du carnaval",obj:"Marcher en file sur la pulsation et chanter le carnaval.",comp:["RYT","REP"],mat:"Une grande place, des masques si on veut.",
+      e:[[5,"À la queue leu leu",'Les mains sur les épaules de celui de devant : chanter « À la queue leu leu » en avançant.',["chant","queue-leu-leu"]],
+         [10,"Mardi Gras",'Défiler en chantant « Mardi Gras », un pas par temps ; sur « crêpes », faire sauter une crêpe imaginaire.',["chant","mardi-gras"]],
+         [5,"La marche",'Marcher, s’arrêter, repartir avec la musique.',["jeu","marche"]]],
+      ret:"Au <b>carnaval</b>, on défile en file, un pas sur chaque <b>temps</b>.",mots:["défiler","pulsation"],ev:"L’enfant marche régulièrement dans la file."},
+     {t:"Promenons-nous dans les bois",obj:"Chanter une ronde à jeu et changer de nuance.",comp:["REP","VOI"],mat:"Une grande place.",
+      e:[[5,"Le loup dort",'Chanter tout bas pour ne pas réveiller le loup.',null],
+         [10,"Le jeu",'La ronde chante « Promenons-nous dans les bois », le loup répond en s’habillant ; à la fin, il attrape quelqu’un.',["chant","promenons-nous"]],
+         [5,"Je retiens",'Comparer : chanter tout bas, et le loup qui parle fort.',null]],
+      ret:"On chante <b>doucement</b> pour ne pas réveiller le loup ; le loup <b>parle</b> fort.",mots:["chanter","parler"],ev:"L’enfant chante doucement et joue son rôle."}]},
+ {e:"🎉",c:"#2fb36b",t:"L’hiver et les fêtes",txt:"Les sons de l’hiver, la musique de Noël, puis la galette des rois en janvier : chanter les moments de l’année.",
+  liens:"Explorer le monde : les saisons et les fêtes. Langage : raconter une fête.",
+  jesais:["Je sais faire les sons de l’hiver avec ma voix et mon corps.","Je sais chanter une chanson de fête."],
+  s:[{t:"Les sons de l’hiver",obj:"Imiter les bruits de l’hiver et les jouer sur un signe.",comp:["CRE","ECO"],mat:"Le tableau.",
+      e:[[5,"Dehors, il fait froid",'Imaginer l’hiver : le vent qui souffle, les pas dans la neige, on se frotte les mains.',null],
+         [10,"Le paysage sonore",'Chaque groupe fait un bruit (vent, pas, frissons) quand l’adulte touche l’image ; puis tous ensemble.',["jeu","paysage"]],
+         [5,"Silence !",'Tout s’arrête : écouter le silence de la neige.',null]],
+      ret:"Avec ma <b>voix</b> et mon <b>corps</b>, je fais le vent et les pas dans la neige.",mots:["vent","neige","silence"],ev:"L’enfant joue son bruit et s’arrête au signal."},
+     {t:"La musique de Noël",obj:"Écouter une musique de fête et chanter Noël.",comp:["ECO","REP"],mat:"Le tableau, les haut-parleurs.",
+      e:[[5,"Casse-Noisette",'Écouter un extrait de Casse-Noisette : la musique est-elle triste ou joyeuse ?',["yt","casse"]],
+         [10,"Il est né le divin enfant",'Chanter le refrain en tapant doucement la pulsation.',["chant","divin-enfant"]],
+         [5,"Je retiens",'Dire ce que la musique fait ressentir.',null]],
+      ret:"La musique de <b>fête</b> est souvent <b>joyeuse</b>.",mots:["fête","joyeux"],ev:"L’enfant dit si la musique est joyeuse."},
+     {t:"J’aime la galette",obj:"Chanter et danser pour la galette des rois.",comp:["REP","RYT"],mat:"Le tableau, une couronne en papier.",
+      e:[[5,"La couronne",'Celui qui porte la couronne chante une phrase seul.',null],
+         [10,"La chanson",'Chanter « J’aime la galette » en ronde ; sur « tra la la », on saute.',["chant","galette"]],
+         [5,"Tra la la",'Taper « tra la la » sur les genoux, bien régulièrement.',null]],
+      ret:"À l’Épiphanie, on chante <b>la galette</b> et on danse en <b>ronde</b>.",mots:["galette","roi","reine"],ev:"L’enfant chante le refrain avec le groupe."}]},
+ {e:"🎵",c:"#2374b0",t:"Ma petite chanson à moi",txt:"Inventer : changer les mots d’une chanson, jouer sur le xylophone, donner un petit concert.",
+  liens:"Langage : trouver des rimes, des mots qui chantent. Créer : faire des choix et les montrer.",
+  jesais:["Je sais changer les mots d’une chanson.","Je sais jouer quelques notes au xylophone.","Je sais chanter devant les autres."],
+  s:[{t:"Je change les mots",obj:"Inventer de nouvelles paroles sur un air connu.",comp:["CRE","VOI"],mat:"Le tableau.",
+      e:[[5,"Frère Jacques",'Chanter « Frère Jacques » tous ensemble.',["chant","frere-jacques"]],
+         [10,"Nouveaux mots",'Remplacer « Frère Jacques » par un prénom de la classe, « dormez-vous » par « chantez-vous »… et rechanter.',null],
+         [5,"Je retiens",'Chanter la nouvelle chanson de la classe.',null]],
+      ret:"Sur la même <b>mélodie</b>, je peux <b>inventer</b> d’autres paroles.",mots:["inventer","paroles"],ev:"L’enfant propose un mot nouveau."},
+     {t:"Le xylophone magique",obj:"Jouer et inventer quelques notes sur le xylophone.",comp:["CRE","ECO"],mat:"Le tableau tactile ou la souris.",
+      e:[[5,"Lames longues, lames courtes",'Toucher la lame la plus longue puis la plus courte : laquelle est grave ? aiguë ?',["jeu","xylo"]],
+         [10,"Ma petite mélodie",'À tour de rôle, un enfant joue trois notes, la classe les chante.',["jeu","xylo"]],
+         [5,"Je retiens",'Dire : la grande lame est grave, la petite est aiguë.',null]],
+      ret:"Sur le <b>xylophone</b>, la grande lame est <b>grave</b>, la petite est <b>aiguë</b>.",mots:["xylophone","lame"],ev:"L’enfant joue et la classe chante ses notes."},
+     {t:"Le concert de la classe",obj:"Chanter devant les autres les chansons apprises.",comp:["REP","CRE"],mat:"Le tableau, un coin « scène ».",
+      e:[[5,"Choisir",'Choisir ensemble trois chansons préférées de l’année.',["chants"]],
+         [10,"Le concert",'Un groupe chante, l’autre écoute et applaudit ; puis on échange.',null],
+         [5,"Je retiens",'Dire ce qu’on a aimé chanter, et pourquoi.',null]],
+      ret:"Pour un <b>concert</b>, on chante ensemble et le <b>public</b> écoute.",mots:["concert","public"],ev:"L’enfant chante avec son groupe devant les autres."}]}
+);
+EV_COURS2.push(
+ {e:"🎤",c:"#3d8bfd",t:"Chansons d’ici et d’ailleurs",txt:"Chanter en breton, en anglais, en canon : d’autres langues, d’autres musiques.",
+  liens:"Langues vivantes : chanter en anglais. Questionner le monde : les régions et les pays.",
+  jesais:["Je sais chanter une chanson dans une autre langue.","Je sais écouter une langue que je ne connais pas.","Je sais chanter en canon à deux groupes."],
+  s:[{t:"Une berceuse bretonne",obj:"Écouter et chanter une berceuse dans une langue régionale.",comp:["EC","CH"],mat:"Le tableau, les haut-parleurs.",
+      e:[[5,"Écouter",'Écouter « Toutou aze » sans rien dire : quelle langue ? quelle impression ?',["chant","toutou-aze"]],
+         [15,"Apprendre",'Apprendre la berceuse phrase par phrase avec l’écho.',["chant","toutou-aze"]],
+         [5,"Comparer",'Comparer avec « Dodo, l’enfant do » : lent, doux, pour endormir.',["chant","dodo"]],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Une <b>berceuse</b> existe dans toutes les langues : en breton, on chante « Toutou aze ».",mots:["berceuse","langue régionale"],ev:"Réussi si l’enfant chante la première phrase."},
+     {t:"Chanter en anglais",obj:"Chanter une comptine anglaise et en comprendre l’idée.",comp:["CH","EP"],mat:"Le tableau.",
+      e:[[5,"Rain, rain",'Écouter « Rain, Rain, Go Away » : de quoi parle la chanson ? (la pluie).',["chant","rain-rain"]],
+         [10,"Itsy Bitsy Spider",'Apprendre l’araignée avec ses gestes : elle monte, la pluie tombe, le soleil revient.',["chant","itsy-bitsy"]],
+         [10,"Baa, Baa, Black Sheep",'Chanter la comptine du mouton : c’est encore l’air de « Twinkle, Twinkle » !',["chant","baa-baa"]],
+         [5,"Je retiens",'Dire un mot anglais appris en chantant.',null]],
+      ret:"En <b>anglais</b> aussi, on chante des comptines avec des gestes.",mots:["anglais","comptine"],ev:"Réussi si l’enfant chante avec les gestes."},
+     {t:"Row your boat en canon",obj:"Chanter en canon à deux groupes.",comp:["CH","EC"],mat:"Le tableau, deux groupes.",
+      e:[[5,"Ramer",'Assis par deux, se tenir les mains et ramer sur la pulsation.',null],
+         [10,"La chanson",'Apprendre « Row, Row, Row Your Boat » tous ensemble.',["chant","row-boat"]],
+         [10,"Le canon",'Le groupe 2 entre quand sa phrase s’allume (au moment où le groupe 1 arrive à « gently »).',["jeu","canon:row-boat"]],
+         [5,"Je retiens",'Dire ce qu’est un canon.',null]],
+      ret:"Dans un <b>canon</b>, tout le monde chante la même mélodie, mais les groupes partent <b>l’un après l’autre</b>.",mots:["canon","groupe"],ev:"Réussi si chaque groupe tient sa partie."}]},
+ {e:"🐺",c:"#8e5bd8",t:"Pierre et le loup",txt:"Un conte musical : chaque personnage a son instrument et son thème.",
+  liens:"Lecture : raconter une histoire. Questionner le monde : les animaux du conte.",
+  jesais:["Je sais dire quel instrument joue chaque personnage.","Je sais reconnaître le thème du loup.","Je sais raconter l’histoire avec la musique."],
+  s:[{t:"Les personnages et leurs instruments",obj:"Associer chaque personnage à son instrument.",comp:["EC","EP"],mat:"Le tableau, les haut-parleurs, des images des personnages.",
+      e:[[10,"La leçon en images",'Projeter « Pierre et le loup » : chaque personnage, son instrument.',["lecev","pierre"]],
+         [10,"Les familles",'Ranger les instruments du conte dans leur famille.',["jeu","familles:gestes"]],
+         [5,"Mimer",'Chaque groupe mime un personnage quand on entend son instrument.',null],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Dans <b>Pierre et le loup</b>, chaque personnage est joué par un <b>instrument</b> : l’oiseau par la flûte, le loup par les cors.",mots:["conte musical","thème"],ev:"Réussi si l’enfant associe trois personnages."},
+     {t:"Chaque personnage, son timbre",obj:"Reconnaître un personnage du conte au timbre de son instrument.",comp:["EC","CH"],mat:"Le tableau, les haut-parleurs.",
+      e:[[10,"Qui joue ?",'Écouter et trouver l’instrument : chacun a sa couleur de son.',["jeu","timbre"]],
+         [10,"Le thème du loup",'Réécouter la leçon : reconnaître le thème du loup, grave et menaçant.',["lecev","pierre"]],
+         [5,"Chanter",'Chanter le thème de Pierre sur « la la la ».',null],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Le <b>timbre</b>, c’est la couleur du son : il permet de reconnaître l’instrument.",mots:["timbre","instrument"],ev:"Réussi si l’enfant reconnaît trois instruments sur quatre."},
+     {t:"Raconter avec la musique",obj:"Raconter le conte en suivant la musique.",comp:["EP","EI"],mat:"Le tableau, des images des personnages.",
+      e:[[10,"L’orchestre se remplit",'Écouter comment les instruments entrent l’un après l’autre.',["orguide","theme2"]],
+         [10,"Raconter",'Un élève montre l’image du personnage quand son thème revient ; la classe raconte.',null],
+         [5,"Mon avis",'Quel personnage la musique rend-elle le plus vivant ? Pourquoi ?',null],
+         [5,"Bilan",'Relire « À retenir » et remplir « Je sais ».',null]],
+      ret:"La musique peut <b>raconter</b> une histoire sans paroles.",mots:["raconter","orchestre"],ev:"Réussi si l’enfant raconte un moment du conte."}]},
+ {e:"🐘",c:"#f08a00",t:"Le carnaval des animaux",txt:"Saint-Saëns décrit les animaux avec l’orchestre : lent, rapide, grave, aigu.",
+  liens:"Questionner le monde : le vivant. Langage : décrire une musique avec les bons mots.",
+  jesais:["Je sais dire si une musique est lente ou rapide.","Je sais dire si un son est long ou court.","Je sais décrire une musique avec deux mots."],
+  s:[{t:"Les animaux de Saint-Saëns",obj:"Reconnaître les animaux et dire comment la musique les imite.",comp:["EC","EP"],mat:"Le tableau, les haut-parleurs.",
+      e:[[10,"La leçon en images",'Projeter « Le carnaval des animaux » : écouter, deviner l’animal.',["lecev","carnaval"]],
+         [10,"Lent ou rapide",'Lent comme la tortue, rapide comme le lièvre : bouger avec la musique.',["jeu","bouge:tempo"]],
+         [5,"Décrire",'Choisir deux mots pour décrire l’éléphant (grave, lourd, lent…).',null],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"La musique imite l’animal par le <b>tempo</b> (lent, rapide) et la <b>hauteur</b> (grave, aigu).",mots:["tempo","imiter"],ev:"Réussi si l’enfant décrit l’éléphant avec deux bons mots."},
+     {t:"Long ou court",obj:"Distinguer les sons longs et les sons courts.",comp:["EC","CH"],mat:"Le tableau, de la place.",
+      e:[[10,"Long ou court ?",'Bras qui s’étirent pour un son long, petit saut pour un son court.',["jeu","bouge:duree"]],
+         [5,"La leçon en images",'Projeter « Long, court, et le silence ».',["lecev","duree"]],
+         [10,"La famille Tortue",'Chanter « La famille Tortue » très lentement, puis comparer.',["chant","famille-tortue"]],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Un son peut être <b>long</b> ou <b>court</b> : c’est sa <b>durée</b>.",mots:["long","court","durée"],ev:"Réussi si l’enfant fait le bon geste pour 4 sons sur 5."},
+     {t:"Notre animal en musique",obj:"Inventer la musique d’un animal avec la voix et le corps.",comp:["EI","EP"],mat:"Le tableau, des petites percussions si possible.",
+      e:[[5,"Choisir",'Chaque groupe choisit un animal secret.',null],
+         [15,"Inventer",'Inventer sa musique : lente ou rapide, grave ou aiguë, longue ou courte.',null],
+         [5,"Devine",'Les autres groupes devinent l’animal et disent pourquoi.',null],
+         [5,"Bilan",'Relire « À retenir » et remplir « Je sais ».',null]],
+      ret:"Pour faire entendre un animal, je choisis le <b>tempo</b>, la <b>hauteur</b> et la <b>durée</b>.",mots:["inventer","choisir"],ev:"Réussi si les autres devinent l’animal."}]},
+ {e:"💃",c:"#c75a86",t:"Rondes, danses et pulsation",txt:"Danser en rond, en ligne, en farandole : la pulsation fait bouger tout le groupe ensemble.",
+  liens:"Éducation physique : danses collectives. Mathématiques : compter les temps.",
+  jesais:["Je sais marcher sur la pulsation.","Je sais danser une ronde avec le groupe.","Je sais m’arrêter au bon moment."],
+  s:[{t:"Giroflé, girofla",obj:"Danser en lignes face à face sur la pulsation.",comp:["CH","EI"],mat:"Une grande place.",
+      e:[[5,"La marche",'Marcher sur la pulsation, s’arrêter avec la musique.',["jeu","marche"]],
+         [15,"La danse",'Deux lignes face à face : avancer quatre pas, reculer quatre pas en chantant « Giroflé, girofla ».',["chant","girofle"]],
+         [5,"Les statues",'S’arrêter net quand la musique s’arrête.',["jeu","statues"]],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"La <b>pulsation</b>, ce sont les pas réguliers de la musique : on danse dessus.",mots:["pulsation","danse"],ev:"Réussi si l’enfant avance et recule en rythme."},
+     {t:"Lon, lon, la, laissez-les passer",obj:"Jouer une ronde à pont en respectant la phrase musicale.",comp:["CH","EC"],mat:"Une grande place.",
+      e:[[5,"La pulsation",'Taper la pulsation dans les mains, puis sur les cuisses.',["jeu","tempo"]],
+         [15,"Le pont",'Deux enfants font un pont ; la file passe dessous en chantant ; sur la dernière note, le pont se ferme.',["chant","lon-lon-la"]],
+         [5,"La fin de la phrase",'Repérer où finit la phrase : c’est là que le pont se ferme.',null],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Une chanson est faite de <b>phrases</b> ; la fin de la phrase est un moment d’arrêt.",mots:["phrase","ronde"],ev:"Réussi si l’enfant s’arrête à la fin de la phrase."},
+     {t:"Scions du bois",obj:"Garder la pulsation à deux en jouant un geste de travail.",comp:["CH","EI"],mat:"Le tableau, par deux.",
+      e:[[5,"La scie",'Par deux, les mains jointes, faire la scie en avant, en arrière.',null],
+         [15,"La chanson",'Chanter « Scions du bois » en sciant exactement sur la pulsation.',["chant","scions-bois"]],
+         [5,"Le chef",'Le chef montre plus vite, plus lent : les scieurs suivent.',["jeu","chef"]],
+         [5,"Bilan",'Relire « À retenir » et remplir « Je sais ».',null]],
+      ret:"À deux, on garde la même <b>pulsation</b> : on joue <b>ensemble</b>.",mots:["ensemble","régulier"],ev:"Réussi si le duo garde la pulsation."}]},
+ {e:"🌳",c:"#2fb36b",t:"La musique et les saisons",txt:"Le printemps de Vivaldi, le chant des oiseaux : écouter comment la musique peint la nature.",
+  liens:"Questionner le monde : les saisons. Arts plastiques : peindre ce qu’on entend.",
+  jesais:["Je sais dire ce que la musique fait imaginer.","Je sais reconnaître des chants d’oiseaux dans une musique.","Je sais créer un paysage sonore."],
+  s:[{t:"Le Printemps de Vivaldi",obj:"Écouter une œuvre et dire ce qu’elle fait imaginer.",comp:["EC","EP"],mat:"Le tableau, les haut-parleurs, des feuilles pour dessiner.",
+      e:[[10,"Écouter",'Écouter le début du Printemps : qu’imagine-t-on ? (oiseaux, ruisseau, soleil).',["yt","printemps"]],
+         [10,"Ce qui revient",'Réécouter : le refrain joyeux revient entre les oiseaux, le ruisseau et l’orage. Lever la main quand il revient.',["yt","printemps"]],
+         [5,"Dessiner",'Dessiner en écoutant une seconde fois.',["yt","printemps"]],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Vivaldi fait <b>entendre</b> le printemps : les oiseaux, le ruisseau, l’orage.",mots:["Vivaldi","imaginer"],ev:"Réussi si l’enfant dit ce qu’il imagine avec un mot juste."},
+     {t:"Le chant des oiseaux",obj:"Repérer les voix qui imitent les oiseaux.",comp:["EC","CH"],mat:"Le tableau, les haut-parleurs.",
+      e:[[10,"Janequin",'Écouter « Le Chant des oiseaux » : des voix qui imitent les oiseaux, il y a 500 ans !',["yt","oiseaux"]],
+         [10,"Imiter",'Inventer des cris d’oiseaux avec la voix : aigus, rapides, courts.',null],
+         [5,"Aigu ou grave",'Jouer à « Aigu ou grave ? ».',["jeu","hauteur"]],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Les <b>voix</b> peuvent imiter les oiseaux : sons <b>aigus</b>, courts, rapides.",mots:["imiter","voix"],ev:"Réussi si l’enfant imite un oiseau avec une voix aiguë."},
+     {t:"Notre saison en sons",obj:"Créer un paysage sonore d’une saison.",comp:["EI","EP"],mat:"Le tableau, des objets sonores.",
+      e:[[10,"Le paysage sonore",'Écouter un paysage sonore et repérer ses bruits.',["jeu","paysage"]],
+         [10,"Créer",'Par groupes, inventer le paysage sonore d’une saison (pluie, vent, oiseaux…).',null],
+         [5,"Écouter les autres",'Chaque groupe joue, la classe devine la saison.',null],
+         [5,"Bilan",'Relire « À retenir » et remplir « Je sais ».',null]],
+      ret:"Avec des sons, je peux faire <b>entendre</b> une saison : c’est un <b>paysage sonore</b>.",mots:["paysage sonore","saison"],ev:"Réussi si la classe devine la saison."}]},
+ {e:"🎪",c:"#e0485a",t:"Le spectacle de fin d’année",txt:"Choisir, répéter, présenter : les chansons de l’année deviennent un spectacle.",
+  liens:"Enseignement moral et civique : s’écouter, s’entraider. Français : présenter à l’oral.",
+  jesais:["Je sais chanter avec le groupe en suivant le chef.","Je sais chanter avec des nuances.","Je sais dire ce que j’ai réussi."],
+  s:[{t:"Choisir et répéter",obj:"Choisir les chansons du spectacle et les répéter.",comp:["CH","EP"],mat:"Le tableau.",
+      e:[[10,"Choisir",'Revoir le répertoire de l’année et choisir trois ou quatre chansons.',["chants"]],
+         [15,"Répéter",'Répéter chaque chanson, bien ensemble, avec le début et la fin nets.',null],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Pour un <b>spectacle</b>, on choisit et on <b>répète</b> : commencer et finir ensemble.",mots:["répéter","ensemble"],ev:"Réussi si le groupe commence et finit ensemble."},
+     {t:"Les nuances et le chef",obj:"Suivre un chef de chœur : fort, doux, départ, arrêt.",comp:["CH","EC"],mat:"Le tableau.",
+      e:[[10,"Le chef d’orchestre",'Suivre les signes : fort, doux, silence, départ.',["jeu","chef"]],
+         [15,"Avec nos chansons",'Un élève chef dirige une chanson du spectacle avec des nuances.',null],
+         [5,"Je retiens",'Dire « À retenir ».',null]],
+      ret:"Le <b>chef</b> montre les <b>nuances</b> : la chorale le regarde et le suit.",mots:["chef de chœur","nuances"],ev:"Réussi si la classe suit les nuances du chef."},
+     {t:"Le spectacle",obj:"Chanter en public et parler de son spectacle.",comp:["CH","EP"],mat:"Un coin scène, un public (une autre classe, les parents).",
+      e:[[15,"Le spectacle",'Présenter les chansons devant un public.',null],
+         [10,"Le bilan",'Dire ce qu’on a réussi, ce qu’on améliorerait.',null],
+         [5,"Bilan",'Relire « À retenir » et remplir « Je sais ».',null]],
+      ret:"Chanter en <b>public</b>, c’est partager ce qu’on a appris ; on peut en parler après.",mots:["public","spectacle"],ev:"Réussi si l’enfant chante avec le groupe et dit une réussite."}]}
+);
+EV_COURS.push(
+ {e:"🔁",c:"#3d8bfd",t:"Polyphonie : chanter à plusieurs voix",txt:"Après le canon de « Frère Jacques », aller plus loin : canon à quatre, bourdon, ostinato chanté, soliste et chœur.",
+  liens:"Mathématiques : le décalage, la superposition. Anglais : chanter en anglais. Histoire : le chant afro-américain.",
+  jesais:["Je sais chanter un canon à quatre groupes.","Je sais tenir un ostinato ou un bourdon sous une mélodie.","Je sais chanter en réponse à un soliste.","Je sais expliquer ce qu’est une polyphonie."],
+  s:[{t:"Le canon à quatre groupes",obj:"Chanter un canon à quatre entrées en tenant sa voix.",comp:["CI","EPA"],mat:"Le tableau, quatre groupes.",
+      e:[[5,"Échauffement",'Corps, souffle, sirène.',null],
+         [15,"Row your boat",'Apprendre « Row, Row, Row Your Boat » en anglais, tous ensemble.',["chant","row-boat"]],
+         [15,"Quatre entrées",'Chanter en canon à deux, puis à quatre groupes : chaque groupe entre quand sa phrase s’allume.',["jeu","canon:row-boat"]],
+         [5,"S’écouter",'Qu’est-ce qui aide à tenir sa voix ? (regarder son groupe, écouter les autres, ne pas crier).',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"Dans un canon à <b>quatre</b> voix, chaque groupe entre à son tour : il faut <b>s’écouter</b> pour rester ensemble.",mots:["entrée","s’écouter","canon"],ev:"Réussi si le canon tient à quatre groupes jusqu’au bout."},
+     {t:"Bourdon et ostinato",obj:"Accompagner une mélodie avec un bourdon ou un ostinato chanté.",comp:["CI","EIC"],mat:"Le tableau, deux groupes.",
+      e:[[5,"Échauffement",'Tenir une note longue tous ensemble, le plus calme possible.',null],
+         [15,"Ding, dang, dong",'Un groupe chante « ding, dang, dong » en boucle pendant que l’autre chante « Frère Jacques ».',["chant","frere-jacques"]],
+         [15,"Le bourdon",'Un groupe tient une note grave (« mmm ») sous la mélodie de « Frère Jacques » ; écouter ce que cela change.',null],
+         [5,"Mon avis",'Ostinato ou bourdon : lequel préférez-vous ? Pourquoi ?',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"Un <b>ostinato</b> est une formule qui se répète en boucle ; un <b>bourdon</b> tient une note sous la mélodie. Ce sont deux façons d’<b>accompagner</b>.",mots:["ostinato","bourdon","accompagner"],ev:"Réussi si le groupe tient l’ostinato ou le bourdon sans s’arrêter."},
+     {t:"Soliste et chœur",obj:"Chanter en réponse à un soliste, comme dans le chant afro-américain.",comp:["CI","ECC"],mat:"Le tableau.",
+      e:[[5,"Échauffement",'Sirène et vocalises.',null],
+         [15,"Michael, Row the Boat Ashore",'Apprendre la chanson : un soliste chante la phrase, toute la classe répond « Hallelujah ».',["chant","michael-row"]],
+         [10,"À deux voix",'Ajouter le bourdon de la séance précédente sous le chœur.',null],
+         [10,"Une polyphonie",'Récapituler : canon, ostinato, bourdon, soliste et chœur sont des polyphonies. Les nommer au tableau.',null],
+         [5,"Bilan",'Relire les « À retenir » de la séquence et remplir « Je sais ».',null]],
+      ret:"Dans le chant <b>soliste-chœur</b>, une voix appelle, le groupe répond. Plusieurs voix différentes en même temps forment une <b>polyphonie</b>.",mots:["soliste","chœur","polyphonie"],ev:"Réussi si le chœur répond au bon moment et que le bourdon tient."}]},
+ {e:"🔄",c:"#8e5bd8",t:"La boucle et la répétition",txt:"L’ostinato, la boucle, la musique répétitive : comment répéter peut construire toute une musique.",
+  liens:"Mathématiques : motifs et suites. Arts plastiques : motifs répétés. Numérique : la boucle dans les musiques d’aujourd’hui.",
+  jesais:["Je sais repérer un ostinato dans une musique.","Je sais inventer et tenir une boucle rythmique.","Je sais superposer ma boucle à celle des autres.","Je sais donner mon avis sur une musique répétitive."],
+  s:[{t:"L’ostinato",obj:"Repérer et inventer une formule qui se répète.",comp:["ECC","EIC"],mat:"Le tableau, les haut-parleurs.",
+      e:[[10,"La leçon en images",'Projeter « L’ostinato : la boucle ».',["lecev","ostinato"]],
+         [10,"Le Boléro (rappel)",'Réécouter le début du Boléro, déjà entendu : taper l’ostinato de la caisse claire.',["yt","bolero"]],
+         [15,"Nos ostinatos",'Par groupes, choisir des mots (« pain chaud, croissant ») et les répéter en boucle ; puis les jouer avec le corps.',["jeu","boucles"]],
+         [5,"Mon avis",'Quel ostinato est le plus facile à tenir ? Pourquoi ?',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"Un <b>ostinato</b> est une formule (rythme, mots, mélodie) qui se <b>répète</b> sans arrêt.",mots:["ostinato","formule","répéter"],ev:"Réussi si le groupe tient son ostinato parlé."},
+     {t:"Une boucle de percussions corporelles",obj:"Créer et jouer une boucle rythmique à plusieurs.",comp:["EIC","CI"],mat:"Le tableau, de la place.",
+      e:[[10,"Les gestes",'Jouer la partition des gestes : frapper, taper, claquer.',["jeu","gestes"]],
+         [15,"Notre boucle",'Par groupes, transformer son ostinato parlé en gestes du corps (quatre temps).',null],
+         [15,"Superposer",'Les groupes entrent l’un après l’autre et gardent leur boucle (« Entrées une par une »).',["jeu","boucles"]],
+         [5,"Trace écrite",'Écrire sa boucle avec des symboles.',null]],
+      ret:"Plusieurs <b>boucles</b> jouées ensemble font une musique : chacun garde la sienne.",mots:["boucle","superposer"],ev:"Réussi si le groupe garde sa boucle pendant que les autres jouent."},
+     {t:"La musique répétitive",obj:"Écouter une musique minimaliste et en parler.",comp:["ECC","EPA"],mat:"Le tableau, les haut-parleurs.",
+      e:[[10,"Philip Glass",'Écouter « Opening » : ce qui se répète, ce qui change à peine.',["yt","glass"]],
+         [15,"Comparer",'Comparer avec le Boléro : deux façons de répéter (Ravel fait grandir, Glass fait varier très lentement).',null],
+         [10,"Débat",'La répétition rend-elle une musique calme, hypnotique, ennuyeuse ? Argumenter.',null],
+         [5,"Mon avis",'Écrire une phrase : j’aime / je n’aime pas, parce que…',null],
+         [5,"Bilan",'Relire les « À retenir » de la séquence et remplir « Je sais ».',null]],
+      ret:"La musique <b>répétitive</b> répète de petits motifs qui changent très lentement.",mots:["répétitif","motif"],ev:"Réussi si l’élève donne un avis argumenté."}]},
+ {e:"🎬",c:"#2a2f38",t:"Créer une bande-son",txt:"Après avoir écouté des musiques de film, en fabriquer : un leitmotiv pour un personnage, des bruitages, puis la bande-son d’une scène.",
+  liens:"Français : les personnages et leur caractère. Cinéma : l’image et le son. Numérique : enregistrer.",
+  jesais:["Je sais ce qu’est un leitmotiv.","Je sais inventer un motif pour un personnage.","Je sais fabriquer un bruitage.","Je sais justifier les choix d’une bande-son."],
+  s:[{t:"Le leitmotiv",obj:"Comprendre et inventer un motif attaché à un personnage.",comp:["ECC","EIC"],mat:"Le tableau, les haut-parleurs.",
+      e:[[10,"Rappel",'Réécouter quelques secondes de la Marche impériale : quand revient-elle dans le film ? (à chaque fois que Dark Vador apparaît).',["yt","imperiale"]],
+         [10,"Le leitmotiv",'Un thème attaché à un personnage s’appelle un leitmotiv. Chercher d’autres exemples (dessins animés, jeux vidéo).',null],
+         [15,"Inventer",'Par groupes, inventer un motif de trois ou quatre notes au xylophone pour un personnage (géant, fée, voleur…).',["jeu","xylo"]],
+         [5,"Devine",'Les autres devinent le personnage.',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"Un <b>leitmotiv</b> est un thème qui revient avec un personnage : on le reconnaît sans le voir.",mots:["leitmotiv","personnage","motif"],ev:"Réussi si la classe devine le personnage du motif."},
+     {t:"Bruitages et ambiances",obj:"Fabriquer des bruitages et une ambiance avec la voix, le corps et des objets.",comp:["EIC","ECC"],mat:"Le tableau, des objets de la classe.",
+      e:[[10,"Une ambiance",'Écouter « This Is Halloween » : qu’est-ce qui crée l’ambiance (les instruments, le tempo, les voix) ?',["yt","halloween"]],
+         [15,"Le bruiteur",'Au cinéma, le bruiteur fabrique les sons : des pas, une porte, la pluie. Chercher comment les faire avec des objets.',["jeu","paysage"]],
+         [15,"Notre banque de sons",'Chaque groupe met au point trois bruitages et les présente.',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"Le <b>bruiteur</b> fabrique les sons d’un film ; l’<b>ambiance</b> naît des instruments, du tempo et des nuances.",mots:["bruitage","ambiance"],ev:"Réussi si le groupe présente trois bruitages reconnaissables."},
+     {t:"Notre bande-son",obj:"Mettre une scène en musique et justifier ses choix.",comp:["EIC","EPA"],mat:"Le tableau, une image ou une courte scène projetée, un enregistreur.",
+      e:[[10,"La scène",'Choisir une scène (une poursuite, un réveil, un orage) et décider : quel leitmotiv, quels bruitages, quelle ambiance.',null],
+         [15,"Répéter",'Les groupes répètent leur partie, le chef les fait entrer au bon moment.',null],
+         [10,"Jouer et enregistrer",'Jouer la bande-son pendant que la scène est projetée ; l’enregistrer.',null],
+         [5,"Mon avis",'Qu’est-ce qui change le plus notre façon de voir la scène ?',null],
+         [5,"Bilan",'Relire les « À retenir » de la séquence et remplir « Je sais ».',null]],
+      ret:"Une <b>bande-son</b> mêle musique, bruitages et silences : elle change ce qu’on ressent devant l’<b>image</b>.",mots:["bande-son","image"],ev:"Réussi si le groupe justifie ses choix."}]},
+ {e:"⏳",c:"#b07c00",t:"Voyage dans le temps",txt:"Replacer sur une frise du temps les œuvres écoutées pendant l’année, de la Renaissance à la musique concrète : la synthèse des repères culturels.",
+  liens:"Histoire : les grandes périodes. Arts : les œuvres et leur époque.",
+  jesais:["Je sais situer une œuvre de la Renaissance.","Je sais reconnaître l’orgue de Bach.","Je sais dire ce qu’est la musique concrète.","Je sais ranger trois musiques dans l’ordre du temps."],
+  s:[{t:"Renaissance et Baroque",obj:"Écouter et situer deux œuvres anciennes.",comp:["ECC","EPA"],mat:"Le tableau, une frise du temps.",
+      e:[[10,"Voyage dans le temps",'Projeter la leçon : les grandes époques de la musique.',["lecev","epoques"]],
+         [10,"Janequin",'Écouter « Le Chant des oiseaux » (vers 1530) : des voix seules.',["yt","oiseaux"]],
+         [15,"Bach",'Écouter la Toccata (vers 1700) : l’orgue, puissant, aux sons tenus.',["yt","toccata"]],
+         [5,"La frise",'Placer les deux œuvres sur la frise du temps.',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"À la <b>Renaissance</b>, on chante beaucoup à plusieurs voix ; à l’époque <b>baroque</b>, Bach écrit pour l’orgue.",mots:["Renaissance","baroque","orgue"],ev:"Réussi si l’élève place les deux œuvres dans l’ordre."},
+     {t:"Classique et romantique",obj:"Écouter Lully, Beethoven et comparer.",comp:["ECC","EPA"],mat:"Le tableau, la frise du temps.",
+      e:[[10,"Lully",'Écouter la Marche des Turcs : la musique à la cour du roi.',["yt","marche"]],
+         [15,"Beethoven",'Écouter le début de la 5ᵉ symphonie : quatre notes qui frappent à la porte.',["yt","cinquieme"]],
+         [10,"L’Ode à la joie",'Écouter l’Ode à la joie et la fredonner.',["yt","ode"]],
+         [5,"La frise",'Placer les œuvres sur la frise.',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"<b>Lully</b> écrit pour le roi ; <b>Beethoven</b>, plus tard, fait de grandes symphonies pleines d’émotions.",mots:["symphonie","Beethoven"],ev:"Réussi si l’élève reconnaît le motif de la 5ᵉ."},
+     {t:"Le XXᵉ siècle",obj:"Découvrir la musique concrète et ranger les œuvres dans le temps.",comp:["ECC","EIC"],mat:"Le tableau, la frise du temps.",
+      e:[[10,"Debussy",'Écouter « La Mer » : la musique peint les vagues.',["yt","mer"]],
+         [10,"Pierre Schaeffer",'Écouter l’Étude aux chemins de fer : des bruits de trains deviennent musique.',["yt","trains"]],
+         [15,"La frise",'Ranger toutes les œuvres de la séquence dans l’ordre du temps.',null],
+         [5,"Mon avis",'Quelle époque préférez-vous ? Pourquoi ?',null],
+         [5,"Bilan",'Relire les « À retenir » de la séquence et remplir « Je sais ».',null]],
+      ret:"Au <b>XXᵉ siècle</b>, la <b>musique concrète</b> fait de la musique avec des bruits enregistrés.",mots:["musique concrète","XXᵉ siècle"],ev:"Réussi si l’élève range trois œuvres dans l’ordre."}]},
+ {e:"🏰",c:"#c75a86",t:"Chansons du patrimoine",txt:"Les chansons qui ont traversé les siècles : leurs histoires, leur forme, leurs régions.",
+  liens:"Histoire : la vie d’autrefois. Géographie : les régions de France.",
+  jesais:["Je sais reconnaître le couplet et le refrain.","Je sais raconter l’histoire d’une chanson.","Je sais chanter en dialogue à deux groupes.","Je sais présenter une chanson du patrimoine."],
+  s:[{t:"Couplet et refrain",obj:"Repérer la forme couplet-refrain.",comp:["CI","ECC"],mat:"Le tableau.",
+      e:[[5,"Rappel",'La forme : ce qui revient (le refrain), ce qui change (les couplets).',null],
+         [25,"Cadet Rousselle",'Apprendre la chanson et repérer le refrain « Ah ! Ah ! Ah ! Oui vraiment ».',["chant","cadet-rousselle"]],
+         [10,"Le refrain revient",'Toute la classe chante le refrain, un soliste chaque couplet.',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"Le <b>refrain</b> revient toujours pareil ; les <b>couplets</b> racontent la suite.",mots:["couplet","refrain"],ev:"Réussi si l’élève lève la main à chaque refrain."},
+     {t:"Une chanson en dialogue",obj:"Chanter une chanson à deux personnages.",comp:["CI","EPA"],mat:"Le tableau, deux groupes.",
+      e:[[5,"Échauffement",'Sirène et vocalises.',null],
+         [20,"Chère Élise",'Apprendre « Chère Élise » : Eugène pose la question, Élise répond.',["chant","chere-elise"]],
+         [15,"Le dialogue",'Deux groupes se répondent ; chercher une voix différente pour chaque personnage.',null],
+         [5,"Trace écrite",'Lire « À retenir ».',null]],
+      ret:"Une chanson peut être un <b>dialogue</b> : deux personnages se répondent.",mots:["dialogue","personnage"],ev:"Réussi si chaque groupe chante sa réplique au bon moment."},
+     {t:"Chansons de nos régions",obj:"Découvrir et présenter des chansons de différentes régions.",comp:["ECC","EPA"],mat:"Le tableau, une carte de France.",
+      e:[[10,"La Bretagne",'Écouter la berceuse bretonne « Toutou aze ».',["chant","toutou-aze"]],
+         [10,"La Provence",'Écouter « La farandole du Rhône » et taper la pulsation à deux temps.',["chant","farandole"]],
+         [15,"Présenter",'Par groupes, présenter une chanson du répertoire : son histoire, sa forme, sa région.',["chants"]],
+         [5,"Mon avis",'Quelle chanson voudriez-vous transmettre à vos petits frères et sœurs ?',null],
+         [5,"Bilan",'Relire les « À retenir » de la séquence et remplir « Je sais ».',null]],
+      ret:"Les chansons du <b>patrimoine</b> se transmettent depuis longtemps ; chaque région a les siennes.",mots:["patrimoine","région"],ev:"Réussi si le groupe présente sa chanson clairement."}]},
+ {e:"🎤",c:"#e0485a",t:"Projet : notre concert",txt:"Choisir un programme, répéter avec un chef, enregistrer et se produire en public.",
+  liens:"Français : présenter à l’oral. Enseignement moral et civique : coopérer.",
+  jesais:["Je sais choisir et justifier un programme de concert.","Je sais suivre un chef de chœur.","Je sais écouter un enregistrement et l’améliorer.","Je sais me produire devant un public."],
+  s:[{t:"Choisir le programme",obj:"Construire un programme varié et le justifier.",comp:["EPA","CI"],mat:"Le tableau.",
+      e:[[15,"Le répertoire",'Revoir les chansons de l’année et en choisir quatre, variées (un canon, une chanson en anglais…).',["chants"]],
+         [15,"L’ordre",'Choisir l’ordre du concert : commencer et finir fort.',null],
+         [10,"Répéter",'Première répétition de chaque chanson.',null],
+         [5,"Trace écrite",'Écrire le programme.',null]],
+      ret:"Un <b>programme</b> de concert se choisit : des chansons variées, dans un ordre réfléchi.",mots:["programme","varié"],ev:"Réussi si l’élève justifie un choix."},
+     {t:"Répéter avec un chef",obj:"Répéter en suivant un chef : départs, nuances, fins.",comp:["CI","ECC"],mat:"Le tableau, un enregistreur (téléphone, tablette).",
+      e:[[10,"Le chef",'Suivre les signes du chef : départ, fort, doux, arrêt.',["jeu","chef"]],
+         [20,"Répéter",'Un élève chef dirige ; travailler les nuances et les fins.',null],
+         [10,"S’enregistrer",'Enregistrer une chanson, l’écouter : qu’améliorer ?',null],
+         [5,"Trace écrite",'Noter deux choses à améliorer.',null]],
+      ret:"S’<b>enregistrer</b> permet de s’écouter et de s’<b>améliorer</b>.",mots:["répétition","enregistrer"],ev:"Réussi si l’élève propose une amélioration précise."},
+     {t:"Le concert",obj:"Se produire en public et faire le bilan.",comp:["CI","EPA"],mat:"Un lieu de concert, un public.",
+      e:[[25,"Le concert",'Présenter le programme devant un public.',null],
+         [15,"Le bilan",'Ce qui a bien marché, ce qui était difficile, ce que le public a aimé.',null],
+         [5,"Bilan",'Relire les « À retenir » de la séquence et remplir « Je sais ».',null]],
+      ret:"Se produire en <b>public</b>, c’est le résultat d’un travail d’<b>équipe</b>.",mots:["concert","équipe"],ev:"Réussi si l’élève participe au concert et au bilan."}]}
+);
+EV_JESAIS_SEANCE.c1.push([0,0],[0,1],[0,1],[0,1],[0,1],[0,1,2]);
+EV_JESAIS_SEANCE.c2.push([0,1,2],[0,1,2],[0,1,2],[0,1,2],[0,1,2],[1,1,2]);
+EV_JESAIS_SEANCE.c3.push([0,1,2,2],[0,1,1,2],[0,0,1,2],[0,0,2,2],[0,2,1,2],[0,1,1,2]);
+/* L'ordre de l'année (29/10/2026) : les séquences ajoutées après coup s'intercalent selon le
+   calendrier (l'hiver et Noël en décembre, le carnaval en février, le printemps au printemps,
+   le concert en juin). Les numéros enregistrés (cycle:séquence:séance) ne changent pas :
+   q._i = numéro d'origine, q._n = rang dans l'année. Cinq périodes de vacances à vacances. */
+const EV_ORDRE={c1:[6,0,1,2,10,3,4,9,7,5,8,11],c2:[0,1,2,3,4,7,6,9,8,5,10,11],c3:[0,1,2,3,10,6,4,7,5,8,9,11]};
+const EV_PERIODES=["Période 1 · septembre, octobre","Période 2 · novembre, décembre","Période 3 · janvier, février","Période 4 · mars, avril","Période 5 · mai, juin"];
+Object.keys(EV_CYCLES).forEach(function(cy){ const S=EV_CYCLES[cy].seq, O=(EV_ORDRE[cy]||[]).filter(function(x){ return x<S.length; });
+  S.forEach(function(q,i){ if(O.indexOf(i)<0)O.push(i); });
+  O.forEach(function(i,n){ S[i]._i=i; S[i]._n=n; }); });
+function evSeqOrd(C){ return C.seq.slice().sort(function(a,b){ return a._n-b._n; }); }
+function evPeriodeDe(n,N){ return Math.min(4,Math.floor(n*5/N)); }
+
 /* la barre d'espace mène les jeux de classe (télécommande, clavier au tableau) */
 document.addEventListener("keydown",function(e){
   if(e.key!==" "||e.repeat||/INPUT|TEXTAREA|SELECT|BUTTON/.test((e.target||{}).tagName||""))return;
@@ -50152,16 +53622,16 @@ function donCarteAccueilHTML(){
    ===================================================================== */
 const LEC_ICONES={"Lire la musique":"<i class='ph ph-music-note'></i>","Rythme":"<i class='ph ph-metronome'></i>",
  "Écoute (avec son)":"<i class='ph ph-ear'></i>","Vocabulaire & culture":"<i class='ph ph-books'></i>",
- "Théorie":"<i class='ph ph-compass-tool'></i>","Gammes, accords et modes":"<i class='ph ph-piano-keys'></i>","Styles de musique":"<i class='ph ph-vinyl-record'></i>","Pour aller plus loin (hors collège)":"<i class='ph ph-rocket-launch'></i>",
+ "Théorie":"<i class='ph ph-compass-tool'></i>","Gammes, accords et modes":"<i class='ph ph-piano-keys'></i>","Styles de musique":"<i class='ph ph-vinyl-record'></i>","Musiques du monde":"<i class='ph ph-globe-hemisphere-west'></i>","Pour aller plus loin (hors collège)":"<i class='ph ph-rocket-launch'></i>",
  "Évaluations des cours de collège":"<i class='ph ph-exam'></i>","Métiers de la musique":"<i class='ph ph-briefcase'></i>"};
 const LEC_COURTS={"Écoute (avec son)":"Écoute","Vocabulaire & culture":"Vocabulaire & culture",
  "Pour aller plus loin (hors collège)":"Pour aller plus loin","Évaluations des cours de collège":"Évaluations des cours"};
 /* Couleur de chaque domaine (tokens --dom-* de la feuille de style) : même luminosité
    et même intensité que le bleu du site, seule la teinte change ; l'or reste commun. */
 const LEC_TEINTES={"Lire la musique":"lire","Rythme":"rythme","Écoute (avec son)":"ecoute","Vocabulaire & culture":"culture",
- "Théorie":"theorie","Gammes, accords et modes":"harmonie","Styles de musique":"styles","Pour aller plus loin (hors collège)":"loin","Évaluations des cours de collège":"eval","Métiers de la musique":"metiers"};
+ "Théorie":"theorie","Gammes, accords et modes":"harmonie","Styles de musique":"styles","Musiques du monde":"monde","Pour aller plus loin (hors collège)":"loin","Évaluations des cours de collège":"eval","Métiers de la musique":"metiers"};
 /* libellé court du ruban (la vignette est étroite) */
-const LEC_RUBAN={"Gammes, accords et modes":"Harmonie","Métiers de la musique":"Métiers","Vocabulaire & culture":"Culture","Styles de musique":"Styles","Pour aller plus loin (hors collège)":"Plus loin","Évaluations des cours de collège":"Évaluations"};
+const LEC_RUBAN={"Musiques du monde":"Monde","Gammes, accords et modes":"Harmonie","Métiers de la musique":"Métiers","Vocabulaire & culture":"Culture","Styles de musique":"Styles","Pour aller plus loin (hors collège)":"Plus loin","Évaluations des cours de collège":"Évaluations"};
 function lxTeinte(g){ return "var(--dom-"+((g&&LEC_TEINTES[g.nom])||"perso")+")"; }
 /* couleur du domaine d'une leçon donnée ("" si elle n'est rangée dans aucun domaine) */
 function lxTeinteDe(id){
@@ -51653,3 +55123,32 @@ try{ const _aR=fbAuth(); if(_aR&&_aR.onAuthStateChanged)_aR.onAuthStateChanged(f
     });
   }).catch(function(){});
 }); }catch(e){}
+/* ---------- Bouton retour : la page d'avant (01/11/2026) ----------
+   Beaucoup de pages renvoyaient en dur vers l'accueil. Chaque page ouverte est notée
+   dans un petit historique (une page qui se redessine ne compte qu'une fois, et une
+   page ouverte par une autre pendant son affichage ne compte pas) ; quand une page
+   prévoit « retour à l'accueil » et qu'on venait d'ailleurs, le bouton y ramène. Les
+   retours précis qu'une page prévoit (une étape, une liste) restent prioritaires. */
+var _nav=[], _navProf=0;
+const NAV_PAGES=["accueil","accueilProf","afficherLecon","classementProf","dashboardProf","ecranAdmin","ecranAmis","ecranBonusInfoProf","ecranChantEleve","ecranChantProf",
+  "ecranClassement","ecranCompositeurs","ecranCoursCollege","ecranCoursEnr","ecranDevoirs","ecranDevoirsProf","ecranDiplomesProf","ecranDirect","ecranEvalAccueil",
+  "ecranImpressionProf","ecranInspection","ecranJouer","ecranKitRemplacant","ecranLancerPartie","ecranLecons","ecranLeconsProf","ecranMaClasse","ecranParametres",
+  "ecranParcours","ecranProgression","ecranQuestionsProf","ecranRendus","ecranTravauxTous","ecranRentree","ecranSoutien","ecranStockage","ecranToutesClasses","ecranTravailProf",
+  "ecranVocab","ecranVotesEleve","ecranVotesProf","evalsClasse","profilProf","rosterClasse","rosterPrimaire","detailDevoir","ecranCorrectionPapier","ecranEveil",
+  "ecranCorbeille","ecranChantRendus","ecranInstruments"];
+function navLib(){
+  const t=document.getElementById("titre"); let x=(t&&t.style.display!=="none"&&t.textContent)||"";
+  if(!x.trim()){ const h=document.querySelector("#zone .ev-rib-titre,#zone h1,#zone h2"); x=h?h.textContent:""; }
+  x=x.replace(/\s+/g," ").trim(); return x.length>28?x.slice(0,27)+"…":x;
+}
+function navNoter(nom,args){
+  if(nom==="accueil"||nom==="accueilProf"){ _nav=[{nom:nom,args:args}]; return; }
+  const top=_nav[_nav.length-1];
+  if(top&&top.nom===nom){ top.args=args; return; }
+  if(top)top.lib=navLib();
+  _nav.push({nom:nom,args:args}); if(_nav.length>30)_nav.splice(1,1);
+}
+function navRetour(){ _nav.pop(); const p=_nav.pop(); if(!p||typeof window[p.nom]!=="function"){ accueil(); return; } window[p.nom].apply(null,p.args); }
+NAV_PAGES.forEach(function(n){ const f=window[n]; if(typeof f!=="function")return;
+  window[n]=function(){ const a=Array.prototype.slice.call(arguments); if(!_navProf)navNoter(n,a); _navProf++;
+    try{ return f.apply(this,arguments); }finally{ _navProf--; } }; });
