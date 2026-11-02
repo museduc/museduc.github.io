@@ -1,88 +1,9 @@
-/* MusEduc : service worker (application installable).
-
-   Règle d'or : ne JAMAIS servir une vieille version quand le réseau répond.
-   - la page, la feuille de style et le programme : RÉSEAU D'ABORD ; la copie en
-     cache ne sert que hors connexion ;
-   - les images, les icônes et les polices (y compris les icônes Phosphor), qui ne
-     changent pas : cache d'abord ;
-   - le reste (données, musiques et sons en streaming)
-     n'est pas intercepté : le navigateur s'en charge comme avant.
-   Changer CACHE vide les anciennes copies à la prochaine visite. */
-const CACHE = "museduc-v5";   /* v5 : programme et styles versionnés servis depuis le cache (25/10/2026) */
-
+/* MusEduc a déménagé : ce service worker efface l'ancienne version de l'appareil et se retire. */
 self.addEventListener("install", function () { self.skipWaiting(); });
 self.addEventListener("activate", function (e) {
   e.waitUntil(caches.keys()
-    .then(function (ks) { return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); })); })
-    .then(function () { return self.clients.claim(); }));
-});
-
-function garder(req, rep) {
-  /* seules les réponses complètes (200) se rangent : un morceau (206) ferait échouer put() */
-  if (rep && rep.status === 200 && rep.type === "basic") {
-    const copie = rep.clone();
-    caches.open(CACHE).then(function (c) { return c.put(req, copie); }).catch(function () {});
-  }
-  return rep;
-}
-
-self.addEventListener("fetch", function (e) {
-  const r = e.request;
-  if (r.method !== "GET" || r.headers.has("range")) return;
-  const u = new URL(r.url);
-  if (u.origin !== self.location.origin) return;
-  if (/\.(mp3|webm|ogg|wav|m4a|mp4)$/i.test(u.pathname)) return;   /* audio : streaming normal */
-
-  if (/\/(images|icons|polices)\//.test(u.pathname)) {
-    e.respondWith(caches.match(r).then(function (m) {
-      return m || fetch(r).then(function (rep) { return garder(r, rep); });
-    }));
-    return;
-  }
-  /* programme, feuille de style et accès aux données VERSIONNÉS (?v=…) : pour une
-     version donnée, leur contenu ne change JAMAIS ; on les sert donc depuis le cache,
-     sans aller-retour réseau, et le navigateur peut garder le programme déjà compilé
-     (plusieurs secondes gagnées sur une tablette). La page, elle, reste réseau
-     d'abord : une nouvelle version publiée change ces adresses, donc rien de vieux
-     n'est jamais servi. On fait le ménage des versions précédentes du même fichier. */
-  if (/\.(js|css)$/.test(u.pathname) && u.searchParams.has("v")) {
-    e.respondWith(caches.open(CACHE).then(function (c) {
-      return c.match(r).then(function (m) {
-        return m || fetch(r).then(function (rep) {
-          if (rep && rep.status === 200 && rep.type === "basic") {
-            c.put(r, rep.clone()).then(function () { return c.keys(); }).then(function (ks) {
-              ks.forEach(function (k) { const ku = new URL(k.url); if (ku.pathname === u.pathname && ku.search !== u.search) c.delete(k); });
-            }).catch(function () {});
-          }
-          return rep;
-        }).catch(function () {
-          /* hors connexion et version absente du cache : la dernière copie connue du fichier */
-          return caches.match(r, { ignoreSearch: true }).then(function (m2) {
-            return m2 || new Response("", { status: 503 });
-          });
-        });
-      });
-    }).catch(function () { return fetch(r); }));
-    return;
-  }
-  /* page, style, programme, manifeste : réseau d'abord, en demandant TOUJOURS au
-     serveur si le fichier a changé (cache:"no-cache" : une simple vérification,
-     sans retéléchargement s'il est identique). Sans cela, un serveur qui n'envoie
-     pas d'en-tête de cache laisse le navigateur resservir une ancienne page. */
-  const frais = r.mode === "navigate"
-    /* redirect "manual" : Cloudflare Pages renvoie museduc7.html vers museduc7
-       (redirection 308). Une page de navigation ne peut pas recevoir une réponse
-       déjà redirigée par le service worker (erreur réseau) : on rend la
-       redirection telle quelle et c'est le navigateur qui la suit. */
-    ? new Request(r.url, { cache: "no-cache", credentials: "same-origin", redirect: "manual" })
-    : new Request(r, { cache: "no-cache" });
-  e.respondWith(fetch(frais).then(function (rep) { return garder(r, rep); }).catch(function () {
-    return caches.match(r, { ignoreSearch: true })
-      .then(function (m) { return m || (r.mode === "navigate" ? caches.match("museduc7.html", { ignoreSearch: true })
-        .then(function (m) { return m || caches.match("museduc7", { ignoreSearch: true }); }) : null); })
-      .then(function (m) {
-        return m || new Response("MusEduc n'est pas joignable : vérifie ta connexion.",
-          { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } });
-      });
-  }));
+    .then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); })
+    .then(function () { return self.registration.unregister(); })
+    .then(function () { return self.clients.matchAll({ type: "window" }); })
+    .then(function (cs) { cs.forEach(function (c) { try { c.navigate(c.url); } catch (x) {} }); }));
 });

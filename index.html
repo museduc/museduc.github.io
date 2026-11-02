@@ -1,9 +1,50 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MusEduc</title>
-<meta http-equiv="refresh" content="0; url=museduc7.html">
-<script>location.replace("museduc7.html"+location.search+location.hash);</script>
-</head><body style="font-family:sans-serif;text-align:center;padding:40px">
-<p>Ouverture de MusEduc… <a href="museduc7.html">Cliquez ici si rien ne se passe.</a></p>
-</body></html>
+<meta name="robots" content="noindex">
+<title>MusEduc a déménagé</title>
+<link rel="canonical" href="https://museduc.alwaysdata.net/">
+<style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;box-sizing:border-box;background:#f4f7fb;color:#1e3a63;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.c{background:#fff;border-radius:20px;box-shadow:0 12px 34px rgba(30,58,99,.12);padding:28px;max-width:520px;width:100%}
+h1{margin:0 0 8px;font-size:1.5rem}p{line-height:1.5;color:#3b4d68}
+.b{display:block;text-align:center;margin-top:12px;padding:14px;border-radius:14px;font-weight:800;text-decoration:none;border:none;font-size:1rem;cursor:pointer;width:100%;box-sizing:border-box}
+.or{background:#F2C94C;color:#16233a}.bl{background:#1e3a63;color:#fff}.li{background:none;color:#1e3a63;text-decoration:underline;font-weight:600}
+.box{background:#fff8e1;border-radius:14px;padding:14px;margin-top:14px}
+</style></head><body><main class="c">
+<h1>MusEduc est maintenant hébergé en France</h1>
+<p id="msg">Ouverture de MusEduc à sa nouvelle adresse, <b>museduc.alwaysdata.net</b>…</p>
+<div id="prof" hidden>
+  <div class="box"><p style="margin:0"><b>Vous êtes professeur ?</b> Les noms de vos <b id="n"></b> élèves étaient enregistrés dans ce navigateur, à l'ancienne adresse. Téléchargez-les d'abord, puis, sur la nouvelle adresse : <b>Paramètres &gt; Sauvegarde &gt; Restaurer</b>.</p></div>
+  <button class="b or" id="dl" type="button">Télécharger ma sauvegarde</button>
+  <a class="b bl" id="go">Continuer vers MusEduc</a>
+</div>
+</main>
+<script>
+(function(){
+  var dest="https://museduc.alwaysdata.net"+location.pathname+location.search+location.hash;
+  document.getElementById("go").href=dest;
+  /* l'ancienne version installée sur l'appareil : on la retire */
+  try{ if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); }); }catch(e){}
+  try{ if(window.caches)caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }); }catch(e){}
+  var cles=["educmus_labels_v1","educmus_profil_v1","educmus_contacts_v1","educmus_roster_v1","theme","museduc.eveil.suivi"], local={}, noms=0, fait=false;
+  try{
+    cles.forEach(function(k){ var v=localStorage.getItem(k); if(v!=null)local[k]=v; });
+    var l=JSON.parse(local.educmus_labels_v1||"{}");
+    Object.keys(l).forEach(function(c){ noms+=Object.keys(l[c]||{}).length; });
+    fait=localStorage.getItem("museduc_demenagement")==="1";
+  }catch(e){}
+  if(!noms||fait){ location.replace(dest); return; }
+  document.getElementById("msg").textContent="MusEduc a une nouvelle adresse : museduc.alwaysdata.net.";
+  document.getElementById("n").textContent=noms;
+  document.getElementById("prof").hidden=false;
+  document.getElementById("dl").onclick=function(){
+    var o={app:"MUSEDUC",type:"sauvegarde",version:1,cree:Date.now(),dateLisible:new Date().toLocaleString("fr-FR"),local:local,serveur:null};
+    var u=URL.createObjectURL(new Blob([JSON.stringify(o,null,2)],{type:"application/json"}));
+    var a=document.createElement("a"); a.href=u; a.download="museduc-sauvegarde-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); },1500);
+    try{ localStorage.setItem("museduc_demenagement","1"); }catch(e){}
+    this.textContent="Sauvegarde téléchargée ✓";
+  };
+})();
+</script></body></html>
